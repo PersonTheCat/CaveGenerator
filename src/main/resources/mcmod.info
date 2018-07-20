@@ -1,0 +1,16 @@
+[
+{
+  "modid": "cavegenerator",
+  "name": "Cave Generator",
+  "description": "A powerful and customizable modification of Mojang's overworld cave generator.",
+  "version": "${version}",
+  "mcversion": "${mcversion}",
+  "url": "",
+  "updateUrl": "",
+  "authorList": ["PersonTheCat"],
+  "credits": "",
+  "logoFile": "",
+  "screenshots": [],
+  "dependencies": []
+}
+]

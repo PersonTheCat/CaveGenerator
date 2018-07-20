@@ -1,0 +1,78 @@
+//No values here are necessary. Any value left out will default to its original equivalent from this file.
+//Take a look at the examples for more information.
+{
+	"chance" : 100.0,
+	"minHeight" : 8,
+	"maxHeight" : 128,
+	"//" : "A distance of 0 means to automatically calculate the appropriate distance. Defaults to ~120",
+	"distance" : 0,
+	"//" : "1 / # chance",
+	"spawnInSystemInverseChance" : 4,
+	"vanillaNoiseYReduction" : true,
+	"entensions" :
+	{
+		"//" : "Options for these are 'vanilla_branches,' 'matching_branches,' 'preset:other_preset_name_here,' and 'room,'",
+		"beginning" : "none",
+		"random" : "vanilla_branches",
+		"end" : "none"
+	},
+	"biomes" :
+	{
+		"names" : [],
+		"IDs" : [],
+		"types" : []
+	},
+	"blockFillers" :
+	{
+		"//" : "See the example presets for information on how to use this feature.",		
+		"keys" : []
+	},
+	"lavaRules" :
+	{
+		"maxHeight" : 10
+	},
+	"room" :
+	{
+		"scale" : 6.0,
+		"scaleY" : 0.5
+	},
+	"twistXZ" :
+	{
+		"exponent" : 1.0,
+		"factor" : 0.75,
+		"randomnessFactor" : 4.0,
+		"startingValue" : 0.0
+	},
+	"twistY" :
+	{
+		"exponent" : 1.0,
+		"factor" : 0.9,
+		"randomnessFactor" : 2.0,
+		"startingValue" : 0.0
+	},
+	"scale" :
+	{
+		"exponent" : 1.0,
+		"factor" : 1.0,
+		"randomnessFactor" : 0.0,
+		"startingValue" : 0.0,
+		"startingValueRandomnessFactor" : 1.0
+	},
+	"scaleY" :
+	{
+		"exponent" : 1.0,
+		"factor" : 1.0,
+		"randomnessFactor" : 0.0,
+		"startingValue" : 1.0
+	},
+	"slopeXZ" :
+	{
+		"startingValue" : 0.0,
+		"startingValueRandomnessFactor" : 1.0
+	},
+	"slopeY" :
+	{
+		"startingValue" : 0.0,
+		"startingValueRandomnessFactor" : 0.25
+	}
+}
