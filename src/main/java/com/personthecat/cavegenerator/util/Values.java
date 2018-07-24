@@ -11,6 +11,7 @@ public class Values
 {
 	public static final IBlockState 
     
+		BLK_STONE = Blocks.STONE.getDefaultState(),
 		BLK_LAVA = Blocks.LAVA.getDefaultState(),
 		BLK_WATER = Blocks.WATER.getDefaultState(),
 		BLK_AIR = Blocks.AIR.getDefaultState();

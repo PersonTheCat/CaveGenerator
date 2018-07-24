@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 @Mod(modid = "cavegenerator",
      name = "Cave Generator",
-     version = "0.1"
+     version = "0.2"
 )
 public class Main
 {

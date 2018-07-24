@@ -72,6 +72,13 @@ public class PresetReader
 	private void addBooleans()
 	{
 		if (json.has("vanillaNoiseYReduction")) newGenerator.noiseYReduction = json.get("vanillaNoiseYReduction").getAsBoolean();
+		
+		if (json.has("caverns"))
+		{
+			JsonObject caverns = json.get("caverns").getAsJsonObject();
+			
+			if (caverns.has("enabled")) newGenerator.cavernsEnabled = caverns.get("enabled").getAsBoolean();
+		}
 	}
 	
 	private void addFloats()
@@ -158,6 +165,24 @@ public class PresetReader
 		}
 		
 		if (json.has("chance")) newGenerator.generatorSelectionChance = json.get("chance").getAsFloat();
+		
+		if (json.has("caverns"))
+		{
+			JsonObject caverns = json.get("caverns").getAsJsonObject();
+			
+			if (caverns.has("scale"))
+			{
+				float selectionThreshold = (caverns.get("scale").getAsFloat() * -2.0F) + 1.0F;
+				
+				newGenerator.cavernSelectionThreshold = selectionThreshold;
+			}
+			
+			if (caverns.has("spacing")) newGenerator.cavernFrequency = caverns.get("spacing").getAsFloat();
+			
+			if (caverns.has("scaleY")) newGenerator.cavernScaleY = caverns.get("scaleY").getAsFloat();
+			
+			if (caverns.has("amplitude")) newGenerator.cavernAmplitude = caverns.get("amplitude").getAsFloat();
+		}
 	}
 	
 	private void addInts()

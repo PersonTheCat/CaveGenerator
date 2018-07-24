@@ -1,5 +1,10 @@
 package com.personthecat.cavegenerator;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import com.personthecat.cavegenerator.world.CaveGenerator;
+
 import net.minecraft.block.state.IBlockState;
 import scala.actors.threadpool.Arrays;
 
@@ -46,6 +51,24 @@ public class BlockFiller
 	public IBlockState getFillBlock()
 	{
 		return fillWith;
+	}
+	
+	public static IBlockState[] getAllFillBlocks()
+	{
+		List<IBlockState> fillers = new ArrayList<>();
+		
+		for (CaveGenerator generator : CaveInit.GENERATORS.values())
+		{
+			if (generator.generateThroughFillers)
+			{
+				for (BlockFiller filler : generator.fillBlocks)
+				{
+					fillers.add(filler.fillWith);
+				}
+			}
+		}
+		
+		return fillers.toArray(new IBlockState[0]);
 	}
 	
 	public boolean hasMatchers()

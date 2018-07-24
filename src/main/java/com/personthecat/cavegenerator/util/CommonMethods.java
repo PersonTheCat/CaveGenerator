@@ -11,6 +11,8 @@ import org.apache.commons.lang3.StringUtils;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
@@ -57,6 +59,32 @@ public class CommonMethods
 		return ForgeRegistries.BLOCKS.getValue(location).getStateFromMeta(meta);
 	}
 	
+	/**
+	 * Tests each corner and then center for any biome on the list.
+	 * Faster than testing all 256 coordinates, more accurate than
+	 * testing the center.
+	 */
+	public static boolean isAnyBiomeInChunk(Biome[] biomes, World world, int chunkX, int chunkZ)
+	{
+		for (BlockPos pos : new BlockPos[] {
+		     new BlockPos((chunkX * 16) + 0, 0, (chunkZ * 16) + 0),
+		     new BlockPos((chunkX * 16) + 0, 0, (chunkZ * 16) + 15),
+		     new BlockPos((chunkX * 16) + 15, 0, (chunkZ * 16) + 0),
+		     new BlockPos((chunkX * 16) + 15, 0, (chunkZ * 16) + 15),
+		     new BlockPos((chunkX * 16) + 8, 0, (chunkZ * 16) + 8)
+		})
+		{
+			Biome current = world.getBiome(pos);
+			
+			for (Biome biome : biomes)
+			{
+				if (biome.equals(current)) return true;
+			}
+		}
+		
+		return false;
+	}
+	
 	public static void copyPresetFiles()
 	{
 		File exampleFolder = new File(Loader.instance().getConfigDir().getPath() + "/cavegenerator/example_presets");
@@ -65,7 +93,7 @@ public class CommonMethods
 		{
 			exampleFolder.mkdirs();
 			
-			for (String fileName : new String[] {"flooded_vanilla",	"large_caves", "spirals", "tunnels"})
+			for (String fileName : new String[] {"flooded_vanilla",	"large_caves", "spirals", "tunnels", "caverns"})
 			{
 				copyPreset("assets/cavegenerator/presets/" + fileName, exampleFolder.getPath() + "/" + fileName);
 			}
