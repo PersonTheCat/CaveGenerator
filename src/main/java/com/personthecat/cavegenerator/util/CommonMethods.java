@@ -8,8 +8,9 @@ import java.io.OutputStream;
 
 import org.apache.commons.lang3.StringUtils;
 
+import com.personthecat.cavegenerator.Main;
+
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.client.Minecraft;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -93,7 +94,7 @@ public class CommonMethods
 		{
 			exampleFolder.mkdirs();
 			
-			for (String fileName : new String[] {"flooded_vanilla",	"large_caves", "spirals", "tunnels", "caverns"})
+			for (String fileName : new String[] {"flooded_vanilla",	"large_caves", "spirals", "tunnels", "caverns", "stalactites", "stone_layers", "ravines"})
 			{
 				copyPreset("assets/cavegenerator/presets/" + fileName, exampleFolder.getPath() + "/" + fileName);
 			}
@@ -113,7 +114,7 @@ public class CommonMethods
 	{
 		try
 		{
-			InputStream copyMe = Minecraft.class.getClassLoader().getResourceAsStream(fromLocation + ".json");
+			InputStream copyMe = Main.class.getClassLoader().getResourceAsStream(fromLocation + ".json");
 			FileOutputStream output = new FileOutputStream(toLocation + ".json");
 			
 			copyStream(copyMe, output, 1024);

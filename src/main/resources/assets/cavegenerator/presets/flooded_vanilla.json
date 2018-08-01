@@ -1,5 +1,5 @@
 {
-	"chance" : 0.0,
+	"enabled" : false,
 	"blockFillers" :
 	{
 		"keys" : ["fallenGravel", "flood", "manualObsidian"], 

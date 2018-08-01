@@ -1,13 +1,5 @@
 {
-	"chance" : 0.0,
-	"minHeight" : 27,
-	"maxHeight" : 33,
-	"spawnInSystemInverseChance" : 1000,
-	"vanillaNoiseYReduction" : false,
-	"entensions" :
-	{
-		"random" : "none"
-	},
+	"enabled" : false,
 	"blockFillers" :
 	{
 		"keys" : ["dirtyFloor", "dirtyFloor2"], 
@@ -40,36 +32,47 @@
 			"preference" : "replace_match"		
 		}
 	},
-	"room" :
+	"rooms" :
 	{
 		"scale" : 7.0,
 		"scaleY" : 0.6
 	},
-	"twistXZ" :
+	"tunnels" :
 	{
-		"factor" : 0.9,
-		"randomnessFactor" : 0.3,
-		"startingValue" : 0.0
-	},
-	"twistY" :
-	{
-		"factor" : 0.9,
-		"randomnessFactor" : 0.1,
-		"startingValue" : 0.0
-	},
-	"scale" :
-	{
-		"randomnessFactor" : 0.25,
-		"startingValue" : 4.0,
-		"startingValueRandomnessFactor" : 1.0
-	},
-	"scaleY" :
-	{
-		"randomnessFactor" : 0.1,
-		"startingValue" : 0.5
-	},
-	"slopeY" :
-	{
-		"startingValueRandomnessFactor" : 0.05
+		"minHeight" : 27,
+		"maxHeight" : 33,
+		"spawnInSystemInverseChance" : 1000,
+		"vanillaNoiseYReduction" : false,
+		"extensions" :
+		{
+			"random" : "none"
+		},
+		"twistXZ" :
+		{
+			"factor" : 0.9,
+			"randomnessFactor" : 0.3,
+			"startingValue" : 0.0
+		},
+		"twistY" :
+		{
+			"factor" : 0.9,
+			"randomnessFactor" : 0.1,
+			"startingValue" : 0.0
+		},
+		"scale" :
+		{
+			"randomnessFactor" : 0.25,
+			"startingValue" : 4.0,
+			"startingValueRandomnessFactor" : 1.0
+		},
+		"scaleY" :
+		{
+			"randomnessFactor" : 0.1,
+			"startingValue" : 0.5
+		},
+		"slopeY" :
+		{
+			"startingValueRandomnessFactor" : 0.05
+		}
 	}
 }

@@ -1,12 +1,12 @@
 package com.personthecat.cavegenerator;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.personthecat.cavegenerator.world.CaveGenerator;
 
 import net.minecraft.block.state.IBlockState;
-import scala.actors.threadpool.Arrays;
 
 public class BlockFiller
 {

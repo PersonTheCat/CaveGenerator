@@ -13,5 +13,9 @@ public class ReplaceVanillaCaveGen
 		{
 			event.setNewGen(new CaveManager());
 		}
+		else if (event.getType().equals(EventType.RAVINE))
+		{
+			event.setNewGen(new RavineManager());
+		}
 	}
 }

@@ -1,17 +1,17 @@
 package com.personthecat.cavegenerator.world;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.util.CommonMethods;
+import com.personthecat.cavegenerator.util.RandomChunkSelector;
+import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
 import com.personthecat.cavegenerator.util.Values;
-import com.personthecat.cavegenerator.world.CaveCompletion.BlockReplacement;
-import com.personthecat.cavegenerator.world.CaveCompletion.ChunkCoordinates;
-import com.personthecat.cavegenerator.world.CaveCompletion.ChunkCorrections;
+import com.personthecat.cavegenerator.world.StoneReplacer.StoneCluster;
+import com.personthecat.cavegenerator.world.anticascade.CaveCompletion.ChunkCorrections;
+import com.personthecat.cavegenerator.world.anticascade.CorrectionStorage;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
@@ -23,132 +23,127 @@ import net.minecraft.world.gen.NoiseGeneratorSimplex;
 
 public class CaveManager extends MapGenBase
 {
-	public static CaveManager instance;
-	
-	private Random worldIndependentRandom = new Random(12345); //Prevents artifacting.
+	protected static SimplexNoiseGenerator3D noise;
+	protected static NoiseGeneratorSimplex noise2D1;
+	protected static NoiseGeneratorSimplex noise2D2;
 
-	SimplexNoiseGenerator3D noise;
-	NoiseGeneratorSimplex noise2D1;
-	NoiseGeneratorSimplex noise2D2;
+	protected static RandomChunkSelector selector;
 	
-	public CaveManager()
+	protected Random indRand = new Random(12345);
+	
+	@Override
+	public void generate(World worldIn, int x, int z, ChunkPrimer primer)
 	{
-		instance = this;
+		this.world = worldIn;
+		this.rand.setSeed(worldIn.getSeed());
+
+		long scaleX = rand.nextLong();
+		long scaleY = rand.nextLong();
+		
+		setupNoiseGenerators();
+		setGeneratorReferences(x, z);
+
+		// Only needs to happen once, before tunnels are placed.
+		for (CaveGenerator generator : CaveInit.GENERATORS.values())
+		{
+			if (generator.enabledGlobally)
+			{
+				setGeneratorReferences(x, z);
+				
+				/*
+				 * It would be slightly more efficient to generate these after tunnels,
+				 * But then users would have to select between clusters and layers,
+				 * not both.
+				 */
+				if (generator.stoneClusters.length > 0) //Section is currently unused.
+				{
+					for (StoneCluster cluster : generator.stoneClusters)
+					{
+						if (selector.getBooleanForCoordinates(cluster.getID(), x, z))
+						{
+							int y = rand.nextInt(128); //update this
+							
+							generator.addGiantCluster(rand.nextLong(), x, z, primer, y, cluster.getRadius(), cluster.getNoiseLevel(), cluster.getState());
+						}
+					}
+				}
+				
+				if (generator.cavernsEnabled || generator.stoneLayers.length > 0)
+				{
+					if (generator.biomes.length == 0 || CommonMethods.isAnyBiomeInChunk(generator.biomes, worldIn, x, z))
+					{
+						generator.addNoiseFeatures(x, z, primer);
+					}
+				}
+			}
+		}
+
+		for (int diameterX = x - range; diameterX <= x + range; diameterX++)
+		{
+			for (int diameterZ = z - range; diameterZ <= z + range; diameterZ++)
+			{
+				long scrambleX = (long) diameterX * scaleX;
+				long scrambleZ = (long) diameterZ * scaleY;
+
+				rand.setSeed(scrambleX ^ scrambleZ ^ worldIn.getSeed());
+
+				recursiveGenerate(worldIn, diameterX, diameterZ, x, z, primer);
+			}
+		}
+
+		completePreviousCaves(x, z, primer);
 	}
-	
-	public Random indRand()
-	{
-		return worldIndependentRandom;
-	}
-	
-	public Random rand()
-	{
-		return rand;
-	}
-	
-	public int range()
-	{
-		return range;
-	}
-	
-	public World world()
-	{
-		return world;
-	}
-	
 	/**
-	 * From vanilla / forge. Needs to be updated for the mod.
-	 */
+	 * A few processes here could be simplified while producing similar results,
+	 * but they would still break seeds. */
 	@Override
-    public void generate(World worldIn, int x, int z, ChunkPrimer primer)
-    {
-        this.world = worldIn;
-        this.rand.setSeed(worldIn.getSeed());
-        
-        long scaleX = rand.nextLong();
-        long scaleY = rand.nextLong();
-        
-        initNoiseGenerators();
+	protected void recursiveGenerate(World worldIn, int chunkX, int chunkZ, int originalX, int originalZ, ChunkPrimer primer)
+	{
+		for (CaveGenerator generator : CaveInit.GENERATORS.values())
+		{
+			if (generator.enabledGlobally)
+			{
+				int caveFrequency = 0;
+				
+				if (generator.tunnelFrequency != 0)
+				{
+					caveFrequency = rand.nextInt(rand.nextInt(rand.nextInt(generator.tunnelFrequency) + 1) + 1);
+				}
+				
+				//Do it in this order to maintain seeds as much as possible, just for now.
+				if (generator.spawnIsolatedInverseChance != 0 && rand.nextInt(generator.spawnIsolatedInverseChance) != 0)
+				{
+					caveFrequency = 0;
+				}
 
-        //Only needs to happen once, before tunnels are placed.
-    	for (CaveGenerator generator : CaveInit.GENERATORS.values())
-        {
-    		float chance = generator.generatorSelectionChance;
-    		
-    		if (chance == 100 || (chance != 0 && rand.nextFloat() * 100 <= chance))
-    		{
-        		if (generator.cavernsEnabled)
-            	{
-                	if (generator.biomes.length == 0 || CommonMethods.isAnyBiomeInChunk(generator.biomes, worldIn, x, z))
-                	{
-                		generator.addCavern(x, z, primer);
-                	}
-            	}
-    		}
-        }
-        
-        for (int diameterX = x - range; diameterX <= x + range; diameterX++)
-        {
-            for (int diameterZ = z - range; diameterZ <= z + range; diameterZ++)
-            {
-                long scrambleX = (long) diameterX * scaleX;
-                long scrambleZ = (long) diameterZ * scaleY;
-                
-                rand.setSeed(scrambleX ^ scrambleZ ^ worldIn.getSeed());
-                
-                recursiveGenerate(worldIn, diameterX, diameterZ, x, z, primer);
-            }
-        }
-        
-        completePreviousCaves(x, z, primer);
-    }
-	
-    /**
-     * Recursively called by generate()
-     * 
-     * A few processes here could be simplified while producing similar results, but they would still break seeds.
-     */
-	@Override
-    protected void recursiveGenerate(World worldIn, int chunkX, int chunkZ, int originalX, int originalZ, ChunkPrimer primer)
-    {
-    	//These happen before the loop to avoid breaking seeds.
-    	int randGenFrequency = rand.nextInt(rand.nextInt(rand.nextInt(15) + 1) + 1); 
-        if (rand.nextInt(7) != 0) randGenFrequency = 0;
-        
-    	for (CaveGenerator generator : CaveInit.GENERATORS.values())
-        {            
-        	for (int i = 0; i < randGenFrequency; i++)
-        	{
-            	float chance = generator.generatorSelectionChance;
-        		
-        		if (chance == 100 || (chance != 0 && rand.nextFloat() * 100 <= chance))
-        		{
-        			double x = (chunkX * 16) + rand.nextInt(16),
-                           y = rand.nextInt(rand.nextInt(generator.maxHeight - generator.minHeight) + generator.minHeight), //To-do: make this more accurate without breaking seeds.
-                           z = (chunkZ * 16) + rand.nextInt(16);
-             		
-            		Biome biome = world.getBiome(new BlockPos(x, y, z));
-            		
-             		if (generator.biomes.length == 0 || ArrayUtils.contains(generator.biomes, biome))
-             		{
-                 		int branches = 1;
-
-                 		if (this.rand.nextInt(generator.spawnInSystemInverseChance) == 0) 
-                 		{
-                 			generator.addRoom(rand.nextLong(), originalX, originalZ, primer, x, y, y);
-                 			branches += rand.nextInt(4);
-                 		}
-
-                 		runGenerator(generator, branches, primer, originalX, originalZ, x, y, z);
-             		}
-        		}
-        	}
-        }
-    }
+				for (int i = 0; i < caveFrequency; i++)
+				{
+					double x = (chunkX * 16) + rand.nextInt(16),
+					       y = rand.nextInt(rand.nextInt(generator.maxHeight - generator.minHeight) + generator.minHeight),
+					       z = (chunkZ * 16) + rand.nextInt(16);
+					
+					Biome biome = world.getBiome(new BlockPos(x, y, z));
+		
+					if (generator.biomes.length == 0 || ArrayUtils.contains(generator.biomes, biome))
+					{
+						int branches = 1;
+		
+						if (this.rand.nextInt(generator.spawnInSystemInverseChance) == 0)
+						{
+							generator.addRoom(rand.nextLong(), originalX, originalZ, primer, x, y, y);
+							branches += rand.nextInt(4);
+						}
+						
+						runGenerator(generator, branches, primer, originalX, originalZ, x, y, z);
+					}
+				}
+			}
+		}
+	}
     
-    private void runGenerator(CaveGenerator generator, int frequency, ChunkPrimer primer, int originalX, int originalZ, double x, double y, double z)
+    private void runGenerator(CaveGenerator generator, int numDirections, ChunkPrimer primer, int originalX, int originalZ, double x, double y, double z)
     {
-		for (int j = 0; j < frequency; j++)
+		for (int j = 0; j < numDirections; j++)
 		{
 			float slopeXZ = generator.startingSlopeXZ,
          	      slopeY = generator.startingSlopeY,
@@ -179,40 +174,76 @@ public class CaveManager extends MapGenBase
     	
     	ChunkCorrections previousCaveInfo = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX, chunkZ);
     	
-    	try
+    	for (int x = 0; x < 16; x++)
     	{
-        	for (BlockReplacement replacement : previousCaveInfo.getReplacements())
-        	{    		
-        		IBlockState state = replacement.getState();
-        		BlockPos pos = replacement.getPos();
-        		
-        		if (CaveGenerator.canReplaceLessSpecific(primer.getBlockState(pos.getX(), pos.getY(), pos.getZ())))
-        		{
-        			primer.setBlockState(pos.getX(), pos.getY(), pos.getZ(), state);
-        		}
-        	}
+    		for (int z = 0; z < 16; z++)
+    		{
+    			for (int y = 0; y < 256; y++)
+    			{
+    				IBlockState correction = previousCaveInfo.getCorrection(x, y, z);
+    				
+    				if (correction != null && !correction.equals(Values.BLK_AIR))
+    				{
+    					if (CaveGenerator.canReplaceLessSpecific(primer.getBlockState(x, y, z)))
+    					{
+    						primer.setBlockState(x, y, z, correction);
+    					}		
+    				}
+    			}
+    		}
     	}
-    	
-    	catch (NullPointerException ignored) {}
     	
     	CorrectionStorage.removeCorrectionsFromWorld(dimension, previousCaveInfo);
     }
     
-    private void initNoiseGenerators()
+    /**
+     * Needs to happen regardless of the chance in case selection is inconsistent.
+     */
+    private void setGeneratorReferences(int chunkX, int chunkZ)
     {
-    	if (noise == null)
+    	if (world != null)
     	{
-    		noise = new SimplexNoiseGenerator3D(world().getSeed());
+        	int dimension = world.provider.getDimension();    		
+    		
+    		for (CaveGenerator generator : CaveInit.GENERATORS.values())
+        	{
+        		generator.world = world;
+        		generator.rand = new Random(world.getSeed());
+        		generator.range = range;
+        		
+        		generator.xPlusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX + 1, chunkZ);
+        		generator.xMinusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX - 1, chunkZ);
+        		generator.zPlusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX, chunkZ + 1);
+        		generator.zMinusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX, chunkZ - 1);
+        	}
     	}
+    }
+    
+    private static World previousWorld;    
+    
+    /**
+     * Avoid setting up generators every single time generate() is called.
+     */
+    private void setupNoiseGenerators()
+    {
+    	if (world != null && !world.equals(previousWorld))
+    	{
+    		previousWorld = world;
+    		
+    		initStaticGenerators(world);
+			
+			StoneReplacer.setWorld(world);
+    	}
+    }
+    
+    private static void initStaticGenerators(World world)
+    {
+    	long seed = world.getSeed();
     	
-    	if (noise2D1 == null)
-    	{
-    		noise2D1 = new NoiseGeneratorSimplex(new Random(world().getSeed()));
-    	}
+    	noise = new SimplexNoiseGenerator3D(seed);
+    	noise2D1 = new NoiseGeneratorSimplex(new Random(seed));
+    	noise2D2 = new NoiseGeneratorSimplex(new Random(seed >> 4));
     	
-    	if (noise2D2 == null)
-    	{
-    		noise2D2 = new NoiseGeneratorSimplex(new Random(world().getSeed() >> 4));
-    	}
+    	selector = new RandomChunkSelector(seed);
     }
 }

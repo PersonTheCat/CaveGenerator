@@ -38,7 +38,7 @@ public class CaveInit
 		{
 			System.out.println(
 				"Successfully loaded " + name + ".json. "
-			  + "It is " + ((GENERATORS.get(name).generatorSelectionChance > 0) ? "enabled." : "disabled."));
+			  + "It is " + ((GENERATORS.get(name).enabledGlobally) ? "enabled." : "disabled."));
 		}
 	}
 	

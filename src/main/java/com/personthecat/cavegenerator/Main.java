@@ -13,7 +13,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 @Mod(modid = "cavegenerator",
      name = "Cave Generator",
-     version = "0.2"
+     version = "0.4"
 )
 public class Main
 {
@@ -21,15 +21,10 @@ public class Main
 	public static Main instance;
 	
 	@EventHandler
-	public static void preInit(FMLPreInitializationEvent event)
-	{
-		CommonMethods.copyPresetFiles();
-		CaveInit.init();
-	}
-	
-	@EventHandler
 	public static void init(FMLInitializationEvent event)
 	{
+		CommonMethods.copyPresetFiles();
+		CaveInit.init();		
 		MinecraftForge.TERRAIN_GEN_BUS.register(ReplaceVanillaCaveGen.class);
 	}
 
