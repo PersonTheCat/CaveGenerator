@@ -3,22 +3,20 @@ package com.personthecat.cavegenerator.config;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
-import com.google.gson.JsonIOException;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import com.google.gson.JsonSyntaxException;
-import com.personthecat.cavegenerator.BlockFiller;
-import com.personthecat.cavegenerator.BlockFiller.Direction;
-import com.personthecat.cavegenerator.BlockFiller.Preference;
 import com.personthecat.cavegenerator.util.CommonMethods;
+import com.personthecat.cavegenerator.world.BlockFiller;
+import com.personthecat.cavegenerator.world.BlockFiller.Direction;
+import com.personthecat.cavegenerator.world.BlockFiller.Preference;
 import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.CaveGenerator.Extension;
-import com.personthecat.cavegenerator.world.StoneReplacer.StoneCluster;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneLayer;
 
 import net.minecraft.block.state.IBlockState;
@@ -70,6 +68,27 @@ public class PresetReader
 		addBlockFillers();
 	}
 	
+	private void addGlobalValues()
+	{
+		if (json.has("enabled")) newGenerator.enabledGlobally = json.get("enabled").getAsBoolean();
+		
+		if (json.has("dimensions"))
+		{
+			JsonArray dimArray = json.get("dimensions").getAsJsonArray();
+			
+			List<Integer> dimensions = new ArrayList<>();
+			
+			for (JsonElement element : dimArray)
+			{
+				dimensions.add(element.getAsInt());
+			}
+			
+			newGenerator.dimensions = dimensions.stream().mapToInt(i -> i).toArray();
+		}
+		
+		if (json.has("useDimensionBlacklist")) newGenerator.useDimensionBlacklist = json.get("useDimensionBlacklist").getAsBoolean();
+	}
+	
 	private void addRooms()
 	{
 		if (json.has("rooms"))
@@ -80,11 +99,6 @@ public class PresetReader
 			
 			if (room.has("scaleY")) newGenerator.roomScaleY = room.get("scaleY").getAsFloat();
 		}
-	}
-	
-	private void addGlobalValues()
-	{
-		if (json.has("enabled")) newGenerator.enabledGlobally = json.get("enabled").getAsBoolean();
 	}
 	
 	private void addTunnels()
@@ -340,6 +354,8 @@ public class PresetReader
 			
 			newGenerator.biomes = biomes.toArray(new Biome[0]);
 		}
+		
+		if (json.has("useBiomeBlacklist")) newGenerator.useBiomeBlacklist = json.get("useBiomeBlacklist").getAsBoolean();
 	}
 	
 	private void addStoneLayers()

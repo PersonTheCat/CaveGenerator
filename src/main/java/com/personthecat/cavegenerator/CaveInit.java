@@ -54,4 +54,17 @@ public class CaveInit
 		
 		return false;
 	}
+	
+	public static boolean isAnyGeneratorEnabledForDimension(int dimension)
+	{
+		for (CaveGenerator generator : GENERATORS.values())
+		{
+			if (generator.enabledGlobally && generator.canGenerateInDimension(dimension))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
 }

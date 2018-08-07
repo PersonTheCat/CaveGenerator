@@ -5,13 +5,12 @@ import java.util.Random;
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.base.MoreObjects;
-import com.personthecat.cavegenerator.BlockFiller;
 import com.personthecat.cavegenerator.CaveInit;
-import com.personthecat.cavegenerator.BlockFiller.Direction;
-import com.personthecat.cavegenerator.BlockFiller.Preference;
 import com.personthecat.cavegenerator.util.CommonMethods;
 import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
 import com.personthecat.cavegenerator.util.Values;
+import com.personthecat.cavegenerator.world.BlockFiller.Direction;
+import com.personthecat.cavegenerator.world.BlockFiller.Preference;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneCluster;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneLayer;
 import com.personthecat.cavegenerator.world.anticascade.CorrectionStorage;
@@ -39,6 +38,8 @@ public class CaveGenerator
 	public boolean 
 	
 		enabledGlobally = true,
+		useBiomeBlacklist = false,
+		useDimensionBlacklist = false,
 		cavernsEnabled = false,
 		fastCavernYSmoothing = false,
 		generateThroughFillers = true,
@@ -159,6 +160,8 @@ public class CaveGenerator
 		extRandPreset,
 		extEndPreset;
 	
+	public int[] dimensions = new int[0];
+	
 	public Biome[] biomes = new Biome[0];
 	
 	public BlockFiller[] fillBlocks = new BlockFiller[0];
@@ -179,6 +182,38 @@ public class CaveGenerator
 	protected int range;
 	
 	protected World world;
+	
+	/**
+	 * Neatly checks enabledGlobally, ...InBiome(), and ...InDimension().
+	 */
+	public boolean canGenerate(Biome biome, int dimension)
+	{
+		return enabledGlobally && canGenerateInBiome(biome) && canGenerateInDimension(dimension);
+	}
+	
+	public boolean canGenerateInBiome(Biome biome)
+	{
+		if (biomes.length == 0) return true;
+		
+		if (useBiomeBlacklist)
+		{
+			return !ArrayUtils.contains(biomes, biome);
+		}
+		
+		return ArrayUtils.contains(biomes, biome);
+	}
+	
+	public boolean canGenerateInDimension(int dimension)
+	{
+		if (dimensions.length == 0) return true;
+		
+		if (useDimensionBlacklist)
+		{
+			return !ArrayUtils.contains(dimensions, dimension);
+		}
+		
+		return ArrayUtils.contains(dimensions, dimension);
+	}
 	
 	/**
 	 * The type of tunnel to create at the specified location.
@@ -222,6 +257,8 @@ public class CaveGenerator
 		
 		private boolean place(CaveGenerator generator, String altPreset, Random rand, long seed, int chunkX, int chunkZ, ChunkPrimer primer, double posX, double posY, double posZ, float scale, float slopeXZ, float slopeY, int startingPoint, int distance, double scaleY)
 		{
+//			System.out.println("placing extension...");
+			
 			switch(this)
 			{
 				case VANILLA_BRANCHES:
@@ -506,7 +543,12 @@ public class CaveGenerator
 	{
 		boolean airOnly = true;
 		
-		int layerMaxHeight = stoneLayers[stoneLayers.length - 1].getMaxHeight();
+		int layerMaxHeight = 0;
+		
+		if (stoneLayers.length > 0)
+		{
+			layerMaxHeight = stoneLayers[stoneLayers.length - 1].getMaxHeight();
+		}
 		
 		int noiseMaxHeight = cavernMaxHeight > layerMaxHeight ? cavernMaxHeight : layerMaxHeight;
 		

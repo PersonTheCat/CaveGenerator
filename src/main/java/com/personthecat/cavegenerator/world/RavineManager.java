@@ -6,18 +6,37 @@ import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.util.CommonMethods;
 import com.personthecat.cavegenerator.util.Values;
 
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.MapGenBase;
 
 public class RavineManager extends MapGenBase
 {	
 	@Override
+	public void generate(World world, int x, int z, ChunkPrimer primer)
+	{
+		int dimension = world.provider.getDimension();
+		
+		if (CaveInit.isAnyGeneratorEnabledForDimension(dimension))
+		{
+			ReplaceVanillaCaveGen.previousRavineGen.generate(world, x, z, primer);
+			
+			return;
+		}
+		
+		super.generate(world, x, z, primer);
+	}
+	
+	@Override
 	protected void recursiveGenerate(World world, int chunkX, int chunkZ, int originalX, int originalZ, ChunkPrimer primer)
 	{
 		for (CaveGenerator generator : CaveInit.GENERATORS.values())
 		{
-			if (generator.enabledGlobally)
+			Biome centerBiome = world.getBiome(new BlockPos(chunkX * 16 + 8, 0, chunkZ * 16 + 8));
+			
+			if (generator.canGenerate(centerBiome, world.provider.getDimension()))
 			{
 				if (rand.nextInt(generator.rInverseChance) == 0)
 				{

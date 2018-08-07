@@ -13,13 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.world.anticascade.CaveCompletion.ChunkCoordinates;
 import com.personthecat.cavegenerator.world.anticascade.CaveCompletion.ChunkCorrections;
 
 import net.minecraft.world.World;
-import net.minecraftforge.event.world.WorldEvent;
-import net.minecraftforge.fml.common.Mod.EventBusSubscriber;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class CorrectionStorage implements Serializable
 {
@@ -58,29 +56,34 @@ public class CorrectionStorage implements Serializable
 		return newCorrectionTable;
 	}
 	
-	public static void recordCorrections(World forWorld)
+	private static String loadedWorldDir;
+	
+	public static void recordCorrections()
 	{
-		File saveDir = forWorld.getSaveHandler().getWorldDirectory();
-		
-		File data = new File(saveDir.getPath() + SAVE_LOCATION);
-		
-		try
+		if (!loadedWorldDir.equals(""))
 		{
-			if (!data.exists())
+			File data = new File(loadedWorldDir + SAVE_LOCATION);
+			
+			try
 			{
-				data.getParentFile().mkdirs();
-				data.createNewFile();
+				if (!data.exists())
+				{
+					data.getParentFile().mkdirs();
+					data.createNewFile();
+				}
+				
+				FileOutputStream file = new FileOutputStream(data);
+				ObjectOutputStream objectOut = new ObjectOutputStream(file);
+				
+				objectOut.writeObject(worldCorrections);
+				
+				objectOut.close();
 			}
 			
-			FileOutputStream file = new FileOutputStream(data);
-			ObjectOutputStream objectOut = new ObjectOutputStream(file);
-			
-			objectOut.writeObject(worldCorrections);
-			
-			objectOut.close();
+			catch (IOException e) { e.printStackTrace(); }
 		}
 		
-		catch (IOException e) { e.printStackTrace(); }
+		else System.err.println("Error: Could not record additional decorations. Please report this issue.");
 	}
 	
 	public static void removeCorrectionsFromWorld(int dimension, ChunkCorrections corrections)
@@ -94,20 +97,24 @@ public class CorrectionStorage implements Serializable
 	 * Loads previous corrections from world save. No need to do anything
 	 * if no corrections exist.
 	 */
-	public static void setCorrectionsFromSave(World forWorld)
+	public static void setCorrectionsFromSave(String saveFolder)
 	{
 		try
 		{
-			File saveDir = forWorld.getSaveHandler().getWorldDirectory();
+			loadedWorldDir = Main.proxy.getSavesDirectory() + "/" + saveFolder;
+			
+			new File(loadedWorldDir).mkdir();
 
 			try
 			{
-				FileInputStream file = new FileInputStream(saveDir + SAVE_LOCATION);
+				FileInputStream file = new FileInputStream(loadedWorldDir + SAVE_LOCATION);
 				ObjectInputStream objectIn = new ObjectInputStream(file);
 				
 				worldCorrections = (HashMap<Integer, List<ChunkCorrections>>) objectIn.readObject();
 				
 				objectIn.close();
+				
+				System.out.println("Successfully set corrections!");
 			}
 			
 			catch (FileNotFoundException ignored) {}
@@ -116,29 +123,5 @@ public class CorrectionStorage implements Serializable
 		}
 
 		catch (NullPointerException ignored) {/*World was just created. Ignore.*/}
-	}
-	
-	@EventBusSubscriber
-	public static class AutomaticCorrectionHandler
-	{
-		static long lastSave = 0L; //hax--Prevent double saving. Find better event? And fix large size problem
-		
-		@SubscribeEvent
-		public static void onWorldEventSave(WorldEvent.Save event)
-		{
-			long uptime = System.currentTimeMillis();
-			
-			if (uptime > lastSave + 10000)
-			{
-				recordCorrections(event.getWorld());
-				lastSave = uptime;
-			}
-		}
-		
-		@SubscribeEvent
-		public static void onWorldEventLoad(WorldEvent.Load event)
-		{
-			setCorrectionsFromSave(event.getWorld());
-		}
 	}
 }
