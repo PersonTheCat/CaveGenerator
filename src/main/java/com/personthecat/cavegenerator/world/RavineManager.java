@@ -3,9 +3,13 @@ package com.personthecat.cavegenerator.world;
 import java.util.Random;
 
 import com.personthecat.cavegenerator.CaveInit;
+import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.util.CommonMethods;
 import com.personthecat.cavegenerator.util.Values;
+import com.personthecat.cavegenerator.world.anticascade.CorrectionStorage;
+import com.personthecat.cavegenerator.world.anticascade.CaveCompletion.ChunkCorrections;
 
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -19,7 +23,7 @@ public class RavineManager extends MapGenBase
 	{
 		int dimension = world.provider.getDimension();
 		
-		if (CaveInit.isAnyGeneratorEnabledForDimension(dimension))
+		if (!CaveInit.isAnyGeneratorEnabledForDimension(dimension))
 		{
 			ReplaceVanillaCaveGen.previousRavineGen.generate(world, x, z, primer);
 			
@@ -27,6 +31,15 @@ public class RavineManager extends MapGenBase
 		}
 		
 		super.generate(world, x, z, primer);
+		
+		if (ConfigFile.decorateWallsOption == 1)
+		{			
+			completePreviousCaves(dimension, x, z, primer);
+		}
+		else if (ConfigFile.decorateWallsOption == 2)
+		{
+			completePreviousCaves(x, z, primer);
+		}
 	}
 	
 	@Override
@@ -57,4 +70,44 @@ public class RavineManager extends MapGenBase
 			}
 		}
 	}
+	
+    protected void completePreviousCaves(int chunkX, int chunkZ, ChunkPrimer primer)
+    {
+    	for (CaveGenerator generator : CaveInit.GENERATORS.values())
+    	{
+    		generator.finishChunkWalls(chunkX, chunkZ, primer);
+    	}
+    }
+    
+    /**
+     * Called after this chunk's caves have been generated to fill in any missing
+     * pieces from previous caves. Theoretically decreases world gen speed as more
+     * chunks are waiting to be completed. Not obvious after generating 20k blocks
+     * in a straight line, but still needs work.
+     */
+    protected void completePreviousCaves(int dimension, int chunkX, int chunkZ, ChunkPrimer primer)
+    {    	
+    	ChunkCorrections previousCaveInfo = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX, chunkZ);
+    	
+    	for (int x = 0; x < 16; x++)
+    	{
+    		for (int z = 0; z < 16; z++)
+    		{
+    			for (int y = 0; y < 256; y++)
+    			{
+    				IBlockState correction = previousCaveInfo.getCorrection(x, y, z);
+    				
+    				if (correction != null && !correction.equals(Values.BLK_AIR))
+    				{
+    					if (CaveGenerator.canReplaceLessSpecific(primer.getBlockState(x, y, z)))
+    					{
+    						primer.setBlockState(x, y, z, correction);
+    					}		
+    				}
+    			}
+    		}
+    	}
+    	
+    	CorrectionStorage.removeCorrectionsFromWorld(dimension, previousCaveInfo);
+    }
 }

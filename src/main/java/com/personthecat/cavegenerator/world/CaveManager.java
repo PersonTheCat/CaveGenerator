@@ -2,14 +2,11 @@ package com.personthecat.cavegenerator.world;
 
 import java.util.Random;
 
-import org.apache.commons.lang3.ArrayUtils;
-
 import com.personthecat.cavegenerator.CaveInit;
-import com.personthecat.cavegenerator.util.CommonMethods;
+import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.util.RandomChunkSelector;
 import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
 import com.personthecat.cavegenerator.util.Values;
-import com.personthecat.cavegenerator.world.StoneReplacer.StoneCluster;
 import com.personthecat.cavegenerator.world.anticascade.CaveCompletion.ChunkCorrections;
 import com.personthecat.cavegenerator.world.anticascade.CorrectionStorage;
 
@@ -28,7 +25,7 @@ public class CaveManager extends MapGenBase
 	protected static NoiseGeneratorSimplex noise2D2;
 
 	protected static RandomChunkSelector selector;
-	
+
 	@Override
 	public void generate(World world, int x, int z, ChunkPrimer primer)
 	{
@@ -41,11 +38,15 @@ public class CaveManager extends MapGenBase
 			return;
 		}
 		
+		if (ConfigFile.decorateWallsOption == 1)
+		{
+			setAdjacentCorrections(dimension, x, z);
+		}
+		
 		setupNoiseGenerators(world); //Only happens 1x / world.
 		setGeneratorReferences(world, x, z);
 		noiseGenerate(world, dimension, x, z, primer);
-		super.generate(world, x, z, primer);
-		completePreviousCaves(dimension, x, z, primer);
+		super.generate(world, x, z, primer); //recursiveGenerate()
 	}
 	
 	protected void noiseGenerate(World world, int dimension, int chunkX, int chunkZ, ChunkPrimer primer)
@@ -132,38 +133,6 @@ public class CaveManager extends MapGenBase
     }
     
     /**
-     * Called after this chunk's caves have been generated to fill in any missing
-     * pieces from previous caves. Theoretically decreases world gen speed as more
-     * chunks are waiting to be completed. Not obvious after generating 20k blocks
-     * in a straight line, but still needs work.
-     */
-    protected void completePreviousCaves(int dimension, int chunkX, int chunkZ, ChunkPrimer primer)
-    {    	
-    	ChunkCorrections previousCaveInfo = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX, chunkZ);
-    	
-    	for (int x = 0; x < 16; x++)
-    	{
-    		for (int z = 0; z < 16; z++)
-    		{
-    			for (int y = 0; y < 256; y++)
-    			{
-    				IBlockState correction = previousCaveInfo.getCorrection(x, y, z);
-    				
-    				if (correction != null && !correction.equals(Values.BLK_AIR))
-    				{
-    					if (CaveGenerator.canReplaceLessSpecific(primer.getBlockState(x, y, z)))
-    					{
-    						primer.setBlockState(x, y, z, correction);
-    					}		
-    				}
-    			}
-    		}
-    	}
-    	
-    	CorrectionStorage.removeCorrectionsFromWorld(dimension, previousCaveInfo);
-    }
-    
-    /**
      * Needs to happen regardless of the chance in case selection is inconsistent.
      */
     protected void setGeneratorReferences(World world, int chunkX, int chunkZ)
@@ -177,11 +146,6 @@ public class CaveManager extends MapGenBase
         		generator.world = world;
         		generator.rand = new Random(world.getSeed());
         		generator.range = range;
-        		
-        		generator.xPlusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX + 1, chunkZ);
-        		generator.xMinusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX - 1, chunkZ);
-        		generator.zPlusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX, chunkZ + 1);
-        		generator.zMinusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX, chunkZ - 1);
         	}
     	}
     }
@@ -212,5 +176,16 @@ public class CaveManager extends MapGenBase
     	noise2D2 = new NoiseGeneratorSimplex(new Random(seed >> 4));
     	
     	selector = new RandomChunkSelector(seed);
+    }
+    
+    protected void setAdjacentCorrections(int dimension, int chunkX, int chunkZ)
+    {
+    	for (CaveGenerator generator : CaveInit.GENERATORS.values())
+    	{
+    		generator.xPlusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX + 1, chunkZ);
+    		generator.xMinusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX - 1, chunkZ);
+    		generator.zPlusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX, chunkZ + 1);
+    		generator.zMinusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX, chunkZ - 1);
+    	}
     }
 }

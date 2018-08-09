@@ -13,11 +13,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static com.personthecat.cavegenerator.Main.logger;
+
 import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.world.anticascade.CaveCompletion.ChunkCoordinates;
 import com.personthecat.cavegenerator.world.anticascade.CaveCompletion.ChunkCorrections;
-
-import net.minecraft.world.World;
 
 public class CorrectionStorage implements Serializable
 {
@@ -66,6 +66,8 @@ public class CorrectionStorage implements Serializable
 			
 			try
 			{
+				logger.debug("Recording chunk corrections to disk...");
+				
 				if (!data.exists())
 				{
 					data.getParentFile().mkdirs();
@@ -78,12 +80,14 @@ public class CorrectionStorage implements Serializable
 				objectOut.writeObject(worldCorrections);
 				
 				objectOut.close();
+				
+				logger.debug("Successfully recorded corrections to disk!");
 			}
 			
 			catch (IOException e) { e.printStackTrace(); }
 		}
 		
-		else System.err.println("Error: Could not record additional decorations. Please report this issue.");
+		else logger.warn("Error: Could not record additional decorations. Please report this issue.");
 	}
 	
 	public static void removeCorrectionsFromWorld(int dimension, ChunkCorrections corrections)
@@ -99,12 +103,14 @@ public class CorrectionStorage implements Serializable
 	 */
 	public static void setCorrectionsFromSave(String saveFolder)
 	{
+		logger.debug("Loading chunk corrections from save file...");
+		
 		try
 		{
 			loadedWorldDir = Main.proxy.getSavesDirectory() + "/" + saveFolder;
 			
 			new File(loadedWorldDir).mkdir();
-
+			
 			try
 			{
 				FileInputStream file = new FileInputStream(loadedWorldDir + SAVE_LOCATION);
@@ -114,7 +120,7 @@ public class CorrectionStorage implements Serializable
 				
 				objectIn.close();
 				
-				System.out.println("Successfully set corrections!");
+				logger.debug("Corrections successfully loaded!");
 			}
 			
 			catch (FileNotFoundException ignored) {}
@@ -122,6 +128,6 @@ public class CorrectionStorage implements Serializable
 			catch (IOException | ClassNotFoundException e) { e.printStackTrace(); }
 		}
 
-		catch (NullPointerException ignored) {/*World was just created. Ignore.*/}
+		catch (NullPointerException ignored) { logger.debug("Corrections did not exist. New data will be stored on world close."); }
 	}
 }

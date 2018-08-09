@@ -1,11 +1,14 @@
 package com.personthecat.cavegenerator.world;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.base.MoreObjects;
 import com.personthecat.cavegenerator.CaveInit;
+import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.util.CommonMethods;
 import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
 import com.personthecat.cavegenerator.util.Values;
@@ -1193,6 +1196,211 @@ public class CaveGenerator
 	}
 	
 	/**
+	 * Decorates blocks along chunk borders to finish previous blockFillers.
+	 * Call this if any blockFillers replace blocks at match.
+	 * 
+	 * Slower than storing corrections. May remove.
+	 */
+	public void finishChunkWalls(int chunkX, int chunkZ, ChunkPrimer primer)
+	{
+		BlockFiller[] withMatchers = getFillersWithSideMatchers();
+		
+		if (withMatchers.length == 0) return;
+		
+		int startX = chunkX << 4, startZ = chunkZ << 4;
+
+		int actualMax = getMaxNumber(maxHeight, rMaxHeight, cavernMaxHeight);
+		int actualMin = getMinNumber(minHeight, rMinHeight, cavernMinHeight);
+		
+		if (world.isChunkGeneratedAt(chunkX, chunkZ - 1))
+		{
+			for (int x = 0; x < 16; x++)
+			{
+				for (int y = actualMin; y < actualMax + 1; y++)
+				{
+					/*
+					 * inside is relative, outside is absolute. 
+					 * Have to use a primer for the current chunk.
+					 */
+					BlockPos inside = new BlockPos(x, y, 0);
+					BlockPos outside = new BlockPos(startX + x, y, startZ - 1);
+
+					testAndDecorate(primer, inside, outside, withMatchers);
+				}
+			}
+		}
+		
+		if (world.isChunkGeneratedAt(chunkX, chunkZ + 1))
+		{
+			for (int x = 0; x < 16; x++)
+			{
+				for (int y = actualMin; y < actualMax + 1; y++)
+				{
+					BlockPos inside = new BlockPos(x, y, 15);
+					BlockPos outside = new BlockPos(startX + x, y, startZ + 16);
+
+					testAndDecorate(primer, inside, outside, withMatchers);
+				}
+			}
+		}
+		
+		if (world.isChunkGeneratedAt(chunkX + 1, chunkZ))
+		{
+			for (int z = 0; z < 16; z++)
+			{
+				for (int y = actualMin; y < actualMax + 1; y++)
+				{					
+					BlockPos inside = new BlockPos(15, y, z);
+					BlockPos outside = new BlockPos(startX + 16, y, startZ + z);
+
+					testAndDecorate(primer, inside, outside, withMatchers);
+				}
+			}
+		}
+		
+		if (world.isChunkGeneratedAt(chunkX - 1, chunkZ))
+		{
+			for (int z = 0; z < 16; z++)
+			{
+				for (int y = actualMin; y < actualMax + 1; y++)
+				{
+					BlockPos inside = new BlockPos(0, y, z);
+					BlockPos outside = new BlockPos(startX - 1, y, startZ + z);
+					
+					testAndDecorate(primer, inside, outside, withMatchers);
+				}
+			}
+		} 
+	}
+	
+	private void testAndDecorate(ChunkPrimer primer, BlockPos relInside, BlockPos absOutside, BlockFiller[] withMatchers)
+	{
+		boolean cubeInside = primer.getBlockState(relInside.getX(), relInside.getY(), relInside.getZ()).isNormalCube();
+		boolean cubeOutside = world.getBlockState(absOutside).isNormalCube();
+		
+		if (cubeInside && !cubeOutside)
+		{
+			fastDecorate(primer, relInside, withMatchers);
+		}
+		
+		else if (cubeOutside && !cubeInside)
+		{
+			fastDecorate(absOutside, withMatchers);
+		}
+	}
+	
+	/**
+	 * Only using BlockFillers with:
+	 * 
+	 *  * matchers,
+	 *  * preference = replace_match, and
+	 *  * direction = side or all.
+	 *  
+	 *  Avoids repeatedly testing for these same features.
+	 */
+	private void fastDecorate(BlockPos pos, BlockFiller... pretested)
+	{
+		for (BlockFiller replacement : pretested)
+		{
+			if (replacement.canGenerateAtHeight(pos.getY()) && indRand.nextDouble() * 100 <= replacement.getChance())
+			{
+				for (IBlockState matcher : replacement.getMatchers())
+				{
+					if (world.getBlockState(pos).equals(matcher))
+					{
+						world.setBlockState(pos, replacement.getFillBlock());
+					
+						return;
+					}
+				}
+			}
+		}
+	}
+	
+	/**
+	 * Alternate to fastDecorate(BlockPos, BlockFiller...). 
+	 * Necessary because primers must be used for currently-generating chunks.
+	 */
+	private void fastDecorate(ChunkPrimer primer, BlockPos pos, BlockFiller... pretested)
+	{
+		for (BlockFiller replacement : pretested)
+		{
+			if (replacement.canGenerateAtHeight(pos.getY()) && indRand.nextDouble() * 100 <= replacement.getChance())
+			{
+				for (IBlockState matcher : replacement.getMatchers())
+				{
+					if (primer.getBlockState(pos.getX(), pos.getY(), pos.getZ()).equals(matcher))
+					{
+						primer.setBlockState(pos.getX(), pos.getY(), pos.getZ(), replacement.getFillBlock());
+					
+						return;
+					}
+				}
+			}
+		}
+	}
+	
+	private int getMaxNumber(int... nums)
+	{
+		int maxNumber = 0;
+		
+		for (int i = 0; i < nums.length; i++)
+		{
+			int number = nums[i];
+			
+			if (number > maxNumber)
+			{
+				maxNumber = number;
+			}
+		}
+		
+		return maxNumber;
+	}
+	
+	private int getMinNumber(int... nums)
+	{
+		int minNumber = nums[0];
+		
+		for (int i = 0; i < nums.length; i++)
+		{
+			int number = nums[i];
+			
+			if (number < minNumber)
+			{
+				minNumber = number;
+			}
+		}
+		
+		return minNumber;
+	}
+	
+	private BlockFiller[] getFillersWithSideMatchers()
+	{
+		List<BlockFiller> fillers = new ArrayList<>();
+		
+		for (BlockFiller filler : fillBlocks)
+		{
+			if (filler.hasMatchers())
+			{
+				if (filler.getPreference().equals(Preference.REPLACE_MATCH))
+				{
+					for (Direction dir : filler.getDirections())
+					{
+						if (dir.equals(Direction.SIDE) || dir.equals(Direction.ALL))
+						{
+							fillers.add(filler);
+							
+							break;
+						}
+					}
+				}
+			}
+		}
+		
+		return fillers.toArray(new BlockFiller[0]);
+	}
+	
+	/**
 	 * Unfinished. Returns true if a match is found in the current chunk.
 	 */
 	private boolean placeOrStoreBlockState(ChunkPrimer originalPrimer, int chunkX, int chunkZ, BlockPos pos, IBlockState state, IBlockState matcher)
@@ -1209,7 +1417,7 @@ public class CaveGenerator
 				return true;
 			}
 		}
-		else
+		else if (ConfigFile.decorateWallsOption == 1)
 		{			
 			ChunkCorrections corrections = null;
 			
