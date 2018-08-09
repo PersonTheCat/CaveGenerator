@@ -218,6 +218,11 @@ public class CaveGenerator
 		return ArrayUtils.contains(dimensions, dimension);
 	}
 	
+	public boolean referencesSet()
+	{
+		return world != null;
+	}
+	
 	/**
 	 * The type of tunnel to create at the specified location.
 	 */

@@ -30,6 +30,11 @@ public class RavineManager extends MapGenBase
 			return;
 		}
 		
+		if (!generatorReferencesSet())
+		{
+			setGeneratorReferences(world, x, z);
+		}
+		
 		super.generate(world, x, z, primer);
 		
 		if (ConfigFile.decorateWallsOption == 1)
@@ -109,5 +114,36 @@ public class RavineManager extends MapGenBase
     	}
     	
     	CorrectionStorage.removeCorrectionsFromWorld(dimension, previousCaveInfo);
+    }
+    
+    /**
+     * Only checks the first generator.
+     */
+    private boolean generatorReferencesSet()
+    {
+    	for (CaveGenerator generator : CaveInit.GENERATORS.values())
+    	{
+    		return generator.referencesSet();
+    	}
+    	
+    	return false;
+    }
+    
+    /**
+     * A workaround in case CaveManager is never used (mod compatibility).
+     */
+    protected void setGeneratorReferences(World world, int chunkX, int chunkZ)
+    {
+    	if (world != null)
+    	{
+        	int dimension = world.provider.getDimension();    		
+    		
+    		for (CaveGenerator generator : CaveInit.GENERATORS.values())
+        	{
+        		generator.world = world;
+        		generator.rand = new Random(world.getSeed());
+        		generator.range = range;
+        	}
+    	}
     }
 }

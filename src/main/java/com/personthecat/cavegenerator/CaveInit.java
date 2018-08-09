@@ -4,6 +4,8 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
+import static com.personthecat.cavegenerator.Main.logger;
+
 import com.personthecat.cavegenerator.config.PresetReader;
 import com.personthecat.cavegenerator.world.CaveGenerator;
 
@@ -36,7 +38,7 @@ public class CaveInit
 	{
 		for (String name : GENERATORS.keySet())
 		{
-			System.out.println(
+			logger.info(
 				"Successfully loaded " + name + ".json. "
 			  + "It is " + ((GENERATORS.get(name).enabledGlobally) ? "enabled." : "disabled."));
 		}

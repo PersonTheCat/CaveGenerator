@@ -25,7 +25,7 @@ public class CaveManager extends MapGenBase
 	protected static NoiseGeneratorSimplex noise2D2;
 
 	protected static RandomChunkSelector selector;
-
+	
 	@Override
 	public void generate(World world, int x, int z, ChunkPrimer primer)
 	{
