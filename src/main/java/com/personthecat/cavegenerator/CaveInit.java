@@ -69,4 +69,14 @@ public class CaveInit
 		
 		return false;
 	}
+	
+	public static boolean correctionsNeeded()
+	{
+		for (CaveGenerator generator : GENERATORS.values())
+		{
+			if (generator.hasSideFillers()) return true;
+		}
+			
+		return false;
+	}
 }

@@ -8,7 +8,6 @@ import org.apache.commons.lang3.ArrayUtils;
 
 import com.google.common.base.MoreObjects;
 import com.personthecat.cavegenerator.CaveInit;
-import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.util.CommonMethods;
 import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
 import com.personthecat.cavegenerator.util.Values;
@@ -16,9 +15,6 @@ import com.personthecat.cavegenerator.world.BlockFiller.Direction;
 import com.personthecat.cavegenerator.world.BlockFiller.Preference;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneCluster;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneLayer;
-import com.personthecat.cavegenerator.world.anticascade.CorrectionStorage;
-import com.personthecat.cavegenerator.world.anticascade.CaveCompletion.BlockReplacement;
-import com.personthecat.cavegenerator.world.anticascade.CaveCompletion.ChunkCorrections;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -29,10 +25,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.MapGenCaves;
-import net.minecraft.world.gen.NoiseGeneratorOctaves;
 import net.minecraft.world.gen.NoiseGeneratorSimplex;
 import scala.actors.threadpool.Arrays;
 
@@ -47,17 +41,7 @@ public class CaveGenerator
 		fastCavernYSmoothing = false,
 		generateThroughFillers = true,
 		noiseYReduction = true; //Vanilla function
-	
-	/**
-	 * Avoid repeatedly calling {@link CorrectionStorage#getCorrectionsForChunk()}.
-	 */
-	protected ChunkCorrections
-	
-		xPlusOne,
-		xMinusOne,
-		zPlusOne,
-		zMinusOne;
-	
+
 	public Extension
 	
 		extBeginning = Extension.NONE,
@@ -143,6 +127,9 @@ public class CaveGenerator
 		
 		rMinHeight = 20,
 		rMaxHeight = 40,
+		
+		globalMinHeight = 8, //Pre-calculated by PresetReader
+		globalMaxHeight = 128,
 
 		//Starting tunnel values
 		startingDistance = 0,
@@ -167,7 +154,10 @@ public class CaveGenerator
 	
 	public Biome[] biomes = new Biome[0];
 	
-	public BlockFiller[] fillBlocks = new BlockFiller[0];
+	public BlockFiller[] 
+	
+		fillBlocks = new BlockFiller[0],
+		fillMatchSides = new BlockFiller[0]; //Avoid calculating these every chunk.
 	
 	public StoneCluster[] stoneClusters = new StoneCluster[0];
 	
@@ -431,7 +421,7 @@ public class CaveGenerator
 					{
 						if (fillBlocks != null)
 						{
-							if (shouldPregenerateAir()) //First generate air so it can be replaced. Only needed if blocks should be matched directionally.
+							if (hasSideFillers()) //First generate air so it can be replaced. Only needed if blocks should be matched directionally.
 							{
 								replaceSection(true, primer, stretchXZ, stretchY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);	
 							}
@@ -526,7 +516,7 @@ public class CaveGenerator
                     {
                     	if (fillBlocks != null)
                     	{
-                        	if (shouldPregenerateAir())
+                        	if (hasSideFillers())
                         	{
                         		replaceSectionFromMut(true, primer, stretchXZ, stretchY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
                         	}
@@ -560,7 +550,7 @@ public class CaveGenerator
 		
 		int noiseMaxHeight = cavernMaxHeight > layerMaxHeight ? cavernMaxHeight : layerMaxHeight;
 		
-		for (int i = 0; i < (shouldPregenerateAir() ? 2 : 1); i++)
+		for (int i = 0; i < (hasSideFillers() ? 2 : 1); i++)
 		{
 			for (int x = 0; x < 16; x++)
 			{
@@ -739,7 +729,7 @@ public class CaveGenerator
 	}
 	
 	/**
-	 * To-Do: Give up and delete this?
+	 * To-Do: Give up and delete this? Would need to be rewritten now that corrections no longer exist.
 	 */
 	protected void addGiantCluster(long seed, int chunkX, int chunkZ, ChunkPrimer primer, int posY, int radius, int noise, IBlockState state)
 	{
@@ -754,8 +744,6 @@ public class CaveGenerator
 		heightMin = heightMin < minHeight ? minHeight : heightMin;
 		
 		int storeX = chunkX, storeZ = chunkZ;
-
-		ChunkCorrections corrections = null;
 		
 		for (int x = 0 - maxRange; x < maxRange; x++)
 		{
@@ -770,8 +758,6 @@ public class CaveGenerator
 				{
 					storeX = actualX;
 					storeZ = actualZ;
-
-					corrections = CorrectionStorage.getCorrectionsForChunk(world.provider.getDimension(), actualX, actualZ);
 				}
 				
 				for (int y = heightMin; y < heightMax; y++)
@@ -800,7 +786,6 @@ public class CaveGenerator
 								world.setBlockState(absolutePos, state);
 							}	
 						}
-						else corrections.addCorrection(posX, posY, posZ, state);
 					}
 				}
 			}
@@ -858,14 +843,9 @@ public class CaveGenerator
 		return block.equals(Blocks.FLOWING_WATER) || block.equals(Blocks.WATER);
 	}
 	
-	private boolean shouldPregenerateAir()
+	public boolean hasSideFillers()
 	{
-		for (BlockFiller filler : fillBlocks)
-		{
-			if (filler.hasMatchers() && filler.hasDirections()) return true;
-		}
-		
-		return false;
+		return fillMatchSides.length > 0;
 	}
 	
 	private boolean shouldTestForWater(int highestY)
@@ -1012,7 +992,7 @@ public class CaveGenerator
 	 * @param chunkZ        Chunk Y position
 	 * @param foundTop      True if we've encountered the biome's top block. Ideally if we've broken the surface.
 	 * 
-	 * To-do: change airOnly to decorate / noAir. Decorate never places air.
+	 * To-do: split this into two methods: replaceBlock() and decorateBlock().
 	 */
 	protected boolean replaceBlock(boolean airOnly, ChunkPrimer data, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop)
 	{
@@ -1083,21 +1063,21 @@ public class CaveGenerator
 											
 											for (BlockPos pos : new BlockPos[] {blockNorth, blockSouth, blockEast, blockWest})
 											{
-												if (replaceAtMatch)
+												int xRel = pos.getX(), yRel = pos.getY(), zRel = pos.getZ();
+												
+												if (areCoordsInChunk(xRel, zRel))
 												{
-													if (placeOrStoreBlockState(data, chunkX, chunkZ, pos, replacement.getFillBlock(), matcher))
+													if (matcher.equals(data.getBlockState(xRel, yRel, zRel)))
 													{
+														data.setBlockState(xRel, yRel, zRel, replacement.getFillBlock());
+														
 														breakFromLoop = true;
-													}
-													
-												}
-												else if (areCoordsInChunk(pos.getX(), pos.getZ()))
-												{
-													if (data.getBlockState(pos.getX(), pos.getY(), pos.getZ()).equals(matcher))
-													{
-														matchFound = true;
-														breakFromLoop = true;
-														break;
+														
+														if (!replaceAtMatch)
+														{
+															matchFound = true;
+															break;
+														}
 													}
 												}
 											}
@@ -1132,20 +1112,21 @@ public class CaveGenerator
 											
 											for (BlockPos pos : new BlockPos[] {blockUp, blockDown, blockNorth, blockSouth, blockEast, blockWest})
 											{	
-												if (replaceAtMatch)
+												int xRel = pos.getX(), yRel = pos.getY(), zRel = pos.getZ();
+												
+												if (areCoordsInChunk(xRel, zRel))
 												{
-													if (placeOrStoreBlockState(data, chunkX, chunkZ, pos, replacement.getFillBlock(), matcher))
+													if (matcher.equals(data.getBlockState(xRel, yRel, zRel)))
 													{
+														data.setBlockState(xRel, yRel, zRel, replacement.getFillBlock());
+														
 														breakFromLoop = true;
-													}
-												}
-												else if (areCoordsInChunk(pos.getX(), pos.getZ()))
-												{
-													if (data.getBlockState(pos.getX(), pos.getY(), pos.getZ()).equals(matcher))
-													{
-														matchFound = true;
-														breakFromLoop = true;
-														break;
+														
+														if (!replaceAtMatch)
+														{
+															matchFound = true;
+															break;
+														}
 													}
 												}
 											}
@@ -1208,20 +1189,15 @@ public class CaveGenerator
 	 */
 	public void finishChunkWalls(int chunkX, int chunkZ, ChunkPrimer primer)
 	{
-		BlockFiller[] withMatchers = getFillersWithSideMatchers();
-		
-		if (withMatchers.length == 0) return;
+		if (fillMatchSides.length == 0) return;
 		
 		int startX = chunkX << 4, startZ = chunkZ << 4;
-
-		int actualMax = getMaxNumber(maxHeight, rMaxHeight, cavernMaxHeight);
-		int actualMin = getMinNumber(minHeight, rMinHeight, cavernMinHeight);
 		
 		if (world.isChunkGeneratedAt(chunkX, chunkZ - 1))
 		{
 			for (int x = 0; x < 16; x++)
 			{
-				for (int y = actualMin; y < actualMax + 1; y++)
+				for (int y = globalMinHeight; y < globalMaxHeight + 1; y++)
 				{
 					/*
 					 * inside is relative, outside is absolute. 
@@ -1230,7 +1206,7 @@ public class CaveGenerator
 					BlockPos inside = new BlockPos(x, y, 0);
 					BlockPos outside = new BlockPos(startX + x, y, startZ - 1);
 
-					testAndDecorate(primer, inside, outside, withMatchers);
+					testAndDecorate(primer, inside, outside);
 				}
 			}
 		}
@@ -1239,12 +1215,12 @@ public class CaveGenerator
 		{
 			for (int x = 0; x < 16; x++)
 			{
-				for (int y = actualMin; y < actualMax + 1; y++)
+				for (int y = globalMinHeight; y < globalMaxHeight + 1; y++)
 				{
 					BlockPos inside = new BlockPos(x, y, 15);
 					BlockPos outside = new BlockPos(startX + x, y, startZ + 16);
 
-					testAndDecorate(primer, inside, outside, withMatchers);
+					testAndDecorate(primer, inside, outside);
 				}
 			}
 		}
@@ -1253,12 +1229,12 @@ public class CaveGenerator
 		{
 			for (int z = 0; z < 16; z++)
 			{
-				for (int y = actualMin; y < actualMax + 1; y++)
+				for (int y = globalMinHeight; y < globalMaxHeight + 1; y++)
 				{					
 					BlockPos inside = new BlockPos(15, y, z);
 					BlockPos outside = new BlockPos(startX + 16, y, startZ + z);
 
-					testAndDecorate(primer, inside, outside, withMatchers);
+					testAndDecorate(primer, inside, outside);
 				}
 			}
 		}
@@ -1267,30 +1243,33 @@ public class CaveGenerator
 		{
 			for (int z = 0; z < 16; z++)
 			{
-				for (int y = actualMin; y < actualMax + 1; y++)
+				for (int y = globalMinHeight; y < globalMaxHeight + 1; y++)
 				{
 					BlockPos inside = new BlockPos(0, y, z);
 					BlockPos outside = new BlockPos(startX - 1, y, startZ + z);
 					
-					testAndDecorate(primer, inside, outside, withMatchers);
+					testAndDecorate(primer, inside, outside);
 				}
 			}
-		} 
+		}
 	}
 	
-	private void testAndDecorate(ChunkPrimer primer, BlockPos relInside, BlockPos absOutside, BlockFiller[] withMatchers)
+	private void testAndDecorate(ChunkPrimer primer, BlockPos relInside, BlockPos absOutside)
 	{
-		boolean cubeInside = primer.getBlockState(relInside.getX(), relInside.getY(), relInside.getZ()).isNormalCube();
-		boolean cubeOutside = world.getBlockState(absOutside).isNormalCube();
+		IBlockState stateInside = primer.getBlockState(relInside.getX(), relInside.getY(), relInside.getZ());
+		IBlockState stateOutside = world.getBlockState(absOutside);
+		
+		boolean cubeInside = stateInside.isNormalCube();
+		boolean cubeOutside = stateOutside.isNormalCube();
 		
 		if (cubeInside && !cubeOutside)
 		{
-			fastDecorate(primer, relInside, withMatchers);
+			fastDecorate(primer, relInside, stateInside);
 		}
 		
 		else if (cubeOutside && !cubeInside)
 		{
-			fastDecorate(absOutside, withMatchers);
+			fastDecorate(absOutside, stateOutside);
 		}
 	}
 	
@@ -1303,19 +1282,22 @@ public class CaveGenerator
 	 *  
 	 *  Avoids repeatedly testing for these same features.
 	 */
-	private void fastDecorate(BlockPos pos, BlockFiller... pretested)
+	private void fastDecorate(BlockPos pos, IBlockState original)
 	{
-		for (BlockFiller replacement : pretested)
+		for (BlockFiller replacement : fillMatchSides)
 		{
-			if (replacement.canGenerateAtHeight(pos.getY()) && indRand.nextDouble() * 100 <= replacement.getChance())
+			if (replacement.canGenerateAtHeight(pos.getY()))
 			{
-				for (IBlockState matcher : replacement.getMatchers())
+				if (replacement.getChance() == 100.0 || indRand.nextDouble() * 100 <= replacement.getChance())
 				{
-					if (world.getBlockState(pos).equals(matcher))
+					for (IBlockState matcher : replacement.getMatchers())
 					{
-						world.setBlockState(pos, replacement.getFillBlock());
-					
-						return;
+						if (original.equals(matcher))
+						{
+							world.setBlockState(pos, replacement.getFillBlock(), 16);
+						
+							return;
+						}
 					}
 				}
 			}
@@ -1326,57 +1308,26 @@ public class CaveGenerator
 	 * Alternate to fastDecorate(BlockPos, BlockFiller...). 
 	 * Necessary because primers must be used for currently-generating chunks.
 	 */
-	private void fastDecorate(ChunkPrimer primer, BlockPos pos, BlockFiller... pretested)
+	private void fastDecorate(ChunkPrimer primer, BlockPos pos, IBlockState original)
 	{
-		for (BlockFiller replacement : pretested)
+		for (BlockFiller replacement : fillMatchSides)
 		{
-			if (replacement.canGenerateAtHeight(pos.getY()) && indRand.nextDouble() * 100 <= replacement.getChance())
+			if (replacement.canGenerateAtHeight(pos.getY()))
 			{
-				for (IBlockState matcher : replacement.getMatchers())
+				if (replacement.getChance() == 100.0 || indRand.nextDouble() * 100 <= replacement.getChance())
 				{
-					if (primer.getBlockState(pos.getX(), pos.getY(), pos.getZ()).equals(matcher))
+					for (IBlockState matcher : replacement.getMatchers())
 					{
-						primer.setBlockState(pos.getX(), pos.getY(), pos.getZ(), replacement.getFillBlock());
-					
-						return;
+						if (original.equals(matcher))
+						{
+							primer.setBlockState(pos.getX(), pos.getY(), pos.getZ(), replacement.getFillBlock());
+						
+							return;
+						}
 					}
 				}
 			}
 		}
-	}
-	
-	private int getMaxNumber(int... nums)
-	{
-		int maxNumber = 0;
-		
-		for (int i = 0; i < nums.length; i++)
-		{
-			int number = nums[i];
-			
-			if (number > maxNumber)
-			{
-				maxNumber = number;
-			}
-		}
-		
-		return maxNumber;
-	}
-	
-	private int getMinNumber(int... nums)
-	{
-		int minNumber = nums[0];
-		
-		for (int i = 0; i < nums.length; i++)
-		{
-			int number = nums[i];
-			
-			if (number < minNumber)
-			{
-				minNumber = number;
-			}
-		}
-		
-		return minNumber;
 	}
 	
 	private BlockFiller[] getFillersWithSideMatchers()
@@ -1403,73 +1354,6 @@ public class CaveGenerator
 		}
 		
 		return fillers.toArray(new BlockFiller[0]);
-	}
-	
-	/**
-	 * Unfinished. Returns true if a match is found in the current chunk.
-	 */
-	private boolean placeOrStoreBlockState(ChunkPrimer originalPrimer, int chunkX, int chunkZ, BlockPos pos, IBlockState state, IBlockState matcher)
-	{
-		int x = pos.getX(), y = pos.getY(), z = pos.getZ();		
-		
-		//Coords in chunk? Test and place.
-		if (areCoordsInChunk(x, z))
-		{
-			if (matcher.equals(originalPrimer.getBlockState(x, y, z)))
-			{
-				originalPrimer.setBlockState(x, y, z, state);
-				
-				return true;
-			}
-		}
-		else if (ConfigFile.decorateWallsOption == 1)
-		{			
-			ChunkCorrections corrections = null;
-			
-			//Adjust coordinates.		
-			if (x < 0)
-			{
-				corrections = xMinusOne;
-				chunkX -= 1;
-				x = 15;
-			}
-			if (x > 15)
-			{
-				corrections = xPlusOne;
-				chunkX += 1;
-			x = 0;
-			}
-			if (z < 0)
-			{
-				corrections = zMinusOne;
-				chunkZ -= 1;
-				z = 15;
-			}
-			if (z > 15)
-			{
-				corrections = zPlusOne;
-				chunkZ += 1;
-				z = 0;
-			}
-
-			//Not in chunk but already generated? Test and place.
-			if (world.isChunkGeneratedAt(chunkX, chunkZ))
-			{
-				Chunk chunk = world.getChunkFromChunkCoords(chunkX, chunkZ);
-				BlockPos relativePos = new BlockPos(x, y, z);				
-				
-				if (chunk.getBlockState(relativePos).equals(matcher))
-				{
-					chunk.setBlockState(relativePos, state);
-				}
-			}
-			else //Not in chunk, not already generated? Store for later.
-			{
-				corrections.addCorrection(x, y, z, state);
-			}
-		}
-		
-		return false;
 	}
 	
 	private BlockPos getBlockPosFromRelativeCoords(int chunkX, int chunkZ, int x, int y, int z)

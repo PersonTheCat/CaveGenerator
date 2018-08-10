@@ -8,6 +8,11 @@
 		"IDs" : [],
 		"types" : []
 	},
+	"//" : "This option converts biomes from a whitelist to a blacklist.",
+	"useBiomeBlacklist" : false,
+	"//" : "No dimensions listed means this generator can spawn anywhere.",
+	"dimensions" : [],
+	"useDimensionBlackList" : false,
 	"//" : "See tunnels.json, flooded_vanilla.json, and stalactites.json for examples of blockFillers.",
 	"blockFillers" :
 	{

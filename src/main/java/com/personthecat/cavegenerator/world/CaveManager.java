@@ -3,14 +3,10 @@ package com.personthecat.cavegenerator.world;
 import java.util.Random;
 
 import com.personthecat.cavegenerator.CaveInit;
-import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.util.RandomChunkSelector;
 import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
 import com.personthecat.cavegenerator.util.Values;
-import com.personthecat.cavegenerator.world.anticascade.CaveCompletion.ChunkCorrections;
-import com.personthecat.cavegenerator.world.anticascade.CorrectionStorage;
 
-import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -36,11 +32,6 @@ public class CaveManager extends MapGenBase
 			ReplaceVanillaCaveGen.previousCaveGen.generate(world, x, z, primer);
 			
 			return;
-		}
-		
-		if (ConfigFile.decorateWallsOption == 1)
-		{
-			setAdjacentCorrections(dimension, x, z);
 		}
 		
 		setupNoiseGenerators(world); //Only happens 1x / world.
@@ -176,16 +167,5 @@ public class CaveManager extends MapGenBase
     	noise2D2 = new NoiseGeneratorSimplex(new Random(seed >> 4));
     	
     	selector = new RandomChunkSelector(seed);
-    }
-    
-    protected void setAdjacentCorrections(int dimension, int chunkX, int chunkZ)
-    {
-    	for (CaveGenerator generator : CaveInit.GENERATORS.values())
-    	{
-    		generator.xPlusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX + 1, chunkZ);
-    		generator.xMinusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX - 1, chunkZ);
-    		generator.zPlusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX, chunkZ + 1);
-    		generator.zMinusOne = CorrectionStorage.getCorrectionsForChunk(dimension, chunkX, chunkZ - 1);
-    	}
     }
 }

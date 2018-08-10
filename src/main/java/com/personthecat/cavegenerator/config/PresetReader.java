@@ -65,6 +65,7 @@ public class PresetReader
 		addStoneLayers();
 		addStoneClusters();
 		addBlockFillers();
+		addFinalHeights();
 	}
 	
 	private void addGlobalValues()
@@ -448,6 +449,7 @@ public class PresetReader
 	private void addBlockFillers()
 	{
 		List<BlockFiller> fillers = new ArrayList<>();
+		List<BlockFiller> fillersMatchSides = new ArrayList<>();
 		
 		if (json.has("blockFillers"))
 		{
@@ -514,10 +516,29 @@ public class PresetReader
 				
 				if (fillerObject.has("preference")) preference = Preference.fromString(fillerObject.get("preference").getAsString());
 				
-				fillers.add(new BlockFiller(state, chance, minHeight, maxHeight, matchers, directions, preference));
+				BlockFiller filler = new BlockFiller(state, chance, minHeight, maxHeight, matchers, directions, preference);
+				
+				fillers.add(filler);
+				
+				if (filler.hasMatchers())
+				{
+					if (filler.getPreference().equals(Preference.REPLACE_MATCH))
+					{
+						for (Direction dir : filler.getDirections())
+						{
+							if (dir.equals(Direction.SIDE) || dir.equals(Direction.ALL))
+							{
+								fillersMatchSides.add(filler);
+								
+								break;
+							}
+						}
+					}
+				}
 			}
 			
 			newGenerator.fillBlocks = fillers.toArray(new BlockFiller[0]);
+			newGenerator.fillMatchSides = fillersMatchSides.toArray(new BlockFiller[0]);
 		}
 	}
 	
@@ -578,5 +599,45 @@ public class PresetReader
 				newGenerator.extEnd = Extension.fromString(asString);
 			}
 		}
+	}
+	
+	private void addFinalHeights()
+	{
+		newGenerator.globalMinHeight = getMinNumber(newGenerator.minHeight, newGenerator.cavernMinHeight, newGenerator.rMinHeight);
+		newGenerator.globalMaxHeight = getMaxNumber(newGenerator.maxHeight, newGenerator.cavernMaxHeight, newGenerator.rMaxHeight);
+	}
+	
+	private int getMinNumber(int... nums)
+	{
+		int minNumber = nums[0];
+		
+		for (int i = 0; i < nums.length; i++)
+		{
+			int number = nums[i];
+			
+			if (number < minNumber)
+			{
+				minNumber = number;
+			}
+		}
+		
+		return minNumber;
+	}
+	
+	private int getMaxNumber(int... nums)
+	{
+		int maxNumber = 0;
+		
+		for (int i = 0; i < nums.length; i++)
+		{
+			int number = nums[i];
+			
+			if (number > maxNumber)
+			{
+				maxNumber = number;
+			}
+		}
+		
+		return maxNumber;
 	}
 }
