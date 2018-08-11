@@ -4,9 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
-import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
-
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.NoiseGeneratorSimplex;
 
@@ -15,6 +14,21 @@ import net.minecraft.world.gen.NoiseGeneratorSimplex;
  */
 public class StoneReplacer
 {
+	public static void setWorld(World world)
+	{
+		Random master = new Random(world.getSeed());
+		
+		for (StoneLayer layer : StoneLayer.STONE_LAYER_REGISTRY)
+		{
+			layer.noise = new NoiseGeneratorSimplex(master);
+		}
+		
+		for (StoneCluster cluster : StoneCluster.STONE_CLUSTER_REGISTRY)
+		{
+			cluster.ID = master.nextInt(0x2 << 14);
+		}
+	}
+	
 	public static class StoneLayer
 	{
     	private static final List<StoneLayer> STONE_LAYER_REGISTRY = new ArrayList<>();
@@ -62,13 +76,15 @@ public class StoneReplacer
 		
 		private IBlockState state;
 
-		private int ID, radius, noiseLevel;
+		private int ID, radius, radiusVariance, startingHeight, heightVariance;
 
-		public StoneCluster(IBlockState state, int noise, int radius)
+		public StoneCluster(IBlockState state, int radiusVariance, int radius, int startingHeight, int heightVariance)
 		{
 			this.state = state;
-			this.noiseLevel = noise;
+			this.radiusVariance = radiusVariance;
 			this.radius = radius;
+			this.startingHeight = startingHeight;
+			this.heightVariance = heightVariance;
 			
 			STONE_CLUSTER_REGISTRY.add(this);
 		}
@@ -83,29 +99,74 @@ public class StoneReplacer
     		return ID;
     	}
     	
-		public int getNoiseLevel()
+		public int getRadiusVariance()
 		{
-			return noiseLevel;
+			return radiusVariance;
 		}
     	
     	public int getRadius()
     	{
     		return radius;
     	}
+    	
+    	public int getStartingHeight()
+    	{
+    		return startingHeight;
+    	}
+    	
+    	public int getHeightVariance()
+    	{
+    		return heightVariance;
+    	}
 	}
 	
-	public static void setWorld(World world)
+	public static class ClusterInfo
 	{
-		Random master = new Random(world.getSeed());
+		private BlockPos center;
 		
-		for (StoneLayer layer : StoneLayer.STONE_LAYER_REGISTRY)
+		//Squared integers. Keep the original radiusY to avoid unnecessary calculations.
+		private int radiusY, radiusX2, radiusY2, radiusZ2;
+		
+		private StoneCluster cluster;
+		
+		public ClusterInfo(StoneCluster cluster, BlockPos center, int radiusY, int radiusX2, int radiusY2, int radiusZ2)
 		{
-			layer.noise = new NoiseGeneratorSimplex(master);
+			this.cluster = cluster;
+			this.center = center;
+			this.radiusY = radiusY;
+			this.radiusX2 = radiusX2;
+			this.radiusY2 = radiusY2;
+			this.radiusZ2 = radiusZ2;
 		}
 		
-		for (StoneCluster cluster : StoneCluster.STONE_CLUSTER_REGISTRY)
+		public BlockPos getCenter()
 		{
-			cluster.ID = master.nextInt(0x2 >> 14);
+			return center;
+		}
+		
+		public int getRadiusY()
+		{
+			return radiusY;
+		}
+
+		public int getRadiusX2()
+		{
+			return radiusX2;
+		}
+
+		public int getRadiusY2()
+		{
+			return radiusY2;
+		}
+
+		public int getRadiusZ2()
+		{
+			return radiusZ2;
+		}
+
+		public StoneCluster getCluster()
+		{
+			return cluster;
 		}
 	}
 }

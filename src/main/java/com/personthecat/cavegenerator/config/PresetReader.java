@@ -16,6 +16,7 @@ import com.personthecat.cavegenerator.world.BlockFiller.Direction;
 import com.personthecat.cavegenerator.world.BlockFiller.Preference;
 import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.CaveGenerator.Extension;
+import com.personthecat.cavegenerator.world.StoneReplacer.StoneCluster;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneLayer;
 
 import net.minecraft.block.state.IBlockState;
@@ -403,47 +404,47 @@ public class PresetReader
 	
 	private void addStoneClusters()
 	{
-//		List<StoneCluster> clusters = new ArrayList<>();
-//		
-//		if (json.has("stoneClusters"))
-//		{
-//			JsonObject clusterContainer = json.get("stoneClusters").getAsJsonObject();
-//			
-//			if (clusterContainer.has("keys"))
-//			{
-//				for (JsonElement key : clusterContainer.getAsJsonArray("keys"))
-//				{
-//					JsonObject cluster = null;
-//					
-//					try
-//					{
-//						cluster = clusterContainer.get(key.getAsString()).getAsJsonObject();
-//					}
-//					
-//					catch (NullPointerException e)
-//					{
-//						throw new RuntimeException(
-//							"Error: Key \"" + key.getAsString() + "\" does not have an equivalent cluster object. "
-//						  + "Make sure it is typed correctly.");
-//					}
-//					
-//					if (!cluster.has("state"))
-//					{
-//						throw new RuntimeException("Error: You must specify a state for each stone layer.");
-//					}
-//					
-//					IBlockState state = CommonMethods.getBlockState(cluster.get("state").getAsString());
-//					
-//					double spacing = cluster.has("spacing") ? cluster.get("spacing").getAsDouble() : 20.0;
-//					
-//					double selectionThreshold = cluster.has("scale") ? ((cluster.get("scale").getAsDouble()  * -2.0) + 1.0) : 0.4;
-//					
-//					clusters.add(new StoneCluster(state, spacing, selectionThreshold));					
-//				}
-//			}
-//		}
-//		
-//		newGenerator.stoneClusters = clusters.toArray(new StoneCluster[0]);
+		List<StoneCluster> clusters = new ArrayList<>();
+		
+		if (json.has("stoneClusters"))
+		{
+			JsonObject clusterContainer = json.get("stoneClusters").getAsJsonObject();
+			
+			if (clusterContainer.has("keys"))
+			{
+				for (JsonElement key : clusterContainer.getAsJsonArray("keys"))
+				{
+					JsonObject cluster = null;
+					
+					try
+					{
+						cluster = clusterContainer.get(key.getAsString()).getAsJsonObject();
+					}
+					
+					catch (NullPointerException e)
+					{
+						throw new RuntimeException(
+							"Error: Key \"" + key.getAsString() + "\" does not have an equivalent cluster object. "
+						  + "Make sure it is typed correctly.");
+					}
+					
+					if (!cluster.has("state") || !cluster.has("radius") || !cluster.has("radiusVariance") || !cluster.has("startingHeight") || !cluster.has("heightVariance"))
+					{
+						throw new RuntimeException("Error: You must specify a state, radius, radiusVariance, startingHeight, and heightVariance for each stone cluster.");
+					}
+					
+					IBlockState state = CommonMethods.getBlockState(cluster.get("state").getAsString());
+					int radius = cluster.get("radius").getAsInt();
+					int radiusVariance = cluster.get("radiusVariance").getAsInt();
+					int startingHeight = cluster.get("startingHeight").getAsInt();
+					int heightVariance = cluster.get("heightVariance").getAsInt();
+					
+					clusters.add(new StoneCluster(state, radiusVariance, radius, startingHeight, heightVariance));
+				}
+			}
+		}
+		
+		newGenerator.stoneClusters = clusters.toArray(new StoneCluster[0]);
 	}
 
 	private void addBlockFillers()
@@ -605,6 +606,50 @@ public class PresetReader
 	{
 		newGenerator.globalMinHeight = getMinNumber(newGenerator.minHeight, newGenerator.cavernMinHeight, newGenerator.rMinHeight);
 		newGenerator.globalMaxHeight = getMaxNumber(newGenerator.maxHeight, newGenerator.cavernMaxHeight, newGenerator.rMaxHeight);
+		
+		List<Integer> noiseMins = new ArrayList<>();
+		List<Integer> noiseMaxs = new ArrayList<>();
+		
+		if (newGenerator.cavernsEnabled)
+		{
+			noiseMins.add(newGenerator.cavernMinHeight);
+			noiseMaxs.add(newGenerator.cavernMaxHeight);
+		}
+		
+		if (newGenerator.stoneLayers.length > 0)
+		{
+			noiseMins.add(0);
+			noiseMaxs.add(newGenerator.stoneLayers[newGenerator.stoneLayers.length - 1].getMaxHeight());
+		}
+
+		if (newGenerator.stoneClusters.length > 0)
+		{
+			int maxHeight = 0;
+			
+			for (StoneCluster cluster : newGenerator.stoneClusters)
+			{
+				int height = cluster.getStartingHeight() + cluster.getHeightVariance();
+				
+				if (height > maxHeight) maxHeight = height;
+			}
+			
+			int minHeight = 0;
+			
+			for (StoneCluster cluster : newGenerator.stoneClusters)
+			{
+				int height = cluster.getStartingHeight() - cluster.getHeightVariance();
+				
+				if (height < minHeight) minHeight = height;
+			}
+			
+			if (minHeight < 0) minHeight = 0;
+			
+			noiseMins.add(minHeight);
+			noiseMaxs.add(maxHeight);
+		}
+		
+		newGenerator.noiseMinHeight = getMinNumber(noiseMins.stream().mapToInt(i -> i).toArray());
+		newGenerator.noiseMaxHeight = getMaxNumber(noiseMaxs.stream().mapToInt(i -> i).toArray());
 	}
 	
 	private int getMinNumber(int... nums)

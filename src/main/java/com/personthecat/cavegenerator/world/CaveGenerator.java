@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.world;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 
@@ -13,8 +14,15 @@ import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
 import com.personthecat.cavegenerator.util.Values;
 import com.personthecat.cavegenerator.world.BlockFiller.Direction;
 import com.personthecat.cavegenerator.world.BlockFiller.Preference;
+import com.personthecat.cavegenerator.world.StoneReplacer.ClusterInfo;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneCluster;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneLayer;
+
+import static com.personthecat.cavegenerator.world.CaveManager.selector;
+import static com.personthecat.cavegenerator.world.CaveManager.noise;
+import static com.personthecat.cavegenerator.world.CaveManager.noise2D1;
+import static com.personthecat.cavegenerator.world.CaveManager.noise2D2;
+import static com.personthecat.cavegenerator.world.CaveManager.noise2D3;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -28,7 +36,6 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.MapGenCaves;
 import net.minecraft.world.gen.NoiseGeneratorSimplex;
-import scala.actors.threadpool.Arrays;
 
 public class CaveGenerator
 {	
@@ -130,6 +137,9 @@ public class CaveGenerator
 		
 		globalMinHeight = 8, //Pre-calculated by PresetReader
 		globalMaxHeight = 128,
+		
+		noiseMinHeight = 10, //Pre-calculated by PresetReader
+		noiseMaxHeight = 50,
 
 		//Starting tunnel values
 		startingDistance = 0,
@@ -160,6 +170,8 @@ public class CaveGenerator
 		fillMatchSides = new BlockFiller[0]; //Avoid calculating these every chunk.
 	
 	public StoneCluster[] stoneClusters = new StoneCluster[0];
+	
+	private List<ClusterInfo> finalClusters = new ArrayList<>();
 	
 	/**
 	 * Make sure to set these in order by maxHeight;
@@ -255,8 +267,6 @@ public class CaveGenerator
 		
 		private boolean place(CaveGenerator generator, String altPreset, Random rand, long seed, int chunkX, int chunkZ, ChunkPrimer primer, double posX, double posY, double posZ, float scale, float slopeXZ, float slopeY, int startingPoint, int distance, double scaleY)
 		{
-//			System.out.println("placing extension...");
-			
 			switch(this)
 			{
 				case VANILLA_BRANCHES:
@@ -541,22 +551,59 @@ public class CaveGenerator
 	{
 		boolean airOnly = true;
 		
-		int layerMaxHeight = 0;
-		
-		if (stoneLayers.length > 0)
+		//Discover and establish surrounding cluster origins.
+		if (stoneClusters.length > 0)
 		{
-			layerMaxHeight = stoneLayers[stoneLayers.length - 1].getMaxHeight();
+			finalClusters.clear();
+			
+			for (int i = 0; i < stoneClusters.length; i++)
+			{
+				StoneCluster cluster = stoneClusters[i];
+				
+				int ID = cluster.getID();
+				int radius = cluster.getRadius();
+				int radiusVariance = cluster.getRadiusVariance();
+				int cRadius = (radius / 16) + 1;
+				
+				for (int cX = chunkX - cRadius; cX < chunkX + cRadius; cX++)
+				{
+					for (int cZ = chunkZ - cRadius; cZ < chunkZ + cRadius; cZ++)
+					{
+						if (selector.getBooleanForCoordinates(ID, cX, cZ))
+						{
+							//Get absolute coordinates, generate in the center.
+							int x = (cX * 16) + 8, z = (cZ * 16) + 8;
+							
+							if (canGenerateInBiome(world.getBiome(new BlockPos(x, 0, z))))
+							{
+								int y = cluster.getStartingHeight() + (int) (noise2D3.getValue(x, z) * cluster.getHeightVariance());
+								
+								BlockPos center = new BlockPos(x, y, z);
+								
+								int offset = radiusVariance / 2;
+								
+								int radiusX = radius + rand.nextInt(radiusVariance) - offset;
+								int radiusY = radius + rand.nextInt(radiusVariance) - offset;
+								int radiusZ = radius + rand.nextInt(radiusVariance) - offset;
+								
+								finalClusters.add(new ClusterInfo(cluster, center, radiusY, radiusX * radiusX, radiusY * radiusY, radiusZ * radiusZ));
+							}
+						}
+					}
+				}
+			}
 		}
 		
-		int noiseMaxHeight = cavernMaxHeight > layerMaxHeight ? cavernMaxHeight : layerMaxHeight;
-		
+		/*
+		 * To-do: calculate ceil and floor noise only 1x per x,z coords?
+		 */
 		for (int i = 0; i < (hasSideFillers() ? 2 : 1); i++)
 		{
 			for (int x = 0; x < 16; x++)
 			{
 				for (int z = 0; z < 16; z++)
 				{
-					for (int y = noiseMaxHeight + 2; y >= 6; y--)
+					for (int y = noiseMaxHeight; y >= noiseMinHeight; y--)
 					{
 						decidePlace(airOnly, chunkX, chunkZ, primer, x, y, z);
 					}
@@ -568,7 +615,7 @@ public class CaveGenerator
 	}
 	
 	private void decidePlace(boolean airOnly, int chunkX, int chunkZ, ChunkPrimer primer, int x, int y, int z)
-	{
+	{		
 		if (!airOnly || !primer.getBlockState(x, y, z).equals(Values.BLK_WATER))
 		{
 			double actualX = x + (chunkX * 16);
@@ -576,7 +623,6 @@ public class CaveGenerator
 
 			if (cavernsEnabled)
 			{
-				int minY = cavernMinHeight, maxY = cavernMaxHeight;
 				double selectionThreshold = cavernSelectionThreshold;
 				
 				if (fastCavernYSmoothing)
@@ -590,10 +636,10 @@ public class CaveGenerator
 					}
 				}
 				
-				double caveNoise = CaveManager.noise.getFractalNoise(actualX, (float) y / cavernScaleY, actualZ, 1, cavernFrequency, cavernAmplitude);
+				double caveNoise = noise.getFractalNoise(actualX, (float) y / cavernScaleY, actualZ, 1, cavernFrequency, cavernAmplitude);
 				
 				if (caveNoise >= selectionThreshold)
-				{
+				{					
 					//Don't immediately calculate both of these to save time.
 					double floorNoise, ceilNoise;
 					
@@ -606,13 +652,13 @@ public class CaveGenerator
 					else
 					{
 						//More blocks are likely to be above this point than to be below floor noise.
-						ceilNoise = get2DNoiseFractal(CaveManager.noise2D2, actualX, actualZ, 1, cavernFrequency * 0.75, cavernAmplitude);
+						ceilNoise = get2DNoiseFractal(noise2D2, actualX, actualZ, 1, cavernFrequency * 0.75, cavernAmplitude);
 						
 						if (y < cavernMaxHeight + (7.0 * ceilNoise - 7.0))
 						{
-							floorNoise = get2DNoiseFractal(CaveManager.noise2D1, actualX, actualZ, 1, cavernFrequency * 0.75, cavernAmplitude);
+							floorNoise = get2DNoiseFractal(noise2D1, actualX, actualZ, 1, cavernFrequency * 0.75, cavernAmplitude);
 							
-							if (y > cavernMinHeight + (3.0 * floorNoise + 3.0))
+							if (y > cavernMinHeight + (4.0 * floorNoise + 4.0))
 							{
 								replaceBlock(airOnly, primer, x, y, z, chunkX, chunkZ, false);
 								
@@ -624,7 +670,27 @@ public class CaveGenerator
 			}
 
 			if (airOnly && primer.getBlockState(x, y, z).equals(Values.BLK_STONE))
-			{			
+			{
+				for (int i = 0; i < finalClusters.size(); i++)
+				{
+					ClusterInfo info = finalClusters.get(i);
+					
+					BlockPos center = info.getCenter();
+					
+					double distX = actualX - center.getX();
+					double distY = y - center.getY();
+					double distZ = actualZ - center.getZ();
+					
+					double distX2 = distX * distX;
+					double distY2 = distY * distY;
+					double distZ2 = distZ * distZ;
+					
+					if (distX2 / info.getRadiusX2() + distY2 / info.getRadiusY2() + distZ2 / info.getRadiusZ2() <= 1)
+					{
+						primer.setBlockState(x, y, z, info.getCluster().getState());
+					}
+				}
+				
 				for (int i = 0; i < stoneLayers.length; i++)
 				{
 					StoneLayer layer = stoneLayers[i];
@@ -642,7 +708,7 @@ public class CaveGenerator
 						return;
 					}
 				}
-			}	
+			}
 		}
 	}
 	
@@ -727,70 +793,6 @@ public class CaveGenerator
 			airOnly = false;
 		}
 	}
-	
-	/**
-	 * To-Do: Give up and delete this? Would need to be rewritten now that corrections no longer exist.
-	 */
-	protected void addGiantCluster(long seed, int chunkX, int chunkZ, ChunkPrimer primer, int posY, int radius, int noise, IBlockState state)
-	{
-		SimplexNoiseGenerator3D localNoise = new SimplexNoiseGenerator3D(seed);
-		
-		int maxRange = radius + noise;
-		int size = maxRange * 2;
-		
-		int heightMax = posY + maxRange, heightMin = posY - maxRange;		
-		
-		heightMax = heightMax > maxHeight ? maxHeight : heightMax;
-		heightMin = heightMin < minHeight ? minHeight : heightMin;
-		
-		int storeX = chunkX, storeZ = chunkZ;
-		
-		for (int x = 0 - maxRange; x < maxRange; x++)
-		{
-			int actualX = chunkX + (x / 16);
-
-			for (int z = 0 - maxRange; z < maxRange; z++)
-			{
-				int actualZ = chunkZ + (z / 16);
-				
-				//Avoid retrieving corrections every single iteration.
-				if (actualX != storeX || actualZ != storeZ)
-				{
-					storeX = actualX;
-					storeZ = actualZ;
-				}
-				
-				for (int y = heightMin; y < heightMax; y++)
-				{
-//					if (?)
-					{
-						int posX = x % 16, posZ = z % 16;
-						
-						if (posX < 0) posX = 15 + posX;
-						
-						if (posZ < 0) posZ = 15 + posZ;
-						
-						if (actualX == chunkX && actualZ == chunkZ)
-						{
-							if (canReplaceLessSpecific(primer.getBlockState(posX, y, posZ)))
-							{
-								primer.setBlockState(posX, y, posZ, state);
-							}
-						}
-						else if (world.isChunkGeneratedAt(actualX, actualZ))
-						{							
-							BlockPos absolutePos = getBlockPosFromRelativeCoords(chunkX, chunkZ, x, y, z);
-							
-							if (canReplaceLessSpecific(world.getBlockState(absolutePos)))
-							{
-								world.setBlockState(absolutePos, state);
-							}	
-						}
-					}
-				}
-			}
-		}
-	}
 
 	private double get2DNoiseFractal(NoiseGeneratorSimplex generator, double x, double z, int octaves, double frequency, double amplitude)
 	{
@@ -805,21 +807,21 @@ public class CaveGenerator
 		return sum;
 	}
 	
-	private boolean testForWater(ChunkPrimer primer, double stretchXZ, double stretchY, int chunkX, int chunkZ, int x1, int x2, double posX, int y1, int y2, double posY, int z1, int z2, double posZ)
+	private boolean testForWater(ChunkPrimer primer, double radiusXZ, double radiusY, int chunkX, int chunkZ, int x1, int x2, double posX, int y1, int y2, double posY, int z1, int z2, double posZ)
 	{
 		for (int x = x1; x < x2; x++)
 		{
-			double finalX = ((x + chunkX * 16) + 0.5D - posX) / stretchXZ;
+			double finalX = ((x + chunkX * 16) + 0.5D - posX) / radiusXZ;
 
 			for (int z = z1; z < z2; z++)
 			{
-				double finalZ = ((z + chunkZ * 16) + 0.5D - posZ) / stretchXZ;
+				double finalZ = ((z + chunkZ * 16) + 0.5D - posZ) / radiusXZ;
 
 				if (((finalX * finalX) + (finalZ * finalZ)) < 1.0D)
 				{
 					for (int y = y2; y > y1; y--)
 					{
-						double finalY = ((y - 1) + 0.5D - posY) / stretchY;
+						double finalY = ((y - 1) + 0.5D - posY) / radiusY;
 
 						if ((finalY > -0.7D) && (((finalX * finalX) + (finalY * finalY) + (finalZ * finalZ)) < 1.0D))
 						{
@@ -1184,8 +1186,6 @@ public class CaveGenerator
 	/**
 	 * Decorates blocks along chunk borders to finish previous blockFillers.
 	 * Call this if any blockFillers replace blocks at match.
-	 * 
-	 * Slower than storing corrections. May remove.
 	 */
 	public void finishChunkWalls(int chunkX, int chunkZ, ChunkPrimer primer)
 	{
@@ -1328,32 +1328,6 @@ public class CaveGenerator
 				}
 			}
 		}
-	}
-	
-	private BlockFiller[] getFillersWithSideMatchers()
-	{
-		List<BlockFiller> fillers = new ArrayList<>();
-		
-		for (BlockFiller filler : fillBlocks)
-		{
-			if (filler.hasMatchers())
-			{
-				if (filler.getPreference().equals(Preference.REPLACE_MATCH))
-				{
-					for (Direction dir : filler.getDirections())
-					{
-						if (dir.equals(Direction.SIDE) || dir.equals(Direction.ALL))
-						{
-							fillers.add(filler);
-							
-							break;
-						}
-					}
-				}
-			}
-		}
-		
-		return fillers.toArray(new BlockFiller[0]);
 	}
 	
 	private BlockPos getBlockPosFromRelativeCoords(int chunkX, int chunkZ, int x, int y, int z)

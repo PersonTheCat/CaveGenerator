@@ -19,6 +19,7 @@ public class CaveManager extends MapGenBase
 	protected static SimplexNoiseGenerator3D noise;
 	protected static NoiseGeneratorSimplex noise2D1;
 	protected static NoiseGeneratorSimplex noise2D2;
+	protected static NoiseGeneratorSimplex noise2D3;
 
 	protected static RandomChunkSelector selector;
 	
@@ -164,7 +165,8 @@ public class CaveManager extends MapGenBase
     	
     	noise = new SimplexNoiseGenerator3D(seed);
     	noise2D1 = new NoiseGeneratorSimplex(new Random(seed));
-    	noise2D2 = new NoiseGeneratorSimplex(new Random(seed >> 4));
+    	noise2D2 = new NoiseGeneratorSimplex(new Random(seed >> 2));
+    	noise2D3 = new NoiseGeneratorSimplex(new Random(seed >> 4));
     	
     	selector = new RandomChunkSelector(seed);
     }
