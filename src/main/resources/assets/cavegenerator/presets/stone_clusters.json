@@ -1,0 +1,39 @@
+//I highly recommend disabling vanilla stone clusters in the config file.
+//It will look better and generate much faster.
+{
+	"enabled" : false,
+	"stoneClusters" :
+	{
+		"keys" : ["andesite", "diorite", "granite"],
+		
+		"andesite" :
+		{
+			"state" : "stone:5",
+			"//" : "Frequency is 0 - 1.",
+			"frequency" : 0.15,
+			"radius" : 19,
+			"radiusVariance" : 7,
+			"startingHeight" : 26,
+			"heightVariance" : 12
+		},
+		"diorite" :
+		{
+			"state" : "stone:3",
+			"frequency" : 0.25,
+			"radius" : 14,
+			"radiusVariance" : 5,
+			"startingHeight" : 53,
+			"heightVariance" : 9
+		},
+		"granite" :
+		{
+			"state" : "stone:1",
+			"frequency" : 0.3,
+			"radius" : 19,
+			"radiusVariance" : 7,
+			"//" : "Center height can be negative.",
+			"startingHeight" : 0,
+			"heightVariance" : 6
+		}
+	}
+}

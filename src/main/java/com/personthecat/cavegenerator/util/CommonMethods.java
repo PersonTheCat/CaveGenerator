@@ -94,7 +94,7 @@ public class CommonMethods
 		{
 			exampleFolder.mkdirs();
 			
-			for (String fileName : new String[] {"flooded_vanilla",	"large_caves", "spirals", "tunnels", "caverns", "stalactites", "stone_layers", "ravines"})
+			for (String fileName : new String[] {"flooded_vanilla",	"large_caves", "spirals", "tunnels", "caverns", "stalactites", "stone_layers", "ravines", "stone_clusters"})
 			{
 				copyPreset("assets/cavegenerator/presets/" + fileName, exampleFolder.getPath() + "/" + fileName);
 			}

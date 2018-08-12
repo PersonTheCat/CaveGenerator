@@ -49,7 +49,7 @@ public class CaveManager extends MapGenBase
 			
 			if (generator.canGenerate(centerBiome, dimension))
 			{				
-				if (generator.cavernsEnabled || generator.stoneLayers.length > 0)
+				if (generator.cavernsEnabled || generator.stoneLayers.length > 0 || generator.stoneClusters.length > 0)
 				{
 					generator.addNoiseFeatures(chunkX, chunkZ, primer);
 				}

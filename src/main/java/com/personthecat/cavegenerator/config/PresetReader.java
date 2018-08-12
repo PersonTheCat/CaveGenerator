@@ -428,9 +428,11 @@ public class PresetReader
 						  + "Make sure it is typed correctly.");
 					}
 					
-					if (!cluster.has("state") || !cluster.has("radius") || !cluster.has("radiusVariance") || !cluster.has("startingHeight") || !cluster.has("heightVariance"))
+					if (!cluster.has("state") || !cluster.has("radius") ||
+						!cluster.has("radiusVariance") || !cluster.has("startingHeight") ||
+						!cluster.has("heightVariance") || !cluster.has("frequency"))
 					{
-						throw new RuntimeException("Error: You must specify a state, radius, radiusVariance, startingHeight, and heightVariance for each stone cluster.");
+						throw new RuntimeException("Error: You must specify a state, radius, radiusVariance, startingHeight, heightVariance, and frequency for each stone cluster.");
 					}
 					
 					IBlockState state = CommonMethods.getBlockState(cluster.get("state").getAsString());
@@ -438,8 +440,9 @@ public class PresetReader
 					int radiusVariance = cluster.get("radiusVariance").getAsInt();
 					int startingHeight = cluster.get("startingHeight").getAsInt();
 					int heightVariance = cluster.get("heightVariance").getAsInt();
+					double selectionThreshold = (1.0 - (cluster.get("frequency").getAsDouble())) * 92.0;
 					
-					clusters.add(new StoneCluster(state, radiusVariance, radius, startingHeight, heightVariance));
+					clusters.add(new StoneCluster(state, radiusVariance, radius, startingHeight, heightVariance, selectionThreshold));
 				}
 			}
 		}

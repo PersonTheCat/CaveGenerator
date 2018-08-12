@@ -74,17 +74,20 @@ public class StoneReplacer
 	{
 		private static final List<StoneCluster> STONE_CLUSTER_REGISTRY = new ArrayList<>();
 		
+		private double selectionThreshold; //0.0 - 92.0
+		
 		private IBlockState state;
 
 		private int ID, radius, radiusVariance, startingHeight, heightVariance;
 
-		public StoneCluster(IBlockState state, int radiusVariance, int radius, int startingHeight, int heightVariance)
+		public StoneCluster(IBlockState state, int radiusVariance, int radius, int startingHeight, int heightVariance, double selectionThreshold)
 		{
 			this.state = state;
 			this.radiusVariance = radiusVariance;
 			this.radius = radius;
 			this.startingHeight = startingHeight;
 			this.heightVariance = heightVariance;
+			this.selectionThreshold = selectionThreshold;
 			
 			STONE_CLUSTER_REGISTRY.add(this);
 		}
@@ -117,6 +120,11 @@ public class StoneReplacer
     	public int getHeightVariance()
     	{
     		return heightVariance;
+    	}
+    	
+    	public double getSelectionThreshold()
+    	{
+    		return selectionThreshold;
     	}
 	}
 	

@@ -105,6 +105,11 @@
 	{
 		"keys" : []
 	},
+	"//" : "See stone_clusters.json for an example of stoneClusters.",
+	"stoneClusters" :
+	{
+		"keys" : []
+	},
 	"//" : "Ravines are like tunnels, but spawn with noisier walls. You could theoretically ",
 	"//" : "use these as your main tunnels, as well, if you're using multiple presets.",
 	"ravines" : 

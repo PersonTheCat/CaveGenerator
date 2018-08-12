@@ -565,11 +565,13 @@ public class CaveGenerator
 				int radiusVariance = cluster.getRadiusVariance();
 				int cRadius = (radius / 16) + 1;
 				
+				double threshold = cluster.getSelectionThreshold();
+				
 				for (int cX = chunkX - cRadius; cX < chunkX + cRadius; cX++)
 				{
 					for (int cZ = chunkZ - cRadius; cZ < chunkZ + cRadius; cZ++)
 					{
-						if (selector.getBooleanForCoordinates(ID, cX, cZ))
+						if (selector.getBooleanForCoordinates(ID, cX, cZ, threshold))
 						{
 							//Get absolute coordinates, generate in the center.
 							int x = (cX * 16) + 8, z = (cZ * 16) + 8;
@@ -688,6 +690,8 @@ public class CaveGenerator
 					if (distX2 / info.getRadiusX2() + distY2 / info.getRadiusY2() + distZ2 / info.getRadiusZ2() <= 1)
 					{
 						primer.setBlockState(x, y, z, info.getCluster().getState());
+						
+						return;
 					}
 				}
 				

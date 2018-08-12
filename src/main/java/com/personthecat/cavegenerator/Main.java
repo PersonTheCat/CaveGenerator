@@ -4,6 +4,7 @@ import org.apache.logging.log4j.Logger;
 
 import com.personthecat.cavegenerator.proxy.CommonProxy;
 import com.personthecat.cavegenerator.util.CommonMethods;
+import com.personthecat.cavegenerator.world.DisableVanillaStoneGen;
 import com.personthecat.cavegenerator.world.ReplaceVanillaCaveGen;
 
 import net.minecraftforge.common.MinecraftForge;
@@ -17,7 +18,7 @@ import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
 @Mod(modid = "cavegenerator",
      name = "Cave Generator",
-     version = "0.5"
+     version = "0.7"
 )
 public class Main
 {
@@ -43,6 +44,7 @@ public class Main
 		CommonMethods.copyPresetFiles();
 		CaveInit.init();		
 		MinecraftForge.TERRAIN_GEN_BUS.register(ReplaceVanillaCaveGen.class);
+		MinecraftForge.ORE_GEN_BUS.register(DisableVanillaStoneGen.class);
 		
 		logger.info("Cave Generator init phase complete.");
 	}
