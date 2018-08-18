@@ -1,5 +1,6 @@
 //No values here are necessary. With the exception of blockFillers, any value left out will default to
 //its original equivalent from this file. Take a look at the examples for more information.
+//Bear in mind that each preset will get its own generator. So, more presets = more caves.
 {
 	"enabled" : true,
 	"biomes" :
@@ -107,6 +108,26 @@
 	},
 	"//" : "See stone_clusters.json for an example of stoneClusters.",
 	"stoneClusters" :
+	{
+		"keys" : []
+	},
+	"//" : "See stalagmites_large.json for an example of largeStalactites and largeStalactites.",
+	"//" : "These are just the default values, so you only need to specify the state.",
+	"largeStalactites" :
+	{
+		"keys" : [],
+
+		"defaults" :
+		{
+			"state" : "there is no default state.",
+			"spawnInPatches" : false,
+			"maxLength" : 3,
+			"probability" : 16.7,
+			"minHeight" : 11,
+			"maxHeight" : 55
+		}
+	},
+	"largeStalagmites" :
 	{
 		"keys" : []
 	},

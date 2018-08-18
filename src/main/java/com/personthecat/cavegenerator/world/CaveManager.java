@@ -3,9 +3,12 @@ package com.personthecat.cavegenerator.world;
 import java.util.Random;
 
 import com.personthecat.cavegenerator.CaveInit;
+import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.util.RandomChunkSelector;
 import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
 import com.personthecat.cavegenerator.util.Values;
+
+import static com.personthecat.cavegenerator.world.ReplaceVanillaCaveGen.previousCaveGen;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -26,11 +29,16 @@ public class CaveManager extends MapGenBase
 	@Override
 	public void generate(World world, int x, int z, ChunkPrimer primer)
 	{
+		if (ConfigFile.runAlongsideOtherCaveGenerators)
+		{
+			previousCaveGen.generate(world, x, z, primer);
+		}
+		
 		int dimension = world.provider.getDimension();
 		
 		if (!CaveInit.isAnyGeneratorEnabledForDimension(dimension))
 		{
-			ReplaceVanillaCaveGen.previousCaveGen.generate(world, x, z, primer);
+			previousCaveGen.generate(world, x, z, primer);
 			
 			return;
 		}

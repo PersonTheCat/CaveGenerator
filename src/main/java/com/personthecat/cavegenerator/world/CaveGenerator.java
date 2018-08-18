@@ -17,6 +17,7 @@ import com.personthecat.cavegenerator.world.BlockFiller.Preference;
 import com.personthecat.cavegenerator.world.StoneReplacer.ClusterInfo;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneCluster;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneLayer;
+import com.personthecat.cavegenerator.world.feature.LargeStalactite;
 
 import static com.personthecat.cavegenerator.world.CaveManager.selector;
 import static com.personthecat.cavegenerator.world.CaveManager.noise;
@@ -177,6 +178,8 @@ public class CaveGenerator
 	 * Make sure to set these in order by maxHeight;
 	 */
 	public StoneLayer[] stoneLayers = new StoneLayer[0];
+	
+	public LargeStalactite[] stalactites;
 	
 	private final float[] mut = new float[1024];
 	
@@ -351,8 +354,8 @@ public class CaveGenerator
 
 		for (boolean randomNoiseCorrection = localRandom.nextInt(6) == 0; position < distance; position++)
 		{
-			double stretchXZ = 1.5D + (MathHelper.sin(position * (float) Math.PI / distance) * scale),
-			       stretchY = stretchXZ * scaleY;
+			double radiusXZ = 1.5D + (MathHelper.sin(position * (float) Math.PI / distance) * scale),
+			       radiusY = radiusXZ * scaleY;
 			
 			float cos = MathHelper.cos(slopeY),
 			      sin = MathHelper.sin(slopeY);
@@ -418,28 +421,28 @@ public class CaveGenerator
 					return;
 				}
 
-				if (posX >= centerX - 16.0D - stretchXZ * 2.0D && posZ >= centerZ - 16.0D - stretchXZ * 2.0D && posX <= centerX + 16.0D + stretchXZ * 2.0D && posZ <= centerZ + 16.0D + stretchXZ * 2.0D)
+				if (posX >= centerX - 16.0D - radiusXZ * 2.0D && posZ >= centerZ - 16.0D - radiusXZ * 2.0D && posX <= centerX + 16.0D + radiusXZ * 2.0D && posZ <= centerZ + 16.0D + radiusXZ * 2.0D)
 				{
-					int startX = applyLimitXZ(MathHelper.floor(posX - stretchXZ) - chunkX * 16 - 1),
-					    endX = applyLimitXZ(MathHelper.floor(posX + stretchXZ) - chunkX * 16 + 1),
-					    startY = applyLimitY(MathHelper.floor(posY - stretchY) - 1),
-					    endY = applyLimitY(MathHelper.floor(posY + stretchY) + 1),
-					    startZ = applyLimitXZ(MathHelper.floor(posZ - stretchXZ) - chunkZ * 16 - 1),
-					    endZ = applyLimitXZ(MathHelper.floor(posZ + stretchXZ) - chunkZ * 16 + 1);
+					int startX = applyLimitXZ(MathHelper.floor(posX - radiusXZ) - chunkX * 16 - 1),
+					    endX = applyLimitXZ(MathHelper.floor(posX + radiusXZ) - chunkX * 16 + 1),
+					    startY = applyLimitY(MathHelper.floor(posY - radiusY) - 1),
+					    endY = applyLimitY(MathHelper.floor(posY + radiusY) + 1),
+					    startZ = applyLimitXZ(MathHelper.floor(posZ - radiusXZ) - chunkZ * 16 - 1),
+					    endZ = applyLimitXZ(MathHelper.floor(posZ + radiusXZ) - chunkZ * 16 + 1);
 
-					if (!shouldTestForWater(endY) || !testForWater(primer, stretchXZ, stretchY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ))
+					if (!shouldTestForWater(endY) || !testForWater(primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ))
 					{
 						if (fillBlocks != null)
 						{
 							if (hasSideFillers()) //First generate air so it can be replaced. Only needed if blocks should be matched directionally.
 							{
-								replaceSection(true, primer, stretchXZ, stretchY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);	
+								replaceSection(true, primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);	
 							}
 							
-							replaceSection(false, primer, stretchXZ, stretchY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
+							replaceSection(false, primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
 						}
 						
-						else replaceSection(false, primer, stretchXZ, stretchY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
+						else replaceSection(false, primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
 					}
 					
 					if (isRoom)	break;
@@ -477,11 +480,11 @@ public class CaveGenerator
 
         for (; startingPoint < distance; startingPoint++)
         {
-            double stretchXZ = 1.5D + (double) (MathHelper.sin((float) startingPoint * (float) Math.PI / (float) distance) * scale);
-            double stretchY = stretchXZ * scaleY;
+            double radiusXZ = 1.5D + (double) (MathHelper.sin((float) startingPoint * (float) Math.PI / (float) distance) * scale);
+            double radiusY = radiusXZ * scaleY;
             
-            stretchXZ *= ((double) localRandom.nextFloat() * 0.25D + 0.75D);
-            stretchY *= ((double) localRandom.nextFloat() * 0.25D + 0.75D);
+            radiusXZ *= ((double) localRandom.nextFloat() * 0.25D + 0.75D);
+            radiusY *= ((double) localRandom.nextFloat() * 0.25D + 0.75D);
             
             float cos = MathHelper.cos(slopeY);
             float sin = MathHelper.sin(slopeY);
@@ -513,28 +516,28 @@ public class CaveGenerator
                     return;
                 }
 
-                if (posX >= centerX - 16.0D - stretchXZ * 2.0D && posZ >= centerZ - 16.0D - stretchXZ * 2.0D && posX <= centerX + 16.0D + stretchXZ * 2.0D && posZ <= centerZ + 16.0D + stretchXZ * 2.0D)
+                if (posX >= centerX - 16.0D - radiusXZ * 2.0D && posZ >= centerZ - 16.0D - radiusXZ * 2.0D && posX <= centerX + 16.0D + radiusXZ * 2.0D && posZ <= centerZ + 16.0D + radiusXZ * 2.0D)
                 {
-					int startX = applyLimitXZ(MathHelper.floor(posX - stretchXZ) - chunkX * 16 - 1),
-					    endX = applyLimitXZ(MathHelper.floor(posX + stretchXZ) - chunkX * 16 + 1),
-					    startY = applyLimitY(MathHelper.floor(posY - stretchY) - 1),
-					    endY = applyLimitY(MathHelper.floor(posY + stretchY) + 1),
-					    startZ = applyLimitXZ(MathHelper.floor(posZ - stretchXZ) - chunkZ * 16 - 1),
-					    endZ = applyLimitXZ(MathHelper.floor(posZ + stretchXZ) - chunkZ * 16 + 1);
+					int startX = applyLimitXZ(MathHelper.floor(posX - radiusXZ) - chunkX * 16 - 1),
+					    endX = applyLimitXZ(MathHelper.floor(posX + radiusXZ) - chunkX * 16 + 1),
+					    startY = applyLimitY(MathHelper.floor(posY - radiusY) - 1),
+					    endY = applyLimitY(MathHelper.floor(posY + radiusY) + 1),
+					    startZ = applyLimitXZ(MathHelper.floor(posZ - radiusXZ) - chunkZ * 16 - 1),
+					    endZ = applyLimitXZ(MathHelper.floor(posZ + radiusXZ) - chunkZ * 16 + 1);
 
-                    if (!shouldTestForWater(endY) || !testForWater(primer, stretchXZ, stretchY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ))
+                    if (!shouldTestForWater(endY) || !testForWaterFromMut(primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ))
                     {
                     	if (fillBlocks != null)
                     	{
                         	if (hasSideFillers())
                         	{
-                        		replaceSectionFromMut(true, primer, stretchXZ, stretchY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
+                        		replaceSectionFromMut(true, primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
                         	}
                         	
-                        	replaceSectionFromMut(false, primer, stretchXZ, stretchY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
+                        	replaceSectionFromMut(false, primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
                     	}
 
-                    	else replaceSectionFromMut(false, primer, stretchXZ, stretchY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
+                    	else replaceSectionFromMut(false, primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
                     }
                 }
             }
@@ -546,12 +549,21 @@ public class CaveGenerator
 	 * noise generator. Would ideally be called as stone gets placed (?).
 	 * 
 	 * Where caverns cannot generate, stone layers are placed, if applicable.
+	 * 
+	 * Still need to test whether decidePlace is Actually faster than noiseWith/Without.
 	 */
 	protected void addNoiseFeatures(int chunkX, int chunkZ, ChunkPrimer primer)
-	{
-		boolean airOnly = true;
-		
+	{		
 		//Discover and establish surrounding cluster origins.
+		precalculateFinalClusters(chunkX, chunkZ);
+		
+		if (cavernsEnabled) noiseWithCaverns(chunkX, chunkZ, primer);
+		
+		else noiseWithoutCaverns(chunkX, chunkZ, primer);
+	}
+	
+	private void precalculateFinalClusters(int chunkX, int chunkZ)
+	{
 		if (stoneClusters.length > 0)
 		{
 			finalClusters.clear();
@@ -563,7 +575,7 @@ public class CaveGenerator
 				int ID = cluster.getID();
 				int radius = cluster.getRadius();
 				int radiusVariance = cluster.getRadiusVariance();
-				int cRadius = (radius / 16) + 1;
+				int cRadius = ((radius + radiusVariance) / 16) + 1;
 				
 				double threshold = cluster.getSelectionThreshold();
 				
@@ -595,19 +607,60 @@ public class CaveGenerator
 				}
 			}
 		}
+	}
+	
+	private void noiseWithCaverns(int chunkX, int chunkZ, ChunkPrimer primer)
+	{
+		int cavernMin = 0, cavernMax = 0;
 		
-		/*
-		 * To-do: calculate ceil and floor noise only 1x per x,z coords?
-		 */
+		boolean airOnly = true;
+		
 		for (int i = 0; i < (hasSideFillers() ? 2 : 1); i++)
 		{
 			for (int x = 0; x < 16; x++)
 			{
+				double actualX = x + (chunkX * 16);
+				
 				for (int z = 0; z < 16; z++)
 				{
+					double actualZ = z + (chunkZ * 16);
+					
+					double ceilNoise = get2DNoiseFractal(noise2D2, actualX, actualZ, 1, cavernFrequency * 0.75, cavernAmplitude);
+					double floorNoise = get2DNoiseFractal(noise2D1, actualX, actualZ, 1, cavernFrequency * 0.75, cavernAmplitude);
+					
+					ceilNoise *= 7.0;
+					ceilNoise -= 7.0;
+					floorNoise *= 4.0;
+					floorNoise += 4.0;
+					
 					for (int y = noiseMaxHeight; y >= noiseMinHeight; y--)
 					{
-						decidePlace(airOnly, chunkX, chunkZ, primer, x, y, z);
+						IBlockState original = primer.getBlockState(x, y, z);
+						
+						if (canReplaceBlock(original, primer, x, y, z))
+						{
+							boolean cavernPlaced = false;
+							
+							double caveNoise = noise.getFractalNoise(actualX, (float) y / cavernScaleY, actualZ, 1, cavernFrequency, cavernAmplitude);
+							
+							if (caveNoise >= cavernSelectionThreshold)
+							{
+								if (y < cavernMaxHeight + ceilNoise)
+								{
+									if (y > cavernMinHeight + floorNoise)
+									{
+										replaceBlock(airOnly, primer, x, y, z, chunkX, chunkZ, false);
+										
+										cavernPlaced = true;
+									}
+								}
+							}
+							
+							if (!cavernPlaced && airOnly)
+							{
+								decorateStone(chunkX, chunkZ, primer, x, y, z, actualX, actualZ);
+							}
+						}
 					}
 				}
 			}
@@ -616,6 +669,73 @@ public class CaveGenerator
 		}
 	}
 	
+	private void noiseWithoutCaverns(int chunkX, int chunkZ, ChunkPrimer primer)
+	{
+		for (int i = 0; i < (hasSideFillers() ? 2 : 1); i++)
+		{
+			for (int x = 0; x < 16; x++)
+			{
+				double actualX = x + (chunkX * 16);
+				
+				for (int z = 0; z < 16; z++)
+				{
+					double actualZ = z + (chunkZ * 16);
+					
+					for (int y = noiseMaxHeight; y >= noiseMinHeight; y--)
+					{
+						decorateStone(chunkX, chunkZ, primer, x, y, z, actualX, actualZ);
+					}
+				}
+			}
+		}
+	}
+	
+	private void decorateStone(int chunkX, int chunkZ, ChunkPrimer primer, int x, int y, int z, double actualX, double actualZ)
+	{
+		for (int i = 0; i < finalClusters.size(); i++)
+		{
+			ClusterInfo info = finalClusters.get(i);
+			
+			BlockPos center = info.getCenter();
+			
+			double distX = actualX - center.getX();
+			double distY = y - center.getY();
+			double distZ = actualZ - center.getZ();
+			
+			double distX2 = distX * distX;
+			double distY2 = distY * distY;
+			double distZ2 = distZ * distZ;
+			
+			if (distX2 / info.getRadiusX2() + distY2 / info.getRadiusY2() + distZ2 / info.getRadiusZ2() <= 1)
+			{
+				primer.setBlockState(x, y, z, info.getCluster().getState());
+				
+				return;
+			}
+		}
+		
+		for (int i = 0; i < stoneLayers.length; i++)
+		{
+			StoneLayer layer = stoneLayers[i];
+			
+			double layerNoise = get2DNoiseFractal(layer.noise, actualX, actualZ, 1, 100.0, 1.0);
+			
+			if (y <= layerNoise * 5.0 + layer.getMaxHeight())
+			{
+				//Still have to return if there should be stone at this point.
+				if (!layer.getState().equals(Values.BLK_STONE))
+				{
+					primer.setBlockState(x, y, z, layer.getState());
+				}
+				
+				return;
+			}
+		}
+	}
+	
+	/*
+	 * Don't delete this yet. Still not sure whether it's faster or slower.
+	 */
 	private void decidePlace(boolean airOnly, int chunkX, int chunkZ, ChunkPrimer primer, int x, int y, int z)
 	{		
 		if (!airOnly || !primer.getBlockState(x, y, z).equals(Values.BLK_WATER))
@@ -842,6 +962,37 @@ public class CaveGenerator
 		return false;
 	}
 	
+	private boolean testForWaterFromMut(ChunkPrimer primer, double radiusXZ, double radiusY, int chunkX, int chunkZ, int x1, int x2, double posX, int y1, int y2, double posY, int z1, int z2, double posZ)
+	{		
+		for (int x = x1; x < x2; x++)
+        {
+            double finalX = ((double) (x + chunkX * 16) + 0.5 - posX) / radiusXZ;
+
+            for (int z = z1; z < z2; z++)
+            {
+                double finalZ = ((double) (z + chunkZ * 16) + 0.5 - posZ) / radiusXZ;
+
+                if (finalX * finalX + finalZ * finalZ < 1.0)
+                {
+                	for (int y = y2; y > y1; y--)
+                    {
+                		double finalY = ((double) (y - 1) + 0.5 - posY) / radiusY;
+                        
+                        if ((finalX * finalX + finalZ * finalZ) * (double) this.mut[y - 1] + finalY * finalY / 6.0 < 1.0)
+                        {                        	
+							if (isOceanBlock(primer, x, y, z, chunkX, chunkZ))
+							{
+								return true;
+							}
+                        }
+                    }
+                }
+            }
+        }
+		
+		return false;
+	}
+	
 	protected boolean isOceanBlock(ChunkPrimer data, int x, int y, int z, int chunkX, int chunkZ)
 	{
 		Block block = data.getBlockState(x, y, z).getBlock();
@@ -896,21 +1047,21 @@ public class CaveGenerator
 		return original;
 	}
 	
-	private void replaceSection(boolean airOnly, ChunkPrimer primer, double stretchXZ, double stretchY, int chunkX, int chunkZ, int x1, int x2, double posX, int y1, int y2, double posY, int z1, int z2, double posZ)
+	private void replaceSection(boolean airOnly, ChunkPrimer primer, double radiusXZ, double radiusY, int chunkX, int chunkZ, int x1, int x2, double posX, int y1, int y2, double posY, int z1, int z2, double posZ)
 	{
 		for (int x = x1; x < x2; x++)
 		{
-			double finalX = ((x + chunkX * 16) + 0.5 - posX) / stretchXZ;
+			double finalX = ((x + chunkX * 16) + 0.5 - posX) / radiusXZ;
 
 			for (int z = z1; z < z2; z++)
 			{
-				double finalZ = ((z + chunkZ * 16) + 0.5 - posZ) / stretchXZ;
+				double finalZ = ((z + chunkZ * 16) + 0.5 - posZ) / radiusXZ;
 
 				if (((finalX * finalX) + (finalZ * finalZ)) < 1.0)
 				{
 					for (int y = y2; y > y1; y--)
 					{
-						double finalY = ((y - 1) + 0.5 - posY) / stretchY;
+						double finalY = ((y - 1) + 0.5 - posY) / radiusY;
 
 						if ((finalY > -0.7) && (((finalX * finalX) + (finalY * finalY) + (finalZ * finalZ)) < 1.0D))
 						{
@@ -927,21 +1078,21 @@ public class CaveGenerator
 		}
 	}
 	
-	private void replaceSectionFromMut(boolean airOnly, ChunkPrimer primer, double stretchXZ, double stretchY, int chunkX, int chunkZ, int x1, int x2, double posX, int y1, int y2, double posY, int z1, int z2, double posZ)
+	private void replaceSectionFromMut(boolean airOnly, ChunkPrimer primer, double radiusXZ, double radiusY, int chunkX, int chunkZ, int x1, int x2, double posX, int y1, int y2, double posY, int z1, int z2, double posZ)
 	{		
 		for (int x = x1; x < x2; x++)
         {
-            double finalX = ((double) (x + chunkX * 16) + 0.5 - posX) / stretchXZ;
+            double finalX = ((double) (x + chunkX * 16) + 0.5 - posX) / radiusXZ;
 
             for (int z = z1; z < z2; z++)
             {
-                double finalZ = ((double) (z + chunkZ * 16) + 0.5 - posZ) / stretchXZ;
+                double finalZ = ((double) (z + chunkZ * 16) + 0.5 - posZ) / radiusXZ;
 
                 if (finalX * finalX + finalZ * finalZ < 1.0)
                 {
                 	for (int y = y2; y > y1; y--)
                     {
-                		double finalY = ((double) (y - 1) + 0.5 - posY) / stretchY;
+                		double finalY = ((double) (y - 1) + 0.5 - posY) / radiusY;
                         
                         if ((finalX * finalX + finalZ * finalZ) * (double) this.mut[y - 1] + finalY * finalY / 6.0 < 1.0)
                         {                        	
@@ -997,21 +1148,18 @@ public class CaveGenerator
 	 * @param chunkX        Chunk X position
 	 * @param chunkZ        Chunk Y position
 	 * @param foundTop      True if we've encountered the biome's top block. Ideally if we've broken the surface.
-	 * 
-	 * To-do: split this into two methods: replaceBlock() and decorateBlock().
 	 */
 	protected boolean replaceBlock(boolean airOnly, ChunkPrimer data, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop)
 	{
 		Biome biome = world.getBiome(new BlockPos(x + (chunkX * 16), 0, z + (chunkZ * 16)));
 		
 		IBlockState state = data.getBlockState(x, y, z);
-		IBlockState up = (IBlockState) MoreObjects.firstNonNull(data.getBlockState(x, y + 1, z), Values.BLK_AIR);
-		IBlockState top = Blocks.GRASS.getDefaultState();
-		IBlockState filler = Blocks.DIRT.getDefaultState();
+		IBlockState top = biome.topBlock;
+		IBlockState filler = biome.fillerBlock;
 				
 		int yDown = y - 1;
 		
-		if (canReplaceBlock(state, up) || !airOnly || state.getBlock().equals(top.getBlock()) || state.getBlock().equals(filler.getBlock()))
+		if (canReplaceBlock(state, data, x, y, z) || !airOnly || state.getBlock().equals(top.getBlock()) || state.getBlock().equals(filler.getBlock()))
 		{
 			if (yDown < lavaMaxHeight)
 			{
@@ -1019,144 +1167,10 @@ public class CaveGenerator
 				
 				return true;
 			}
-			else if (!airOnly && fillBlocks != null)
+			
+			else if (!airOnly && decorateBlock(chunkX, chunkZ, data, x, y, z))
 			{
-				for (BlockFiller replacement : fillBlocks)
-				{					
-					if (replacement.canGenerateAtHeight(y) && indRand.nextDouble() * 100 <= replacement.getChance())
-					{
-						boolean replaceAtMatch = replacement.getPreference().equals(Preference.REPLACE_MATCH),
-								matchFound = false,
-								breakFromLoop = false;
-
-						if (replacement.hasMatchers())
-						{
-							BlockPos blockUp = new BlockPos(x, y + 1, z),
-									 blockDown = new BlockPos(x, yDown, z),
-									 blockNorth = new BlockPos(x, y, z - 1),
-									 blockSouth = new BlockPos(x, y, z + 1),
-									 blockEast = new BlockPos(x + 1, y, z),
-									 blockWest = new BlockPos(x - 1, y, z);
-
-							for (Direction direction : replacement.getDirections())
-							{								
-								switch (direction)
-								{
-									case UP:
-										
-										for (IBlockState matcher : replacement.getMatchers())
-										{
-											if (data.getBlockState(blockUp.getX(), blockUp.getY(), blockUp.getZ()).equals(matcher))
-											{
-												if (replaceAtMatch)
-												{
-													data.setBlockState(blockUp.getX(), blockUp.getY(), blockUp.getZ(), replacement.getFillBlock());
-													
-													break;
-												}
-												
-												matchFound = true;
-											}
-										}
-
-										break;
-										
-									case SIDE:
-										
-										for (IBlockState matcher : replacement.getMatchers())
-										{
-											if (breakFromLoop) break;
-											
-											for (BlockPos pos : new BlockPos[] {blockNorth, blockSouth, blockEast, blockWest})
-											{
-												int xRel = pos.getX(), yRel = pos.getY(), zRel = pos.getZ();
-												
-												if (areCoordsInChunk(xRel, zRel))
-												{
-													if (matcher.equals(data.getBlockState(xRel, yRel, zRel)))
-													{
-														data.setBlockState(xRel, yRel, zRel, replacement.getFillBlock());
-														
-														breakFromLoop = true;
-														
-														if (!replaceAtMatch)
-														{
-															matchFound = true;
-															break;
-														}
-													}
-												}
-											}
-										}
-										
-										break;
-										
-									case DOWN:
-										
-										for (IBlockState matcher : replacement.getMatchers())
-										{
-											if (data.getBlockState(blockDown.getX(), blockDown.getY(), blockDown.getZ()).equals(matcher))
-											{
-												if (replaceAtMatch)
-												{
-													data.setBlockState(blockDown.getX(), blockDown.getY(), blockDown.getZ(), replacement.getFillBlock());
-													
-													break;
-												}
-												
-												matchFound = true;
-											}
-										}
-										
-										break;
-										
-									case ALL:
-										
-										for (IBlockState matcher : replacement.getMatchers())
-										{
-											if (breakFromLoop) break;
-											
-											for (BlockPos pos : new BlockPos[] {blockUp, blockDown, blockNorth, blockSouth, blockEast, blockWest})
-											{	
-												int xRel = pos.getX(), yRel = pos.getY(), zRel = pos.getZ();
-												
-												if (areCoordsInChunk(xRel, zRel))
-												{
-													if (matcher.equals(data.getBlockState(xRel, yRel, zRel)))
-													{
-														data.setBlockState(xRel, yRel, zRel, replacement.getFillBlock());
-														
-														breakFromLoop = true;
-														
-														if (!replaceAtMatch)
-														{
-															matchFound = true;
-															break;
-														}
-													}
-												}
-											}
-										}
-										
-										break;
-										
-									default:
-										
-										throw new AssertionError("Error: Invalid direction detected. Unable to phase through fourth dimension.");
-								}
-							}
-						}
-						
-						else matchFound = true;
-						
-						if (matchFound)
-						{
-							data.setBlockState(x, y, z, replacement.getFillBlock());
-							
-							return true;
-						}
-					}
-				}
+				return true;
 			}
 			
 			data.setBlockState(x, y, z, Values.BLK_AIR);
@@ -1169,6 +1183,179 @@ public class CaveGenerator
 			return true;
 		}
 		
+		return false;
+	}
+	
+	/*
+	 * To-do: Find a neater way to avoid repeatedly calculating blockUp, blockDown, etc.
+	 */
+	private boolean decorateBlock(int chunkX, int chunkZ, ChunkPrimer primer, int x, int y, int z)
+	{
+		int yDown = y - 1, yUp = y + 1;
+		
+		BlockPos posUp = new BlockPos(x, yUp, z),
+				 posDown = new BlockPos(x, yDown, z),
+				 posNorth = new BlockPos(x, y, z - 1),
+				 posSouth = new BlockPos(x, y, z + 1),
+				 posEast = new BlockPos(x + 1, y, z),
+				 posWest = new BlockPos(x - 1, y, z);
+					
+		if (fillBlocks != null)
+		{
+			for (BlockFiller replacement : fillBlocks)
+			{
+				if (replacement.canGenerateAtHeight(y) && indRand.nextDouble() * 100 <= replacement.getChance())
+				{
+					boolean replaceAtMatch = replacement.getPreference().equals(Preference.REPLACE_MATCH),
+							matchFound = false,
+							breakFromLoop = false;
+
+					if (replacement.hasMatchers())
+					{
+						for (Direction direction : replacement.getDirections())
+						{								
+							switch (direction)
+							{
+								case UP:
+									
+									for (IBlockState matcher : replacement.getMatchers())
+									{
+										if (primer.getBlockState(posUp.getX(), posUp.getY(), posUp.getZ()).equals(matcher))
+										{
+											if (replaceAtMatch)
+											{
+												primer.setBlockState(posUp.getX(), posUp.getY(), posUp.getZ(), replacement.getFillBlock());
+												
+												break;
+											}
+											
+											matchFound = true;
+										}
+									}
+
+									break;
+									
+								case SIDE:
+									
+									for (IBlockState matcher : replacement.getMatchers())
+									{
+										if (breakFromLoop) break;
+										
+										for (BlockPos pos : new BlockPos[] {posNorth, posSouth, posEast, posWest})
+										{
+											int xRel = pos.getX(), yRel = pos.getY(), zRel = pos.getZ();
+											
+											if (areCoordsInChunk(xRel, zRel))
+											{
+												if (matcher.equals(primer.getBlockState(xRel, yRel, zRel)))
+												{
+													primer.setBlockState(xRel, yRel, zRel, replacement.getFillBlock());
+													
+													breakFromLoop = true;
+													
+													if (!replaceAtMatch)
+													{
+														matchFound = true;
+														break;
+													}
+												}
+											}
+										}
+									}
+									
+									break;
+									
+								case DOWN:
+									
+									for (IBlockState matcher : replacement.getMatchers())
+									{
+										if (primer.getBlockState(posDown.getX(), posDown.getY(), posDown.getZ()).equals(matcher))
+										{
+											if (replaceAtMatch)
+											{
+												primer.setBlockState(posDown.getX(), posDown.getY(), posDown.getZ(), replacement.getFillBlock());
+												
+												break;
+											}
+											
+											matchFound = true;
+										}
+									}
+									
+									break;
+									
+								case ALL:
+									
+									for (IBlockState matcher : replacement.getMatchers())
+									{
+										if (breakFromLoop) break;
+										
+										for (BlockPos pos : new BlockPos[] {posUp, posDown, posNorth, posSouth, posEast, posWest})
+										{	
+											int xRel = pos.getX(), yRel = pos.getY(), zRel = pos.getZ();
+											
+											if (areCoordsInChunk(xRel, zRel))
+											{
+												if (matcher.equals(primer.getBlockState(xRel, yRel, zRel)))
+												{
+													primer.setBlockState(xRel, yRel, zRel, replacement.getFillBlock());
+													
+													breakFromLoop = true;
+													
+													if (!replaceAtMatch)
+													{
+														matchFound = true;
+														break;
+													}
+												}
+											}
+										}
+									}
+									
+									break;
+									
+								default:
+									
+									throw new AssertionError("Error: Invalid direction detected. Unable to phase through fourth dimension.");
+							}
+						}
+					}
+					
+					else matchFound = true;
+					
+					if (matchFound)
+					{
+						primer.setBlockState(x, y, z, replacement.getFillBlock());
+						
+						return true;
+					}
+				}
+			}
+		}
+		
+		return false;
+	}
+	
+	private boolean fillersHaveDirection(Direction direction)
+	{
+		for (BlockFiller filler : fillBlocks)
+		{
+			if (filler.hasDirection(direction))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
+	
+	private boolean hasLargeStalactite()
+	{
+		return false;
+	}
+	
+	private boolean hasLargeStalagmite()
+	{
 		return false;
 	}
 	
@@ -1355,12 +1542,13 @@ public class CaveGenerator
 		return x > -1 && x < 16 && z > -1 && z < 16;
 	}
 	
-	private static boolean canReplaceBlock(IBlockState state, IBlockState blockAbove)
+	private static boolean canReplaceBlock(IBlockState state, ChunkPrimer primer, int x, int y, int z)
 	{
 		if (canReplaceLessSpecific(state)) return true;
 		
+		//Don't calculate block above until necessary. Likely doesn't matter matter much.
 		return (state.getBlock().equals(Blocks.SAND) || state.getBlock().equals(Blocks.GRAVEL)) &&
-				!blockAbove.getMaterial().equals(Material.WATER);
+				!((IBlockState) MoreObjects.firstNonNull(primer.getBlockState(x, y + 1, z), Values.BLK_AIR)).getMaterial().equals(Material.WATER);
 	}
 	
 	/*

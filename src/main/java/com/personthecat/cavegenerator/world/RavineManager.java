@@ -3,7 +3,10 @@ package com.personthecat.cavegenerator.world;
 import java.util.Random;
 
 import com.personthecat.cavegenerator.CaveInit;
+import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.util.Values;
+
+import static com.personthecat.cavegenerator.world.ReplaceVanillaCaveGen.previousRavineGen;
 
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -16,11 +19,16 @@ public class RavineManager extends MapGenBase
 	@Override
 	public void generate(World world, int x, int z, ChunkPrimer primer)
 	{
+		if (ConfigFile.runAlongsideOtherRavineGenerators)
+		{
+			previousRavineGen.generate(world, x, z, primer);
+		}
+		
 		int dimension = world.provider.getDimension();
 		
 		if (!CaveInit.isAnyGeneratorEnabledForDimension(dimension))
 		{
-			ReplaceVanillaCaveGen.previousRavineGen.generate(world, x, z, primer);
+			previousRavineGen.generate(world, x, z, primer);
 			
 			return;
 		}

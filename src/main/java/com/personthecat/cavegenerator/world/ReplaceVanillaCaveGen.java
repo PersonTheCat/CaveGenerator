@@ -3,6 +3,7 @@ package com.personthecat.cavegenerator.world;
 import net.minecraft.world.gen.MapGenBase;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.event.terraingen.InitMapGenEvent.EventType;
+import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
 public class ReplaceVanillaCaveGen
@@ -13,7 +14,7 @@ public class ReplaceVanillaCaveGen
 	 */
 	protected static MapGenBase previousCaveGen, previousRavineGen;
 	
-	@SubscribeEvent
+	@SubscribeEvent(priority = EventPriority.LOWEST)
 	public static void onMapGen(InitMapGenEvent event)
 	{
 		if (event.getType().equals(EventType.CAVE))

@@ -18,6 +18,7 @@ import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.CaveGenerator.Extension;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneCluster;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneLayer;
+import com.personthecat.cavegenerator.world.feature.LargeStalactite;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.biome.Biome;
@@ -39,8 +40,7 @@ public class PresetReader
 		try
 		{
 			json = parser.parse(new FileReader(preset)).getAsJsonObject();
-		} 
-		
+		}
 		catch (FileNotFoundException e) 
 		{
 			throw new RuntimeException("Error: Could not find or load file: " + preset);
@@ -67,6 +67,7 @@ public class PresetReader
 		addStoneClusters();
 		addBlockFillers();
 		addFinalHeights();
+		addLargeStalagmitesAndStalactites();
 	}
 	
 	private void addGlobalValues()
@@ -631,7 +632,7 @@ public class PresetReader
 			
 			for (StoneCluster cluster : newGenerator.stoneClusters)
 			{
-				int height = cluster.getStartingHeight() + cluster.getHeightVariance();
+				int height = cluster.getStartingHeight() + cluster.getHeightVariance() + cluster.getRadius() + cluster.getRadiusVariance();
 				
 				if (height > maxHeight) maxHeight = height;
 			}
@@ -640,7 +641,7 @@ public class PresetReader
 			
 			for (StoneCluster cluster : newGenerator.stoneClusters)
 			{
-				int height = cluster.getStartingHeight() - cluster.getHeightVariance();
+				int height = cluster.getStartingHeight() - cluster.getHeightVariance() - cluster.getRadius() - cluster.getRadiusVariance();
 				
 				if (height < minHeight) minHeight = height;
 			}
@@ -651,8 +652,15 @@ public class PresetReader
 			noiseMaxs.add(maxHeight);
 		}
 		
-		newGenerator.noiseMinHeight = getMinNumber(noiseMins.stream().mapToInt(i -> i).toArray());
-		newGenerator.noiseMaxHeight = getMaxNumber(noiseMaxs.stream().mapToInt(i -> i).toArray());
+		if (noiseMins.size() > 0)
+		{
+			newGenerator.noiseMinHeight = getMinNumber(noiseMins.stream().mapToInt(i -> i).toArray());
+		}
+		
+		if (noiseMaxs.size() > 0)
+		{
+			newGenerator.noiseMaxHeight = getMaxNumber(noiseMaxs.stream().mapToInt(i -> i).toArray());
+		}
 	}
 	
 	private int getMinNumber(int... nums)
@@ -687,5 +695,128 @@ public class PresetReader
 		}
 		
 		return maxNumber;
+	}
+	
+	/*
+	 * To-do: Avoid repetition.
+	 */
+	private void addLargeStalagmitesAndStalactites()
+	{
+		List<LargeStalactite> finalStalactites = new ArrayList<>();
+		
+		if (json.has("largeStalagmites"))
+		{
+			JsonObject stalagmites = json.get("largeStalagmites").getAsJsonObject();
+			
+			if (stalagmites.has("keys"))
+			{
+				for (JsonElement key : stalagmites.get("keys").getAsJsonArray())
+				{
+					JsonObject stalagmite = null;
+					
+					try
+					{
+						stalagmite = stalagmites.get(key.getAsString()).getAsJsonObject();
+					}
+					catch (NullPointerException e)
+					{
+						throw new RuntimeException(
+							"Error: Key \"" + key.getAsString() + "\" does not have an equivalent stalagmite object. "
+						  + "Make sure it is typed correctly.");
+					}
+					
+					if (!stalagmite.has("state"))
+					{
+						throw new RuntimeException("Error: You must specify a state for each large stalagmite. Only the other parameters have default values.");
+					}
+					
+					IBlockState state = CommonMethods.getBlockState(stalagmite.get("state").getAsString());
+					
+					boolean useNoise = false;
+					
+					if (stalagmite.has("spawnInPatches")) useNoise = stalagmite.get("spawnInPatches").getAsBoolean();
+					
+					int maxLength = 3;
+					
+					if (stalagmite.has("maxLength")) maxLength = stalagmite.get("maxLength").getAsInt();
+					
+					double probability = 16.7;
+					
+					if (stalagmite.has("probability")) probability = stalagmite.get("probability").getAsDouble();
+					
+					int minHeight = 11;
+					
+					if (stalagmite.has("minHeight")) minHeight = stalagmite.get("minHeight").getAsInt();
+					
+					int maxHeight = 55;
+					
+					if (stalagmite.has("maxHeight")) maxHeight = stalagmite.get("maxHeight").getAsInt();
+					
+					LargeStalactite newStalagmite = new LargeStalactite(useNoise, maxLength, probability, state, minHeight, maxHeight, LargeStalactite.Type.STALAGMITE);
+					
+					finalStalactites.add(newStalagmite);
+				}
+			}
+		}
+		
+		if (json.has("largeStalactites"))
+		{
+			JsonObject stalactites = json.get("largeStalactites").getAsJsonObject();
+			
+			if (stalactites.has("keys"))
+			{
+				for (JsonElement key : stalactites.get("keys").getAsJsonArray())
+				{
+					JsonObject stalactite = null;
+					
+					try
+					{
+						stalactite = stalactites.get(key.getAsString()).getAsJsonObject();
+					}
+					catch (NullPointerException e)
+					{
+						throw new RuntimeException(
+							"Error: Key \"" + key.getAsString() + "\" does not have an equivalent stalagmite object. "
+						  + "Make sure it is typed correctly.");
+					}
+					
+					if (!stalactite.has("state"))
+					{
+						throw new RuntimeException("Error: You must specify a state for each large stalactite. Only the other parameters have default values.");
+					}
+					
+					IBlockState state = CommonMethods.getBlockState(stalactite.get("state").getAsString());
+					
+					boolean useNoise = false;
+					
+					if (stalactite.has("spawnInPatches")) useNoise = stalactite.get("spawnInPatches").getAsBoolean();
+					
+					int maxLength = 3;
+					
+					if (stalactite.has("maxLength")) maxLength = stalactite.get("maxLength").getAsInt();
+					
+					double probability = 16.7;
+					
+					if (stalactite.has("probability")) probability = stalactite.get("probability").getAsDouble();
+					
+					int minHeight = 11;
+					
+					if (stalactite.has("minHeight")) minHeight = stalactite.get("minHeight").getAsInt();
+					
+					int maxHeight = 55;
+					
+					if (stalactite.has("maxHeight")) maxHeight = stalactite.get("maxHeight").getAsInt();
+					
+					LargeStalactite newStalactite = new LargeStalactite(useNoise, maxLength, probability, state, minHeight, maxHeight, LargeStalactite.Type.STALACTITE);
+					
+					finalStalactites.add(newStalactite);
+				}
+			}
+		}
+		
+		if (finalStalactites.size() > 0)
+		{
+			newGenerator.stalactites = finalStalactites.toArray(new LargeStalactite[0]);
+		}
 	}
 }

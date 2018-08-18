@@ -1,0 +1,41 @@
+//Unlike BlockFillers, these are not unique to the caves that spawn them. They will spawn anywhere they can.
+{
+	"enabled" : false,
+	"//" : "There's no need to specify every value if you just want to use the defaults. Check vanilla.json",
+	"largeStalactites" :
+	{
+		"keys" : ["wall"],
+
+		"wall" :
+		{
+			"//" : "Again, not the best block, but it is vanilla.",
+			"state" : "cobblestone_wall",
+			"maxLength" : 4,
+			"minHeight" : 20,
+			"maxHeight" : 50
+		}
+	},
+	"largeStalagmites" : 
+	{
+		"keys" : ["wall"],
+
+		"wall" :
+		{
+			"state" : "cobblestone_wall",
+			"spawnInPatches" : true,
+			"probability" : 10,
+			"minHeight" : 20,
+			"maxHeight" : 50
+		}
+	},
+	"//" : "I find that these fit better in caverns or at least larger tunnels.",
+	"caverns" :
+	{
+		"enabled" : true
+	},
+	"//" : "Just disabling the tunnels",
+	"tunnels" : 
+	{
+		"frequency" : 0
+	}
+}

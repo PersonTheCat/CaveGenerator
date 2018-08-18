@@ -42,6 +42,23 @@ public class BlockFiller
 	{
 		return directions;
 	}
+	
+	public boolean hasDirection(Direction direction)
+	{
+		for (Direction dir : directions)
+		{
+			if (dir.equals(Direction.ALL))
+			{
+				return true;
+			}
+			else if (dir.equals(direction))
+			{
+				return true;
+			}
+		}
+		
+		return false;
+	}
 
 	public double getChance()
 	{
