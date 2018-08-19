@@ -21,7 +21,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 
 @Mod(modid = "cavegenerator",
      name = "Cave Generator",
-     version = "0.9",
+     version = "0.10",
      dependencies = "after:worleycaves;"
 )
 public class Main

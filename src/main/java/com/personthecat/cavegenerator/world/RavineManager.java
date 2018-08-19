@@ -19,14 +19,13 @@ public class RavineManager extends MapGenBase
 	@Override
 	public void generate(World world, int x, int z, ChunkPrimer primer)
 	{
+		int dimension = world.provider.getDimension();
+		
 		if (ConfigFile.runAlongsideOtherRavineGenerators)
 		{
 			previousRavineGen.generate(world, x, z, primer);
 		}
-		
-		int dimension = world.provider.getDimension();
-		
-		if (!CaveInit.isAnyGeneratorEnabledForDimension(dimension))
+		else if (!CaveInit.isAnyGeneratorEnabledForDimension(dimension))
 		{
 			previousRavineGen.generate(world, x, z, primer);
 			

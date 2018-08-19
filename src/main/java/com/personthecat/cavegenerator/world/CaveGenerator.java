@@ -1,5 +1,11 @@
 package com.personthecat.cavegenerator.world;
 
+import static com.personthecat.cavegenerator.world.CaveManager.noise;
+import static com.personthecat.cavegenerator.world.CaveManager.noise2D1;
+import static com.personthecat.cavegenerator.world.CaveManager.noise2D2;
+import static com.personthecat.cavegenerator.world.CaveManager.noise2D3;
+import static com.personthecat.cavegenerator.world.CaveManager.selector;
+
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -10,7 +16,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import com.google.common.base.MoreObjects;
 import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.util.CommonMethods;
-import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
 import com.personthecat.cavegenerator.util.Values;
 import com.personthecat.cavegenerator.world.BlockFiller.Direction;
 import com.personthecat.cavegenerator.world.BlockFiller.Preference;
@@ -18,12 +23,6 @@ import com.personthecat.cavegenerator.world.StoneReplacer.ClusterInfo;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneCluster;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneLayer;
 import com.personthecat.cavegenerator.world.feature.LargeStalactite;
-
-import static com.personthecat.cavegenerator.world.CaveManager.selector;
-import static com.personthecat.cavegenerator.world.CaveManager.noise;
-import static com.personthecat.cavegenerator.world.CaveManager.noise2D1;
-import static com.personthecat.cavegenerator.world.CaveManager.noise2D2;
-import static com.personthecat.cavegenerator.world.CaveManager.noise2D3;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
@@ -179,7 +178,7 @@ public class CaveGenerator
 	 */
 	public StoneLayer[] stoneLayers = new StoneLayer[0];
 	
-	public LargeStalactite[] stalactites;
+	public LargeStalactite[] stalactites = new LargeStalactite[0];
 	
 	private final float[] mut = new float[1024];
 	
@@ -658,7 +657,7 @@ public class CaveGenerator
 							
 							if (!cavernPlaced && airOnly)
 							{
-								decorateStone(chunkX, chunkZ, primer, x, y, z, actualX, actualZ);
+								decorateStone(chunkX, chunkZ, primer, x, y, z, actualX, actualZ, original);
 							}
 						}
 					}
@@ -671,64 +670,66 @@ public class CaveGenerator
 	
 	private void noiseWithoutCaverns(int chunkX, int chunkZ, ChunkPrimer primer)
 	{
-		for (int i = 0; i < (hasSideFillers() ? 2 : 1); i++)
+		for (int x = 0; x < 16; x++)
 		{
-			for (int x = 0; x < 16; x++)
+			double actualX = x + (chunkX * 16);
+			
+			for (int z = 0; z < 16; z++)
 			{
-				double actualX = x + (chunkX * 16);
+				double actualZ = z + (chunkZ * 16);
 				
-				for (int z = 0; z < 16; z++)
+				for (int y = noiseMaxHeight; y >= noiseMinHeight; y--)
 				{
-					double actualZ = z + (chunkZ * 16);
+					IBlockState original = primer.getBlockState(x, y, z);
 					
-					for (int y = noiseMaxHeight; y >= noiseMinHeight; y--)
-					{
-						decorateStone(chunkX, chunkZ, primer, x, y, z, actualX, actualZ);
-					}
+					decorateStone(chunkX, chunkZ, primer, x, y, z, actualX, actualZ, original);
 				}
 			}
 		}
 	}
 	
-	private void decorateStone(int chunkX, int chunkZ, ChunkPrimer primer, int x, int y, int z, double actualX, double actualZ)
+	private void decorateStone(int chunkX, int chunkZ, ChunkPrimer primer, int x, int y, int z, double actualX, double actualZ, IBlockState original)
 	{
-		for (int i = 0; i < finalClusters.size(); i++)
+		if (original.equals(Values.BLK_STONE))
 		{
-			ClusterInfo info = finalClusters.get(i);
-			
-			BlockPos center = info.getCenter();
-			
-			double distX = actualX - center.getX();
-			double distY = y - center.getY();
-			double distZ = actualZ - center.getZ();
-			
-			double distX2 = distX * distX;
-			double distY2 = distY * distY;
-			double distZ2 = distZ * distZ;
-			
-			if (distX2 / info.getRadiusX2() + distY2 / info.getRadiusY2() + distZ2 / info.getRadiusZ2() <= 1)
+			for (int i = 0; i < finalClusters.size(); i++)
 			{
-				primer.setBlockState(x, y, z, info.getCluster().getState());
+				ClusterInfo info = finalClusters.get(i);
 				
-				return;
-			}
-		}
-		
-		for (int i = 0; i < stoneLayers.length; i++)
-		{
-			StoneLayer layer = stoneLayers[i];
-			
-			double layerNoise = get2DNoiseFractal(layer.noise, actualX, actualZ, 1, 100.0, 1.0);
-			
-			if (y <= layerNoise * 5.0 + layer.getMaxHeight())
-			{
-				//Still have to return if there should be stone at this point.
-				if (!layer.getState().equals(Values.BLK_STONE))
+				BlockPos center = info.getCenter();
+				
+				double distX = actualX - center.getX();
+				double distY = y - center.getY();
+				double distZ = actualZ - center.getZ();
+				
+				double distX2 = distX * distX;
+				double distY2 = distY * distY;
+				double distZ2 = distZ * distZ;
+				
+				if (distX2 / info.getRadiusX2() + distY2 / info.getRadiusY2() + distZ2 / info.getRadiusZ2() <= 1)
 				{
-					primer.setBlockState(x, y, z, layer.getState());
+					primer.setBlockState(x, y, z, info.getCluster().getState());
+					
+					return;
 				}
+			}
+			
+			for (int i = 0; i < stoneLayers.length; i++)
+			{
+				StoneLayer layer = stoneLayers[i];
 				
-				return;
+				double layerNoise = get2DNoiseFractal(layer.noise, actualX, actualZ, 1, 100.0, 1.0);
+				
+				if (y <= layerNoise * 5.0 + layer.getMaxHeight())
+				{
+					//Still have to return if there should be stone at this point.
+					if (!layer.getState().equals(Values.BLK_STONE))
+					{
+						primer.setBlockState(x, y, z, layer.getState());
+					}
+					
+					return;
+				}
 			}
 		}
 	}

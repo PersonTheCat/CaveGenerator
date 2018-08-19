@@ -17,6 +17,11 @@ import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.MapGenBase;
 import net.minecraft.world.gen.NoiseGeneratorSimplex;
 
+/**
+ * To-do: Stop iterating through every generator and calling
+ * {@link CaveGenerator#canGenerate(Biome, int)} for every
+ * method here. Do it once and call methods from that.
+ */
 public class CaveManager extends MapGenBase
 {
 	protected static SimplexNoiseGenerator3D noise;
@@ -29,14 +34,13 @@ public class CaveManager extends MapGenBase
 	@Override
 	public void generate(World world, int x, int z, ChunkPrimer primer)
 	{
+		int dimension = world.provider.getDimension();
+		
 		if (ConfigFile.runAlongsideOtherCaveGenerators)
 		{
 			previousCaveGen.generate(world, x, z, primer);
 		}
-		
-		int dimension = world.provider.getDimension();
-		
-		if (!CaveInit.isAnyGeneratorEnabledForDimension(dimension))
+		else if (!CaveInit.isAnyGeneratorEnabledForDimension(dimension))
 		{
 			previousCaveGen.generate(world, x, z, primer);
 			

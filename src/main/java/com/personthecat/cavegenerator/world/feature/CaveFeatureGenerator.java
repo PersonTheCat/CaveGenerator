@@ -26,26 +26,23 @@ public class CaveFeatureGenerator implements IWorldGenerator
 		{			
 			if (generator.enabledGlobally && generator.canGenerateInDimension(world.provider.getDimension()))
 			{
-				if (generator.stalactites.length > 0)
+				for (LargeStalactite stalactite : generator.stalactites)
 				{
-					for (LargeStalactite stalactite : generator.stalactites)
+					if (stalactite.useNoise()) noise = new NoiseGeneratorSimplex(new Random(rand.nextLong()));
+					
+					double probability = stalactite.getProbability();
+					
+					if (stalactite.getType().equals(Type.STALACTITE))
 					{
-						if (stalactite.useNoise()) noise = new NoiseGeneratorSimplex(new Random(rand.nextLong()));
+						if (probability >= 65) generateStalactites(generator, stalactite, rand, chunkX, chunkZ, world);
 						
-						double probability = stalactite.getProbability();
+						else generateStalactitesByQuadrant(generator, stalactite, rand, chunkX, chunkZ, world);
+					}
+					else
+					{
+						if (probability >= 65) generateStalagmites(generator, stalactite, rand, chunkX, chunkZ, world);
 						
-						if (stalactite.getType().equals(Type.STALACTITE))
-						{
-							if (probability >= 65) generateStalactites(generator, stalactite, rand, chunkX, chunkZ, world);
-							
-							else generateStalactitesByQuadrant(generator, stalactite, rand, chunkX, chunkZ, world);
-						}
-						else
-						{
-							if (probability >= 65) generateStalagmites(generator, stalactite, rand, chunkX, chunkZ, world);
-							
-							else generateStalagmitesByQuadrant(generator, stalactite, rand, chunkX, chunkZ, world);          
-						}
+						else generateStalagmitesByQuadrant(generator, stalactite, rand, chunkX, chunkZ, world);          
 					}
 				}
 			}
@@ -68,7 +65,7 @@ public class CaveFeatureGenerator implements IWorldGenerator
 
 						for (int y = gen.getMinHeight(); y < gen.getMaxHeight(); y++)
 						{
-							boolean currentlyAir = world.getBlockState(new BlockPos(x, y, z)).equals(Values.BLK_AIR);
+							boolean currentlyAir = !world.getBlockState(new BlockPos(x, y, z)).isFullCube();
 
 							if ((previouslyAir && !currentlyAir) && (rand.nextDouble() * 100) <= probability)
 							{
@@ -109,7 +106,7 @@ public class CaveFeatureGenerator implements IWorldGenerator
 
 						for (int y = gen.getMinHeight(); y < gen.getMaxHeight(); y++)
 						{
-							boolean currentlyAir = world.getBlockState(new BlockPos(x, y, z)).equals(Values.BLK_AIR);
+							boolean currentlyAir = !world.getBlockState(new BlockPos(x, y, z)).isFullCube();
 
 							if ((previouslyAir && !currentlyAir) && (rand.nextDouble() * 100) <= probability)
 							{
@@ -140,7 +137,7 @@ public class CaveFeatureGenerator implements IWorldGenerator
 
 						for (int y = gen.getMaxHeight(); y > gen.getMinHeight(); y--)
 						{
-							boolean currentlyAir = world.getBlockState(new BlockPos(x, y, z)).equals(Values.BLK_AIR);
+							boolean currentlyAir = !world.getBlockState(new BlockPos(x, y, z)).isFullCube();
 
 							if ((previouslyAir && !currentlyAir) && (rand.nextDouble() * 100) <= probability)
 							{
@@ -181,7 +178,7 @@ public class CaveFeatureGenerator implements IWorldGenerator
 
 						for (int y = gen.getMaxHeight(); y > gen.getMinHeight(); y--)
 						{
-							boolean currentlyAir = world.getBlockState(new BlockPos(x, y, z)).equals(Values.BLK_AIR);
+							boolean currentlyAir = !world.getBlockState(new BlockPos(x, y, z)).isFullCube();
 
 							if ((previouslyAir && !currentlyAir) && (rand.nextDouble() * 100) <= probability)
 							{
