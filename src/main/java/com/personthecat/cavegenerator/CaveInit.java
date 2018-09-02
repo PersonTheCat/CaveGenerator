@@ -21,8 +21,6 @@ public class CaveInit
 		
 		File presetFolder = new File(Loader.instance().getConfigDir().getPath() + "/cavegenerator/presets");
 		
-		presetFolder.mkdirs();
-		
 		for (File inDir : presetFolder.listFiles())
 		{
 			if (inDir.getName().endsWith("json"))
@@ -74,7 +72,7 @@ public class CaveInit
 	{
 		for (CaveGenerator generator : GENERATORS.values())
 		{
-			if (generator.hasSideFillers()) return true;
+			if (generator.shouldPregenerateAir()) return true;
 		}
 			
 		return false;

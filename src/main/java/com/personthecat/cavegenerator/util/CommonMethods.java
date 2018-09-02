@@ -10,6 +10,8 @@ import org.apache.commons.lang3.StringUtils;
 
 import com.personthecat.cavegenerator.Main;
 
+import static com.personthecat.cavegenerator.Main.logger;
+
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
@@ -55,7 +57,7 @@ public class CommonMethods
 			location = new ResourceLocation(registryName);
 		}
 		
-		else System.err.println("Syntax error: Could not determine blockstate from " + registryName);
+		else logger.warn("Syntax error: Could not determine blockstate from " + registryName);
 		
 		return ForgeRegistries.BLOCKS.getValue(location).getStateFromMeta(meta);
 	}
@@ -90,14 +92,14 @@ public class CommonMethods
 	{
 		File exampleFolder = new File(Loader.instance().getConfigDir().getPath() + "/cavegenerator/example_presets");
 		
-		if (!exampleFolder.exists())
+		if (!exampleFolder.exists()) exampleFolder.mkdirs();
+		
+		for (String fileName : new String[] {"flooded_vanilla",	"large_caves", "spirals", "tunnels", 
+		                                     "caverns", "stalactites", "stone_layers", "ravines", 
+		                                     "stone_clusters", "stalactites_large", "vanilla",
+		                                     "underground_forest"})
 		{
-			exampleFolder.mkdirs();
-			
-			for (String fileName : new String[] {"flooded_vanilla",	"large_caves", "spirals", "tunnels", "caverns", "stalactites", "stone_layers", "ravines", "stone_clusters", "stalactites_large"})
-			{
-				copyPreset("assets/cavegenerator/presets/" + fileName, exampleFolder.getPath() + "/" + fileName);
-			}
+			copyFile("assets/cavegenerator/presets/" + fileName + ".json", exampleFolder.getPath() + "/" + fileName + ".json");
 		}
 		
 		File presetFolder = new File(Loader.instance().getConfigDir().getPath() + "/cavegenerator/presets");
@@ -106,23 +108,38 @@ public class CommonMethods
 		{
 			presetFolder.mkdir();
 			
-			copyPreset("assets/cavegenerator/presets/vanilla", presetFolder.getPath() + "/vanilla");
+			copyFile("assets/cavegenerator/presets/vanilla.json", presetFolder.getPath() + "/vanilla.json");
 		}
 	}
 	
-	private static void copyPreset(String fromLocation, String toLocation)
+	public static void copyExampleStructures()
+	{
+		File dir = new File(Loader.instance().getConfigDir() + "/cavegenerator/structures");
+		
+		if (!dir.exists())
+		{
+			dir.mkdirs();
+			
+			for (String fileName : new String[] {"hanging_spawner"})
+			{
+				copyFile("assets/cavegenerator/structures/" + fileName + ".nbt", dir.getPath() + "/" + fileName + ".nbt");
+			}
+		}
+	}
+	
+	private static void copyFile(String fromLocation, String toLocation)
 	{
 		try
 		{
-			InputStream copyMe = Main.class.getClassLoader().getResourceAsStream(fromLocation + ".json");
-			FileOutputStream output = new FileOutputStream(toLocation + ".json");
+			InputStream copyMe = Main.class.getClassLoader().getResourceAsStream(fromLocation);
+			FileOutputStream output = new FileOutputStream(toLocation);
 			
 			copyStream(copyMe, output, 1024);
 			
 			output.close();
 		}
 		
-		catch (IOException e) {System.err.println("Error: Could not copy example presets.");}
+		catch (IOException e) { logger.warn("Error: Could not copy example files."); }
 	}
 	
 	private static void copyStream(InputStream input, OutputStream output, int bufferSize) throws IOException

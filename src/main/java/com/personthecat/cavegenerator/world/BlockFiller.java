@@ -5,11 +5,16 @@ import java.util.Arrays;
 import java.util.List;
 
 import com.personthecat.cavegenerator.CaveInit;
+import com.personthecat.cavegenerator.util.Direction;
+import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 
 public class BlockFiller
 {
+	private boolean spawnInPatches = false;
+	
 	private Direction[] directions;
 	
 	private double chance;
@@ -22,6 +27,12 @@ public class BlockFiller
 	
 	private Preference preference;
 	
+	private SimplexNoiseGenerator3D noise;
+	
+	private int patchSpacing = 50;
+	
+	private double patchThreshold = -0.2;
+	
 	public BlockFiller(IBlockState state, double chance, int minHeight, int maxHeight, IBlockState[] matchers, Direction[] directions, Preference preference)
 	{
 		this.fillWith = state;
@@ -31,6 +42,43 @@ public class BlockFiller
 		this.matchers = matchers;
 		this.directions = directions;
 		this.preference = preference;
+	}
+	
+	public void setSpawnInPatches()
+	{
+		this.spawnInPatches = true;
+		
+		this.noise = new SimplexNoiseGenerator3D(Block.getStateId(fillWith));
+	}
+	
+	public boolean shouldSpawnInPatches()
+	{
+		return spawnInPatches;
+	}
+	
+	public void setPatchSpacing(int frequency)
+	{
+		this.patchSpacing = frequency;
+	}
+	
+	public int getPatchSpacing()
+	{
+		return patchSpacing;
+	}
+	
+	public void setPatchThreshold(double threshold)
+	{
+		this.patchThreshold = threshold;
+	}
+	
+	public double getPatchThreshold()
+	{
+		return patchThreshold;
+	}
+	
+	public SimplexNoiseGenerator3D getNoise()
+	{
+		return noise;
 	}
 	
 	public boolean hasDirections()
@@ -116,30 +164,6 @@ public class BlockFiller
 	public Preference getPreference()
 	{
 		return preference;
-	}
-	
-	public static enum Direction
-	{
-		UP,
-		DOWN,
-		SIDE,
-		ALL;
-		
-		public static Direction fromString(String s)
-		{
-			for (Direction d : values())
-			{
-				if (d.toString().equalsIgnoreCase(s))
-				{
-					return d;
-				}
-			}
-			
-			throw new RuntimeException(
-				"Error: Direction \"" + s + "\" does not exist."
-			  + "The following are valid options:\n\n"
-			  +  Arrays.toString(values()));
-		}
 	}
 	
 	public static enum Preference

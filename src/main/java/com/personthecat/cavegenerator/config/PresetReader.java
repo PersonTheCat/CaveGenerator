@@ -12,16 +12,24 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.personthecat.cavegenerator.util.CommonMethods;
 import com.personthecat.cavegenerator.world.BlockFiller;
-import com.personthecat.cavegenerator.world.BlockFiller.Direction;
+import com.personthecat.cavegenerator.util.Direction;
 import com.personthecat.cavegenerator.world.BlockFiller.Preference;
 import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.CaveGenerator.Extension;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneCluster;
 import com.personthecat.cavegenerator.world.StoneReplacer.StoneLayer;
+import com.personthecat.cavegenerator.world.feature.GiantPillar;
 import com.personthecat.cavegenerator.world.feature.LargeStalactite;
+import com.personthecat.cavegenerator.world.feature.StructureSpawnInfo;
+import com.personthecat.cavegenerator.world.feature.StructureSpawner;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
+import net.minecraft.nbt.NBTTagCompound;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.gen.structure.template.PlacementSettings;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 
@@ -67,6 +75,8 @@ public class PresetReader
 		addStoneClusters();
 		addBlockFillers();
 		addFinalHeights();
+		addGiantPillars();
+		addStructures();
 		addLargeStalagmitesAndStalactites();
 	}
 	
@@ -523,6 +533,14 @@ public class PresetReader
 				
 				BlockFiller filler = new BlockFiller(state, chance, minHeight, maxHeight, matchers, directions, preference);
 				
+				if (fillerObject.has("spawnInPatches") && fillerObject.get("spawnInPatches").getAsBoolean())
+				{
+					filler.setSpawnInPatches();
+				}
+				if (fillerObject.has("patchSpacing")) filler.setPatchSpacing(fillerObject.get("patchSpacing").getAsInt());
+				
+				if (fillerObject.has("patchScale")) filler.setPatchThreshold((fillerObject.get("patchScale").getAsDouble() * 2.0) - 1.0);
+				
 				fillers.add(filler);
 				
 				if (filler.hasMatchers())
@@ -697,6 +715,227 @@ public class PresetReader
 		return maxNumber;
 	}
 	
+	private void addGiantPillars()
+	{
+		List<GiantPillar> finalPillars = new ArrayList<>();
+		
+		if (json.has("giantPillars"))
+		{
+			JsonObject pillars = json.get("giantPillars").getAsJsonObject();
+			
+			if (pillars.has("keys"))
+			{
+				for (JsonElement key : pillars.get("keys").getAsJsonArray())
+				{
+					JsonObject pillar = null;
+					
+					try
+					{
+						pillar = pillars.get(key.getAsString()).getAsJsonObject();
+					}
+					catch (NullPointerException e)
+					{
+						throw new RuntimeException(
+								"Error: Key \"" + key.getAsString() + "\" does not have an equivalent pillar object. "
+							  + "Make sure it is typed correctly.");
+					}
+					
+					if (!pillar.has("pillarState"))
+					{
+						throw new RuntimeException("Error: You must specify a pillarState for each pillar. Only the other parameters have default values.");
+					}
+					
+					IBlockState pillarState = CommonMethods.getBlockState(pillar.get("pillarState").getAsString());
+					
+					Block stairBlock = null;
+					
+					if (pillar.has("stairBlock")) stairBlock = CommonMethods.getBlockState(pillar.get("stairBlock").getAsString()).getBlock();
+					
+					int frequency = 15;
+					
+					if (pillar.has("frequency")) frequency = pillar.get("frequency").getAsInt();
+					
+					int minHeight = 10;
+					
+					if (pillar.has("minHeight")) minHeight = pillar.get("minHeight").getAsInt();
+					
+					int maxHeight = 50;
+					
+					if (pillar.has("maxHeight")) maxHeight = pillar.get("maxHeight").getAsInt();
+					
+					int minLength = 4;
+					
+					if (pillar.has("minLength")) minLength = pillar.get("minLength").getAsInt();
+					
+					int maxLength = 12;
+					
+					if (pillar.has("maxLength")) maxLength = pillar.get("maxLength").getAsInt();
+					
+					finalPillars.add(new GiantPillar(frequency, minHeight, maxHeight, minLength, maxLength, pillarState, stairBlock));
+				}
+			}
+		}
+		
+		newGenerator.pillars = finalPillars.toArray(new GiantPillar[0]);
+	}
+	
+	/**
+	 * Super not finished. Sorry!
+	 */
+	private void addStructures()
+	{
+		List<StructureSpawnInfo> finalStructures = new ArrayList<>();
+		
+		if (json.has("structures"))
+		{
+			JsonObject structures = json.get("structures").getAsJsonObject();
+			
+			if (structures.has("keys"))
+			{
+				for (JsonElement key : structures.get("keys").getAsJsonArray())
+				{
+					JsonObject structure = null;
+					
+					try
+					{
+						structure = structures.get(key.getAsString()).getAsJsonObject();
+					}
+					catch (NullPointerException e)
+					{
+						throw new RuntimeException(
+								"Error: Key \"" + key.getAsString() + "\" does not have an equivalent structure object. "
+							  + "Make sure it is typed correctly.");
+					}
+					
+					if (!structure.has("name"))
+					{
+						throw new RuntimeException(
+								"Error: You must specify a name for each structure. "
+							  + "This can be a registry name or the name of a file under /cavegenerator/structures/.");
+					}
+					
+					String name = structure.get("name").getAsString();
+					
+					PlacementSettings settings = new PlacementSettings();
+					settings.setReplacedBlock(Blocks.STONE);
+					
+					if (structure.has("integrity")) settings.setIntegrity(structure.get("integrity").getAsFloat());
+					
+					BlockPos offset = new BlockPos(0, 0, 0);
+					
+					if (structure.has("offset"))
+					{
+						JsonArray offsets = structure.get("offset").getAsJsonArray();
+						
+						if (offsets.size() != 3)
+						{
+							throw new RuntimeException("Error: \"offset\" must contain exactly three elements (x, y, z).");
+						}
+						
+						offset = offset.add(offsets.get(0).getAsInt(), offsets.get(1).getAsInt(), offsets.get(2).getAsInt());
+					}
+					else
+					{
+						if (structure.has("offsetX"))
+						{
+							offset = offset.add(structure.get("offsetX").getAsInt(), 0, 0);
+						}
+						if (structure.has("offsetY"))
+						{
+							offset = offset.add(0, structure.get("offsetY").getAsInt(), 0);
+						}
+						if (structure.has("offsetZ"))
+						{
+							offset = offset.add(0, 0, structure.get("offsetZ").getAsInt());
+						}
+					}
+
+					IBlockState[] matchers = new IBlockState[] {Blocks.STONE.getDefaultState()};
+					
+					if (structure.has("matchers"))
+					{
+						JsonArray matcherArray = structure.getAsJsonArray("matchers");
+						
+						matchers = new IBlockState[matcherArray.size()];
+						
+						for (int i = 0; i < matcherArray.size(); i++)
+						{
+							matchers[i] = CommonMethods.getBlockState(matcherArray.get(i).getAsString());
+						}
+					}
+					
+					Direction[] directions = new Direction[0];
+					
+					if (structure.has("directions"))
+					{
+						JsonArray directionArray = structure.getAsJsonArray("directions");
+						
+						directions = new Direction[directionArray.size()];
+						
+						for (int i = 0; i < directionArray.size(); i++)
+						{
+							directions[i] = Direction.fromString(directionArray.get(i).getAsString());
+						}
+					}
+					
+					double minBurialPercentage = 0.0;
+					
+					if (structure.has("minBurialPercentage")) minBurialPercentage = structure.get("minBurialPercentage").getAsDouble();
+
+					int frequency = 1;
+					
+					if (structure.has("frequency")) frequency = structure.get("frequency").getAsInt();
+					
+					double chance = 0.05;
+					
+					if (structure.has("chance")) chance = structure.get("chance").getAsDouble();
+					
+					int minHeight = 10;
+					
+					if (structure.has("minHeight")) minHeight = structure.get("minHeight").getAsInt();
+					
+					int maxHeight = 50;
+					
+					if (structure.has("maxHeight")) maxHeight = structure.get("maxHeight").getAsInt();
+					
+					StructureSpawnInfo newInfo = new StructureSpawnInfo(name, settings, offset, matchers, directions, minBurialPercentage, frequency, chance, minHeight, maxHeight);
+					
+					if (structure.has("airMatchers"))
+					{
+						JsonArray matcherArray = structure.get("airMatchers").getAsJsonArray();
+						
+						BlockPos[] positions = new BlockPos[matcherArray.size()];
+						
+						for (int i = 0; i < matcherArray.size(); i++)
+						{
+							JsonArray asArray = matcherArray.get(i).getAsJsonArray();
+							
+							if (asArray.size() != 3)
+							{
+								throw new RuntimeException(
+										"Error: Each airMatcher must contain exactly three elements (x, y, z)."
+									  + "These are relative coordinates to be tested for air in addition to the initially matched location.");
+							}
+							
+							positions[i] = new BlockPos(asArray.get(0).getAsInt(), asArray.get(1).getAsInt(), asArray.get(2).getAsInt());
+						}
+						
+						newInfo.setAdditionalAirMatchers(positions);
+					}
+					
+					if (structure.has("debugSpawns") && structure.get("debugSpawns").getAsBoolean())
+					{
+						newInfo.setDebugSpawns();
+					}
+					
+					finalStructures.add(newInfo);
+				}
+			}
+		}
+		
+		newGenerator.structures = finalStructures.toArray(new StructureSpawnInfo[0]);
+	}
+	
 	/*
 	 * To-do: Avoid repetition.
 	 */
@@ -732,17 +971,15 @@ public class PresetReader
 					
 					IBlockState state = CommonMethods.getBlockState(stalagmite.get("state").getAsString());
 					
-					boolean useNoise = false;
-					
-					if (stalagmite.has("spawnInPatches")) useNoise = stalagmite.get("spawnInPatches").getAsBoolean();
-					
 					int maxLength = 3;
 					
 					if (stalagmite.has("maxLength")) maxLength = stalagmite.get("maxLength").getAsInt();
 					
-					double probability = 16.7;
+					double chance = 16.7;
 					
-					if (stalagmite.has("probability")) probability = stalagmite.get("probability").getAsDouble();
+					if (stalagmite.has("chance")) chance = stalagmite.get("chance").getAsDouble();
+					
+					else if (stalagmite.has("probability")) chance = stalagmite.get("probability").getAsDouble();
 					
 					int minHeight = 11;
 					
@@ -752,7 +989,13 @@ public class PresetReader
 					
 					if (stalagmite.has("maxHeight")) maxHeight = stalagmite.get("maxHeight").getAsInt();
 					
-					LargeStalactite newStalagmite = new LargeStalactite(useNoise, maxLength, probability, state, minHeight, maxHeight, LargeStalactite.Type.STALAGMITE);
+					LargeStalactite newStalagmite = new LargeStalactite(maxLength, chance, state, minHeight, maxHeight, LargeStalactite.Type.STALAGMITE);
+					
+					if (stalagmite.has("spawnInPatches") && stalagmite.get("spawnInPatches").getAsBoolean()) newStalagmite.setSpawnInPatches();
+					
+					if (stalagmite.has("patchSpacing")) newStalagmite.setPatchSpacing(stalagmite.get("patchSpacing").getAsInt());
+					
+					if (stalagmite.has("patchScale")) newStalagmite.setPatchThreshold((stalagmite.get("patchScale").getAsDouble() * -2.0) + 1.0);
 					
 					finalStalactites.add(newStalagmite);
 				}
@@ -787,17 +1030,15 @@ public class PresetReader
 					
 					IBlockState state = CommonMethods.getBlockState(stalactite.get("state").getAsString());
 					
-					boolean useNoise = false;
-					
-					if (stalactite.has("spawnInPatches")) useNoise = stalactite.get("spawnInPatches").getAsBoolean();
-					
 					int maxLength = 3;
 					
 					if (stalactite.has("maxLength")) maxLength = stalactite.get("maxLength").getAsInt();
 					
-					double probability = 16.7;
+					double chance = 16.7;
 					
-					if (stalactite.has("probability")) probability = stalactite.get("probability").getAsDouble();
+					if (stalactite.has("chance")) chance = stalactite.get("chance").getAsDouble();
+					
+					else if (stalactite.has("probability")) chance = stalactite.get("probability").getAsDouble();
 					
 					int minHeight = 11;
 					
@@ -807,7 +1048,13 @@ public class PresetReader
 					
 					if (stalactite.has("maxHeight")) maxHeight = stalactite.get("maxHeight").getAsInt();
 					
-					LargeStalactite newStalactite = new LargeStalactite(useNoise, maxLength, probability, state, minHeight, maxHeight, LargeStalactite.Type.STALACTITE);
+					LargeStalactite newStalactite = new LargeStalactite(maxLength, chance, state, minHeight, maxHeight, LargeStalactite.Type.STALACTITE);
+					
+					if (stalactite.has("spawnInPatches") && stalactite.get("spawnInPatches").getAsBoolean()) newStalactite.setSpawnInPatches();
+					
+					if (stalactite.has("patchSpacing")) newStalactite.setPatchSpacing(stalactite.get("patchSpacing").getAsInt());
+					
+					if (stalactite.has("patchScale")) newStalactite.setPatchThreshold((stalactite.get("patchScale").getAsDouble() * -2.0) + 1.0);
 					
 					finalStalactites.add(newStalactite);
 				}

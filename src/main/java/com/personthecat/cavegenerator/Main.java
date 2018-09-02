@@ -2,12 +2,15 @@ package com.personthecat.cavegenerator;
 
 import org.apache.logging.log4j.Logger;
 
+import com.personthecat.cavegenerator.commands.CommandReloadCaves;
+import com.personthecat.cavegenerator.commands.CommandTestCaves;
 import com.personthecat.cavegenerator.config.PresetCombiner;
 import com.personthecat.cavegenerator.proxy.CommonProxy;
 import com.personthecat.cavegenerator.util.CommonMethods;
 import com.personthecat.cavegenerator.world.DisableVanillaStoneGen;
 import com.personthecat.cavegenerator.world.ReplaceVanillaCaveGen;
 import com.personthecat.cavegenerator.world.feature.CaveFeatureGenerator;
+import com.personthecat.cavegenerator.world.feature.StructureSpawner;
 
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -21,7 +24,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 
 @Mod(modid = "cavegenerator",
      name = "Cave Generator",
-     version = "0.10",
+     version = "0.12",
      dependencies = "after:worleycaves;"
 )
 public class Main
@@ -40,14 +43,15 @@ public class Main
 	public static void preInit(FMLPreInitializationEvent event)
 	{
 		logger = event.getModLog();
-		
-		PresetCombiner.init();
 	}
 	
 	@EventHandler
 	public static void init(FMLInitializationEvent event)
 	{
 		CommonMethods.copyPresetFiles();
+		CommonMethods.copyExampleStructures();
+		PresetCombiner.init();
+		StructureSpawner.loadAllStructures();
 		CaveInit.init();		
 		MinecraftForge.TERRAIN_GEN_BUS.register(ReplaceVanillaCaveGen.class);
 		MinecraftForge.ORE_GEN_BUS.register(DisableVanillaStoneGen.class);
@@ -60,5 +64,6 @@ public class Main
 	public static void onServerStartingEvent(FMLServerStartingEvent event)
 	{
 		event.registerServerCommand(new CommandReloadCaves());
+		event.registerServerCommand(new CommandTestCaves());
 	}
 }
