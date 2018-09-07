@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.world.feature;
 
+import java.util.Arrays;
 import java.util.Random;
 
 import com.personthecat.cavegenerator.CaveInit;
@@ -27,7 +28,6 @@ import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraft.world.gen.NoiseGeneratorSimplex;
 import net.minecraft.world.gen.structure.template.Template;
 import net.minecraftforge.fml.common.IWorldGenerator;
-import scala.actors.threadpool.Arrays;
 
 public class CaveFeatureGenerator implements IWorldGenerator
 {

@@ -828,10 +828,7 @@ public class PresetReader
 		
 		newGenerator.pillars = finalPillars.toArray(new GiantPillar[0]);
 	}
-	
-	/**
-	 * Super not finished. Sorry!
-	 */
+
 	private void addStructures()
 	{
 		List<StructureSpawnInfo> finalStructures = new ArrayList<>();

@@ -9,12 +9,13 @@
 		{
 			"//" : "See vanilla.json to find all of the parameters / options accepted by giantPillars.",
 			"pillarState" : "quartz_block:2",
-			"stairBlock" : "quartz_stairs"
+			"stairBlock" : "quartz_stairs",
+			"minLength" : 6
 		}
 	},
 	"structures" :
 	{
-		"keys" : ["extraFossilTest", "hangingSpawnerTest"],
+		"keys" : ["extraFossilTest", "hangingSpawnerTest", "giantRedMushroom"],
 
 		"//" : "Looks like you've discovered a little secret. Just so you know, structures are extremely, extremely WIP.",
 		"extraFossilTest" :
@@ -23,12 +24,12 @@
 			"offset" : [0, -4, 0],
 			"matchers" : ["stone", "stone:5", "grass", "gravel", "dirt:1"],
 			"directions" : ["down"],
-			"minBurialPercentage" : 0,
 			"integrity" : 0.7,
 			"frequency" : 1,
-			"chance" : 2,
+			"chance" : 3,
 			"minHeight" : 10,
-			"maxHeight" : 50
+			"maxHeight" : 50,
+			"debugSpawns" : false
 		},
 		"hangingSpawnerTest" :
 		{
@@ -37,12 +38,21 @@
 			"matchers" : ["stone", "stone:5"],
 			"airMatchers" : [[0, -6, 0]],
 			"directions" : ["up"],
-			"minBurialPercentage" : 0,
 			"integrity" : 1.0,
 			"frequency" : 1,
 			"chance" : 15,
 			"minHeight" : 10,
 			"maxHeight" : 50
+		},
+		"giantRedMushroom" :
+		{
+			"name" : "red_mushroom",
+			"matchers" : ["stone", "stone:5", "grass", "gravel", "dirt:1"],
+			"offsetY" : 1,
+			"directions" : ["down"],
+			"frequency" : 2,
+			"chance" : 9,
+			"minHeight" : 18
 		}
 	},
 	"tunnels" : 
@@ -94,9 +104,7 @@
 			"maxHeight" : 50,
 			"directions" : ["down"],
 			"matchers" : ["stone", "stone:1", "stone:3", "stone:5"],
-			"preference" : "replace_match",
-			"spawnInPatches" : true,
-			"patchSpacing" : 10
+			"preference" : "replace_match"
 		},
 		"coarseDirt" : 
 		{
@@ -106,9 +114,7 @@
 			"maxHeight" : 50,
 			"directions" : ["down"],
 			"matchers" : ["stone", "stone:1", "stone:3", "stone:5"],
-			"preference" : "replace_match",
-			"spawnInPatches" : true,
-			"patchSpacing" : 30
+			"preference" : "replace_match"
 		},
 		"grassPatches" : 
 		{
