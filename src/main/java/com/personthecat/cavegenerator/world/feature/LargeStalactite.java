@@ -20,6 +20,7 @@ public class LargeStalactite extends WorldGenerator
 	private boolean spawnInPatches;
 	private double patchThreshold = 0.15;
 	private int patchSpacing = 40;
+	private IBlockState[] matchers = new IBlockState[0];
 	
 	public LargeStalactite(int maxLength, double chance, IBlockState state, int minHeight, int maxHeight, Type type)
 	{
@@ -94,6 +95,16 @@ public class LargeStalactite extends WorldGenerator
 	public int getMaxHeight()
 	{
 		return maxHeight;
+	}
+	
+	public void setMatchers(IBlockState[] matchers)
+	{
+		this.matchers = matchers;
+	}
+	
+	public IBlockState[] getMatchers()
+	{
+		return matchers;
 	}
 	
 	public Type getType()

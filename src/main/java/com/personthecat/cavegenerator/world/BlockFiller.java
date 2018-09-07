@@ -8,6 +8,8 @@ import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.util.Direction;
 import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
 
+import static com.personthecat.cavegenerator.Main.logger;
+
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 
@@ -33,6 +35,10 @@ public class BlockFiller
 	
 	private double patchThreshold = -0.2;
 	
+	private boolean caveSpecific;
+	
+	public static final List<BlockFiller> REPLACEABLE_FILLER_REGISTRY = new ArrayList<>();
+	
 	public BlockFiller(IBlockState state, double chance, int minHeight, int maxHeight, IBlockState[] matchers, Direction[] directions, Preference preference)
 	{
 		this.fillWith = state;
@@ -42,6 +48,11 @@ public class BlockFiller
 		this.matchers = matchers;
 		this.directions = directions;
 		this.preference = preference;
+	}
+	
+	public void registerAsReplaceable()
+	{
+		REPLACEABLE_FILLER_REGISTRY.add(this);
 	}
 	
 	public void setSpawnInPatches()
@@ -74,6 +85,17 @@ public class BlockFiller
 	public double getPatchThreshold()
 	{
 		return patchThreshold;
+	}
+	
+	public void setCaveSpecific()
+	{
+		this.caveSpecific = true;
+	}
+	
+	@Deprecated
+	public boolean isCaveSpecific()
+	{
+		return caveSpecific;
 	}
 	
 	public SimplexNoiseGenerator3D getNoise()
@@ -118,24 +140,19 @@ public class BlockFiller
 		return fillWith;
 	}
 	
-	public static IBlockState[] getAllFillBlocks()
+	public static IBlockState[] getReplaceableFillBlocks()
 	{
-		List<IBlockState> fillers = new ArrayList<>();
+		List<IBlockState> replaceableBlocks = new ArrayList<>();
 		
-		for (CaveGenerator generator : CaveInit.GENERATORS.values())
+		for (BlockFiller filler : REPLACEABLE_FILLER_REGISTRY)
 		{
-			if (generator.generateThroughFillers)
-			{
-				for (BlockFiller filler : generator.fillBlocks)
-				{
-					fillers.add(filler.fillWith);
-				}
-			}
+			replaceableBlocks.add(filler.getFillBlock());
 		}
 		
-		return fillers.toArray(new IBlockState[0]);
+		return replaceableBlocks.toArray(new IBlockState[0]);
 	}
 	
+	@Deprecated //Not a bad method, just no longer needed.
 	public boolean hasMatchers()
 	{
 		return matchers.length > 0;
@@ -159,6 +176,41 @@ public class BlockFiller
 	public boolean canGenerateAtHeight(int y)
 	{
 		return y >= minHeight && y <= maxHeight;
+	}
+	
+	/**
+	 * Returns true if the replacement doesn't have noise or 
+	 * if its noise at the given coords meets the threshold.
+	 */
+	public boolean testNoise(int chunkX, int chunkZ, int x, int y, int z)
+	{
+		if (spawnInPatches)
+		{
+			int actualX = (chunkX * 16) + x;
+			int actualZ = (chunkZ * 16) + z;
+			
+			double noise = getNoise().getFractalNoise(actualX, y, actualZ, 1, patchSpacing, 1);
+			
+			if (noise > patchThreshold) return true;
+			
+			return false;
+		}
+		
+		return true;		
+	}
+	
+	public boolean testNoise(int x, int y, int z)
+	{
+		if (spawnInPatches)
+		{
+			double noise = getNoise().getFractalNoise(x, y, z, 1, patchSpacing, 1);
+			
+			if (noise > patchThreshold) return true;
+			
+			return false;
+		}
+		
+		return true;		
 	}
 
 	public Preference getPreference()

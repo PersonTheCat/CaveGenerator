@@ -74,7 +74,10 @@ public class RavineManager extends MapGenBase
     {
     	for (CaveGenerator generator : CaveInit.GENERATORS.values())
     	{
-    		generator.finishChunkWalls(chunkX, chunkZ, primer);
+    		if (generator.enabledGlobally)
+    		{
+    			generator.finishChunkWalls(chunkX, chunkZ, primer);
+    		}
     	}
     }
     

@@ -11,8 +11,8 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.personthecat.cavegenerator.util.CommonMethods;
-import com.personthecat.cavegenerator.world.BlockFiller;
 import com.personthecat.cavegenerator.util.Direction;
+import com.personthecat.cavegenerator.world.BlockFiller;
 import com.personthecat.cavegenerator.world.BlockFiller.Preference;
 import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.CaveGenerator.Extension;
@@ -21,12 +21,12 @@ import com.personthecat.cavegenerator.world.StoneReplacer.StoneLayer;
 import com.personthecat.cavegenerator.world.feature.GiantPillar;
 import com.personthecat.cavegenerator.world.feature.LargeStalactite;
 import com.personthecat.cavegenerator.world.feature.StructureSpawnInfo;
-import com.personthecat.cavegenerator.world.feature.StructureSpawner;
+
+import static com.personthecat.cavegenerator.Main.logger;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
-import net.minecraft.nbt.NBTTagCompound;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
@@ -74,10 +74,10 @@ public class PresetReader
 		addStoneLayers();
 		addStoneClusters();
 		addBlockFillers();
-		addFinalHeights();
 		addGiantPillars();
 		addStructures();
 		addLargeStalagmitesAndStalactites();
+		addFinalHeights();
 	}
 	
 	private void addGlobalValues()
@@ -463,13 +463,25 @@ public class PresetReader
 
 	private void addBlockFillers()
 	{
-		List<BlockFiller> fillers = new ArrayList<>();
-		List<BlockFiller> fillersMatchSides = new ArrayList<>();
+		List<BlockFiller> fillersNormal = new ArrayList<>();
+		List<BlockFiller> fillersUp = new ArrayList<>();
+		List<BlockFiller> fillersDown = new ArrayList<>();
+		List<BlockFiller> fillersSide = new ArrayList<>();
 		
 		if (json.has("blockFillers"))
 		{
 			JsonObject fillerContainer = json.get("blockFillers").getAsJsonObject();
 
+			boolean fillersAreReplaceable = true;
+			
+			if (fillerContainer.has("fillersAreReplaceable"))
+			{
+				if (!fillerContainer.get("fillersAreReplaceable").getAsBoolean())
+				{
+					fillersAreReplaceable = false;
+				}
+			}
+			
 			for (JsonElement key : fillerContainer.getAsJsonArray("keys"))
 			{
 				JsonObject fillerObject = null;
@@ -498,6 +510,11 @@ public class PresetReader
 				int minHeight = fillerObject.get("minHeight").getAsInt();
 				
 				int maxHeight = fillerObject.get("maxHeight").getAsInt();
+				
+				if (fillerObject.has("matchers") ^ fillerObject.has("directions"))
+				{
+					throw new RuntimeException("Error: You must specify both a direction to test for and blocks to match when using either directions or matchers. See " + key.getAsString() + ".");
+				}
 				
 				IBlockState[] matchers = new IBlockState[0];
 				
@@ -541,30 +558,63 @@ public class PresetReader
 				
 				if (fillerObject.has("patchScale")) filler.setPatchThreshold((fillerObject.get("patchScale").getAsDouble() * 2.0) - 1.0);
 				
-				fillers.add(filler);
+//				if (fillerObject.has("caveSpecific") && fillerObject.get("caveSpecific").getAsBoolean())
+//				{
+//					boolean canSet = true;
+//					
+//					for (Direction dir : directions)
+//					{
+//						if (dir.equals(Direction.SIDE) || dir.equals(Direction.ALL))
+//						{
+//							logger.warn("Block fillers cannot be cave specific when using side matchers. Spawning " + key.getAsString() + " normally, instead.");
+//							
+//							canSet = false;
+//						}
+//					}
+//					
+//					if (canSet) filler.setCaveSpecific();
+//				}
 				
-				if (filler.hasMatchers())
+				if (fillersAreReplaceable) filler.registerAsReplaceable();
+				
+				if (directions.length == 0)
 				{
-					if (filler.getPreference().equals(Preference.REPLACE_MATCH))
+					fillersNormal.add(filler);
+				}
+				else for (Direction dir : directions)
+				{
+					switch (dir)
 					{
-						for (Direction dir : filler.getDirections())
-						{
-							if (dir.equals(Direction.SIDE) || dir.equals(Direction.ALL))
-							{
-								fillersMatchSides.add(filler);
-								
-								break;
-							}
-						}
+						case ALL:
+							fillersUp.add(filler);
+							fillersDown.add(filler);
+							fillersSide.add(filler);
+							break;
+						case SIDE:
+							fillersSide.add(filler);
+							break;
+						case UP:
+							fillersUp.add(filler);
+							break;
+						case DOWN:
+							fillersDown.add(filler);
+							break;
+						
+						default: throw new IllegalStateException("Error: I'm really not sure how you got here... This direction... does not exist...");
 					}
 				}
 			}
 			
-			newGenerator.fillBlocks = fillers.toArray(new BlockFiller[0]);
-			newGenerator.fillMatchSides = fillersMatchSides.toArray(new BlockFiller[0]);
+			newGenerator.fillBlocksNormal = fillersNormal.toArray(new BlockFiller[0]);
+			newGenerator.fillBlocksUp = fillersUp.toArray(new BlockFiller[0]);
+			newGenerator.fillBlocksDown = fillersDown.toArray(new BlockFiller[0]);
+			newGenerator.fillBlocksSide = fillersSide.toArray(new BlockFiller[0]);
 		}
 	}
 	
+	/**
+	 * To-do: Decide how necessary this function really is.
+	 */
 	private void addExtensions(JsonObject tunnelObject)
 	{
 		if (tunnelObject.has("extensions"))
@@ -763,7 +813,7 @@ public class PresetReader
 					
 					if (pillar.has("maxHeight")) maxHeight = pillar.get("maxHeight").getAsInt();
 					
-					int minLength = 4;
+					int minLength = 5;
 					
 					if (pillar.has("minLength")) minLength = pillar.get("minLength").getAsInt();
 					
@@ -923,9 +973,37 @@ public class PresetReader
 						newInfo.setAdditionalAirMatchers(positions);
 					}
 					
+					if (structure.has("solidMatchers"))
+					{
+						JsonArray matcherArray = structure.get("solidMatchers").getAsJsonArray();
+						
+						BlockPos[] positions = new BlockPos[matcherArray.size()];
+						
+						for (int i = 0; i < matcherArray.size(); i++)
+						{
+							JsonArray asArray = matcherArray.get(i).getAsJsonArray();
+							
+							if (asArray.size() != 3)
+							{
+								throw new RuntimeException(
+										"Error: Each solidMatcher must contain exactly three elements (x, y, z)."
+									  + "These are relative coordinates to be tested for solid blocks in addition to the initially matched location.");
+							}
+							
+							positions[i] = new BlockPos(asArray.get(0).getAsInt(), asArray.get(1).getAsInt(), asArray.get(2).getAsInt());
+						}
+						
+						newInfo.setAdditionalSolidMatchers(positions);
+					}
+					
 					if (structure.has("debugSpawns") && structure.get("debugSpawns").getAsBoolean())
 					{
 						newInfo.setDebugSpawns();
+					}
+					
+					if (structure.has("rotateRandomly") && structure.get("rotateRandomly").getAsBoolean())
+					{
+						newInfo.setRotateRandomly();
 					}
 					
 					finalStructures.add(newInfo);
@@ -997,6 +1075,20 @@ public class PresetReader
 					
 					if (stalagmite.has("patchScale")) newStalagmite.setPatchThreshold((stalagmite.get("patchScale").getAsDouble() * -2.0) + 1.0);
 					
+					if (stalagmite.has("matchers"))
+					{
+						JsonArray matcherArray = stalagmite.getAsJsonArray("matchers");
+						
+						IBlockState[] matchers = new IBlockState[matcherArray.size()];
+						
+						for (int i = 0; i < matcherArray.size(); i++)
+						{
+							matchers[i] = CommonMethods.getBlockState(matcherArray.get(i).getAsString());
+						}
+						
+						newStalagmite.setMatchers(matchers);
+					}
+					
 					finalStalactites.add(newStalagmite);
 				}
 			}
@@ -1055,6 +1147,20 @@ public class PresetReader
 					if (stalactite.has("patchSpacing")) newStalactite.setPatchSpacing(stalactite.get("patchSpacing").getAsInt());
 					
 					if (stalactite.has("patchScale")) newStalactite.setPatchThreshold((stalactite.get("patchScale").getAsDouble() * -2.0) + 1.0);
+					
+					if (stalactite.has("matchers"))
+					{
+						JsonArray matcherArray = stalactite.getAsJsonArray("matchers");
+						
+						IBlockState[] matchers = new IBlockState[matcherArray.size()];
+						
+						for (int i = 0; i < matcherArray.size(); i++)
+						{
+							matchers[i] = CommonMethods.getBlockState(matcherArray.get(i).getAsString());
+						}
+						
+						newStalactite.setMatchers(matchers);
+					}
 					
 					finalStalactites.add(newStalactite);
 				}

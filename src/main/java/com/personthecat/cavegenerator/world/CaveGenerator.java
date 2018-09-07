@@ -40,6 +40,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.MapGenCaves;
 import net.minecraft.world.gen.NoiseGeneratorSimplex;
+import net.minecraftforge.common.BiomeDictionary;
 
 /**
  * To-do: Get rid of this airOnly concept. Finally start using decorateBlock() as a dedicated function.
@@ -53,7 +54,6 @@ public class CaveGenerator
 		useDimensionBlacklist = false,
 		cavernsEnabled = false,
 		fastCavernYSmoothing = false,
-		generateThroughFillers = true,
 		noiseYReduction = true; //Vanilla function
 
 	public Extension
@@ -173,8 +173,11 @@ public class CaveGenerator
 	
 	public BlockFiller[] 
 	
-		fillBlocks = new BlockFiller[0],
-		fillMatchSides = new BlockFiller[0]; //Avoid calculating these every chunk.
+		fillBlocksNormal = new BlockFiller[0],
+		fillBlocksUp = new BlockFiller[0],
+		fillBlocksDown = new BlockFiller[0],
+		fillBlocksSide = new BlockFiller[0]; //Avoid calculating these every chunk.
+		
 	
 	public StoneCluster[] stoneClusters = new StoneCluster[0];
 	
@@ -442,13 +445,12 @@ public class CaveGenerator
 
 					if (!shouldTestForWater(endY) || !testForWater(primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ))
 					{
-						if (fillBlocks != null && shouldPregenerateAir())//First generate air so it can be replaced. Only needed if blocks should be matched directionally.
+						if (shouldPregenerateAir())//First generate air so it can be replaced. Only needed if blocks should be matched directionally.
 						{
 							replaceSection(primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
 							
 							decorateSection(primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
 						}
-						
 						else replaceSection(primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
 					}
 					
@@ -534,13 +536,12 @@ public class CaveGenerator
 
                     if (!shouldTestForWater(endY) || !testForWaterFromMut(primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ))
                     {
-                    	if (fillBlocks != null && shouldPregenerateAir())
+                    	if (shouldPregenerateAir())
                     	{
                     		replaceSectionFromMut(primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
                     		
                     		decorateSectionFromMut(primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
                     	}
-
                     	else replaceSectionFromMut(primer, radiusXZ, radiusY, chunkX, chunkZ, startX, endX, posX, startY, endY, posY, startZ, endZ, posZ);
                     }
                 }
@@ -618,7 +619,7 @@ public class CaveGenerator
 		int cavernMin = 0, cavernMax = 0;
 		
 		boolean airOnly = true;
-
+		
 		for (int i = 0; i < (shouldPregenerateAir() ? 2 : 1); i++)
 		{
 			for (int x = 0; x < 16; x++)
@@ -637,11 +638,11 @@ public class CaveGenerator
 					floorNoise *= 4.0;
 					floorNoise += 4.0;
 					
-					for (int y = noiseMaxHeight; y >= noiseMinHeight; y--)
+					for (int y = noiseMinHeight; y <= noiseMaxHeight; y++)
 					{
 						IBlockState original = primer.getBlockState(x, y, z);
 						
-						if (!airOnly || canReplaceBlock(original, primer, x, y, z))
+						if ((!airOnly || canReplaceLessSpecific(original)))
 						{
 							boolean cavernPlaced = false;
 							
@@ -744,6 +745,7 @@ public class CaveGenerator
 	/*
 	 * Don't delete this yet. Still not sure whether it's faster or slower.
 	 */
+	@Deprecated
 	private void decidePlace(boolean airOnly, int chunkX, int chunkZ, ChunkPrimer primer, int x, int y, int z)
 	{		
 		if (!airOnly || !primer.getBlockState(x, y, z).equals(Values.BLK_WATER))
@@ -854,6 +856,7 @@ public class CaveGenerator
 	 * aren't valid candidates for spawning. Detection is not very good.
 	 * Not yet worth the extra 1-2 seconds world gen time.
 	 */
+	@Deprecated
 	protected void addCavernFadeOut(int chunkX, int chunkZ, ChunkPrimer primer)
 	{
 		boolean matchingBiomeNorth = true, matchingBiomeSouth = true, matchingBiomeEast = true, matchingBiomeWest = true,
@@ -871,7 +874,7 @@ public class CaveGenerator
 			matchingSouthWest = CommonMethods.isAnyBiomeInChunk(biomes, world, chunkX - 1, chunkZ + 1);
 		}
 		
-		int iterations = fillBlocks != null ? 2 : 1;
+		int iterations = fillBlocksNormal != null ? 2 : 1;
 		
 		boolean airOnly = true;
 		
@@ -954,19 +957,14 @@ public class CaveGenerator
 	
 	public boolean shouldPregenerateAir()
 	{
-		for (BlockFiller filler : fillBlocks)
-		{
-			if (filler.hasDirections()) return true;
-		}
-		
-		return false;
+		return fillBlocksDown.length > 0 || fillBlocksUp.length > 0;
 	}
 	
 	private boolean shouldTestForWater(int highestY)
 	{
-		for (BlockFiller filler : fillBlocks)
+		for (BlockFiller filler : fillBlocksNormal)
 		{
-			if (filler.getFillBlock().equals(Values.BLK_WATER) && highestY <= filler.getMaxHeight() + 1)
+			if (filler.getFillBlock().equals(Values.BLK_WATER) && highestY <= filler.getMaxHeight() + 6)
 			{
 				return false; //Ignore water that's supposed to exist.
 			}
@@ -1221,12 +1219,27 @@ public class CaveGenerator
 				return true;
 			}
 			
-			data.setBlockState(x, y, z, Values.BLK_AIR);
-
 			if (foundTop && data.getBlockState(x, yDown, z).getBlock().equals(filler.getBlock()))
 			{
 				data.setBlockState(x, yDown, z, top.getBlock().getDefaultState());
 			}
+			
+			for (BlockFiller replacement : fillBlocksNormal)
+			{
+				if (replacement.canGenerateAtHeight(y))
+				{
+					double chance = replacement.getChance();
+					
+					if (chance == 100 || rand.nextDouble() * 100 <= chance)
+					{
+						data.setBlockState(x, y, z, replacement.getFillBlock());
+						
+						return true;
+					}
+				}
+			}
+			
+			data.setBlockState(x, y, z, Values.BLK_AIR);
 			
 			return true;
 		}
@@ -1234,158 +1247,126 @@ public class CaveGenerator
 		return false;
 	}
 	
-	/*
-	 * To-do: Find a neater way to avoid repeatedly calculating blockUp, blockDown, etc.
-	 */
 	private boolean decorateBlock(int chunkX, int chunkZ, ChunkPrimer primer, int x, int y, int z)
 	{
 		int yDown = y - 1, yUp = y + 1;
 		
-		BlockPos posUp = new BlockPos(x, yUp, z),
-				 posDown = new BlockPos(x, yDown, z),
-				 posNorth = new BlockPos(x, y, z - 1),
-				 posSouth = new BlockPos(x, y, z + 1),
-				 posEast = new BlockPos(x + 1, y, z),
-				 posWest = new BlockPos(x - 1, y, z);
-					
-		if (fillBlocks != null)
+		/*up:*/ for (BlockFiller replacement : fillBlocksUp)
 		{
-			for (BlockFiller replacement : fillBlocks)
+			IBlockState blockUp = primer.getBlockState(x, yUp, z);
+			
+			if (!blockUp.getMaterial().equals(Material.AIR))
 			{
 				if (replacement.canGenerateAtHeight(y) && indRand.nextDouble() * 100 <= replacement.getChance())
 				{
-					if (replacement.shouldSpawnInPatches())
+					if (replacement.testNoise(chunkX, chunkZ, x, yUp, z))
 					{
-						int actualX = (chunkX * 16) + x;
-						int actualZ = (chunkZ * 16) + z;
-						
-						double noise = replacement.getNoise().getFractalNoise(actualX, y, actualZ, 1, replacement.getPatchSpacing(), 1);
-						
-						if (noise < replacement.getPatchThreshold()) continue;
-					}
-					
-					boolean replaceAtMatch = replacement.getPreference().equals(Preference.REPLACE_MATCH),
-							matchFound = false,
-							breakFromLoop = false;
-
-					if (replacement.hasMatchers())
-					{
-						for (Direction direction : replacement.getDirections())
-						{								
-							switch (direction)
+						for (IBlockState matcher : replacement.getMatchers())
+						{
+							if (matcher.equals(blockUp))
 							{
-								case UP:
+								if (replacement.getPreference().equals(Preference.REPLACE_ORIGINAL))
+								{
+									primer.setBlockState(x, y, z, replacement.getFillBlock());
 									
-									for (IBlockState matcher : replacement.getMatchers())
-									{
-										if (primer.getBlockState(posUp.getX(), posUp.getY(), posUp.getZ()).equals(matcher))
-										{
-											if (replaceAtMatch)
-											{
-												primer.setBlockState(posUp.getX(), posUp.getY(), posUp.getZ(), replacement.getFillBlock());
-												
-												break;
-											}
-											
-											matchFound = true;
-										}
-									}
-
-									break;
-									
-								case SIDE:
-									
-									for (IBlockState matcher : replacement.getMatchers())
-									{
-										if (breakFromLoop) break;
-										
-										for (BlockPos pos : new BlockPos[] {posNorth, posSouth, posEast, posWest})
-										{
-											int xRel = pos.getX(), yRel = pos.getY(), zRel = pos.getZ();
-											
-											if (areCoordsInChunk(xRel, zRel))
-											{
-												if (matcher.equals(primer.getBlockState(xRel, yRel, zRel)))
-												{
-													primer.setBlockState(xRel, yRel, zRel, replacement.getFillBlock());
-													
-													breakFromLoop = true;
-													
-													if (!replaceAtMatch)
-													{
-														matchFound = true;
-														break;
-													}
-												}
-											}
-										}
-									}
-									
-									break;
-									
-								case DOWN:
-									
-									for (IBlockState matcher : replacement.getMatchers())
-									{
-										if (primer.getBlockState(posDown.getX(), posDown.getY(), posDown.getZ()).equals(matcher))
-										{
-											if (replaceAtMatch)
-											{
-												primer.setBlockState(posDown.getX(), posDown.getY(), posDown.getZ(), replacement.getFillBlock());
-												
-												break;
-											}
-											
-											matchFound = true;
-										}
-									}
-									
-									break;
-									
-								case ALL:
-									
-									for (IBlockState matcher : replacement.getMatchers())
-									{
-										if (breakFromLoop) break;
-										
-										for (BlockPos pos : new BlockPos[] {posUp, posDown, posNorth, posSouth, posEast, posWest})
-										{	
-											int xRel = pos.getX(), yRel = pos.getY(), zRel = pos.getZ();
-											
-											if (areCoordsInChunk(xRel, zRel))
-											{
-												if (matcher.equals(primer.getBlockState(xRel, yRel, zRel)))
-												{
-													primer.setBlockState(xRel, yRel, zRel, replacement.getFillBlock());
-													
-													breakFromLoop = true;
-													
-													if (!replaceAtMatch)
-													{
-														matchFound = true;
-														break;
-													}
-												}
-											}
-										}
-									}
-									
-									break;
-									
-								default:
-									
-									throw new AssertionError("Error: Invalid direction detected. Unable to phase through fourth dimension.");
+									return true;
+								}
+								else primer.setBlockState(x, yUp, z, replacement.getFillBlock());
+								
+								/*break up;*/ break;
 							}
 						}
 					}
-					
-					else matchFound = true;
-					
-					if (matchFound)
+				}
+			}
+		}
+		/*down:*/ for (BlockFiller replacement : fillBlocksDown)
+		{
+			IBlockState blockDown = primer.getBlockState(x, yDown, z);
+			
+			if (!blockDown.getMaterial().equals(Material.AIR))
+			{
+				if (replacement.canGenerateAtHeight(y) && indRand.nextDouble() * 100 <= replacement.getChance())
+				{
+					if (replacement.testNoise(chunkX, chunkZ, x, yDown, z))
 					{
-						primer.setBlockState(x, y, z, replacement.getFillBlock());
-						
-						return true;
+						for (IBlockState matcher : replacement.getMatchers())
+						{
+							if (matcher.equals(blockDown))
+							{
+								if (replacement.getPreference().equals(Preference.REPLACE_ORIGINAL))
+								{
+									primer.setBlockState(x, y, z, replacement.getFillBlock());
+									
+									return true;
+								}
+								else primer.setBlockState(x, yDown, z, replacement.getFillBlock());
+								
+								/*break down;*/ break;
+							}
+						}
+					}
+				}
+			}	
+		}
+		if (fillBlocksSide.length > 0)
+		{
+			BlockPos north = new BlockPos(x, y, z - 1);
+			BlockPos south = new BlockPos(x, y, z + 1);
+			BlockPos east = new BlockPos(x + 1, y, z);
+			BlockPos west = new BlockPos(x - 1, y, z);
+			
+			List<BlockFiller> testedReplacements = new ArrayList<>();
+			
+			for (BlockFiller replacement: fillBlocksSide) //Lower precision; increase performance?
+			{
+				if (replacement.canGenerateAtHeight(y))
+				{
+					if (replacement.testNoise(chunkX, chunkZ, x, y, z))
+					{
+						testedReplacements.add(replacement);
+					}
+				}
+			}
+			
+			/*directions:*/ for (BlockPos pos : new BlockPos[] {north, south, east, west})
+			{
+				if (areCoordsInChunk(pos.getX(), pos.getZ()))
+				{
+					IBlockState previousBlock = primer.getBlockState(pos.getX(), pos.getY(), pos.getZ());
+					
+					if (previousBlock.getMaterial().equals(Material.AIR))
+					{
+						continue;
+					}
+					
+					for (BlockFiller replacement : testedReplacements)
+					{
+						if (indRand.nextDouble() * 100 <= replacement.getChance())
+						{
+							for (IBlockState matcher : replacement.getMatchers())
+							{
+								if (matcher.equals(previousBlock))
+								{
+									if (replacement.getPreference().equals(Preference.REPLACE_ORIGINAL))
+									{
+										primer.setBlockState(x, y, z, replacement.getFillBlock());
+										
+										return true;
+									}
+									else
+									{
+										primer.setBlockState(pos.getX(), pos.getY(), pos.getZ(), replacement.getFillBlock());
+										
+										//continue directions; //Don't keep trying each replacement once a direction has been replaced. --Never mind.
+										
+										break;
+										
+										//To-do: Sort fillers by preference and run replace_original second?
+									}
+								}
+							}
+						}
 					}
 				}
 			}
@@ -1396,7 +1377,7 @@ public class CaveGenerator
 	
 	private boolean fillersHaveDirection(Direction direction)
 	{
-		for (BlockFiller filler : fillBlocks)
+		for (BlockFiller filler : fillBlocksNormal)
 		{
 			if (filler.hasDirection(direction))
 			{
@@ -1438,7 +1419,7 @@ public class CaveGenerator
 	 */
 	public void finishChunkWalls(int chunkX, int chunkZ, ChunkPrimer primer)
 	{
-		if (fillMatchSides.length == 0) return;
+		if (fillBlocksSide.length == 0) return;
 		
 		int startX = chunkX << 4, startZ = chunkZ << 4;
 		
@@ -1533,7 +1514,7 @@ public class CaveGenerator
 	 */
 	private void fastDecorate(BlockPos pos, IBlockState original)
 	{
-		for (BlockFiller replacement : fillMatchSides)
+		for (BlockFiller replacement : fillBlocksSide)
 		{
 			if (replacement.canGenerateAtHeight(pos.getY()))
 			{
@@ -1559,7 +1540,7 @@ public class CaveGenerator
 	 */
 	private void fastDecorate(ChunkPrimer primer, BlockPos pos, IBlockState original)
 	{
-		for (BlockFiller replacement : fillMatchSides)
+		for (BlockFiller replacement : fillBlocksSide)
 		{
 			if (replacement.canGenerateAtHeight(pos.getY()))
 			{
@@ -1600,16 +1581,26 @@ public class CaveGenerator
 		return x > -1 && x < 16 && z > -1 && z < 16;
 	}
 	
+	/*
+	 * From vanilla: Not sure why this is done. There is no gravel at this point.
+	 */
 	private static boolean canReplaceBlock(IBlockState state, ChunkPrimer primer, int x, int y, int z)
-	{
-		//Desperately avoid water for large caverns.
-		if ((primer.getBlockState(x, y, z) instanceof BlockFalling) && 
-		((IBlockState) MoreObjects.firstNonNull(primer.getBlockState(x, y + 1, z), Values.BLK_AIR)).getMaterial().equals(Material.WATER))
+	{		
+		if (canReplaceLessSpecific(state)) return true;
+		
+		return state.getBlock() instanceof BlockFalling && 
+		primer.getBlockState(x, y + 1, z).getMaterial().equals(Material.WATER);
+	}
+
+	@Deprecated
+	private static boolean canReplaceBlockWaterSafe(IBlockState state, ChunkPrimer primer, int x, int y, int z)
+	{		
+		if (primer.getBlockState(x, y + 1, z).equals(Values.BLK_WATER))
 		{
 			return false;
 		}
 		
-		return (canReplaceLessSpecific(state));
+		return canReplaceLessSpecific(state);
 	}
 	
 	/*
@@ -1621,14 +1612,14 @@ public class CaveGenerator
     	
     	if (state.equals(Values.BLK_AIR)) return false; //Second most common (from overlapping generation)
     	
-    	//To-do: test for collapsable material when water is above
+    	if (state.equals(Values.BLK_WATER)) return false; //Never, ever, ever, replace water.
     	
     	for (Block block : Values.replaceableBlocks) //Others
     	{
     		if (state.getBlock().equals(block)) return true;
     	}
     	
-    	for (IBlockState block2 : BlockFiller.getAllFillBlocks())
+    	for (IBlockState block2 : BlockFiller.getReplaceableFillBlocks())
     	{
     		if (state.equals(block2)) return true;
     	}

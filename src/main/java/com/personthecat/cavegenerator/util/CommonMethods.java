@@ -120,7 +120,7 @@ public class CommonMethods
 		{
 			dir.mkdirs();
 			
-			for (String fileName : new String[] {"hanging_spawner"})
+			for (String fileName : new String[] {"hanging_spawner", "red_mushroom"})
 			{
 				copyFile("assets/cavegenerator/structures/" + fileName + ".nbt", dir.getPath() + "/" + fileName + ".nbt");
 			}

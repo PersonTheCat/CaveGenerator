@@ -19,7 +19,9 @@ public class StructureSpawnInfo
 	private final int frequency, minHeight, maxHeight;
 	
 	private BlockPos[] additionalAirMatchers = new BlockPos[0];
+	private BlockPos[] additionalSolidMatchers = new BlockPos[0];
 	private boolean debugSpawns = false;
+	private boolean rotateRandomly = false;
 	
 	public StructureSpawnInfo(String structure, PlacementSettings settings, BlockPos offset, 
 							  IBlockState[] sources, Direction[] directions, double minBurialPercentage, 
@@ -102,6 +104,16 @@ public class StructureSpawnInfo
 		return additionalAirMatchers;
 	}
 	
+	public void setAdditionalSolidMatchers(BlockPos[] matchers)
+	{
+		this.additionalSolidMatchers = matchers;
+	}
+	
+	public BlockPos[] getAdditionalSolidMatchers()
+	{
+		return additionalSolidMatchers;
+	}
+	
 	public void setDebugSpawns()
 	{
 		this.debugSpawns = true;
@@ -110,5 +122,15 @@ public class StructureSpawnInfo
 	public boolean shouldDebugSpawns()
 	{
 		return debugSpawns;
+	}
+	
+	public void setRotateRandomly()
+	{
+		this.rotateRandomly = true;
+	}
+	
+	public boolean shouldRotateRandomly()
+	{
+		return rotateRandomly;
 	}
 }
