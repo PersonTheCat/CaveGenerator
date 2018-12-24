@@ -134,7 +134,7 @@
 			"patchSpacing" : 40,
 			"patchScale" : 0.425,
 			"maxLength" : 3,
-			"probability" : 16.7,
+			"chance" : 16.7,
 			"minHeight" : 11,
 			"maxHeight" : 55,
 			"matchers" : []

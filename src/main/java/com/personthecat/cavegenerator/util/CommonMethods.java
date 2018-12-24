@@ -1,155 +1,214 @@
 package com.personthecat.cavegenerator.util;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-
-import org.apache.commons.lang3.StringUtils;
-
 import com.personthecat.cavegenerator.Main;
 
-import static com.personthecat.cavegenerator.Main.logger;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Optional;
+import java.util.function.Predicate;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
+import org.apache.commons.lang3.StringUtils;
 
-public class CommonMethods
-{
-	public static Biome getBiome(String biomeName)
-	{
-		return ForgeRegistries.BIOMES.getValue(new ResourceLocation(biomeName));
-	}
-	
-	public static Biome getBiome(int biomeNumber)
-	{
-		return Biome.getBiomeForId(biomeNumber);
-	}
-	
-	public static Biome[] getBiomes(Type biomeType)
-	{
-		return BiomeDictionary.getBiomes(biomeType).toArray(new Biome[0]);
-	}
-	
-	public static IBlockState getBlockState(String registryName)
-	{
-		String[] split = registryName.split(":");
-		
-		ResourceLocation location = null;
-		int meta = 0;
-		
-		if (StringUtils.isNumeric(split[split.length - 1]))
-		{
-			meta = Integer.parseInt(split[split.length - 1]);
-			location = new ResourceLocation(registryName.replaceAll(":" + split[split.length - 1], ""));
-		}
-		
-		else if (split.length == 1 || split.length == 2)
-		{
-			location = new ResourceLocation(registryName);
-		}
-		
-		else logger.warn("Syntax error: Could not determine blockstate from " + registryName);
-		
-		return ForgeRegistries.BLOCKS.getValue(location).getStateFromMeta(meta);
-	}
-	
-	/**
-	 * Tests each corner and then center for any biome on the list.
-	 * Faster than testing all 256 coordinates, more accurate than
-	 * testing the center.
-	 */
-	public static boolean isAnyBiomeInChunk(Biome[] biomes, World world, int chunkX, int chunkZ)
-	{
-		for (BlockPos pos : new BlockPos[] {
-		     new BlockPos((chunkX * 16) + 0, 0, (chunkZ * 16) + 0),
-		     new BlockPos((chunkX * 16) + 0, 0, (chunkZ * 16) + 15),
-		     new BlockPos((chunkX * 16) + 15, 0, (chunkZ * 16) + 0),
-		     new BlockPos((chunkX * 16) + 15, 0, (chunkZ * 16) + 15),
-		     new BlockPos((chunkX * 16) + 8, 0, (chunkZ * 16) + 8)
-		})
-		{
-			Biome current = world.getBiome(pos);
-			
-			for (Biome biome : biomes)
-			{
-				if (biome.equals(current)) return true;
-			}
-		}
-		
-		return false;
-	}
-	
-	public static void copyPresetFiles()
-	{
-		File exampleFolder = new File(Loader.instance().getConfigDir().getPath() + "/cavegenerator/example_presets");
-		
-		if (!exampleFolder.exists()) exampleFolder.mkdirs();
-		
-		for (String fileName : new String[] {"flooded_vanilla",	"large_caves", "spirals", "tunnels", 
-		                                     "caverns", "stalactites", "stone_layers", "ravines", 
-		                                     "stone_clusters", "stalactites_large", "vanilla",
-		                                     "underground_forest"})
-		{
-			copyFile("assets/cavegenerator/presets/" + fileName + ".json", exampleFolder.getPath() + "/" + fileName + ".json");
-		}
-		
-		File presetFolder = new File(Loader.instance().getConfigDir().getPath() + "/cavegenerator/presets");
-		
-		if (!presetFolder.exists())
-		{
-			presetFolder.mkdir();
-			
-			copyFile("assets/cavegenerator/presets/vanilla.json", presetFolder.getPath() + "/vanilla.json");
-		}
-	}
-	
-	public static void copyExampleStructures()
-	{
-		File dir = new File(Loader.instance().getConfigDir() + "/cavegenerator/structures");
-		
-		if (!dir.exists())
-		{
-			dir.mkdirs();
-			
-			for (String fileName : new String[] {"hanging_spawner", "red_mushroom"})
-			{
-				copyFile("assets/cavegenerator/structures/" + fileName + ".nbt", dir.getPath() + "/" + fileName + ".nbt");
-			}
-		}
-	}
-	
-	private static void copyFile(String fromLocation, String toLocation)
-	{
-		try
-		{
-			InputStream copyMe = Main.class.getClassLoader().getResourceAsStream(fromLocation);
-			FileOutputStream output = new FileOutputStream(toLocation);
-			
-			copyStream(copyMe, output, 1024);
-			
-			output.close();
-		}
-		
-		catch (IOException e) { logger.warn("Error: Could not copy example files."); }
-	}
-	
-	private static void copyStream(InputStream input, OutputStream output, int bufferSize) throws IOException
-    {
-		byte[] buffer = new byte[bufferSize];
-		int length;
+/**
+ * A collection of methods and functions to be imported into
+ * most classes throughout the mod for syntactic clarity
+ */
+public class CommonMethods {
+    /*
+     * ////////////////////////////////////////////////////////////////////////
+     *         Shorthand methods to be used throughout the program.
+     *         Should improve readability by reducing boilerplate.
+     * ////////////////////////////////////////////////////////////////////////
+     */
 
-		while ((length = input.read(buffer)) > 0)
-		{
-			output.write(buffer, 0, length);
-		}
+    /** Standard System.out.println() call, but less ugly. */
+    public static void println(String x) {
+        System.out.println(x);
+    }
+
+    /** Accesses the mods main instance to send a message using its logger. */
+    public static void info(String x, Object... args) {
+        Main.instance.logger.info(x, args);
+    }
+
+    /** Accesses the mods main instance to send a warning using its logger. */
+    public static void warn(String x, Object... args) {
+        Main.instance.logger.warn(x, args);
+    }
+
+    /** Accesses the mods main instance to send an error using its logger. */
+    public static void error(String x, Object... args) {
+        Main.instance.logger.error(x, args);
+    }
+
+    /** Returns a clean-looking, general-purpose RuntimeException. */
+    public static RuntimeException runEx(String x) {
+        return new RuntimeException(x);
+    }
+
+    /** Shorthand for a RuntimeException using String#format. */
+    public static RuntimeException runExF(String x, Object... args) {
+        return new RuntimeException(String.format(x, args));
+    }
+
+    /*
+     * ////////////////////////////////////////////////////////////////////////
+     *                  Common, general-purpose functions.
+     * ////////////////////////////////////////////////////////////////////////
+     */
+
+    /**
+     * Uses a linear search algorithm to locate a value in an array,
+     * matching the predicate `by`. Shorthand for Stream#findFirst.
+     *
+     * Example:
+     *  // Find x by x.name
+     *  Object[] vars = getObjectsWithNames();
+     *  Optional<Object> var = find(vars, (x) -> x.name.equals("Cat"));
+     *  // You can then get the value -> NPE
+     *  Object result = var.get()
+     *  // Or use an alternative. Standard java.util.Optional. -> no NPE
+     *  Object result = var.orElse(new Object("Cat"))
+     */
+    public static <T> Optional<T> find(T[] values, Predicate<T> by) {
+        for (T val : values) {
+            if (by.test(val)) {
+                return Optional.of(val);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static <T> Optional<T> find(Collection<T> values, Predicate<T> by) {
+        for (T val : values) {
+            if (by.test(val)) {
+                return Optional.of(val);
+            }
+        }
+        return Optional.empty();
+    }
+
+    public static <K, V> Optional<V> safeGet(Map<K, V> map, K key) {
+        return Optional.ofNullable(map.get(key));
+    }
+
+    /*
+     * ///////////////////////////////////////////////////////////////////////
+     *                   Functions related to Forge / MC
+     * ///////////////////////////////////////////////////////////////////////
+     */
+
+    /**
+     * Used for retrieving a Biome from either a registry name
+     * or unique ID. Returns an Optional<Biome> to ensure that
+     * null checks are propagated elsewhere.
+     */
+    public static Optional<Biome> getBiome(String biomeName) {
+        return Optional.ofNullable(ForgeRegistries.BIOMES.getValue(new ResourceLocation(biomeName)));
+    }
+
+    public static Optional<Biome> getBiome(int biomeNumber) {
+        return Optional.ofNullable((Biome.getBiomeForId(biomeNumber)));
+    }
+
+    public static Biome[] getBiomes(Type biomeType) {
+        return BiomeDictionary.getBiomes(biomeType).toArray(new Biome[0]);
+    }
+
+    /**
+     * Variant of ForgeRegistries::BLOCKS#getValue that does not substitute
+     * air for blocks that aren't found. Using Optional to improve null-safety.
+     */
+    public static Optional<IBlockState> getBlockState(String registryName) {
+        // Ensure that air is returned if that is the query.
+        if (registryName.equals("air") || registryName.equals("minecraft:air")) {
+            return Optional.of(Blocks.AIR.getDefaultState());
+        }
+
+        // View the components of this string separately.
+        final String[] split = registryName.split(":");
+
+        // Ensure the number of segments to be valid.
+        if (!(split.length > 0 && split.length < 4)) {
+            throw runExF("Syntax error: could not determine blockstate from %s", registryName);
+        }
+
+        // Use the end section to determine the format.
+        final String end = split[split.length - 1];
+
+        // If the end of the string is numeric, it must be the metadata.
+        if (StringUtils.isNumeric(end)) {
+            final int meta = Integer.parseInt(end);
+            final String updated = registryName.replace(":" + end, "");
+            return _getBlock(updated, meta);
+        }
+        // The end isn't numeric, so the name is in the standard format.
+        return _getBlock(registryName, 0);
+    }
+
+    /**
+     * Internal variant of ForgeRegistries::BLOCKS#getValue that does not
+     * return air. This ensures that a valid block has always been determined,
+     * except of course in cases where that block is air.
+     */
+    private static Optional<IBlockState> _getBlock(String registryName, int meta) {
+        final ResourceLocation location = new ResourceLocation(registryName);
+        final IBlockState ret;
+        try { // Block#getStateFromMeta may throw a NullPointerException. Extremely annoying.
+            ret = ForgeRegistries.BLOCKS.getValue(location).getStateFromMeta(meta);
+        } catch (NullPointerException e) {
+            return Optional.empty();
+        }
+        // Ensure this value to be anything but air.
+        if (ret.equals(Blocks.AIR.getDefaultState())){
+            return Optional.empty();
+        }
+        return Optional.of(ret);
+    }
+
+    /**
+     * Tests each corner and then center for any biome on the list.
+     * Faster than testing all 256 coordinates, more accurate than
+     * testing the center.
+     */
+    public static boolean isAnyBiomeInChunk(Biome[] biomes, World world, int chunkX, int chunkZ) {
+        final int blockX = chunkX * 16;
+        final int blockZ = chunkZ * 16;
+        final BlockPos[] tryPos = new BlockPos[] {
+            new BlockPos(blockX, 0, blockZ),
+            new BlockPos(blockX, 0, blockZ + 15),
+            new BlockPos(blockX + 15, 0, blockZ),
+            new BlockPos(blockX + 15, 0, blockZ + 15),
+            new BlockPos(blockX + 8, 0, blockZ + 8)
+        };
+
+        for (BlockPos pos : tryPos) {
+            Biome current = world.getBiome(pos);
+            for (Biome biome : biomes) {
+                if (biome.equals(current)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** Returns the center block in the specified chunk */
+    public static BlockPos centerCoords(int chunkX, int chunkZ) {
+        return new BlockPos((chunkX * 16) + 8, 0, (chunkZ * 16) + 8);
+    }
+
+    /** Returns the absolute position in the specified chunk */
+    public static BlockPos absoluteCoords(int chunkX, int chunkZ) {
+        return new BlockPos(chunkX * 16, 0, chunkZ * 16);
     }
 }

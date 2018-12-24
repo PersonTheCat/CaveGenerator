@@ -17,7 +17,6 @@
 	{
 		"keys" : ["extraFossilTest", "hangingSpawnerTest", "giantRedMushroom"],
 
-		"//" : "Looks like you've discovered a little secret. Just so you know, structures are extremely, extremely WIP.",
 		"extraFossilTest" :
 		{
 			"name" : "fossils/fossil_spine_03",

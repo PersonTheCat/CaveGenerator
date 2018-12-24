@@ -23,7 +23,7 @@
 		{
 			"state" : "cobblestone_wall",
 			"spawnInPatches" : true,
-			"probability" : 10,
+			"chance" : 10,
 			"minHeight" : 20,
 			"maxHeight" : 50
 		}
