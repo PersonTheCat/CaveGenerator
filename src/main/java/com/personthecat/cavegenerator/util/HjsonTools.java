@@ -269,7 +269,7 @@ public class HjsonTools {
                 Direction d = Direction.from(s);
                 directions.add(d);
             }
-            return full(toArray(directions));
+            return full(toArray(directions, Direction.class));
         }
         return empty();
     }
@@ -320,7 +320,7 @@ public class HjsonTools {
             for (JsonValue v : a) {
                 positions.add(toPosition(v.asArray()));
             }
-            return toArray(positions);
+            return toArray(positions, BlockPos.class);
         });
     }
 
@@ -374,7 +374,7 @@ public class HjsonTools {
                 Collections.addAll(biomes, getBiomes(t));
             }
         });
-        return toArray(biomes);
+        return toArray(biomes, Biome.class);
     }
 
     /** Safely retrieves a List of BiomeTypes from the input json. */

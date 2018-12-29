@@ -251,18 +251,14 @@ public class CaveGenerator {
             angleXZ += twistXZ * 0.1f;
             angleY += twistY * 0.1f;
             // Rotates the beginning of the chain around the end.
-            twistY = adjustTwist(twistY, rand,
-                settings.tunnels.twistY.exponent, settings.tunnels.twistY.factor, settings.tunnels.twistY.randFactor);
+            twistY = adjustTwist(twistY, rand, settings.tunnels.twistY);
             // Positive is counterclockwise, negative is clockwise.
-            twistXZ = adjustTwist(twistXZ, rand,
-                settings.tunnels.twistXZ.exponent, settings.tunnels.twistXZ.factor, settings.tunnels.twistXZ.randFactor);
+            twistXZ = adjustTwist(twistXZ, rand, settings.tunnels.twistXZ);
             // Adjust the scale each iteration. This doesn't? happen
             // in vanilla, so a separate Random object is used in
             // order to avoid breaking seeds, as much as possible.
-            scale = adjustScale(scale, rand2,
-                settings.tunnels.scale.exponent, settings.tunnels.scale.factor, settings.tunnels.scale.randFactor);
-            scaleY = adjustScale(scaleY, rand2,
-                settings.tunnels.scaleY.exponent, settings.tunnels.scaleY.factor, settings.tunnels.scaleY.randFactor);
+            scale = adjustScale(scale, rand2, settings.tunnels.scale);
+            scaleY = adjustScale(scaleY, rand2, settings.tunnels.scaleY);
 
             // Add branches.
             if (scale > 1.00f && distance > 0 && currentPos == randomBranchIndex) {
@@ -308,7 +304,7 @@ public class CaveGenerator {
                 // If we need to test this section for water -> is there water?
                 if (!(shouldTestForWater(sectionInfo.getHighestY()) && testForWater(primer, sectionInfo))) {
                     // Generate the actual sphere.
-                    replaceSection(primer, originalX, originalZ, sectionInfo);
+                    replaceSection(rand2, primer, originalX, originalZ, sectionInfo);
                     // We need to generate twice; once to create walls,
                     // and once again to decorate those walls.
                     if (hasLocalWallDecorators()) {
@@ -395,18 +391,18 @@ public class CaveGenerator {
     }
 
     /** Updates the value of `original` based on the input settings. */
-    private float adjustTwist(float original, Random rand, float exponent, float factor, float randFactor) {
-        original = (float) Math.pow(original, exponent);
-        original *= factor;
-        original += randFactor * (rand.nextFloat() - rand.nextFloat()) * rand.nextFloat();
+    private float adjustTwist(float original, Random rand, ScalableFloat f) {
+        original = (float) Math.pow(original, f.exponent);
+        original *= f.factor;
+        original += f.randFactor * (rand.nextFloat() - rand.nextFloat()) * rand.nextFloat();
         return original;
     }
 
     /** Updates the value of `original` based on the input settings. */
-    private float adjustScale(float original, Random rand, float exponent, float factor, float randFactor) {
-        original = (float) Math.pow(original, exponent);
-        original *= factor;
-        original += randFactor * (rand.nextFloat() - 0.5F);
+    private float adjustScale(float original, Random rand, ScalableFloat f) {
+        original = (float) Math.pow(original, f.exponent);
+        original *= f.factor;
+        original += f.randFactor * (rand.nextFloat() - 0.5F);
         if (original < 0) original = 0;
         return original;
     }
@@ -449,13 +445,13 @@ public class CaveGenerator {
     }
 
     /** Replaces all blocks inside of this section. */
-    private void replaceSection(ChunkPrimer primer, int chunkX, int chunkZ, TunnelSectionInfo info) {
+    private void replaceSection(Random rand, ChunkPrimer primer, int chunkX, int chunkZ, TunnelSectionInfo info) {
         info.run((pos) -> {
             final int x = pos.getX();
             final int y = pos.getY();
             final int z = pos.getZ();
             final boolean isTopBlock = isTopBlock(primer, x, y, z, chunkX, chunkZ);
-            replaceBlock(primer, x, y, z, chunkX, chunkZ, isTopBlock);
+            replaceBlock(rand, primer, x, y, z, chunkX, chunkZ, isTopBlock);
         });
     }
 
@@ -488,7 +484,7 @@ public class CaveGenerator {
      * @param foundTop True if we've encountered the biome's top block.
      *                 Ideally, if we've broken the surface.
      */
-    private boolean replaceBlock(ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop) {
+    private boolean replaceBlock(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop) {
         final Biome biome = world.getBiome(absoluteCoords(chunkX, chunkZ));
         final IBlockState state = primer.getBlockState(x, y, z);
         final IBlockState top = biome.topBlock;
@@ -500,8 +496,16 @@ public class CaveGenerator {
             if (foundTop && primer.getBlockState(x, yDown, z).equals(filler)) {
                 primer.setBlockState(x, yDown, z, top);
             }
-            // To-do: Handle CaveBlocks.
+            for (CaveBlocks block : settings.decorators.caveBlocks) {
+                if (block.canGenerate(x, y, z, chunkX, chunkZ)) {
+                    if (rand.nextFloat() * 100 <= block.getChance()) {
+                        primer.setBlockState(x, y, z, block.getFillBlock());
+                        return true;
+                    }
+                }
+            }
             primer.setBlockState(x, y, z, BLK_AIR);
+            return true;
         }
         return false;
     }

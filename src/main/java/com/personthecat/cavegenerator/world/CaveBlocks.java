@@ -92,6 +92,11 @@ public class CaveBlocks {
         return maxHeight;
     }
 
+    public boolean canGenerate(int x, int y, int z, int chunkX, int chunkZ) {
+        // To-do: handle testing noise values here, as well.
+        return canGenerateAtHeight(y);
+    }
+
     public boolean canGenerateAtHeight(final int y) {
         return y >= minHeight && y <= maxHeight;
     }

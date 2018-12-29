@@ -580,9 +580,9 @@ public class GeneratorSettings {
             }
 
             // Convert the lists into standard arrays;
-            ceilingDecorators = toArray(ceiling);
-            floorDecorators = toArray(floor);
-            wallDecorators = toArray(wall);
+            ceilingDecorators = toArray(ceiling, WallDecorators.class);
+            floorDecorators = toArray(floor, WallDecorators.class);
+            wallDecorators = toArray(wall, WallDecorators.class);
         }
     }
 }

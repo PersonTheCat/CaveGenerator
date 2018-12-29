@@ -3,6 +3,7 @@ package com.personthecat.cavegenerator.util;
 import com.personthecat.cavegenerator.Main;
 
 import java.io.File;
+import java.lang.reflect.Array;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -102,14 +103,14 @@ public class CommonMethods {
 
     /**
      * Converts a generic List into its standard array counterpart.
-     * Unsafe. Should not be used for an primitive data type. In
+     * Unsafe. Should not be used for any primitive data type. In
      * Most cases where this method is used, storing the data in a
      * primitive array probably offers little or no benefit. As a
      * result, I may try to remove this sometime in the near future.
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Object> T[] toArray(List<T> list) {
-        return list.toArray((T[]) new Object[0]);
+    public static <T extends Object> T[] toArray(List<T> list, Class<T> clazz) {
+        return list.toArray((T[]) Array.newInstance(clazz, 0));
     }
 
     /** Safely retrieves a value from the input map. */
@@ -119,7 +120,6 @@ public class CommonMethods {
 
     /** Determines the extension of the input `file`. */
     public static String extension(final File file) {
-        info("Got this filename: {}", file.getName());
         String[] split = file.getName().split(Pattern.quote("."));
         return split[split.length - 1];
     }

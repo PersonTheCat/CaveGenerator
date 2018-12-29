@@ -5,6 +5,7 @@ import com.personthecat.cavegenerator.world.GeneratorSettings.*;
 import com.personthecat.cavegenerator.world.feature.GiantPillar;
 import com.personthecat.cavegenerator.world.feature.LargeStalactite;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
@@ -110,7 +111,7 @@ public class PresetReader {
 
     /** Retrieves a list of replaceable blocks from the input object. */
     private static IBlockState[] getReplaceableBlocks(JsonObject json) {
-        return getBlocks(json, "replaceableBlocks").orElse(new IBlockState[0]);
+        return getBlocksOr(json, "replaceableBlocks", Blocks.STONE.getDefaultState());
     }
 
     /** Parses the field "tunnels" from this json into a TunnelSettings object. */
@@ -151,7 +152,7 @@ public class PresetReader {
             // Construct and add the final structure settings.
             structures.add(new StructureSettings(structure));
         }
-        return toArray(structures);
+        return toArray(structures, StructureSettings.class);
     }
 
     /** Parses various decorator objects from this json.. */
@@ -178,7 +179,7 @@ public class PresetReader {
                 stoneClusters.add(new StoneCluster(state, cluster));
             }
         }
-        return toArray(stoneClusters);
+        return toArray(stoneClusters, StoneCluster.class);
     }
 
     /** Parses the field "stoneLayers" from this json into an array of StoneLayer objects. */
@@ -187,7 +188,7 @@ public class PresetReader {
         for (JsonObject layer : getObjectArray(json, "stoneLayers")) {
             stoneLayers.add(new StoneLayer(layer));
         }
-        return toArray(stoneLayers);
+        return toArray(stoneLayers, StoneLayer.class);
     }
 
     /** Parses the field "caveblocks" from this json into an array of CaveBlocks objects. */
@@ -209,7 +210,7 @@ public class PresetReader {
                 caveBlocks.add(new CaveBlocks(state, caveBlock));
             }
         }
-        return full(toArray(caveBlocks));
+        return full(toArray(caveBlocks, CaveBlocks.class));
     }
 
     /** Parses the field "wallDecorators" from this json into an array of WallDecorator objects. */
@@ -224,7 +225,7 @@ public class PresetReader {
                 decorators.add(new WallDecorators(state, decorator));
             }
         }
-        return toArray(decorators);
+        return toArray(decorators, WallDecorators.class);
     }
 
     /** Parses the large stalactites from this json into an array of LargeStalactite objects.  */
@@ -236,7 +237,7 @@ public class PresetReader {
         for (JsonObject stalagmite : getObjectArray(json, "largeStalagmites")) {
             stalactites.add(getStalactite(stalagmite, LargeStalactite.Type.STALAGMITE));
         }
-        return toArray(stalactites);
+        return toArray(stalactites, LargeStalactite.class);
     }
 
     /** Gets a single LargeStalactite of type @param type. */
@@ -250,6 +251,6 @@ public class PresetReader {
             // Start with the state. This value must exist.
             pillars.add(new GiantPillar(pillar));
         }
-        return toArray(pillars);
+        return toArray(pillars, GiantPillar.class);
     }
 }

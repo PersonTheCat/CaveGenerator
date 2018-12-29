@@ -44,8 +44,8 @@ public class JarFiles {
                 .expect("Error: Unable to create preset directory.");
             // Copy only the vanilla preset. The others should be modifiable.
             // To-do: There was talk about changing this.
-            String fromLocation = "assets/cavegenerator/presets/vanilla.json";
-            String toLocation = CaveInit.DIR.getPath() + "/vanilla.json";
+            String fromLocation = "assets/cavegenerator/presets/vanilla.cave";
+            String toLocation = CaveInit.DIR.getPath() + "/vanilla.cave";
             copyFile(fromLocation, toLocation);
         }
     }

@@ -1,10 +1,9 @@
 package com.personthecat.cavegenerator;
 
+import com.personthecat.cavegenerator.config.PresetReader;
 import com.personthecat.cavegenerator.util.Result;
 import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.GeneratorSettings;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Loader;
@@ -29,7 +28,6 @@ public class CaveInit {
         // Verify the folder's integrity before proceeding.
         ensureDirExists(DIR)
             .expect("Error: Unable to create the preset directory. It is most likely in use.");
-
         // Go ahead and clear this to allow presets to be reloaded.
         presets.clear();
         // Initialize a result to be returned.
@@ -38,7 +36,7 @@ public class CaveInit {
         safeListFiles(DIR).ifPresent((files) -> { // Files found.
             for (File file : files) {
                 if (EXTENSIONS.contains(extension(file))) {
-                    // To-Do: Load presets here.
+                    presets.put(file.getName(), PresetReader.getPreset(file));
                 }
             }
         });

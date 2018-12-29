@@ -170,7 +170,7 @@ public class TunnelSectionInfo {
     }
 
     private void nullCheck() {
-        if (positions[0] == null) {
+        if (positions.length > 0 && positions[0] == null) {
             throw runEx("Error: Forgot to call calculate() on a tunnel section.");
         }
     }
