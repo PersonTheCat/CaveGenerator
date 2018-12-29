@@ -17,4 +17,9 @@ public enum Direction {
             return runExF("Error: Direction \"%s\" does not exist. The following are valid options:\n\n", s, o);
         });
     }
+
+    /** Returns whether the input direction corresponds with `this`. */
+    public boolean matches(Direction dir) {
+        return this.equals(dir) || dir.equals(ALL);
+    }
 }

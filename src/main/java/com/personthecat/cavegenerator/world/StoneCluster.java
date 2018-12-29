@@ -1,35 +1,60 @@
 package com.personthecat.cavegenerator.world;
 
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
+import org.hjson.JsonObject;
+
+import static com.personthecat.cavegenerator.util.HjsonTools.*;
 
 /** Data used for spawning giant clusters of stone through ChunkPrimer. */
 public class StoneCluster {
     /** Mandatory fields that must be initialized by the constructor. */
     private final IBlockState state;
+    /** A value from 0.0 to 92.0 which determines this cluster's frequency. */
     private final double selectionThreshold;
-    private final int radius;
+    private final int radiusX, radiusY, radiusZ;
     private final int radiusVariance;
     private final int startingHeight;
     private final int heightVariance;
 
-    /** A late-init field indicating the seed for this stone cluster. */
-    private int ID = -1;
+    /** A field indicating the seed for this stone cluster. */
+    private final int ID;
 
+    /** Where frequency is a value between 0.0 and 1.0. */
     public StoneCluster(
         IBlockState state,
-        double selectionThreshold,
-        int radius,
+        double frequency,
+        int radiusX,
+        int radiusY,
+        int radiusZ,
         int radiusVariance,
         int startingHeight,
         int heightVariance
     ) {
         this.state = state;
-        this.selectionThreshold = selectionThreshold;
-        this.radius = radius;
+        this.selectionThreshold = (1.0 - frequency) * 92.0;
+        this.radiusX = radiusX;
+        this.radiusY = radiusY;
+        this.radiusZ = radiusZ;
         this.radiusVariance = radiusVariance;
         this.startingHeight = startingHeight;
         this.heightVariance = heightVariance;
+        this.ID = Block.getStateId(state);
+    }
+
+    /** From Json */
+    public StoneCluster(IBlockState state, JsonObject cluster) {
+        this(
+            state,
+            getFloatOr(cluster, "frequency", 0.15f),
+            getIntOr(cluster,"radiusX", 16),
+            getIntOr(cluster, "radiusY", 12),
+            getIntOr(cluster, "radiusZ", 16),
+            getIntOr(cluster, "radiusVariance", 6),
+            getIntOr(cluster, "startingHeight", 32),
+            getIntOr(cluster, "heightVariance", 16)
+        );
     }
 
     public IBlockState getState() {
@@ -40,8 +65,16 @@ public class StoneCluster {
         return selectionThreshold;
     }
 
-    public int getRadius() {
-        return radius;
+    public int getRadiusX() {
+        return radiusX;
+    }
+
+    public int getRadiusY() {
+        return radiusY;
+    }
+
+    public int getRadiusZ() {
+        return radiusZ;
     }
 
     public int getRadiusVariance() {

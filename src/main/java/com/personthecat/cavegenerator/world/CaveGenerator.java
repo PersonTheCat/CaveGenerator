@@ -1,10 +1,10 @@
 package com.personthecat.cavegenerator.world;
 
+import com.personthecat.cavegenerator.util.ScalableFloat;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Biomes;
 import net.minecraft.init.Blocks;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -16,7 +16,6 @@ import org.apache.commons.lang3.ArrayUtils;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Consumer;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
@@ -45,7 +44,7 @@ public class CaveGenerator {
 
     /** Returns whether the generator is enabled globally. */
     public boolean enabled() {
-        return settings.enabled;
+        return settings.conditions.enabled;
     }
 
     /** Returns whether the generator is enabled for the current dimension. */
@@ -63,14 +62,23 @@ public class CaveGenerator {
         return canGenerate(dimension) && validBiome(biome);
     }
 
+    /** Returns whether the input dimension is valid for this generator. */
     private boolean validDimension(int dim) {
-        return settings.conditions.dimensions.length == 0 ||
-            ArrayUtils.contains(settings.conditions.dimensions, dim);
+        if (settings.conditions.dimensions.length == 0) {
+            return true;
+        }
+        final boolean contains = ArrayUtils.contains(settings.conditions.dimensions, dim);
+        // useBlacklist ? !contains : contains
+        return settings.conditions.dimensionBlacklist != contains;
     }
 
+    /** Returns whether the input biome is valid for this generator. */
     private boolean validBiome(Biome biome) {
-        return settings.conditions.biomes.length == 0 ||
-            ArrayUtils.contains(settings.conditions.biomes, biome);
+        if (settings.conditions.biomes.length == 0) {
+            return true;
+        }
+        final boolean contains = ArrayUtils.contains(settings.conditions.biomes, biome);
+        return settings.conditions.biomeBlacklist != contains;
     }
 
     /** Returns whether the generator has any surface decorators. */
@@ -93,9 +101,7 @@ public class CaveGenerator {
         return enabled() && hasLocalWallDecorators();
     }
 
-    /**
-     * Starts a tunnel system between the input chunk coordinates.
-     */
+    /** Starts a tunnel system between the input chunk coordinates. */
     public void startTunnelSystem(Random rand, int chunkX, int chunkZ, int originalX, int originalZ, ChunkPrimer primer) {
         final int frequency = getTunnelFrequency(rand);
         for (int i = 0; i < frequency; i++) {
@@ -117,13 +123,13 @@ public class CaveGenerator {
             }
 
             for (int j = 0; j< branches; j++) {
-                float angleXZ = settings.tunnels.startingAngleXZ;
-                float angleY = settings.tunnels.startingAngleY;
-                float scale = settings.tunnels.startingScale;
+                float angleXZ = settings.tunnels.angleXZ.startVal;
+                float angleY = settings.tunnels.angleY.startVal;
+                float scale = settings.tunnels.scale.startVal;
 
-                angleXZ += settings.tunnels.startingAngleXZRandFactor * (rand.nextFloat() * PI_TIMES_2);
-                angleY += settings.tunnels.startingAngleYRandFactor * (rand.nextFloat() - 0.50f);
-                scale += settings.tunnels.startingScaleRandFactor * (rand.nextFloat() * 2.00f + rand.nextFloat());
+                angleXZ += settings.tunnels.angleXZ.startValRandFactor * (rand.nextFloat() * PI_TIMES_2);
+                angleY += settings.tunnels.angleY.startValRandFactor * (rand.nextFloat() - 0.50f);
+                scale += settings.tunnels.scale.startValRandFactor * (rand.nextFloat() * 2.00f + rand.nextFloat());
 
                 // Per-vanilla: this randomly increases the size.
                 if (rand.nextInt(10) == 0) {
@@ -132,23 +138,19 @@ public class CaveGenerator {
                 }
 
                 final int distance = settings.tunnels.startingDistance;
-                final float scaleY = settings.tunnels.startingScaleY;
+                final float scaleY = settings.tunnels.scaleY.startVal;
 
                 addTunnel(rand.nextLong(), originalX, originalZ, primer, x, y, z, scale, angleXZ, angleY, 0, distance, scaleY);
             }
         }
     }
 
-    /**
-     * Starts a room between the input chunk coordinates.
-     */
+    /** Starts a room between the input chunk coordinates. */
     public void startRoom(Random rand, int chunkX, int chunkZ, int originalX, int originalZ, ChunkPrimer primer) {
 
     }
 
-    /**
-     * Starts a ravine between the input chunk coordinates.
-     */
+    /** Starts a ravine between the input chunk coordinates. */
     public void startRavine(Random rand, int chunkX, int chunkZ, int originalX, int originalZ, ChunkPrimer primer) {
         // Retrieve the height parameters from the settings.
         final int minHeight = settings.ravines.minHeight;
@@ -161,18 +163,18 @@ public class CaveGenerator {
         final double y = (double) (rand.nextInt(rand.nextInt(maxHeight) + 8) + heightDiff);
         final double z = (double) ((chunkZ * 16) + rand.nextInt(16));
 
-        float angleXZ = settings.ravines.startingAngleXZ;
-        float angleY = settings.ravines.startingAngleY;
-        float scale = settings.ravines.startingScale;
+        float angleXZ = settings.ravines.angleXZ.startVal;
+        float angleY = settings.ravines.angleY.startVal;
+        float scale = settings.ravines.scale.startVal;
 
         // Randomly orient the angle.
         angleXZ += rand.nextFloat() * PI_TIMES_2;
-        angleY += settings.ravines.startingAngleYRandFactor * (rand.nextFloat() - 0.50f);
+        angleY += settings.ravines.angleY.startValRandFactor * (rand.nextFloat() - 0.50f);
         // Randomly adjust the scale.
-        scale += settings.ravines.startingScaleRandFactor * (rand.nextFloat() * 2.00f + rand.nextFloat());
+        scale += settings.ravines.scale.startValRandFactor * (rand.nextFloat() * 2.00f + rand.nextFloat());
 
         final int distance = settings.ravines.startingDistance;
-        final float scaleY = settings.ravines.startingScaleY;
+        final float scaleY = settings.ravines.scaleY.startVal;
 
         addRavine(rand.nextLong(), originalX, originalZ, primer, x, y, z, scale, angleXZ, angleY, 0, distance, scaleY);
     }
@@ -215,8 +217,8 @@ public class CaveGenerator {
         float scaleY
     ) {
         // The amount to alter angle(XZ/Y) per-segment.
-        float twistXZ = settings.tunnels.startingTwistXZ;
-        float twistY = settings.tunnels.startingTwistY;
+        float twistXZ = settings.tunnels.twistXZ.startVal;
+        float twistY = settings.tunnels.twistY.startVal;
         // The center of the current chunk;
         final double centerX = originalX * 16 + 8;
         final double centerZ = originalZ * 16 + 8;
@@ -250,32 +252,32 @@ public class CaveGenerator {
             angleY += twistY * 0.1f;
             // Rotates the beginning of the chain around the end.
             twistY = adjustTwist(twistY, rand,
-                settings.tunnels.twistYExponent, settings.tunnels.twistYFactor, settings.tunnels.twistYRandFactor);
+                settings.tunnels.twistY.exponent, settings.tunnels.twistY.factor, settings.tunnels.twistY.randFactor);
             // Positive is counterclockwise, negative is clockwise.
             twistXZ = adjustTwist(twistXZ, rand,
-                settings.tunnels.twistXZExponent, settings.tunnels.twistXZFactor, settings.tunnels.twistXZRandFactor);
+                settings.tunnels.twistXZ.exponent, settings.tunnels.twistXZ.factor, settings.tunnels.twistXZ.randFactor);
             // Adjust the scale each iteration. This doesn't? happen
             // in vanilla, so a separate Random object is used in
             // order to avoid breaking seeds, as much as possible.
             scale = adjustScale(scale, rand2,
-                settings.tunnels.scaleExponent, settings.tunnels.scaleFactor, settings.tunnels.scaleRandFactor);
+                settings.tunnels.scale.exponent, settings.tunnels.scale.factor, settings.tunnels.scale.randFactor);
             scaleY = adjustScale(scaleY, rand2,
-                settings.tunnels.scaleYExponent, settings.tunnels.scaleYFactor, settings.tunnels.scaleYRandFactor);
+                settings.tunnels.scaleY.exponent, settings.tunnels.scaleY.factor, settings.tunnels.scaleY.randFactor);
 
             // Add branches.
             if (scale > 1.00f && distance > 0 && currentPos == randomBranchIndex) {
                 if (settings.tunnels.resizeBranches) {
                     // In vanilla, tunnels are resized when branching.
                     addTunnel(rand.nextLong(), originalX, originalZ, primer, x, y, z, rand.nextFloat() * 0.5F + 0.5F,
-                            angleXZ - PI_OVER_2, angleY / 3.0F, currentPos, distance, 1.00f);
+                        angleXZ - PI_OVER_2, angleY / 3.0F, currentPos, distance, 1.00f);
                     addTunnel(rand.nextLong(), originalX, originalZ, primer, x, y, z, rand.nextFloat() * 0.5F + 0.5F,
-                            angleXZ + PI_OVER_2, angleY / 3.0F, currentPos, distance, 1.00f);
+                        angleXZ + PI_OVER_2, angleY / 3.0F, currentPos, distance, 1.00f);
                 } else {
                     // Continue with the same size (not vanilla).
                     addTunnel(rand.nextLong(), originalX, originalZ, primer, x, y, z, scale,
-                            angleXZ - PI_OVER_2, angleY / 3.0F, currentPos, distance, scaleY);
+                        angleXZ - PI_OVER_2, angleY / 3.0F, currentPos, distance, scaleY);
                     addTunnel(rand.nextLong(), originalX, originalZ, primer, x, y, z, scale,
-                            angleXZ + PI_OVER_2, angleY / 3.0F, currentPos, distance, scaleY);
+                        angleXZ + PI_OVER_2, angleY / 3.0F, currentPos, distance, scaleY);
                 }
                 return;
             }
@@ -286,7 +288,10 @@ public class CaveGenerator {
             }
             // Make sure we haven't travelled too far?
             if (travelledTooFar(x, centerX, z, centerZ, distance, currentPos, scale)) {
-                continue;
+                // Leaving a comment here to remember the 50% increase
+                // in generation time caused by using `continue`
+                // instead of `return` here. Lest we never forget.
+                return;
             }
             // Make sure we're inside of the sphere?
             double diameterXZ = radiusXZ * 2.0;
@@ -314,54 +319,6 @@ public class CaveGenerator {
             }
         }
     }
-
-//    /** Makes sure the resulting value stays within chunk bounds. */
-//    private static int applyLimitXZ(int xz) {
-//        return xz < 0 ? 0 : xz > 16 ? 16 : xz;
-//    }
-//
-//    /** Makes sure the resulting value stays between y = 1 & y = 248 */
-//    private static int applyLimitY(int y) {
-//        return y < 1 ? 1 : y > 248 ? 248 : y;
-//    }
-//
-//    private void replaceSection(ChunkPrimer primer, double radiusXZ, double radiusY, int chunkX, int chunkZ, int x1, int x2, double posX, int y1, int y2, double posY, int z1, int z2, double posZ)
-//    {
-//        tunnelSection(chunkX, chunkZ, radiusXZ, radiusY, x1, x2, posX, y1, y2, posY, z1, z2, posZ, pos ->
-//        {
-//            int x = pos.getX(), y = pos.getY(), z = pos.getZ();
-//
-//            boolean isTopBlock = isTopBlock(primer, x, y, z, chunkX, chunkZ);
-//
-//            replaceBlock(primer, x, y, z, chunkX, chunkZ, isTopBlock);
-//        });
-//    }
-//
-//    private void tunnelSection(int chunkX, int chunkZ, double radiusXZ, double radiusY, int x1, int x2, double posX, int y1, int y2, double posY, int z1, int z2, double posZ, Consumer<BlockPos> function)
-//    {
-//        for (int x = x1; x < x2; x++)
-//        {
-//            double finalX = ((x + chunkX * 16) + 0.5 - posX) / radiusXZ;
-//
-//            for (int z = z1; z < z2; z++)
-//            {
-//                double finalZ = ((z + chunkZ * 16) + 0.5 - posZ) / radiusXZ;
-//
-//                if (((finalX * finalX) + (finalZ * finalZ)) < 1.0)
-//                {
-//                    for (int y = y2; y > y1; y--)
-//                    {
-//                        double finalY = ((y - 1) + 0.5 - posY) / radiusY;
-//
-//                        if ((finalY > -0.7) && (((finalX * finalX) + (finalY * finalY) + (finalZ * finalZ)) < 1.0D))
-//                        {
-//                            function.accept(new BlockPos(x, y, z));
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//    }
 
     /**
      * Variant of addTunnel() which extracts the features dedicated to generating
@@ -502,6 +459,11 @@ public class CaveGenerator {
         });
     }
 
+    /**
+     * Whether the block at this location is the biome's topBlock.
+     * Accounts? for a bug in vanilla that checks for grass in
+     * biomes with sand. May remove anyway.
+     */
     private boolean isTopBlock(ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ) {
         Biome biome = world.getBiome(absoluteCoords(chunkX, chunkZ));
         IBlockState state = primer.getBlockState(x, y, z);
@@ -515,7 +477,7 @@ public class CaveGenerator {
 
     /**
      * Mod of {~~@link net.minecraft.world.gen.MapGenCaves#digBlock} by
-     * PersonTheCat. Allows alternatives to air to be randomly placed.
+     * PersonTheCat. Allows alternatives of air to be randomly placed.
      *
      * @param primer   Block data array
      * @param x        local X position
@@ -541,7 +503,6 @@ public class CaveGenerator {
             // To-do: Handle CaveBlocks.
             primer.setBlockState(x, y, z, BLK_AIR);
         }
-
         return false;
     }
 

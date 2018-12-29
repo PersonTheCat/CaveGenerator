@@ -12,7 +12,7 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 /**
  * For neatly interacting with tunnel sections. Each tunnel
  * section is essentially a sphere that is constrained by
- * the boundaries of the current chunk @ original(X/Y).
+ * the boundaries of the current chunk @ original(X/Z).
  */
 public class TunnelSectionInfo {
     /** The exact purpose of some of these values is still unclear. */
@@ -47,8 +47,6 @@ public class TunnelSectionInfo {
 
     /** Pre-calculates positions and stores them into an array. */
     public void calculate() {
-//        info("Calculating...");
-//        info("x1: {}, x2: {}, y1: {}, y2: {}, z1: {}, z2: {}", startX, endX, startY, endY, startZ, endZ);
         // Monitor the index for pushing values to the array;
         int index = 0;
         for (int x = startX; x < endX; x++) {
@@ -97,7 +95,7 @@ public class TunnelSectionInfo {
                 }
             }
         }
-        shrinkPositionsToSize();
+        shrinkPositionsToSize(index);
     }
 
     /** Sets the positions array to be the maximum possible size for this section. */
@@ -106,7 +104,7 @@ public class TunnelSectionInfo {
         positions = new BlockPos[maxPossibleSize];
     }
 
-
+    /** Creates a slice? of the array `positions`, from 0 to @param size. */
     private void shrinkPositionsToSize(int size) {
         positions = ArrayUtils.subarray(positions, 0, size);
     }
@@ -117,7 +115,7 @@ public class TunnelSectionInfo {
         positions = ArrayUtils.subarray(positions, 0, firstNullIndex);
     }
 
-    /** A modified binary search algorithm that founds a boundary between null / not. */
+    /** A modified binary search algorithm that finds a boundary between null / not. */
     // No longer needed.
     private int firstNull(BlockPos[] values, int start, int end) {
         if (end > start + 1 && values[0] != null) {
@@ -172,7 +170,7 @@ public class TunnelSectionInfo {
     }
 
     private void nullCheck() {
-        if (positions == null) {
+        if (positions[0] == null) {
             throw runEx("Error: Forgot to call calculate() on a tunnel section.");
         }
     }

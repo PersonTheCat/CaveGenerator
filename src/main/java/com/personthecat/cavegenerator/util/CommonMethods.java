@@ -2,10 +2,13 @@ package com.personthecat.cavegenerator.util;
 
 import com.personthecat.cavegenerator.Main;
 
+import java.io.File;
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -82,23 +85,56 @@ public class CommonMethods {
     public static <T> Optional<T> find(T[] values, Predicate<T> by) {
         for (T val : values) {
             if (by.test(val)) {
-                return Optional.of(val);
+                return full(val);
             }
         }
-        return Optional.empty();
+        return empty();
     }
 
     public static <T> Optional<T> find(Collection<T> values, Predicate<T> by) {
         for (T val : values) {
             if (by.test(val)) {
-                return Optional.of(val);
+                return full(val);
             }
         }
+        return empty();
+    }
+
+    /**
+     * Converts a generic List into its standard array counterpart.
+     * Unsafe. Should not be used for an primitive data type. In
+     * Most cases where this method is used, storing the data in a
+     * primitive array probably offers little or no benefit. As a
+     * result, I may try to remove this sometime in the near future.
+     */
+    @SuppressWarnings("unchecked")
+    public static <T extends Object> T[] toArray(List<T> list) {
+        return list.toArray((T[]) new Object[0]);
+    }
+
+    /** Safely retrieves a value from the input map. */
+    public static <K, V> Optional<V> safeGet(Map<K, V> map, K key) {
+        return Optional.ofNullable(map.get(key));
+    }
+
+    /** Determines the extension of the input `file`. */
+    public static String extension(final File file) {
+        info("Got this filename: {}", file.getName());
+        String[] split = file.getName().split(Pattern.quote("."));
+        return split[split.length - 1];
+    }
+
+    /** Shorthand for calling Optional#empty. */
+    public static <T> Optional<T> empty() {
         return Optional.empty();
     }
 
-    public static <K, V> Optional<V> safeGet(Map<K, V> map, K key) {
-        return Optional.ofNullable(map.get(key));
+    /**
+     * Shorthand for calling Optional#of, matching the existing syntax of
+     * `empty`, while being more clear than `of` alone.
+     */
+    public static <T> Optional<T> full(T val) {
+        return Optional.of(val);
     }
 
     /*
@@ -124,6 +160,10 @@ public class CommonMethods {
         return BiomeDictionary.getBiomes(biomeType).toArray(new Biome[0]);
     }
 
+    public static Type getBiomeType(String name) {
+        return Type.getType(name);
+    }
+
     /**
      * Variant of ForgeRegistries::BLOCKS#getValue that does not substitute
      * air for blocks that aren't found. Using Optional to improve null-safety.
@@ -131,7 +171,7 @@ public class CommonMethods {
     public static Optional<IBlockState> getBlockState(String registryName) {
         // Ensure that air is returned if that is the query.
         if (registryName.equals("air") || registryName.equals("minecraft:air")) {
-            return Optional.of(Blocks.AIR.getDefaultState());
+            return full(Blocks.AIR.getDefaultState());
         }
 
         // View the components of this string separately.
@@ -166,13 +206,13 @@ public class CommonMethods {
         try { // Block#getStateFromMeta may throw a NullPointerException. Extremely annoying.
             ret = ForgeRegistries.BLOCKS.getValue(location).getStateFromMeta(meta);
         } catch (NullPointerException e) {
-            return Optional.empty();
+            return empty();
         }
         // Ensure this value to be anything but air.
         if (ret.equals(Blocks.AIR.getDefaultState())){
-            return Optional.empty();
+            return empty();
         }
-        return Optional.of(ret);
+        return full(ret);
     }
 
     /**

@@ -5,7 +5,13 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
 
+import com.personthecat.cavegenerator.util.NoiseSettings2D;
+import org.hjson.JsonObject;
+
+import java.util.Optional;
 import java.util.Random;
+
+import static com.personthecat.cavegenerator.util.HjsonTools.*;
 
 public class LargeStalactite extends WorldGenerator {
     /** Required fields. Must be supplied by the constructor. */
@@ -13,20 +19,45 @@ public class LargeStalactite extends WorldGenerator {
     private final IBlockState state;
     private final int maxLength, minHeight, maxHeight;
     private final Type type;
+    private final IBlockState[] matchers;
+    private final Optional<NoiseSettings2D> settings;
 
-    /** Optional fields with default values. Can be set later. */
-    private boolean spawnInPatches = false;
-    private double patchThreshold = 0.15;
-    private int patchSpacing = 40;
-    private IBlockState[] matchers = new IBlockState[0];
+    /** The default noise settings to be optionally used for stalactites. */
+    public static final NoiseSettings2D DEFAULT_NOISE =
+        new NoiseSettings2D(-0.7f, 40.0f, 1);
 
-    public LargeStalactite(int maxLength, double chance, IBlockState state, int minHeight, int maxHeight, Type type) {
-        this.maxLength = maxLength;
-        this.chance = chance;
-        this.minHeight = minHeight;
-        this.maxHeight = maxHeight;
+    /** From Json. */
+    public LargeStalactite(Type type, JsonObject stalactite) {
+        this(
+            getGuranteedState(stalactite, "LargeStalactite"),
+            type,
+            getFloatOr(stalactite, "chance", 16.7f),
+            getIntOr(stalactite, "maxLength", 3),
+            getIntOr(stalactite, "minHeight", 11),
+            getIntOr(stalactite, "maxHeight", 55),
+            getBlocksOr(stalactite, "matchers" /* No defaults */),
+            getObject(stalactite, "noise2D").map(o -> toNoiseSettings(o, DEFAULT_NOISE))
+        );
+    }
+
+    public LargeStalactite(
+        IBlockState state,
+        Type type,
+        double chance,
+        int maxLength,
+        int minHeight,
+        int maxHeight,
+        IBlockState[] matchers,
+        Optional<NoiseSettings2D> settings
+    ) {
         this.state = state;
         this.type = type;
+        this.chance = chance;
+        this.maxLength = maxLength;
+        this.minHeight = minHeight;
+        this.maxHeight = maxHeight;
+        this.matchers = matchers;
+        this.settings = settings;
     }
 
     @Override
@@ -49,42 +80,8 @@ public class LargeStalactite extends WorldGenerator {
         return true;
     }
 
-    /**
-     * Whether the generator should run according to a
-     * perlin noise generator.
-     */
-    public void setSpawnInPatches() {
-        this.spawnInPatches = true;
-    }
-
-    public boolean shouldSpawnInPatches() {
-        return spawnInPatches;
-    }
-
-    /**
-     * The threshold for determining whether the noise
-     * at any given coordinate is sufficient.
-     */
-    public void setPatchThreshold(double threshold) {
-        this.patchThreshold = threshold;
-    }
-
-    public double getPatchThreshold() {
-        return patchThreshold;
-    }
-
-    /**
-     * Technically, this is the frequency value used
-     * in the algorithm that fractalizes the noise.
-     * It is renamed here to be more evocative of
-     * its actual function, in this case.
-     */
-    public void setPatchSpacing(int spacing) {
-        this.patchSpacing = spacing;
-    }
-
-    public int getPatchSpacing() {
-        return patchSpacing;
+    public boolean spawnInPatches() {
+        return settings.isPresent();
     }
 
     /**
@@ -101,14 +98,6 @@ public class LargeStalactite extends WorldGenerator {
 
     public int getMaxHeight() {
         return maxHeight;
-    }
-
-    /**
-     * Any source blocks that can be matched for this
-     * spawner to run. Will spawn anywhere, if none.
-     */
-    public void setMatchers(IBlockState[] matchers) {
-        this.matchers = matchers;
     }
 
     public IBlockState[] getMatchers() {

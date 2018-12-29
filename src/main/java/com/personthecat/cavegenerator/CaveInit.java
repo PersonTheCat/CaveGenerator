@@ -20,9 +20,9 @@ import static com.personthecat.cavegenerator.util.SafeFileIO.*;
 
 public class CaveInit {
     /** A setting indicating the location where presets will be kept. */
-    private static final String FOLDER = "cavegenerator/prefets";
+    private static final String FOLDER = "cavegenerator/presets";
     public static final File DIR = new File(Loader.instance().getConfigDir(), FOLDER);
-    private static final List<String> EXTENSIONS = Arrays.asList("json", "cave");
+    private static final List<String> EXTENSIONS = Arrays.asList("hjson", "json", "cave");
 
     /** Initializes the supplied map with presets from the directory. */
     public static Result<RuntimeException> initPresets(final Map<String, GeneratorSettings> presets) {
@@ -47,22 +47,17 @@ public class CaveInit {
         return result; // To do: return an error if safeListFiles() returns empty.
     }
 
+    /** Loads all presets, crashing if an error is present. */
     public static void forceInitPresets(final Map<String, GeneratorSettings> presets) {
         initPresets(presets).handleIfPresent((err) -> {
             throw runExF("Error loading presets: %s", err.getMessage());
         });
     }
 
-    /** Determines the extension of the input `file`. */
-    private static String extension(final File file) {
-        String[] split = file.getName().split(".");
-        return split[split.length - 1];
-    }
-
     /** Prints which presets are currently loaded and whether they are enabled. */
     private static void printLoadedPresets(final Map<String, GeneratorSettings> presets) {
         for (Entry<String, GeneratorSettings> entry : presets.entrySet()) {
-            final String enabled = entry.getValue().enabled ? "enabled" : "disabled";
+            final String enabled = entry.getValue().conditions.enabled ? "enabled" : "disabled";
             info("Successfully loaded {}. It is {}.", entry.getKey(), enabled);
         }
     }
@@ -85,9 +80,6 @@ public class CaveInit {
 
         // Clear existing generators. Allow them to be reset.
         Main.instance.generators.clear();
-        // Presets don't work yet. Temporarily register a
-        // generator with all default values.
-        registerTestGenerator(world);
         // As always, there's no other way to access additional
         // information non-statically when using Forge's
         // SubscribeEvents. I would have preferred to avoid that.
@@ -95,22 +87,6 @@ public class CaveInit {
             CaveGenerator generator = new CaveGenerator(world, entry.getValue());
             Main.instance.generators.put(entry.getKey(), generator);
         }
-    }
-
-    /** Ignore this */
-    private static void registerTestGenerator(World world) {
-        GeneratorSettings settings = new GeneratorSettings(
-            true,
-            new IBlockState[] {Blocks.STONE.getDefaultState()},
-            new GeneratorSettings.SpawnSettings(),
-            new GeneratorSettings.TunnelSettings(),
-            new GeneratorSettings.RavineSettings(),
-            new GeneratorSettings.RoomSettings(),
-            new GeneratorSettings.CavernSettings(),
-            new GeneratorSettings.StructureSettings[0],
-            new GeneratorSettings.DecoratorSettings()
-        );
-        Main.instance.generators.put("vanilla", new CaveGenerator(world, settings));
     }
 
     /** Returns whether any generator is enabled for the current dimension. */
