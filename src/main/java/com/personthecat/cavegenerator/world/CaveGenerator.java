@@ -661,7 +661,7 @@ public class CaveGenerator {
         } else if (decorateVertical(rand, primer, x, y, z, chunkX, chunkZ, false)) {
             return true;
         }
-        return false; // decorateHorizontal(rand, primer, info, useMut, x, y, z, chunkX, chunkZ);
+        return decorateHorizontal(rand, primer, info, useMut, x, y, z, chunkX, chunkZ);
     }
 
     private boolean decorateVertical(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ, boolean up) {
@@ -706,10 +706,14 @@ public class CaveGenerator {
             IBlockState candidate = safeGetBlock(primer, info, useMut, pos.getX(), pos.getY(), pos.getZ());
             // Ignore air blocks.
             if (candidate.getMaterial().equals(Material.AIR)) {
-                return false;
+                continue;
             }
             for (WallDecorators decorator : testedDecorators) {
                 if (decorator.matchesBlock(candidate)) {
+                    // Test
+                    if (!areCoordsInChunk(pos.getX(), pos.getZ())) {
+                        continue;
+                    }
                     // Place block -> return success if original was replaced.
                     if (decorator.decidePlace(primer, x, y, z, pos.getX(), pos.getY(), pos.getZ())) {
                         return true;
