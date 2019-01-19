@@ -1,9 +1,6 @@
 package com.personthecat.cavegenerator.world;
 
-import com.personthecat.cavegenerator.util.Direction;
-import com.personthecat.cavegenerator.util.HjsonTools;
-import com.personthecat.cavegenerator.util.NoiseSettings3D;
-import com.personthecat.cavegenerator.util.ScalableFloat;
+import com.personthecat.cavegenerator.util.*;
 import com.personthecat.cavegenerator.world.feature.GiantPillar;
 import com.personthecat.cavegenerator.world.feature.LargeStalactite;
 import net.minecraft.block.state.IBlockState;
@@ -11,6 +8,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
+import org.apache.commons.lang3.ArrayUtils;
 import org.hjson.JsonObject;
 
 import java.util.ArrayList;
@@ -46,22 +44,34 @@ public class GeneratorSettings {
      */
     public GeneratorSettings(
         SpawnSettings conditions,
-        IBlockState[] replaceable,
         TunnelSettings tunnels,
         RavineSettings ravines,
         RoomSettings rooms,
         CavernSettings caverns,
         StructureSettings[] structures,
-        DecoratorSettings decorators
+        DecoratorSettings decorators,
+        IBlockState[] replaceable,
+        boolean replaceDecorators
     ) {
         this.conditions = conditions;
-        this.replaceable = replaceable;
         this.tunnels = tunnels;
         this.ravines = ravines;
         this.rooms = rooms;
         this.caverns = caverns;
         this.structures = structures;
         this.decorators = decorators;
+        this.replaceable = getReplaceable(
+            replaceable,
+            decorators,
+            replaceDecorators
+        );
+    }
+
+    private IBlockState[] getReplaceable(IBlockState[] base, DecoratorSettings decorators, boolean replaceDecorators) {
+        if (replaceDecorators) {
+            return ArrayUtils.addAll(base, decorators.getDecoratorBlocks());
+        }
+        return base;
     }
 
     /**
@@ -305,6 +315,10 @@ public class GeneratorSettings {
         public final int minHeight;
         public final int maxHeight;
 
+        /** Settings related to the optional use of noise-based wall generation. */
+        public final boolean useWallNoise;
+        public final NoiseSettings2D wallNoise;
+
         /** Default values used for the scalable floats here. */
         public static final ScalableFloat DEFAULT_TWIST_XZ =
             new ScalableFloat(1.0f, 0.5f, 4.0f, 0.0f, 0.0f);
@@ -319,6 +333,10 @@ public class GeneratorSettings {
         public static final ScalableFloat DEFAULT_ANGLE_Y =
             new ScalableFloat(1.0f, 1.0f, 0.0f, 0.0f, 0.25f);
 
+        /** The default noise values to be used for ravine walls. */
+        public static final NoiseSettings2D DEFAULT_WALL_NOISE =
+            new NoiseSettings2D(0.5f, 0.1f, 0, 4);
+
         /** Primary constructor. */
         public RavineSettings(
             float noiseYFactor,
@@ -331,7 +349,9 @@ public class GeneratorSettings {
             int startingDistance,
             int minHeight,
             int maxHeight,
-            int inverseChance
+            int inverseChance,
+            boolean useWallNoise,
+            NoiseSettings2D wallNoise
         ) {
             this.noiseYFactor = noiseYFactor;
             this.twistXZ = twistXZ;
@@ -344,6 +364,8 @@ public class GeneratorSettings {
             this.minHeight = minHeight;
             this.maxHeight = maxHeight;
             this.inverseChance = inverseChance;
+            this.useWallNoise = useWallNoise;
+            this.wallNoise = wallNoise;
         }
 
         /** From Json. */
@@ -359,7 +381,9 @@ public class GeneratorSettings {
                 getIntOr(rav, "distance", 0),
                 getIntOr(rav, "minHeight", 20),
                 getIntOr(rav, "maxHeight", 40),
-                getIntOr(rav, "inverseChance", 50)
+                getIntOr(rav, "inverseChance", 50),
+                getObject(rav, "wallNoise").isPresent(),
+                getNoiseSettingsOr(rav, "wallNoise", DEFAULT_WALL_NOISE)
             );
         }
 
@@ -583,6 +607,27 @@ public class GeneratorSettings {
             ceilingDecorators = toArray(ceiling, WallDecorators.class);
             floorDecorators = toArray(floor, WallDecorators.class);
             wallDecorators = toArray(wall, WallDecorators.class);
+        }
+
+        /** Retrieves an array of all blocks used blocks each decorator. */
+        private IBlockState[] getDecoratorBlocks() {
+            List<IBlockState> blocks = new ArrayList<>();
+            for (StoneCluster cluster : stoneClusters) {
+                blocks.add(cluster.getState());
+            }
+            for (StoneLayer layer : stoneLayers) {
+                blocks.add(layer.getState());
+            }
+            for (WallDecorators wDecorators : ceilingDecorators) {
+                blocks.add(wDecorators.getFillBlock());
+            }
+            for (WallDecorators wDecorators : floorDecorators) {
+                blocks.add(wDecorators.getFillBlock());
+            }
+            for (WallDecorators wDecorators : wallDecorators) {
+                blocks.add(wDecorators.getFillBlock());
+            }
+            return toArray(blocks, IBlockState.class);
         }
     }
 }

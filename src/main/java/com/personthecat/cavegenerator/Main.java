@@ -43,9 +43,9 @@ public class Main {
     /** A non-null map of ID -> Structure to be filled at runtime. */
     public final Map<String, Template> structures = new HashMap<>();
     /** A non-null instance of the most recent, non-vanilla cave generator. */
-    public Optional<MapGenBase> priorCaves = Optional.empty();
+    public Optional<MapGenBase> priorCaves = empty();
     /** A non-null instance of the most recent, non-vanilla ravine generator. */
-    public Optional<MapGenBase> priorRavines = Optional.empty();
+    public Optional<MapGenBase> priorRavines = empty();
 
     @EventHandler
     @SuppressWarnings("unused")

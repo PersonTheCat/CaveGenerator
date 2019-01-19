@@ -21,7 +21,7 @@ public class CaveInit {
     /** A setting indicating the location where presets will be kept. */
     private static final String FOLDER = "cavegenerator/presets";
     public static final File DIR = new File(Loader.instance().getConfigDir(), FOLDER);
-    private static final List<String> EXTENSIONS = Arrays.asList("hjson", "json", "cave");
+    public static final List<String> EXTENSIONS = Arrays.asList("hjson", "json", "cave");
 
     /** Initializes the supplied map with presets from the directory. */
     public static Result<RuntimeException> initPresets(final Map<String, GeneratorSettings> presets) {

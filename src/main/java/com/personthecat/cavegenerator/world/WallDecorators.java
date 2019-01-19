@@ -2,14 +2,16 @@ package com.personthecat.cavegenerator.world;
 
 import com.personthecat.cavegenerator.util.Direction;
 import com.personthecat.cavegenerator.util.NoiseSettings3D;
-import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
+import com.personthecat.cavegenerator.util.SimplexNoise3D;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.world.chunk.ChunkPrimer;
 import org.hjson.JsonObject;
 
 import java.util.Arrays;
 import java.util.Optional;
+import java.util.Random;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
@@ -24,7 +26,7 @@ public class WallDecorators {
     private final Preference preference;
 
     /** Null-safe, optional noise settings. I'm not dealing with NPEs. */
-    private final Optional<SimplexNoiseGenerator3D> noise;
+    private final Optional<SimplexNoise3D> noise;
     private final Optional<NoiseSettings3D> settings;
 
     /** The default noise values for WallDecorators with noise. */
@@ -67,10 +69,10 @@ public class WallDecorators {
     }
 
     /** Sets up a noise generator to use for placement. */
-    private Optional<SimplexNoiseGenerator3D> setupNoise() {
+    private Optional<SimplexNoise3D> setupNoise() {
         if (settings.isPresent()) {
             // The noise for this generator will be unique to the block ID.
-            return full(new SimplexNoiseGenerator3D(Block.getStateId(fillBlock)));
+            return full(new SimplexNoise3D(Block.getStateId(fillBlock)));
         }
         return empty();
     }
@@ -104,12 +106,38 @@ public class WallDecorators {
         return fillBlock;
     }
 
-    public boolean canGenerateAtHeight(final int y) {
-        return y >= minHeight && y <= maxHeight;
+    public boolean canGenerate(Random rand, IBlockState state, int x, int y, int z, int chunkX, int chunkZ) {
+        return y >= minHeight && y <= maxHeight && // Height bounds
+            rand.nextDouble() * 100 <= chance && // Probability
+            matchesBlock(state); // Matchers
+    }
+
+    public boolean canGenerate(Random rand, int x, int y, int z, int chunkX, int chunkZ) {
+        return y >= minHeight && y <= maxHeight && // Height bounds
+            rand.nextDouble() * 100 <= chance; // Probability
+    }
+
+    public boolean matchesBlock(IBlockState state) {
+        for (IBlockState matcher : matchers) {
+            if (matcher.equals(state)){
+                return true;
+            }
+        }
+        return false;
     }
 
     public Preference getPreference() {
         return preference;
+    }
+
+    public boolean decidePlace(ChunkPrimer primer, int xO, int yO, int zO, int xD, int yD, int zD) {
+        if (preference.equals(Preference.REPLACE_ORIGINAL)) {
+            primer.setBlockState(xO, yO, zO, fillBlock);
+            return true;
+        } else {
+            primer.setBlockState(xD, yD, zD, fillBlock);
+            return false;
+        }
     }
 
     public enum Preference {

@@ -21,7 +21,7 @@ public class StoneLayer {
 
     /** The default noise values used by this object. */
     public static final NoiseSettings2D DEFAULT_NOISE =
-        new NoiseSettings2D(0.5f, 100.0f, 5);
+        new NoiseSettings2D(0.5f, 100.0f, -5, 5);
 
     /** Primary constructor. */
     public StoneLayer(IBlockState state, int maxHeight, NoiseSettings2D settings) {

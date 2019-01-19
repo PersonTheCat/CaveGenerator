@@ -4,6 +4,7 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.ArrayUtils;
 
+import javax.annotation.concurrent.Immutable;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
 
@@ -14,6 +15,7 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
  * section is essentially a sphere that is constrained by
  * the boundaries of the current chunk @ original(X/Z).
  */
+@Immutable
 public class TunnelSectionInfo {
     /** The exact purpose of some of these values is still unclear. */
     private final double centerX, centerY, centerZ;
@@ -167,6 +169,39 @@ public class TunnelSectionInfo {
         for (int i = 0; i < positions.length; i++) {
             func.accept(positions[i]);
         }
+    }
+
+    /** Determines whether the input coordinates would exist in this section. */
+    public boolean testCoords(int x, int y, int z) {
+        final double distX = ((x + chunkX * 16) + 0.5 - centerX) / radiusXZ;
+        final double distX2 = distX * distX;
+        final double distZ = ((z + chunkZ * 16) + 0.5 - centerZ) / radiusXZ;
+        final double distZ2 = distZ * distZ;
+
+        if ((distX2 + distZ2) >= 1.0) {
+            return false;
+        }
+
+        final double distY = ((y - 1) + 0.5 - centerY) / radiusY;
+        final double distY2 = distY * distY;
+
+        return (distY > -0.7) && ((distX2 + distY2 + distZ2) < 1.0);
+    }
+
+    public boolean testCoords(int x, int y, int z, float[] mut) {
+        final double distX = ((x + chunkX * 16) + 0.5 - centerX) / radiusXZ;
+        final double distX2 = distX * distX;
+        final double distZ = ((z + chunkZ * 16) + 0.5 - centerZ) / radiusXZ;
+        final double distZ2 = distZ * distZ;
+
+        if ((distX2 + distZ2) >= 1.0) {
+            return false;
+        }
+
+        final double distY = ((y - 1) + 0.5 - centerY) / radiusY;
+        final double distY2 = distY * distY;
+
+        return (distX2 + distZ2) * (double) mut[y - 1] + distY2 / 6.0 < 1.0;
     }
 
     private void nullCheck() {

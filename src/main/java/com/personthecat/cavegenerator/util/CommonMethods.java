@@ -39,17 +39,17 @@ public class CommonMethods {
         System.out.println(x);
     }
 
-    /** Accesses the mods main instance to send a message using its logger. */
+    /** Accesses the mod's main instance to send a message using its logger. */
     public static void info(String x, Object... args) {
         Main.instance.logger.info(x, args);
     }
 
-    /** Accesses the mods main instance to send a warning using its logger. */
+    /** Accesses the mod's main instance to send a warning using its logger. */
     public static void warn(String x, Object... args) {
         Main.instance.logger.warn(x, args);
     }
 
-    /** Accesses the mods main instance to send an error using its logger. */
+    /** Accesses the mod's main instance to send an error using its logger. */
     public static void error(String x, Object... args) {
         Main.instance.logger.error(x, args);
     }

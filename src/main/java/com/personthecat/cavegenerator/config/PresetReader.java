@@ -79,14 +79,27 @@ public class PresetReader {
         JsonObject json = loadJson(file).asObject();
         return new GeneratorSettings(
             getSpawnSettings(json),
-            getReplaceableBlocks(json),
             getTunnelSettings(json),
             getRavineSettings(json),
             getRoomSettings(json),
             getCavernSettings(json),
             getStructureSettings(json),
-            getDecoratorSettings(json)
+            getDecoratorSettings(json),
+            getReplaceableBlocks(json),
+            getReplaceDecorators(json)
         );
+    }
+
+    /**
+     * Returns a JsonObject from the input file. Ensures that an error is handled
+     * by any external callers.
+     */
+    public static Optional<JsonObject> getPresetJson(File file) {
+        try {
+            return full(loadJson(file).asObject());
+        } catch (RuntimeException e) {
+            return empty();
+        }
     }
 
     /** Parses the contents of @param file into a generic JsonValue. */
@@ -111,7 +124,15 @@ public class PresetReader {
 
     /** Retrieves a list of replaceable blocks from the input object. */
     private static IBlockState[] getReplaceableBlocks(JsonObject json) {
-        return getBlocksOr(json, "replaceableBlocks", Blocks.STONE.getDefaultState());
+        return getBlocksOr(json, "replaceableBlocks",
+            Blocks.STONE.getDefaultState(),
+            Blocks.DIRT.getDefaultState()
+        );
+    }
+
+    /** Retrieves a single boolean from the input object. Looks nicer this way. */
+    private static boolean getReplaceDecorators(JsonObject json) {
+        return getBoolOr(json, "replaceDecorators", true);
     }
 
     /** Parses the field "tunnels" from this json into a TunnelSettings object. */

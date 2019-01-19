@@ -36,7 +36,6 @@ public class RavineManager extends MapGenBase {
         }
         // Calls `recursiveGenerate()` recursively.
         super.generate(world, x, z, primer);
-        completePreviousCaves(x, z, primer);
     }
 
     @Override
@@ -52,9 +51,5 @@ public class RavineManager extends MapGenBase {
                 gen.startRavine(rand, chunkX, chunkZ, originalX, originalZ, primer);
             }
         }
-    }
-
-    private void completePreviousCaves(int chunkX, int chunkZ, ChunkPrimer primer) {
-
     }
 }

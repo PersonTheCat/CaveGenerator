@@ -48,14 +48,12 @@
  #     scale: floating point value                             #
  #      # Alters the distance between peaks of values.         #
  #     frequency: floating point value                         #
- #      # The height of each peak. The generator normally      #
- #      # produces a value between -1 and 1. In an example     #
- #      # where hills and vallies are being produced, this     #
- #      # means that hills will be a maximum of 1 block deep   #
- #      # and vallies will be a maximum of 1 block tall.       #
- #      # Setting the range to 5 increases the height and      #
- #      # depth to 5 blocks each.                              #
- #     variance: integer value                                 #
+ #      # The maximum possible value produced by this          #
+ #      # generator.                                           #
+ #     minVal: integer                                         #
+ #      # The maximum possible value produced by this          #
+ #      # generator.                                           #
+ #     maxVal: integer                                         #
  #   }                                                         #
  #    # Used anywhere that produces values relative to each    #
  #    # (x, y, z) coordinate. What this will do is produce     #
@@ -79,349 +77,360 @@
  #   }                                                         #
  # ----------------------------------------------------------- #
 {
-	 # Whether this preset is enabled globally.
-	enabled: true
-	 # A list of biomes for tunnels, rooms, ravines, and most 
-	 # (but not all) decorations to be restricted to.
-	biomes: {	
-		 # A list of registry names.
-		names: []
-		 # A list of biome IDs.
-		IDs: []
-		 # A list of Biome types.
-		types: []
-	}
-	 # Whether the above list should serve as a blacklist
-	 # instead of a whitelist.
-	useBiomeBlacklist: false
-	 # A list of dimension IDs for all features to be 
-	 # restricted to.
-	dimensions: []
-	 # Whether the above list should serve as a blacklist 
-	 # instead of a whitelist.
-	useDimensionBlacklist: false
-	 # A list of blocks that can be replaced by this generator.
-	 # Bear in mind that very little world decoration has
-	 # occurred by the time this generator will run. This means
-	 # that almost nothing more than stone, dirt, and water
-	 # exist in the world at this point. Use this if you have
-	 # any other mods that might be adding blocks early on, or
-	 # if any other preset is placing blocks that this generator
-	 # should also be able to dig through.
-	replaceableBlocks: ["stone", "dirt"]
-	 # A collection of blocks that will be used instead of air 
-	 # at various height levels. Supports random and even 
-	 # noise-based placement.
-	caveBlocks: [
-		 # Imitates the normal lava placement behavior.
-		{
-			 # There are more parameters. See 
-			 # underground_forest.cave for more info.
-			states: ["lava"]
-			 # Maximum height bounds.
-			maxHeight: 10
-		}
-		/* Defaults values; these do not spawn by default.
-		{  A comma might be missing, if this were here.
-			states: []
+     # Whether the preset is enabled globally.
+    enabled: true
+     # A list of biomes for tunnels, rooms, ravines, and most 
+     # (but not all) decorations to be restricted to.
+    biomes: {
+         # A list of registry names.
+        names: [ ]
+         # A list of biome IDs.
+        IDs: [ ]
+         # A list of Biome types.
+        types: [ ]
+    }
+    useBiomeBlacklist: false
+     # A list of dimension IDs for all features to be 
+     # restricted to.
+    dimensions: [ ]
+    useDimensionBlacklist: false
+     # A list of blocks that can be replaced by this generator.
+     # Bear in mind that very little world decoration has
+     # occurred by the time this generator will run. This means
+     # that almost nothing more than stone, dirt, and water
+     # exist in the world at this point. Use this if you have
+     # any other mods that might be adding blocks early on, or
+     # if any other preset is placing blocks that this generator
+     # should also be able to dig through.
+    replaceableBlocks: [ "stone", "dirt" ]
+	 # Setting this field to true will automatically add all
+	 # WallDecorators, StoneClusters, etc. to the replaceableBlocks
+	 # list. These blocks usually should be added because 
+	 # multiple tunnel sections can overlap after decorators have
+	 # been placed, resulting in unwanted, floating decorators.
+	replaceDecorators: true
+     # A collection of blocks that will be used instead of air 
+     # at various height levels. Supports random and even 
+     # noise-based placement.
+    caveBlocks: [
+         # Imitates the normal lava placement behavior.
+        {
+             # There are more parameters. See 
+             # underground_forest.cave for more info.
+            states: [ "lava" ]
+             # Maximum height bounds.
+            maxHeight: 10
+        }
+         /* Defaults values; these do not spawn by default.
+         {  A comma might be missing, if this were here.
+             states: []
+             chance: 100.0
+             minHeight: 0
+             maxHeight: 50
+              # This is a standard noise3D object. While it is more to
+              # write, the fact that these are everywhere helps you
+              # know that they're all the same.
+             noise3D: {
+                  # 0.0 - 1.0 scale.
+                 scale: 0.1
+                 frequency: 50.00
+                 scaleY: 1.0
+                  # Number of generation passes. Increases
+                  # resolution at the cost of performance.
+                 ocaves: 1
+             }
+         }
+         */
+    
+    ]
+     # Used for decorating walls with various blocks. Supports
+     # random and noise-based placement. Needs more documentation.
+    wallDecorators: [
+	    {
+		    states: [ "cobblestone" ]
 			chance: 100.0
 			minHeight: 0
-			maxHeight: 50
-			 # This is a standard noise3D object. While it is more to
-			 # write, the fact that these are everywhere helps you
-			 # know that they're all the same.
-			noise3D: {
-				 # 0.0 - 1.0 scale.
-				scale: 0.1
-				frequency: 50.00
-				scaleY: 1.0
-				 # Number of generation passes. Increases
-				 # resolution at the cost of performance.
-				ocaves: 1
-			}
-		}
-		*/
+			maxHeight: 64
+			directions: [ "side" ]
+			matchers: [ "stone" ]
+			preference: replace_match
+	    }
 	]
-	 # Used for decorating walls with various blocks. Supports
-	 # random and noise-based placement. Needs more documentation.
-	wallDecorators: []
-	 # Single, crcular spaces found near the center of cave 
-	 # systems.
-	rooms: {
-		 # The radius in blocks.
-		scale: 6.0
-		 # Vertical height multiple of scale.
-		scaleY: 0.5
-	}
-	tunnels: {
-		 # The average number of tunnel systems to try and
-		 # spawn per chunk.
-		frequency: 15
-		 # Mininum starting height.
-		minHeight: 8
-		 # Maximum starting height.
-		maxHeight: 128
-		 # The length in blocks of this tunnel. A value of 0 
-		 # produces between 132-176.
-		distance: 0
-		 # The 1 / X chance chance that multiple tunnels will
-		 # be spawned at each origin, instead of just one.
-		spawnInSystemInverseChance: 4
-		 # The 1 / X chance that any origin will be skipped.
-		 # This has an effect of spawning each system in
-		 # isolated groups vs. everywhere.
-		spawnIsolatedInverseChance: 7
-		 # Whether to randomly limit how much the angle of
-		 # each tunnel segment can be altered, mimicking the
-		 # vanilla behavior. This has an effect of producing
-		 # fewer vertical aberrations in tunnels.
-		noiseYReduction: true
-		 # Whether to rescale caves down to a smaller size
-		 # each time they branch apart, mimicking the
-		 # vanilla behavior, but limiting the overall amount
-		 # of control presets can have on tunnel shapes.
-		resizeBranches: true
-		 # These values alter how much the horizontal angle
-		 # of each tunnel can change between segments.
-		twistXZ: {
-			 # angle = angle^x
-			exponent: 1.0
-			 # angle = angle * x
-			factor: 0.75
-			 # angle = angle + (randomValue * x)
-			randFactor: 4.0
-			 # angle first gets changed by x.
-			startVal: 0.0
-		}
-		 # These values alter how much the vertical angle
-		 # of each tunnel can change between segments.
-		twistY: {
-			exponent: 1.0
-			factor: 0.9
-			randFactor: 2.0
-			startVal: 0.0
-		}
-		 # These values alter the radius in blocks of each
-		 # tunnel.
-		scale: {
-			exponent: 1.0
-			factor: 1.0
-			randFactor: 0.0
-			startVal: 0.0
-			 # startingValue = startingValue + (randomValue * x).
-			startValRandFactor: 1.0
-		}
-		 # scaleY is a multiple of scale on the vertical axis.
-		 # If scale == 6 and scaleY == 0.5, the height becomes 3.
-		 # These values alter scaleY between tunnel segments.
-		scaleY: {
-			exponent: 1.0
-			factor: 1.0
-			randFactor: 0.0
-			startVal: 1.0
-		}
-		 # The horizontal angle in radians.
-		angleXZ: {
-			startVal: 0.0
-			startValRandFactor: 1.0
-		}
-		 # The vertical angle in radians.
-		angleY: {
-			startVal: 0.0
-			startValRandFactor: 0.25
-		}
-	}
-	 # Ravines are like tunnels, but with random variations in
-	 # horizontal scale. You could theoretically use this as
-	 # your main tunnels, if you're using multiple presets.
-	ravines: {
-		 # The 1 / X chance for this ravine to start in any
-		 # given chunk.
-		inverseChance: 50
-		minHeight: 20
-		maxHeight: 40
-		distance: 0
-		twistXZ: {
-			exponent: 1.0
-			factor: 0.5
-			randFactor: 4.0
-			startVal: 0.0
-		}
-		twistY: {
-			exponent: 1.0
-			factor: 0.8
-			randFactor: 2.0
-			startVal: 0.0
-		}
-		scale: {
-			exponent: 1.0
-			factor: 1.0
-			randFactor: 0.0
-			startVal: 0.0
-			startValRandFactor: 2.0
-		}
-		scaleY: {
-			exponent: 1.0
-			factor: 1.0
-			randFactor: 0.0
-			 # This is essentially the second most important
-			 # variable accounting for the look of ravines.
-			startVal: 3.0
-		}
-		angleXZ: {
-			startVal: 0.0
-			startValRandFactor: 1.0
-		}
-		angleY: {
-			startVal: 0.0
-			startValRandFactor: 0.25
-		}
-	 # Similar to noiseYReduction, but not as random.
-		noiseYFactor: 0.7
-	}
-	 # See caverns.json for another example of caverns. These
-	 # are the default values.
-	 # To-do: include ceil/floor noise settings.
-	caverns: {
-		enabled: false
-		minHeight: 10
-		maxHeight: 50
-		 # Optional 3D noise block.
-		noise3D: {
-			 # This does refer to noise frequency, but its use in
-			 # the case of caverns has the opposite effect. Higher
-			 # values mean less frequent pockets of air.
-			frequency: 70.0
-			 # scale for noise-based objects is from 0-1.
-			scale: 0.2
-			scaleY: 0.5
-			 # The number of passes. Increases resolution at the
-			 # cost of performance.
-			octaves: 1	
-		}
-	}
-	 # See stone_layers.cave for an example of stoneLayers. These are
-	 # just the default values, so you only need to specify the state
-	 # and maxHeight.
-	stoneLayers: [
-		/*
-		{ Default values; these don't spawn by default.
-			state: null
-			 # This is necessary because multiple layers ideally
-			 # should not spawn at the exact same height.
-			maxHeight: null
-			 # Optional 2D noise block.
-			noise2D: {
-				scale: 0.5
-				 # The distance between this layer's peaks.
-				frequency: 100.0
-				 # How many blocks up or down this layer
-				 # can vary.
-				variance: 5.0
-			}
-		}
-		*/
-	]
-	 # See stone_clusters.cave for an example of stoneClusters.
-	stoneClusters: [
-		/*
-		{ Default values; these don't spawn by default.
-			 # A list of blocks to spawn under these conditions.
-			states: []
-			 # The 0 - 1 spawn frequency.
-			frequency: 0.15
-			 # The radius of this cluster on the x-axis.
-			radiusX: 16
-			radiusY: 12
-			radiusZ: 16
-			radiusVariance: 6
-			startingHeight: 32
-			heightVariance: 16
-		}
-		*/
-	]
-	 # See stalagmites_large.cave for an example of largeStalactites
-	 # and largeStalagmites. These are just the default values, so
-	 # you only need to specify the states.
-	largeStalactites: [
-		/*
-		{ Default values; these don't spawn by default.
-			state: null
-			 # The maximum number of blocks this structure can be.
-			maxLength: 3
-			chance: 16.7
-			minHeight: 11
-			maxHeight: 55
-			matchers: []
-			 # Optional noise block. Will perform better without.
-			noise2D: {
-				scale: 0.425
-				frequency: 40.0
-				 # Not really used in this context. 1 is
-				 # effectively the default.
-				variance: 1
-			}
-		}
-		*/
-	]
-	 # Same as largeStalactites. Spawns from the floor instead of
-	 # the ceiling.
-	largeStalagmites: []
-	 # See underground_forest.cave for an example of giantPillars.
-	 # These are the defaults. You just need to specify a state.
-	giantPillars: [
-		/*
-		{ Default values; these don't spawn by default.
-			 # This block makes up the body of the pillar.
-			state: null
-			 # This may not be null if it does exist, but it can be
-			 # left out. If the field is not present, no stairs will
-			 # spawn.
-			stairBlock: null
-			 # Number of spawn tries per chunk.
-			frequency: 15
-			minHeight: 10
-			maxHeight: 50
-			minLength: 4
-			maxLength: 12
-		}
-		*/
-	]
-	 # Structures are ideal for small decorations. Larger decorations
-	 # (16x16)+ will cause cascading generation lag and should be
-	 # handled by another mod, such as recurrent complex or OTG.
-	 # Structures will be centered around X and Z, but not Y. Most of
-	 # this information can be left out. See underground_forest.cave
-	 # for a better example. These are just the default values.
-	structures: [
-		/*
-		{ Default values; no structures spawn by default.
-			 # name refers to a resource location or file name.
-			 # It may not be null.
-			name: null
-			 # The 0-1 ratio of blocks to be retained when spawning.
-			integrity: 1.0
-			 # X, Y, Z spawn offset.
-			offset: [0, 0, 0]
-			 # Number of tries per chunk. Should be low.
-			frequency: 1
-			 # The percent chance any try will succeed.
-			chance: 0.05
-			minHeight: 10
-			maxHeight: 50
-			 # Any relative coordinates that must be non-solid.
-			 # Example:
-			 # airMatchers: [
-			 # 	[0, 1, 0],
-			 #	[0, 3, 0]
-			 # ]
-			airMatchers: []
-			solidMatchers: []
-			 # Whether to log the coordinates every time this structure
-			 # spawns.
-			debugSpawns: false
-			rotateRandomly: false
-		}
-		*/
-	]
+     # Single, crcular spaces found near the center of cave 
+     # systems.
+    rooms: {
+         # The radius in blocks.
+        scale: 6
+         # Vertical height multiple of scale.
+        scaleY: 0.5
+    }
+    tunnels: {
+         # The average number of tunnel systems to try and
+         # spawn per chunk.
+        frequency: 15
+         # Mininum starting height.
+        minHeight: 8
+         # Maximum starting height.
+        maxHeight: 128
+         # The length in blocks of this tunnel. A value of 0 
+         # produces between 132-176.
+        distance: 0
+         # The 1 / X chance chance that multiple tunnels will
+         # be spawned at each origin, instead of just one.
+        spawnInSystemInverseChance: 4
+         # The 1 / X chance that any origin will be skipped.
+         # This has an effect of spawning each system in
+         # isolated groups vs. everywhere.
+        spawnIsolatedInverseChance: 7
+         # Whether the preset is enabled globally.
+        noiseYReduction: true
+         # Whether the preset is enabled globally.
+        resizeBranches: true
+         # These values alter how much the horizontal angle
+         # of each tunnel can change between segments.
+        twistXZ: {
+             # angle = angle^x
+            exponent: 1
+             # angle = angle * x
+            factor: 0.75
+             # angle = angle + (randomValue * x)
+            randFactor: 4
+             # angle first gets changed by x.
+            startVal: 0
+        }
+         # These values alter how much the vertical angle
+         # of each tunnel can change between segments.
+        twistY: {
+            exponent: 1
+            factor: 0.9
+            randFactor: 2
+            startVal: 0
+        }
+         # These values alter the radius in blocks of each
+         # tunnel.
+        scale: {
+            exponent: 1
+            factor: 1
+            randFactor: 0
+            startVal: 0
+             # startingValue = startingValue + (randomValue * x).
+            startValRandFactor: 1
+        }
+         # scaleY is a multiple of scale on the vertical axis.
+         # If scale == 6 and scaleY == 0.5, the height becomes 3.
+         # These values alter scaleY between tunnel segments.
+        scaleY: {
+            exponent: 1
+            factor: 1
+            randFactor: 0
+            startVal: 1
+        }
+         # The horizontal angle in radians.
+        angleXZ: {
+            startVal: 0
+            startValRandFactor: 1
+        }
+         # The vertical angle in radians.
+        angleY: {
+            startVal: 0
+            startValRandFactor: 0.25
+        }
+    }
+     # Ravines are like tunnels, but with random variations in
+     # horizontal scale. You could theoretically use this as
+     # your main tunnels, if you're using multiple presets.
+    ravines: {
+         # The 1 / X chance for this ravine to start in any
+         # given chunk.
+        inverseChance: 50
+        minHeight: 20
+        maxHeight: 40
+        distance: 0
+        twistXZ: {
+            exponent: 1
+            factor: 0.5
+            randFactor: 4
+            startVal: 0
+        }
+        twistY: {
+            exponent: 1
+            factor: 0.8
+            randFactor: 2
+            startVal: 0
+        }
+        scale: {
+            exponent: 1
+            factor: 1
+            randFactor: 0
+            startVal: 0
+            startValRandFactor: 2
+        }
+        scaleY: {
+            exponent: 1
+            factor: 1
+            randFactor: 0
+             # This is essentially the second most important
+             # variable accounting for the look of ravines.
+            startVal: 3
+        }
+        angleXZ: {
+            startVal: 0
+            startValRandFactor: 1
+        }
+        angleY: {
+            startVal: 0
+            startValRandFactor: 0.25
+        }
+         # Similar to noiseYReduction, but not as random.
+        noiseYFactor: 0.7
+    }
+     # See caverns.json for another example of caverns. These
+     # are the default values.
+     # To-do: include ceil/floor noise settings.
+    caverns: {
+        enabled: false
+        minHeight: 10
+        maxHeight: 50
+         # Optional 3D noise block.
+        noise3D: {
+             # This does refer to noise frequency, but its use in
+             # the case of caverns has the opposite effect. Higher
+             # values mean less frequent pockets of air.
+            frequency: 70
+             # scale for noise-based objects is from 0-1.
+            scale: 0.2
+            scaleY: 0.5
+             # The number of passes. Increases resolution at the
+             # cost of performance.
+            octaves: 1
+        }
+    }
+     # See stone_layers.cave for an example of stoneLayers. These are
+     # just the default values, so you only need to specify the state
+     # and maxHeight.
+    stoneLayers: [
+         /*
+         { Default values; these don't spawn by default.
+             state: null
+              # This is necessary because multiple layers ideally
+              # should not spawn at the exact same height.
+             maxHeight: null
+              # Optional 2D noise block.
+             noise2D: {
+                 scale: 0.5
+                  # The distance between this layer's peaks.
+                 frequency: 100.0
+                  # How many blocks down this layer can vary.
+                 minVal: -5
+                  # How many blocks up this layer can vary.
+                 maxVal: 5
+             }
+         }
+         */
+    ]
+     # See stone_clusters.cave for an example of stoneClusters.
+    stoneClusters: [
+         /*
+         { Default values; these don't spawn by default.
+              # A list of blocks to spawn under these conditions.
+             states: []
+              # The 0 - 1 spawn frequency.
+             frequency: 0.15
+              # The radius of this cluster on the x-axis.
+             radiusX: 16
+             radiusY: 12
+             radiusZ: 16
+             radiusVariance: 6
+             startingHeight: 32
+             heightVariance: 16
+         }
+         */
+    ]
+     # See stalagmites_large.cave for an example of largeStalactites
+     # and largeStalagmites. These are just the default values, so
+     # you only need to specify the states.
+    largeStalactites: [
+         /*
+         { Default values; these don't spawn by default.
+             state: null
+              # The maximum number of blocks this structure can be.
+             maxLength: 3
+             chance: 16.7
+             minHeight: 11
+             maxHeight: 55
+             matchers: []
+              # Optional noise block. Will perform better without.
+             noise2D: {
+                 scale: 0.425
+                 frequency: 40.0
+                  # Not used at all in this context. Can be omitted.
+                  # -1 is effectively the default.
+                 minVal: -1
+                  # Not used at all in this context. Can be omitted.
+                  # -1 is effectively the default.
+                 maxVal: 1
+             }
+         }
+         */
+    ]
+     # Same as largeStalactites. Spawns from the floor instead of
+     # the ceiling.
+    largeStalagmites: [ ]
+     # See underground_forest.cave for an example of giantPillars.
+     # These are the defaults. You just need to specify a state.
+    giantPillars: [
+         /*
+         { Default values; these don't spawn by default.
+              # This block makes up the body of the pillar.
+             state: null
+              # This may not be null if it does exist, but it can be
+              # left out. If the field is not present, no stairs will
+              # spawn.
+             stairBlock: null
+              # Number of spawn tries per chunk.
+             frequency: 15
+             minHeight: 10
+             maxHeight: 50
+             minLength: 4
+             maxLength: 12
+         }
+         */
+    ]
+     # Structures are ideal for small decorations. Larger decorations
+     # (16x16)+ will cause cascading generation lag and should be
+     # handled by another mod, such as recurrent complex or OTG.
+     # Structures will be centered around X and Z, but not Y. Most of
+     # this information can be left out. See underground_forest.cave
+     # for a better example. These are just the default values.
+    structures: [
+         /*
+         { Default values; no structures spawn by default.
+              # name refers to a resource location or file name.
+              # It may not be null.
+             name: null
+              # The 0-1 ratio of blocks to be retained when spawning.
+             integrity: 1.0
+              # X, Y, Z spawn offset.
+             offset: [0, 0, 0]
+              # Number of tries per chunk. Should be low.
+             frequency: 1
+              # The percent chance any try will succeed.
+             chance: 0.05
+             minHeight: 10
+             maxHeight: 50
+              # Any relative coordinates that must be non-solid.
+              # Example:
+              # airMatchers: [
+              #    [0, 1, 0],
+              #    [0, 3, 0]
+              # ]
+             airMatchers: []
+             solidMatchers: []
+              # Whether to log the coordinates every time this structure
+              # spawns.
+             debugSpawns: false
+             rotateRandomly: false
+         }
+         */
+    ]
 }

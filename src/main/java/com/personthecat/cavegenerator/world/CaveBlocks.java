@@ -1,7 +1,7 @@
 package com.personthecat.cavegenerator.world;
 
 import com.personthecat.cavegenerator.util.NoiseSettings3D;
-import com.personthecat.cavegenerator.util.SimplexNoiseGenerator3D;
+import com.personthecat.cavegenerator.util.SimplexNoise3D;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -27,7 +27,7 @@ public class CaveBlocks {
      * improve performance (if necessary). However, in the meantime,
      * I'm not dealing with NPEs.
      */
-    private final Optional<SimplexNoiseGenerator3D> noise;
+    private final Optional<SimplexNoise3D> noise;
     private final Optional<NoiseSettings3D> settings;
 
     /** The default noise values for CaveBlocks with noise. */
@@ -64,10 +64,10 @@ public class CaveBlocks {
     }
 
     /** Determines whether to use noise based on the presence of noise settings. */
-    private Optional<SimplexNoiseGenerator3D> setupNoiseGenerator() {
+    private Optional<SimplexNoise3D> setupNoiseGenerator() {
         if (settings.isPresent()) {
             // The noise for this generator will be unique to the block ID.
-            return full(new SimplexNoiseGenerator3D(Block.getStateId(fillBlock)));
+            return full(new SimplexNoise3D(Block.getStateId(fillBlock)));
         }
         return empty();
     }

@@ -7,10 +7,16 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
 import net.minecraftforge.common.BiomeDictionary;
+import org.apache.commons.io.output.NullWriter;
+import org.hjson.HjsonOptions;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
+import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Writer;
 import java.util.*;
 import java.util.function.Consumer;
 
@@ -18,6 +24,39 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
 
 public class HjsonTools {
+    /** The settings to be used when outputting JsonObjects to the disk. */
+    private static final HjsonOptions FORMATTER = new HjsonOptions()
+        .setAllowCompact(true)
+        .setAllowMultiVal(true)
+        .setCommentIndent(1)
+        .setIndent(4)
+        .setNlBraces(false);
+
+    /** Writes the JsonObject to the disk. */
+    public static Result<IOException> writeJson(JsonObject json, File file) {
+        Result<IOException> result = Result.ok();
+        Writer tw = new NullWriter();
+
+        try {
+           tw = new FileWriter(file);
+           json.writeTo(tw, FORMATTER);
+        } catch (IOException e) {
+            result = Result.of(e);
+        } finally {
+            assertCloseWriter(tw);
+        }
+        return result;
+    }
+
+    /** Forcibly closes the input writer, asserting that there should be no errors. */
+    private static void assertCloseWriter(Writer tw) {
+        try {
+            tw.close();
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+    }
+
     /** Safely retrieves a boolean from the input object. */
     public static Optional<Boolean> getBool(JsonObject json, String field) {
         return Optional.ofNullable(json.get(field))
@@ -460,10 +499,11 @@ public class HjsonTools {
 
     /** Converts the input json into a NoiseSettings2D object. */
     public static NoiseSettings2D toNoiseSettings(JsonObject json, NoiseSettings2D defaults) {
-        float frequency = getFloat(json, "frequency").orElse(defaults.getFrequency());
+        float frequency = getFloat(json, "frequency").orElse(defaults.frequency);
         float scale = getFloat(json, "scale").orElse(defaults.getScale());
-        int variance = getInt(json, "variance").orElse(defaults.getVariance());
-        return new NoiseSettings2D(frequency, scale, variance);
+        int min = getInt(json, "min").orElse(defaults.min);
+        int max = getInt(json, "max").orElse(defaults.max);
+        return new NoiseSettings2D(frequency, scale, min, max);
     }
 
     /** Informs the user that they have entered an invalid biome name. */
