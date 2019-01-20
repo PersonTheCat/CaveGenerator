@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.world;
 
+import com.personthecat.cavegenerator.util.RandomChunkSelector;
 import com.personthecat.cavegenerator.util.ScalableFloat;
 import fastnoise.FastNoise;
 import net.minecraft.block.material.Material;
@@ -14,6 +15,8 @@ import net.minecraft.world.chunk.ChunkPrimer;
 
 import com.personthecat.cavegenerator.world.StoneCluster.ClusterInfo;
 import com.personthecat.cavegenerator.world.GeneratorSettings.DecoratorSettings;
+import com.personthecat.cavegenerator.world.GeneratorSettings.SpawnSettings;
+import net.minecraft.world.gen.NoiseGeneratorSimplex;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.ArrayList;
@@ -41,9 +44,21 @@ public class CaveGenerator {
     /** A series of random floats between 1-4 for distorting ravine walls. */
     private final float[] mut = new float[256];
 
+    // Noise generators.
+    private final RandomChunkSelector selector;
+    private final NoiseGeneratorSimplex ceilNoise, floorNoise, miscNoise;
+
+    /** Primary constructor. */
     public CaveGenerator(World world, GeneratorSettings settings) {
+        // Main values.
         this.world = world;
         this.settings = settings;
+        // Noise generators.
+        long seed = world.getSeed();
+        selector = new RandomChunkSelector(seed);
+        miscNoise = new NoiseGeneratorSimplex(new Random(seed));
+        ceilNoise = new NoiseGeneratorSimplex(new Random(seed >> 2));
+        floorNoise = new NoiseGeneratorSimplex(new Random(seed >> 4));
     }
 
     /** Returns whether the generator is enabled globally. */
@@ -103,6 +118,13 @@ public class CaveGenerator {
      */
     public boolean requiresCorrections() {
         return enabled() && hasLocalWallDecorators();
+    }
+
+    /** Returns whether this generator has any noise-based features available. */
+    public boolean hasNoiseFeatures() {
+        return settings.caverns.enabled ||
+            settings.decorators.stoneClusters.length > 0 ||
+            settings.decorators.stoneLayers.length > 0;
     }
 
     /** Starts a tunnel system between the input chunk coordinates. */
@@ -177,6 +199,11 @@ public class CaveGenerator {
         final float scaleY = settings.ravines.scaleY.startVal;
 
         addRavine(rand.nextLong(), originalX, originalZ, primer, x, y, z, scale, angleXZ, angleY, 0, distance, scaleY);
+    }
+
+    /** WIP */
+    public void addNoiseFeatures(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+        noiseWithoutCaverns(rand, primer, chunkX, chunkZ);
     }
 
     /**
@@ -555,10 +582,10 @@ public class CaveGenerator {
         for (CaveBlocks filler : settings.decorators.caveBlocks) {
             if (filler.getFillBlock().equals(BLK_WATER) &&
                 highestY <= filler.getMaxHeight() + 10) { // A little wiggle room.
-                return true;
+                return false;
             }
         }
-        return false;
+        return true;
     }
 
     /** Determines whether any water exists in the current section. */
@@ -566,6 +593,89 @@ public class CaveGenerator {
         return info.test(pos ->
             primer.getBlockState(pos.getX(), pos.getY(), pos.getZ()).equals(BLK_WATER)
         );
+    }
+
+    private void noiseWithoutCaverns(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+        List<ClusterInfo> info = locateFinalClusters(rand, chunkX, chunkZ);
+        SpawnSettings cfg = settings.conditions;
+
+        for (int x = 0; x < 16; x++) {
+            final double actualX = x + (chunkX * 16);
+            for (int z = 0; z < 16; z++) {
+                final double actualZ = z + (chunkZ * 16);
+                for (int y = cfg.maxHeight; y >= cfg.minHeight; y--) {
+                    IBlockState original = primer.getBlockState(x, y, z);
+                    // Only decorate actual stone.
+                    if (original.equals(BLK_STONE)) {
+                        decorateStone(primer, info, x, y, z, actualX, actualZ);
+                    }
+                }
+            }
+        }
+    }
+
+    private List<ClusterInfo> locateFinalClusters(Random rand, int chunkX, int chunkZ) {
+        List<ClusterInfo> info = new ArrayList<>();
+        for (StoneCluster cluster : settings.decorators.stoneClusters) {
+            // Basic info
+            int radiusX = cluster.getRadiusX();
+            int radiusY = cluster.getRadiusY();
+            int radiusZ = cluster.getRadiusZ();
+            final int ID = cluster.getID();
+            final int radiusVariance = cluster.getRadiusVariance();
+            final int cRadiusX = ((radiusX + radiusVariance) / 16) + 1;
+            final int cRadiusZ = ((radiusZ + radiusVariance) / 16) + 1;
+            final int heightVariance = cluster.getHeightVariance();
+            final double threshold = cluster.getSelectionThreshold();
+
+            // Locate any possible origins for this cluster based on its radii.
+            for (int cX = chunkX - cRadiusX; cX < chunkX + cRadiusX; cX++) {
+                for (int cZ = chunkZ - cRadiusZ; cZ < chunkZ + radiusZ; cZ++) {
+                    if (selector.getBooleanForCoordinates(ID, cX, cZ, threshold)) {
+                        // Get absolute coordinates, generate in the center.
+                        final int x = (cX * 16) + 8, z = (cZ * 16) + 8;
+                        // Origins can only spawn in valid biomes, but can extend
+                        // as far as needed.
+                        if (canGenerate(world.getBiome(new BlockPos(x, 0, z)))) {
+                            // Randomly alter spawn height.
+                            final double currentNoise = miscNoise.getValue(x, z) * heightVariance;
+                            final int y = cluster.getStartingHeight() + (int) currentNoise;
+                            // Finalize all values.
+                            final BlockPos origin = new BlockPos(x, y, z);
+                            final int offset = radiusVariance / 2;
+                            radiusX = radiusX + rand.nextInt(radiusVariance) - offset;
+                            radiusY = radiusY + rand.nextInt(radiusVariance) - offset;
+                            radiusZ = radiusZ + rand.nextInt(radiusVariance) - offset;
+                            final int radiusX2 = radiusX * radiusX;
+                            final int radiusY2 = radiusY * radiusY;
+                            final int radiusZ2 = radiusZ * radiusZ;
+                            // Add the new information to be returned.
+                            info.add(new ClusterInfo(cluster, origin, radiusY, radiusX2, radiusY2, radiusZ2));
+                        }
+                    }
+                }
+            }
+        }
+        return info;
+    }
+
+    private void decorateStone(ChunkPrimer primer, List<ClusterInfo> info, int x, int y, int z, double actualX, double actualZ) {
+        // First apply stone clusters.
+        for (ClusterInfo cluster : info) {
+            BlockPos origin = cluster.getCenter();
+            final double distX = actualX - origin.getX();
+            final double distY = y - origin.getY();
+            final double distZ = actualZ - origin.getZ();
+            final double distX2 = distX * distX;
+            final double distY2 = distY * distY;
+            final double distZ2 = distZ * distZ;
+
+            // Ensure that we're within the sphere.
+            if (distX2 / cluster.getRadiusX2() + distY2 / cluster.getRadiusY2() + distZ2 / cluster.getRadiusZ2() <= 1) {
+                primer.setBlockState(x, y, z, cluster.getCluster().getState());
+                return; // This block has now been decorated. Nothing else to do.
+            }
+        }
     }
 
     /** Replaces all blocks inside of this section. */

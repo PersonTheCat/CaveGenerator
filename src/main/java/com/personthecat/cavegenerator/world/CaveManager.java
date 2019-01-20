@@ -41,7 +41,14 @@ public class CaveManager extends MapGenBase {
 
     /** Handle all noise-based generation for this generator. */
     private void noiseGenerate(Map<String, CaveGenerator> gens, World world, int dim, int x, int z, ChunkPrimer primer) {
-        // To-do
+        for (CaveGenerator generator : gens.values()) {
+            Biome centerBiome = world.getBiome(centerCoords(x, z));
+            if (generator.canGenerate(dim, centerBiome)) {
+                if (generator.hasNoiseFeatures()) {
+                    generator.addNoiseFeatures(rand, primer, x, z);
+                }
+            }
+        }
     }
 
     @Override
