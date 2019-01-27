@@ -13,7 +13,7 @@ public class NoiseSettings2D {
     public final int min, max;
 
     /** Where @param scale is a value between 0.0 and 1.0. */
-    public NoiseSettings2D(float scale, float frequency, int min, int max) {
+    public NoiseSettings2D(float frequency, float scale, int min, int max) {
         // Convert scale into a range from -1.0 to +1.0.
         this.selectionThreshold = (scale * 2.0f) - 1.0f;
         this.frequency = frequency;
@@ -28,6 +28,7 @@ public class NoiseSettings2D {
 
     public FastNoise getGenerator(int seed) {
         return new FastNoise(seed)
+            .SetNoiseType(FastNoise.NoiseType.SimplexFractal)
             .SetFrequency(frequency)
             .SetRange(min, max)
             .SetInterp(FastNoise.Interp.Hermite);

@@ -73,7 +73,20 @@
  #      # The number of generation passes. This effectively    #
  #      # increases the resolution of clusters (makes them     #
  #      # *less* smooth) at the cost of performance.           #
- #     octaves: integer value.                                 #
+ #     octaves: integer value                                  #
+ #      # The type of noise to be used by this generator.      #
+ #      # Possible values include: Value, ValueFractal,        #
+ #      # Perlin, PerlinFractal, Simplex, SimplexFractal,      #
+ #      # Cellular, WhiteNoise, Cubic, and CubicFractal.       #
+ #      # Not case sensitive.                                  #
+ #     type: NoiseType value; from string                      #
+ #      # Determines how this noise will be fractalized, when  #
+ #      # applicable.                                          #
+ #      # Possible values include: FBM, Billow, and            #
+ #      # RigidMulti.                                          #
+ #      # Not case sensitive.                                  #
+ #     fractal: FractalType value; from string                 #
+ #      # To-do: Include additional FastNoise parameters.      # 
  #   }                                                         #
  # ----------------------------------------------------------- #
 {
@@ -141,20 +154,21 @@
              }
          }
          */
-    
     ]
      # Used for decorating walls with various blocks. Supports
      # random and noise-based placement. Needs more documentation.
     wallDecorators: [
-	    {
-		    states: [ "cobblestone" ]
-			chance: 100.0
-			minHeight: 0
-			maxHeight: 64
-			directions: [ "side" ]
-			matchers: [ "stone" ]
-			preference: replace_match
-	    }
+        /*
+        {
+            states: [ "stone:5", "gravel" ]
+            chance: 5.0
+            minHeight: 0
+            maxHeight: 64
+            directions: [ "side", "down" ]
+            matchers: [ "stone" ]
+            preference: replace_match
+        }
+        */
 	]
      # Single, crcular spaces found near the center of cave 
      # systems.
@@ -167,7 +181,8 @@
     tunnels: {
          # The average number of tunnel systems to try and
          # spawn per chunk.
-        frequency: 15
+		 # 15
+        frequency: 0
          # Mininum starting height.
         minHeight: 8
          # Maximum starting height.
@@ -242,7 +257,8 @@
     ravines: {
          # The 1 / X chance for this ravine to start in any
          # given chunk.
-        inverseChance: 50
+		 # 50
+        inverseChance: 50000
         minHeight: 20
         maxHeight: 40
         distance: 0
@@ -286,50 +302,101 @@
     }
      # See caverns.json for another example of caverns. These
      # are the default values.
-     # To-do: include ceil/floor noise settings.
     caverns: {
-        enabled: false
+        enabled: true
         minHeight: 10
         maxHeight: 50
-         # Optional 3D noise block.
+         # Optional 3D noise block for the main cavern shapes.
         noise3D: {
              # This does refer to noise frequency, but its use in
              # the case of caverns has the opposite effect. Higher
              # values mean less frequent pockets of air.
-            frequency: 70
+            frequency: 0.0143
              # scale for noise-based objects is from 0-1.
             scale: 0.2
             scaleY: 0.5
              # The number of passes. Increases resolution at the
              # cost of performance.
             octaves: 1
+			type: SimplexFractal
+			fractal: FBM
+        }
+         # Optional 2D noise block for the cavern ceiling.
+		 # The value produced by ceilNoise is added to the terrain
+         # height at any given coordinate. In order to stop caverns
+         # from punching holes through the surface, use negative
+         # values only.
+        ceiling: {
+            noise2D: {
+			     # No effect in this context.
+                scale: 0.5
+                frequency: 0.02
+                minVal: -17
+                maxVal: -3
+            }
+        }
+         # Optional 2d noise block for the cavern floor.
+        floor: {
+            noise2D: {
+                 # No effect in this context.
+                scale: 0.5
+                frequency: 0.02
+                minVal: 0
+                maxVal: 8
+            }
         }
     }
      # See stone_layers.cave for an example of stoneLayers. These are
      # just the default values, so you only need to specify the state
      # and maxHeight.
     stoneLayers: [
+	/*
+	{
+	    state: stone:1
+		maxHeight: 15
+	}
+	{
+	    state: stone:3
+		maxHeight: 30
+	}
+	{
+	    state: stone:5
+		maxHeight: 45
+	}
+	*/
          /*
          { Default values; these don't spawn by default.
              state: null
               # This is necessary because multiple layers ideally
               # should not spawn at the exact same height.
-             maxHeight: null
+             maxHeight: 0
               # Optional 2D noise block.
              noise2D: {
                  scale: 0.5
                   # The distance between this layer's peaks.
-                 frequency: 100.0
+                 frequency: 0.015
                   # How many blocks down this layer can vary.
-                 minVal: -5
+                 minVal: -7
                   # How many blocks up this layer can vary.
-                 maxVal: 5
+                 maxVal: 7
              }
          }
          */
     ]
      # See stone_clusters.cave for an example of stoneClusters.
     stoneClusters: [
+	/*
+	{
+		states: [ "leaves" ]
+		frequency: 0.1
+		radiusX: 16
+		radiusY: 12
+		radiusZ: 16
+		radiusVariance: 6
+		startingHeight: 32
+		heightVariance: 16
+	}
+	*/
          /*
          { Default values; these don't spawn by default.
               # A list of blocks to spawn under these conditions.

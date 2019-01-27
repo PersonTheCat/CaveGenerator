@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.util;
 
 import com.personthecat.cavegenerator.world.WallDecorators;
+import fastnoise.FastNoise;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -21,7 +22,6 @@ import java.util.*;
 import java.util.function.Consumer;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
-import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
 
 public class HjsonTools {
     /** The settings to be used when outputting JsonObjects to the disk. */
@@ -494,7 +494,9 @@ public class HjsonTools {
         float scale = getFloat(json, "scale").orElse(defaults.getScale());
         float scaleY = getFloat(json, "scaleY").orElse(defaults.getScaleY());
         int octaves = getInt(json, "octaves").orElse(defaults.getOctaves());
-        return new NoiseSettings3D(frequency, scale, scaleY, octaves);
+        FastNoise.NoiseType type = getString(json, "type").map(HjsonTools::noiseType)
+            .orElse(FastNoise.NoiseType.SimplexFractal);
+        return new NoiseSettings3D(frequency, scale, scaleY, octaves, type);
     }
 
     /** Converts the input json into a NoiseSettings2D object. */
@@ -504,6 +506,14 @@ public class HjsonTools {
         int min = getInt(json, "min").orElse(defaults.min);
         int max = getInt(json, "max").orElse(defaults.max);
         return new NoiseSettings2D(frequency, scale, min, max);
+    }
+
+    public static FastNoise.NoiseType noiseType(String s) {
+        Optional<FastNoise.NoiseType> dir = find(FastNoise.NoiseType.values(), (v) -> v.toString().equalsIgnoreCase(s));
+        return dir.orElseThrow(() -> {
+            final String o = Arrays.toString(FastNoise.NoiseType.values());
+            return runExF("Error: NoiseType \"%s\" does not exist. The following are valid options:\n\n", s, o);
+        });
     }
 
     /** Informs the user that they have entered an invalid biome name. */

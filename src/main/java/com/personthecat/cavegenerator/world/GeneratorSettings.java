@@ -335,7 +335,7 @@ public class GeneratorSettings {
 
         /** The default noise values to be used for ravine walls. */
         public static final NoiseSettings2D DEFAULT_WALL_NOISE =
-            new NoiseSettings2D(0.5f, 0.1f, 0, 4);
+            new NoiseSettings2D(0.1f, 0.5f, 0, 4);
 
         /** Primary constructor. */
         public RavineSettings(
@@ -432,17 +432,31 @@ public class GeneratorSettings {
         public final int minHeight;
         public final int maxHeight;
         public final NoiseSettings3D noise;
+        public final NoiseSettings2D ceilNoise, floorNoise;
 
         /** Default values used for the noise settings here. */
         public static final NoiseSettings3D DEFAULT_NOISE =
-            new NoiseSettings3D(0.2f, 70.00f, 0.50f, 1);
+            new NoiseSettings3D( 0.0143f,0.2f, 0.50f, 1);
+        public static final NoiseSettings2D DEFAULT_CEIL_NOISE =
+            new NoiseSettings2D( 0.02f, 0.5f, -17, -3);
+        public static final NoiseSettings2D DEFAULT_FLOOR_NOISE =
+            new NoiseSettings2D(0.02f, 0.5f, 0, 8);
 
         /** Primary constructor. */
-        public CavernSettings(boolean enabled, int minHeight, int maxHeight, NoiseSettings3D noise) {
+        public CavernSettings(
+            boolean enabled,
+            int minHeight,
+            int maxHeight,
+            NoiseSettings3D noise,
+            NoiseSettings2D ceilNoise,
+            NoiseSettings2D floorNoise
+        ) {
             this.enabled = enabled;
             this.minHeight = minHeight;
             this.maxHeight = maxHeight;
             this.noise = noise;
+            this.ceilNoise = ceilNoise;
+            this.floorNoise = floorNoise;
         }
 
         /** From Json. */
@@ -451,7 +465,13 @@ public class GeneratorSettings {
                 getBoolOr(caverns, "enabled", false),
                 getIntOr(caverns, "minHeight", 10),
                 getIntOr(caverns, "maxHeight", 50),
-                getNoiseSettingsOr(caverns, "noise3D", DEFAULT_NOISE)
+                getNoiseSettingsOr(caverns, "noise3D", DEFAULT_NOISE),
+                getObject(caverns, "ceiling").map(o ->
+                    getNoiseSettingsOr(o, "noise2D", DEFAULT_CEIL_NOISE))
+                    .orElse(DEFAULT_CEIL_NOISE),
+                getObject(caverns, "floor").map(o ->
+                    getNoiseSettingsOr(o, "noise2D", DEFAULT_FLOOR_NOISE))
+                    .orElse(DEFAULT_FLOOR_NOISE)
             );
         }
 

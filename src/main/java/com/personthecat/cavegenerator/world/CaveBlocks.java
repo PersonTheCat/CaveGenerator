@@ -32,7 +32,7 @@ public class CaveBlocks {
 
     /** The default noise values for CaveBlocks with noise. */
     public static final NoiseSettings3D DEFAULT_NOISE =
-        new NoiseSettings3D(0.10f, 50.00f, 1.00f, 1);
+        new NoiseSettings3D(0.02f, 0.10f, 1.00f, 1);
     /** An instance of the vanilla lava CaveBlocks that exists by default in all presets. */
     public static final CaveBlocks VANILLA_LAVA =
         new CaveBlocks(Blocks.LAVA.getDefaultState(),100.0, 0, 10, empty());

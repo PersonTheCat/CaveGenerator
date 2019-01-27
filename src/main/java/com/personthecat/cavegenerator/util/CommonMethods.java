@@ -137,6 +137,14 @@ public class CommonMethods {
         return Optional.of(val);
     }
 
+    public static int getMin(int a, int b) {
+        return a < b ? a : b;
+    }
+
+    public static int getMax(int a, int b) {
+        return a > b ? a : b;
+    }
+
     /*
      * ///////////////////////////////////////////////////////////////////////
      *                   Functions related to Forge / MC

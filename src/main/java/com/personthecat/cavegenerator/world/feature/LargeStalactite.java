@@ -24,7 +24,7 @@ public class LargeStalactite extends WorldGenerator {
 
     /** The default noise settings to be optionally used for stalactites. */
     public static final NoiseSettings2D DEFAULT_NOISE =
-        new NoiseSettings2D(-0.7f, 40.0f, -1, 1);
+        new NoiseSettings2D(0.025f, 0.7125f, -1, 1);
 
     /** From Json. */
     public LargeStalactite(Type type, JsonObject stalactite) {

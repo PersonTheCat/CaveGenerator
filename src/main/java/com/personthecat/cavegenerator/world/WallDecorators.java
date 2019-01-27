@@ -31,7 +31,7 @@ public class WallDecorators {
 
     /** The default noise values for WallDecorators with noise. */
     public static final NoiseSettings3D DEFAULT_NOISE =
-        new NoiseSettings3D(0.10f, 50.00f, 1.00f, 1);
+        new NoiseSettings3D(0.02f, 0.10f, 1.00f, 1);
 
     /** From Json. */
     public WallDecorators(IBlockState fillBlock, JsonObject wall) {

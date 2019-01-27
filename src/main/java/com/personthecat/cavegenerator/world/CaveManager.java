@@ -44,9 +44,7 @@ public class CaveManager extends MapGenBase {
         for (CaveGenerator generator : gens.values()) {
             Biome centerBiome = world.getBiome(centerCoords(x, z));
             if (generator.canGenerate(dim, centerBiome)) {
-                if (generator.hasNoiseFeatures()) {
-                    generator.addNoiseFeatures(rand, primer, x, z);
-                }
+                generator.addNoiseFeatures(rand, primer, x, z);
             }
         }
     }
