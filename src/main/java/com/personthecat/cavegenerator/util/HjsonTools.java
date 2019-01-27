@@ -495,8 +495,10 @@ public class HjsonTools {
         float scaleY = getFloat(json, "scaleY").orElse(defaults.getScaleY());
         int octaves = getInt(json, "octaves").orElse(defaults.getOctaves());
         FastNoise.NoiseType type = getString(json, "type").map(HjsonTools::noiseType)
-            .orElse(FastNoise.NoiseType.SimplexFractal);
-        return new NoiseSettings3D(frequency, scale, scaleY, octaves, type);
+            .orElse(defaults.getNoiseType());
+        FastNoise.FractalType fractal = getString(json, "fractal").map(HjsonTools::fractalType)
+            .orElse(defaults.getFractalType());
+        return new NoiseSettings3D(frequency, scale, scaleY, octaves, type, fractal);
     }
 
     /** Converts the input json into a NoiseSettings2D object. */
@@ -515,6 +517,15 @@ public class HjsonTools {
             return runExF("Error: NoiseType \"%s\" does not exist. The following are valid options:\n\n", s, o);
         });
     }
+
+    public static FastNoise.FractalType fractalType(String s) {
+        Optional<FastNoise.FractalType> dir = find(FastNoise.FractalType.values(), (v) -> v.toString().equalsIgnoreCase(s));
+        return dir.orElseThrow(() -> {
+            final String o = Arrays.toString(FastNoise.FractalType.values());
+            return runExF("Error: FractalType \"%s\" does not exist. The following are valid options:\n\n", s, o);
+        });
+    }
+
 
     /** Informs the user that they have entered an invalid biome name. */
     public static RuntimeException noBiomeNamed(String name) {
