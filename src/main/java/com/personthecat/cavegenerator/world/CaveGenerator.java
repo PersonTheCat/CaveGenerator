@@ -608,15 +608,17 @@ public class CaveGenerator {
     private void generateCaverns(Random rand, ChunkPrimer primer, int chunkX, int chunkZ, boolean decorate) {
         // To-do: ensure that this is more unique (integer overflow).
         FastNoise noise = settings.caverns.noise.getNoise((int) world.getSeed());
+        final int[][] heightMap = HeightMapLocator.getHeightFromPrimer(primer);
 
         for (int x = 0; x < 16; x++) {
             final float actualX = x + (chunkX * 16);
             for (int z = 0; z < 16; z++) {
                 final float actualZ = z + (chunkZ * 16);
-                final int floor = (int) floorNoise.GetAdjustedNoise(actualX, actualZ);
                 final int ceil = (int) ceilNoise.GetAdjustedNoise(actualX, actualZ);
-                final int min = settings.caverns.minHeight + floor;
-                final int max = settings.caverns.maxHeight + ceil;
+                final int floor = (int) floorNoise.GetAdjustedNoise(actualX, actualZ);
+                // Use this cavern's max height or the terrain height, whichever is lower.
+                final int max = ceil + getMin(settings.caverns.maxHeight, heightMap[x][z]);
+                final int min = floor + settings.caverns.minHeight;
 
                 for (int y = min; y <= max; y++) {
                     final float scaledY = y / settings.caverns.noise.getScaleY();
@@ -624,17 +626,18 @@ public class CaveGenerator {
                     if (noise.GetNoise(actualX, scaledY, actualZ) < settings.caverns.noise.getSelectionThreshold()) {
                         final IBlockState state = primer.getBlockState(x, y, z);
 
-                        // Only replace or decorate actual stone.
-                        if (state.equals(BLK_STONE)) {
-                            if (decorate) {
-                                decorateBlock(rand, primer, x, y, z, chunkX, chunkZ);
-                            } else {
-                                replaceBlock(rand, primer, x, y, z, chunkX, chunkZ, false);
-                            }
+                        if (decorate) {
+                            decorateBlock(rand, primer, x, y, z, chunkX, chunkZ);
+                        } else if (state.equals(BLK_STONE)) { // Only replace actual stone.
+                            replaceBlock(rand, primer, x, y, z, chunkX, chunkZ, false);
                         }
                     }
                 }
             }
+        }
+        // Generate caverns a second time so that air blocks are matched correctly.
+        if (!decorate && hasLocalDecorators()) {
+            generateCaverns(rand, primer, chunkX, chunkZ, true);
         }
     }
 

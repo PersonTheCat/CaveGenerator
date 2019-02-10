@@ -172,7 +172,7 @@ class HjsonParser {
     read();
     JsonArray array=new JsonArray();
     boolean compact=isContainerCompact();
-    array.setCompact(compact);
+    array.setCondensed(compact);
     int sumLineLength=0;
     int lineLength=1;
     int numLines=0;
@@ -238,7 +238,7 @@ class HjsonParser {
     // Skip the opening brace.
     if (!objectWithoutBraces) read();
     JsonObject object=new JsonObject();
-    object.setCompact(isContainerCompact());
+    object.setCondensed(isContainerCompact());
     int sumLineLength=1;
     int lineLength=1;
     int numLines=0;
@@ -348,7 +348,6 @@ class HjsonParser {
   }
 
   private String readMlString() throws IOException {
-
     // Parse a multiline string value.
     StringBuilder sb=new StringBuilder();
     int triple=0;

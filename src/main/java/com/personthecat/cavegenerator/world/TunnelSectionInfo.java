@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.world;
 
+import fastnoise.FastNoise;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.ArrayUtils;
@@ -27,6 +28,9 @@ public class TunnelSectionInfo {
 
     /** Stores all valid positions to avoid redundant calculations. */
     private BlockPos[] positions;
+
+    /** Temporary noise generator */
+    private final FastNoise noise = new FastNoise().SetFrequency(0.001f).SetRange(-5f, 5f).SetNoiseType(FastNoise.NoiseType.SimplexFractal);
 
     public TunnelSectionInfo(double x, double y, double z, double radiusXZ, double radiusY, int originalX, int originalZ) {
         this.centerX = x;

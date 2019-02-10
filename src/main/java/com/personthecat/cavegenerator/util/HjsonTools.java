@@ -26,11 +26,11 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 public class HjsonTools {
     /** The settings to be used when outputting JsonObjects to the disk. */
     private static final HjsonOptions FORMATTER = new HjsonOptions()
-        .setAllowCompact(true)
+        .setAllowCondense(true)
         .setAllowMultiVal(true)
-        .setCommentIndent(1)
-        .setIndent(4)
-        .setNlBraces(false);
+        .setCommentSpace(1)
+        .setSpace(4)
+        .setBracesSameLine(true);
 
     /** Writes the JsonObject to the disk. */
     public static Result<IOException> writeJson(JsonObject json, File file) {
@@ -525,7 +525,6 @@ public class HjsonTools {
             return runExF("Error: FractalType \"%s\" does not exist. The following are valid options:\n\n", s, o);
         });
     }
-
 
     /** Informs the user that they have entered an invalid biome name. */
     public static RuntimeException noBiomeNamed(String name) {

@@ -70,5 +70,7 @@ public class NoiseSettings3D {
             .SetFrequency(frequency)
             .SetFractalType(fractalType)
             .SetFractalOctaves(octaves);
+//            .SetCellularNoiseLookup(new FastNoise())
+//            .SetCellularReturnType(FastNoise.CellularReturnType.NoiseLookup);
     }
 }
