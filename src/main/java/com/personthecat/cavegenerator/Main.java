@@ -29,7 +29,8 @@ import java.util.Optional;
     modid = "cavegenerator",
     name = "Cave Generator",
     version = "0.13",
-    dependencies = "after:worleycaves;"
+    dependencies = "after:worleycaves;",
+    acceptableRemoteVersions = "*"
 )
 public class Main {
     /** The main instance of this mod, as required by Forge. */

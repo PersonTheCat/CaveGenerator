@@ -205,7 +205,7 @@ public class CaveGenerator {
     /** Generates any applicable noise-based features in the current chunk. */
     public void addNoiseFeatures(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
         if (settings.caverns.enabled) {
-            generateCaverns(rand, primer, chunkX, chunkZ, false);
+            generateCaverns(rand, primer, chunkX, chunkZ);
         }
         if (settings.decorators.stoneClusters.length > 0) {
             generateClusters(rand, primer, chunkX, chunkZ);
@@ -605,10 +605,14 @@ public class CaveGenerator {
     }
 
     /** Generates giant air pockets in this chunk using a 3D noise generator. */
-    private void generateCaverns(Random rand, ChunkPrimer primer, int chunkX, int chunkZ, boolean decorate) {
+    private void generateCaverns(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
         // To-do: ensure that this is more unique (integer overflow).
         FastNoise noise = settings.caverns.noise.getNoise((int) world.getSeed());
         final int[][] heightMap = HeightMapLocator.getHeightFromPrimer(primer);
+        // Using an array to store calculations instead of redoing all of the
+        // noise generation below when decorating caverns. Some calculations
+        // *cannot* be done twice, but this should still be faster, regardless.
+        final boolean[][][] caverns = new boolean[settings.caverns.maxHeight][16][16];
 
         for (int x = 0; x < 16; x++) {
             final float actualX = x + (chunkX * 16);
@@ -626,18 +630,32 @@ public class CaveGenerator {
                     if (noise.GetNoise(actualX, scaledY, actualZ) < settings.caverns.noise.getSelectionThreshold()) {
                         final IBlockState state = primer.getBlockState(x, y, z);
 
-                        if (decorate) {
-                            decorateBlock(rand, primer, x, y, z, chunkX, chunkZ);
-                        } else if (state.equals(BLK_STONE)) { // Only replace actual stone.
+                        if (state.equals(BLK_STONE)) { // Only replace actual stone.
                             replaceBlock(rand, primer, x, y, z, chunkX, chunkZ, false);
+                            caverns[y][z][x] = true;
                         }
                     }
                 }
             }
         }
-        // Generate caverns a second time so that air blocks are matched correctly.
-        if (!decorate && hasLocalDecorators()) {
-            generateCaverns(rand, primer, chunkX, chunkZ, true);
+        if (hasLocalDecorators()) {
+            decorateCaverns(rand, primer, chunkX, chunkZ, caverns);
+        }
+    }
+
+    /**
+     * Uses the shape of some already-calculated caverns for decoration, instead of
+     * regenerating. Could probably still be optimized.
+     */
+    private void decorateCaverns(Random rand, ChunkPrimer primer, int chunkX, int chunkZ, boolean[][][] caverns) {
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = 0; y < settings.caverns.maxHeight; y++) {
+                    if (caverns[y][z][x]) {
+                        decorateBlock(rand, primer, x, y, z, chunkX, chunkZ);
+                    }
+                }
+            }
         }
     }
 
