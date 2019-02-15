@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.world.feature;
 
+import fastnoise.FastNoise;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -12,6 +13,7 @@ import java.util.Optional;
 import java.util.Random;
 
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
+import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
 public class LargeStalactite extends WorldGenerator {
     /** Required fields. Must be supplied by the constructor. */
@@ -82,6 +84,18 @@ public class LargeStalactite extends WorldGenerator {
 
     public boolean spawnInPatches() {
         return settings.isPresent();
+    }
+
+    public FastNoise getNoise(int seed) {
+        return settings
+            .orElse(DEFAULT_NOISE)
+            .getGenerator(seed);
+    }
+
+    public float getThreshold() {
+        return settings
+            .orElseThrow(() -> runEx("Stalactite does not contain noise settings."))
+            .selectionThreshold;
     }
 
     /**

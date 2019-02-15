@@ -7,6 +7,7 @@ import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.DisableVanillaStoneGen;
 import com.personthecat.cavegenerator.world.GeneratorSettings;
 import com.personthecat.cavegenerator.world.ReplaceVanillaCaveGen;
+import com.personthecat.cavegenerator.world.feature.CaveFeatureGenerator;
 import com.personthecat.cavegenerator.world.feature.StructureSpawner;
 
 import net.minecraft.world.gen.MapGenBase;
@@ -18,6 +19,7 @@ import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
+import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
@@ -59,7 +61,7 @@ public class Main {
         MinecraftForge.EVENT_BUS.register(CaveInit.class);
         MinecraftForge.TERRAIN_GEN_BUS.register(ReplaceVanillaCaveGen.class);
         MinecraftForge.ORE_GEN_BUS.register(DisableVanillaStoneGen.class);
-        // To-do: CaveFeatureGenerator.
+        GameRegistry.registerWorldGenerator(new CaveFeatureGenerator(), 0);
         info("Cave Generator init phase complete.");
     }
 

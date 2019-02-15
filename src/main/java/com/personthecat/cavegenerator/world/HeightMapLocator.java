@@ -1,7 +1,9 @@
 package com.personthecat.cavegenerator.world;
 
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import java.util.Arrays;
@@ -25,11 +27,23 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
  *  in that context may justify its existence.
  */
 public class HeightMapLocator {
+
     /**
      * The relative distance to be checked around each previous y coordinate.
-     * Should always be greater than 1.
+     * Used when searching ChunkPrimers only. Should always be greater than 1.
      */
     private static final int RELATIVE_DISTANCE = 5;
+
+    /**
+     * The number of coordinates to skip when searching for land below water.
+     * Higher numbers may slightly increase performance, but decrease accuracy.
+     * The result is conservative in that the height found will always be at or
+     * below the actual surface, such that structures can never spawn above it.
+     */
+    private static final int NUM_TO_SKIP = 5;
+
+    /** A convenient reference to water. */
+    private static final IBlockState BLK_WATER = Blocks.WATER.getDefaultState();
 
     /** Quickly determines the full height map for the input ChunkPrimer. */
     public static int[][] getHeightFromPrimer(ChunkPrimer primer) {
@@ -37,6 +51,31 @@ public class HeightMapLocator {
         int previousHeight = getHeightFromBottom(primer, 0, 0);
         for (int x = 0; x < 16; x = x + 2) {
             fillTwoRows(primer, map, previousHeight, x);
+        }
+        // printMap(map);
+        return map;
+    }
+
+    /**
+     * Retrieves and modifies the heightmap stored inside of `Chunk` to
+     * ignore the height of water.
+     */
+    public static int[][] getHeightFromChunk(World world, Chunk chunk) {
+        int[][] map = new int[16][16];
+        final int[] original = chunk.getHeightMap();
+        final int seaLevel = world.getSeaLevel();
+
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                final int originalY = original[z << 4 | x];
+                if (originalY == seaLevel) {
+                    // We're at the sea level, which might imply that water has
+                    // been filled up to this point.
+                    map[x][z] = getHeight(chunk, x, z, seaLevel - 1);
+                } else {
+                    map[x][z] = originalY;
+                }
+            }
         }
         // printMap(map);
         return map;
@@ -89,8 +128,7 @@ public class HeightMapLocator {
 
     /** Determines whether the IBlockState at the input coordinates is an opaque cube. */
     private static boolean isSolid(ChunkPrimer primer, int x, int y, int z) {
-        final IBlockState state = primer.getBlockState(x, y, z);
-        return state.isOpaqueCube();
+        return primer.getBlockState(x, y, z).isOpaqueCube();
     }
 
     /**
@@ -108,6 +146,32 @@ public class HeightMapLocator {
             map[startX + 1][z] = previousHeight;
         }
         return previousHeight;
+    }
+
+    /**
+     * Locates the first non-water block starting at sea level and iterating down.
+     * In 1.12, the surface will always be at or above this point. The ground is
+     * searched upward until another water block is found, indicating that the
+     * surface has been breached.
+     */
+    private static int getHeight(Chunk chunk, int x, int z, int seaLevel) {
+        // Start at the top; Go down; Don't skip below y = 0;
+        for (int y = seaLevel; y > NUM_TO_SKIP; y = y - NUM_TO_SKIP) {
+            // If we've found anything but water, we assume to be below the surface.
+            if (!chunk.getBlockState(x, y, z).equals(BLK_WATER)) {
+                return findWaterAbove(chunk, x, y, z) - 1;
+            }
+        }
+        return seaLevel;
+    }
+
+    private static int findWaterAbove(Chunk chunk, int x, int y, int z) {
+        for (int h = y; h < y + NUM_TO_SKIP; h++) {
+            if (chunk.getBlockState(x, h, z).equals(BLK_WATER)) {
+                return h;
+            }
+        }
+        return y;
     }
 
     /** A debug function used to display the heightMap found. */
