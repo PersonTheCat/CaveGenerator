@@ -84,7 +84,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         for (int x = actualX; x < actualX + 16; x = x + distance) {
             for (int z = actualZ; z < actualZ + 16; z = z + distance) {
                 final Biome biome = world.getBiome(new BlockPos(x, 0, z));
-                if (gen.canGenerate(biome) && spawnStalactite(st, noise, x, z)) {
+                if (gen.canGenerate(biome) && canSpawnStalactite(st, noise, x, z)) {
                     handleStalactiteRegion(heightMap, st, localRand, x, z, distance, world);
                 }
             }
@@ -95,12 +95,17 @@ public class CaveFeatureGenerator implements IWorldGenerator {
     private static void handleStalactiteRegion(int[][] heightMap, LargeStalactite st, Random rand, int x, int z, int distance, World world) {
         for (int l = x; l < x + distance; l++) {
             for (int d = z; d < z + distance; d++) {
-                final int maxHeight = getMin(heightMap[l][d], st.getMaxHeight());
+                // Check this earlier -> do less when it fails.
+                if (rand.nextDouble() * 100 >= st.getChance()) {
+                    continue;
+                }
+                final int maxHeight = getMin(heightMap[l & 15][d & 15], st.getMaxHeight());
+                final int startHeight = rand.nextInt(maxHeight - st.getMinHeight()) + st.getMinHeight();
                 // Stalactite -> go up and find a surface.
                 // Stalagmite -> go down and find a surface.
                 final int y = st.getType() == LargeStalactite.Type.STALACTITE ?
-                    findOpeningFromBelow(world, l, st.getMinHeight(), d, maxHeight) :
-                    findOpeningFromAbove(world, l, st.getMinHeight(), d, maxHeight);
+                    findOpeningFromBelow(world, l, startHeight, d, maxHeight):
+                    findOpeningFromAbove(world, l, startHeight, d, maxHeight);
                 trySpawnStalactite(st, rand, l, y, d, world);
             }
         }
@@ -111,7 +116,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
      * when y < 0 || blocks don't match || randomly, according to st#getChance.
      */
     private static void trySpawnStalactite(LargeStalactite st, Random rand, int x, int y, int z, World world) {
-        if (y > 0 && rand.nextDouble() * 100 <= st.getChance()) {
+        if (y > 0) {
             final BlockPos pos = new BlockPos(x, y, z);
             if (matchSources(st.getMatchers(), world, pos)) {
                 st.generate(world, rand, pos);
@@ -142,7 +147,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
     private static int findOpeningFromBelow(World world, int x, int y, int z, int maxY) {
         boolean previouslySolid = isSolid(world, x, y, z);
         for (int h = y; h < maxY; h++) {
-            final boolean currentlySolid = isSolid(world, x, y, z);
+            final boolean currentlySolid = isSolid(world, x, h, z);
             if (!previouslySolid && currentlySolid) {
                 return h;
             }
@@ -169,7 +174,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         return false;
     }
 
-    private static boolean spawnStalactite(LargeStalactite st, FastNoise noise, int x, int z) {
+    private static boolean canSpawnStalactite(LargeStalactite st, FastNoise noise, int x, int z) {
         return !st.spawnInPatches() || noise.GetAdjustedNoise(x, z) > st.getThreshold();
     }
 

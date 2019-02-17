@@ -30,7 +30,8 @@ public class HjsonTools {
         .setAllowMultiVal(true)
         .setCommentSpace(1)
         .setSpace(4)
-        .setBracesSameLine(true);
+        .setBracesSameLine(true)
+        .setOutputComments(true);
 
     /** Writes the JsonObject to the disk. */
     public static Result<IOException> writeJson(JsonObject json, File file) {

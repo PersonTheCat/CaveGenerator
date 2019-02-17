@@ -64,9 +64,7 @@ public class LargeStalactite extends WorldGenerator {
 
     @Override
     public boolean generate(World world, Random localRand, BlockPos pos) {
-        // Start by setting the initial position to the new state.
-        world.setBlockState(pos, state, 16);
-
+        // Skip the initial position.
         for (int i = 1; i < maxLength; i++) {
             // Determine whether to go up or down.
             pos = type.equals(Type.STALACTITE) ? pos.down() : pos.up();

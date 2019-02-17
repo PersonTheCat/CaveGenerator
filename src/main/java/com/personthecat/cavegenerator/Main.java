@@ -1,7 +1,7 @@
 package com.personthecat.cavegenerator;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
-import com.personthecat.cavegenerator.commands.CommandCaves;
+import com.personthecat.cavegenerator.commands.CommandCave;
 import com.personthecat.cavegenerator.util.JarFiles;
 import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.DisableVanillaStoneGen;
@@ -68,7 +68,7 @@ public class Main {
     @EventHandler
     @SuppressWarnings("unused")
     public static void onServerStartingEvent(FMLServerStartingEvent event) {
-        event.registerServerCommand(new CommandCaves());
+        event.registerServerCommand(new CommandCave());
         info("Cave Generator commands registered.");
     }
 }

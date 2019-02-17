@@ -27,6 +27,7 @@ package org.hjson;
 public class HjsonOptions {
 
   private IHjsonDsfProvider[] dsf;
+  private boolean outputComments;
   private boolean legacyRoot;
   private boolean bracesSameLine;
   private boolean allowCondense;
@@ -36,11 +37,12 @@ public class HjsonOptions {
   public HjsonOptions() {
     dsf=new IHjsonDsfProvider[0];
     legacyRoot=true;
-    bracesSameLine=true;
+    bracesSameLine=false;
     allowCondense=true;
     allowMultiVal=true;
     space="  ";
     commentSpace="";
+    outputComments=false;
   }
 
   /**
@@ -194,4 +196,19 @@ public class HjsonOptions {
     for (int i=0; i<value; i++) { sb.append(' '); }
     return sb.toString();
   }
+
+  /**
+   * Sets whether comments are enabled on the output.
+   *
+   * @param value value
+   * @return this, to enable chaining
+   */
+  public HjsonOptions setOutputComments(boolean value) { outputComments = value; return this; }
+
+  /**
+   * Gets whether comments are enabled on the output.
+   *
+   * @return whether comments are enabled
+   */
+  public boolean getOutputComments() { return outputComments; }
 }

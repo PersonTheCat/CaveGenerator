@@ -35,7 +35,7 @@ public class CaveInit {
         // Handle all files in the preset directory.
         safeListFiles(DIR).ifPresent((files) -> { // Files found.
             for (File file : files) {
-                if (EXTENSIONS.contains(extension(file))) {
+                if (validExtension(file)) {
                     presets.put(file.getName(), PresetReader.getPreset(file));
                 }
             }
@@ -50,6 +50,10 @@ public class CaveInit {
         initPresets(presets).handleIfPresent((err) -> {
             throw runExF("Error loading presets: %s", err.getMessage());
         });
+    }
+
+    public static boolean validExtension(File file) {
+        return EXTENSIONS.contains(extension(file));
     }
 
     /** Prints which presets are currently loaded and whether they are enabled. */
