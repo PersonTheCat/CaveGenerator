@@ -110,7 +110,7 @@ public class StructureSpawner {
     }
 
     /** Does not account for offsets. Must be calculated beforehand. */
-    public static void SpawnStructure(Template template, PlacementSettings settings, World world, BlockPos pos) {
+    public static void spawnStructure(Template template, PlacementSettings settings, World world, BlockPos pos) {
         IBlockState state = world.getBlockState(pos);
         world.notifyBlockUpdate(pos, state, state, 3);
         template.addBlocksToWorld(world, pos, settings);

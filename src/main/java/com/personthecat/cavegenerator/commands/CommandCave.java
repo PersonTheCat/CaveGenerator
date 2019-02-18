@@ -108,40 +108,25 @@ public class CommandCave extends CommandBase {
         }
     }
 
-    private void handle(MinecraftServer server, ICommandSender sender, String command, String[] args) {
+    private static void handle(MinecraftServer server, ICommandSender sender, String command, String[] args) {
         switch (command) {
-            case "reload":
-                reload(sender);
-                break;
-            case "test":
-                test(sender);
-                break;
-            case "combine":
-                combine(sender, args);
-                break;
-            case "enable":
-                setCaveEnabled(args, true);
-                sendMessage(sender, "Preset enabled successfully.");
-                break;
-            case "disable":
-                setCaveEnabled(args, false);
-                sendMessage(sender, "Preset disabled successfully.");
-                break;
-            case "list":
-                list(sender);
-                break;
-            default:
-                helpCommand(sender);
+            case "reload" : reload(sender); break;
+            case "test" : test(sender); break;
+            case "combine" : combine(sender, args); break;
+            case "enable" : setCaveEnabled(sender, args, true); break;
+            case "disable" : setCaveEnabled(sender, args, false); break;
+            case "list" : list(sender); break;
+            default : helpCommand(sender);
         }
     }
 
     /** Sends the formatted command usage to the user. */
-    private void helpCommand(ICommandSender sender) {
+    private static void helpCommand(ICommandSender sender) {
         sender.sendMessage(USAGE_TEXT);
     }
 
     /** Reloads all presets from the disk. */
-    private void reload(ICommandSender sender) {
+    private static void reload(ICommandSender sender) {
         CaveInit.initPresets(Main.instance.presets)
             .handleIfPresent((e) -> { // That didn't work. Forward the error to the user.
                 sendMessage(sender, e.getMessage());
@@ -152,18 +137,18 @@ public class CommandCave extends CommandBase {
     }
 
     /** Applies Night Vision and gamemode 3 to @param sender. */
-    private void test(ICommandSender sender) {
+    private static void test(ICommandSender sender) {
         // Get the entity from the sender.
         Entity ent = sender.getCommandSenderEntity();
         // Verify that this was sent by a player.
         if (ent instanceof EntityPlayer) {
             EntityPlayer player = (EntityPlayer) ent;
+            // Update gamemode.
             player.setGameType(GameType.SPECTATOR);
-            // Scary possible null values.
-            Potion potion = Potion.getPotionFromResourceLocation("night_vision");
-            // Begone, I say!
-            if (potion != null) {
-                player.addPotionEffect(new PotionEffect(potion, Integer.MAX_VALUE, 0, true, false));
+            // Apply night vision.
+            Optional<PotionEffect> nightVision = getNightVision();
+            if (nightVision.isPresent()) {
+                player.addPotionEffect(nightVision.get());
             } else {
                 sendMessage(sender,
                     "Build error: Person must have typed \"night_vision\" incorrectly. Please let him know."
@@ -173,39 +158,33 @@ public class CommandCave extends CommandBase {
     }
 
     /** Combines two jsons using PresetCombiner */
-    private void combine(ICommandSender sender, String[] args) {
+    private static void combine(ICommandSender sender, String[] args) {
         requireArgs(args, 2);
         // To-do
     }
 
     /** Sets whether the specified preset is enabled. */
-    private void setCaveEnabled(String[] args, boolean enabled) {
+    private static void setCaveEnabled(ICommandSender sender, String[] args, boolean enabled) {
         requireArgs(args, 1);
         Optional<File> located = locatePreset(args[0]);
         if (located.isPresent()) {
             File preset = located.get();
             // Logic could be improved.
             PresetReader.getPresetJson(preset).ifPresent(cave -> {
-                // Determine whether the field is present.
-                if (getBool(cave, "enabled").isPresent()) {
-                    cave.set("enabled", enabled);
-                } else {
-                    cave.add("enabled", enabled);
-                }
-                cave.setComment("enabled",
-                    "Whether the preset is enabled globally."
-                );
+                setOrAdd(cave, "enabled", enabled).setComment("enabled",
+                    "Whether the preset is enabled globally.");
                 // Try to write the updated preset to the disk.
                 writeJson(cave, preset)
-                    .expectF("Error writing to %s", preset.getName());
+                    .expectF("Error writing to %spawnStructure", preset.getName());
             });
         } else {
-            throw runExF("No preset was found named %s", args[0]);
+            throw runExF("No preset was found named %spawnStructure", args[0]);
         }
+        sendMessage(sender, "Preset " + (enabled ? "enabled" : "disabled") + " successfully.");
     }
 
     /** A command for listing and enabling / disabling presets. */
-    private void list(ICommandSender sender) {
+    private static void list(ICommandSender sender) {
         ITextComponent msg = tcs("") // Parent has no formatting.
             .appendSibling(VIEW_BUTTON.createCopy());
 
@@ -221,7 +200,7 @@ public class CommandCave extends CommandBase {
         sender.sendMessage(msg);
     }
 
-    private ITextComponent getListElementText(File file) {
+    private static ITextComponent getListElementText(File file) {
         String fileName = noExtension(file);
         if (isPresetEnabled(file)) {
             return tcs(" * " + fileName + " (Enabled) ")
@@ -233,24 +212,31 @@ public class CommandCave extends CommandBase {
     }
 
     /** Determines whether the input file points to a preset that is enabled. */
-    private boolean isPresetEnabled(File file) {
+    private static boolean isPresetEnabled(File file) {
         return PresetReader.getPresetJson(file)
             .flatMap(preset -> getBool(preset, "enabled"))
             .orElse(false);
     }
 
+    /** Generates the help message, displaying usage for each sub-command. */
     private static ITextComponent createHelpMessage() {
         ITextComponent msg = tcs("");
         msg.appendSibling(USAGE_HEADER);
-        msg.appendSibling(usageText("reload", "Reloads the current presets from the disk.\n"));
-        msg.appendSibling(usageText("test", "Applies night vision and gamemode 3 for easy cave viewing.\n"));
-        msg.appendSibling(usageText("combine <preset.path> <into_preset>", "Copies the first path into the second preset.\n"));
-        msg.appendSibling(usageText("list", "Displays a list of all presets, with buttons for enabling / disabling.\n"));
-        msg.appendSibling(usageText("enable <name>", "Enables the preset with name <name>.\n"));
-        msg.appendSibling(usageText("disable <name>", "Disables the preset with name <name>."));
+        appendUsageText(msg, "reload", "Reloads the current presets from the disk.\n");
+        appendUsageText(msg, "test", "Applies night vision and gamemode 3 for easy cave viewing.\n");
+        appendUsageText(msg, "combine <preset.path> <into_preset>", "Copies the first path into the second preset.\n");
+        appendUsageText(msg, "list", "Displays a list of all presets, with buttons for enabling / disabling.\n");
+        appendUsageText(msg, "enable <name>", "Enables the preset with name <name>.\n");
+        appendUsageText(msg, "disable <name>", "Disables the preset with name <name>.");
         return msg;
     }
 
+    /** A slightly neater way to append so many components to the help message. */
+    private static void appendUsageText(ITextComponent msg, String command, String usage) {
+        msg.appendSibling(usageText(command, usage));
+    }
+
+    /** Formats the input text to nicely display a command'spawnStructure usage. */
     private static ITextComponent usageText(String command, String usage) {
         ITextComponent msg = tcs(""); // Parent has no formatting.
         msg.appendSibling(tcs(command).setStyle(USAGE_STYLE));
@@ -259,7 +245,7 @@ public class CommandCave extends CommandBase {
     }
 
     /** Creates a new enable button. */
-    private ITextComponent enableButton(String fileName) {
+    private static ITextComponent enableButton(String fileName) {
         final Style style = ENABLE_BUTTON_STYLE
             .createDeepCopy()
             .setClickEvent(clickToRun("/cave enable " + fileName + " && list"));
@@ -268,7 +254,7 @@ public class CommandCave extends CommandBase {
     }
 
     /** Creates a new enable button. */
-    private ITextComponent disableButton(String fileName) {
+    private static ITextComponent disableButton(String fileName) {
         final Style style = DISABLE_BUTTON_STYLE
             .createDeepCopy()
             .setClickEvent(clickToRun("/cave disable " + fileName + " && list"));
@@ -287,7 +273,7 @@ public class CommandCave extends CommandBase {
     }
 
     /** Shorthand for sending a message to the input user. */
-    private void sendMessage(ICommandSender user, String msg) {
+    private static void sendMessage(ICommandSender user, String msg) {
         user.sendMessage(new TextComponentString(msg));
     }
 
@@ -297,13 +283,18 @@ public class CommandCave extends CommandBase {
     }
 
     /** Gets the file name, minus the extension. */
-    private String noExtension(File file) {
+    private static String noExtension(File file) {
         return file.getName()
             .split(Pattern.quote("."))[0];
     }
 
+    private static Optional<PotionEffect> getNightVision() {
+        Potion potion = Potion.getPotionFromResourceLocation("night_vision");
+        return full(new PotionEffect(potion, Integer.MAX_VALUE, 0, true, false));
+    }
+
     /** Attempts to locate a preset using each of the possible extensions. */
-    private Optional<File> locatePreset(String preset) {
+    private static Optional<File> locatePreset(String preset) {
         for (String ext : CaveInit.EXTENSIONS) {
             Optional<File> found = tryExtension(preset, ext);
             if (found.isPresent()) {
@@ -314,7 +305,7 @@ public class CommandCave extends CommandBase {
     }
 
     /** Attempts to locate a preset using a specific extension. */
-    private Optional<File> tryExtension(String preset, String extension) {
+    private static Optional<File> tryExtension(String preset, String extension) {
         File presetFile = new File(CaveInit.DIR, preset + "." + extension);
         if (safeFileExists(presetFile, NO_ACCESS)) {
             return full(presetFile);
@@ -322,8 +313,8 @@ public class CommandCave extends CommandBase {
         return empty();
     }
 
-    /** Ensures that at least one argument is present. */
-    private void requireArgs(String[] args, int num) {
+    /** Ensures that at least `num` arguments are present. */
+    private static void requireArgs(String[] args, int num) {
         if (args.length < num) {
             throw runEx("Insufficient arguments for this command.");
         }

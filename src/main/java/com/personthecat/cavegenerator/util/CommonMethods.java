@@ -44,6 +44,11 @@ public class CommonMethods {
         Main.instance.logger.info(x, args);
     }
 
+    /** Accesses the mod's main instance to debug using its logger. */
+    public static void debug(String x, Object... args) {
+        Main.instance.logger.debug(x, args);
+    }
+
     /** Accesses the mod's main instance to send a warning using its logger. */
     public static void warn(String x, Object... args) {
         Main.instance.logger.warn(x, args);

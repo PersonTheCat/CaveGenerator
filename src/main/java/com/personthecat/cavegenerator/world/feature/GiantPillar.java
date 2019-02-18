@@ -113,7 +113,7 @@ public class GiantPillar extends WorldGenerator {
             if (stairBlock.isPresent()) {
                 if (y == actualMax) { // We're at the top. Place stairs upward.
                     testPlaceStairs(world, rand, pos, EnumHalf.TOP); /** To-do; this block pos needs to be verified. */
-                } else if (y == actualMin) { // We're at the bottom. Place stairs downward.s
+                } else if (y == actualMin) { // We're at the bottom. Place stairs downward.
                     testPlaceStairs(world, rand, new BlockPos(pos.getX(), y, pos.getZ()), EnumHalf.BOTTOM);
                 }
             }

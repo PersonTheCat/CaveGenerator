@@ -58,6 +58,35 @@ public class HjsonTools {
         }
     }
 
+    /** Variant of setOrAdd() used for boolean values. */
+    public static JsonObject setOrAdd(JsonObject json, String field, boolean value) {
+        return setOrAdd(json, field, JsonValue.valueOf(value));
+    }
+
+    /** Variant of setOrAdd() used for integer values. */
+    public static JsonObject setOrAdd(JsonObject json, String field, int value) {
+        return setOrAdd(json, field, JsonValue.valueOf(value));
+    }
+
+    /** Variant of setOrAdd() used for floating point values. */
+    public static JsonObject setOrAdd(JsonObject json, String field, float value) {
+        return setOrAdd(json, field, JsonValue.valueOf(value));
+    }
+
+    /** Variant of setOrAdd() used for string values. */
+    public static JsonObject setOrAdd(JsonObject json, String field, String value) {
+        return setOrAdd(json, field, JsonValue.valueOf(value));
+    }
+
+    /** Modifies or adds a field with the input value. Avoids duplicate fields. */
+    public static JsonObject setOrAdd(JsonObject json, String field, JsonValue value) {
+        if (json.get(field) != null) {
+            return json.set(field, value);
+        } else {
+            return json.add(field, value);
+        }
+    }
+
     /** Safely retrieves a boolean from the input object. */
     public static Optional<Boolean> getBool(JsonObject json, String field) {
         return Optional.ofNullable(json.get(field))

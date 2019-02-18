@@ -1,5 +1,7 @@
 package com.personthecat.cavegenerator.util;
 
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.Arrays;
 import java.util.Optional;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
@@ -20,6 +22,20 @@ public enum Direction {
 
     /** Returns whether the input direction corresponds with `this`. */
     public boolean matches(Direction dir) {
-        return this.equals(dir) || dir.equals(ALL);
+        return this.equals(dir) || dir.equals(ALL) || this.equals(ALL);
+    }
+
+    public boolean matches(Direction[] dirs) {
+        for (Direction d : dirs) {
+            if (!this.matches(d)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static boolean matchesVertical(Direction[] dirs) {
+        return (ArrayUtils.contains(dirs, UP) && ArrayUtils.contains(dirs, DOWN)) ||
+            ArrayUtils.contains(dirs, ALL);
     }
 }
