@@ -181,8 +181,7 @@
     tunnels: {
          # The average number of tunnel systems to try and
          # spawn per chunk.
-		 # 15
-        frequency: 0
+        frequency: 15
          # Mininum starting height.
         minHeight: 8
          # Maximum starting height.
@@ -257,8 +256,7 @@
     ravines: {
          # The 1 / X chance for this ravine to start in any
          # given chunk.
-		 # 50
-        inverseChance: 50000
+        inverseChance: 50
         minHeight: 20
         maxHeight: 40
         distance: 0
@@ -299,6 +297,22 @@
         }
          # Similar to noiseYReduction, but not as random.
         noiseYFactor: 0.7
+		 # Contains an optional noise2D block used to change
+		 # the look of ravine walls. Placing / uncommenting
+		 # this block will completely override the vanilla
+		 # ravine wall generation features, producing
+		 # smoother, more organic surfaces.
+		wallNoise: {
+		    /*
+			noise2D {
+			     # Scale is ignored in this context.
+			    scale: 0.5
+				frequency: 0.1
+				minVal: 0
+				maxVal: 4
+			}
+			*/
+		}
     }
      # See caverns.json for another example of caverns. These
      # are the default values.
@@ -350,20 +364,6 @@
      # just the default values, so you only need to specify the state
      # and maxHeight.
     stoneLayers: [
-	/*
-	{
-	    state: stone:1
-		maxHeight: 15
-	}
-	{
-	    state: stone:3
-		maxHeight: 30
-	}
-	{
-	    state: stone:5
-		maxHeight: 45
-	}
-	*/
          /*
          { Default values; these don't spawn by default.
              state: null
@@ -385,18 +385,6 @@
     ]
      # See stone_clusters.cave for an example of stoneClusters.
     stoneClusters: [
-	/*
-	{
-		states: [ "leaves" ]
-		frequency: 0.1
-		radiusX: 16
-		radiusY: 12
-		radiusZ: 16
-		radiusVariance: 6
-		startingHeight: 32
-		heightVariance: 16
-	}
-	*/
          /*
          { Default values; these don't spawn by default.
               # A list of blocks to spawn under these conditions.
