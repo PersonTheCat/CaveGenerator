@@ -25,6 +25,11 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import com.personthecat.cavegenerator.world.GeneratorSettings.StructureSettings;
 
 public class CaveFeatureGenerator implements IWorldGenerator {
+    /** The number of times to try locating vertical surfaces for structures. */
+    private static final int VERTICAL_RETRIES = 3;
+    /** The number of times to try locating horizontal surfaces for structures. */
+    private static final int HORIZONTAL_RETRIES = 20;
+
     @Override
     public void generate(Random rand, int chunkX, int chunkZ, World world, IChunkGenerator chunkGen, IChunkProvider chunkProv) {
         // Once again, there is no way to avoid retrieving this statically.
@@ -75,7 +80,15 @@ public class CaveFeatureGenerator implements IWorldGenerator {
     }
 
     /** Generates a stalactite in the specified bounds. */
-    private static void generateStalactite(int[][] heightMap, CaveGenerator gen, LargeStalactite st, Random rand, int chunkX, int chunkZ, World world) {
+    private static void generateStalactite(
+        int[][] heightMap,
+        CaveGenerator gen,
+        LargeStalactite st,
+        Random rand,
+        int chunkX,
+        int chunkZ,
+        World world
+    ) {
         final FastNoise noise = st.getNoise(rand.nextInt());
         final Random localRand = new Random(rand.nextInt());
         final int distance = stalactiteResolution(st.getChance());
@@ -97,7 +110,15 @@ public class CaveFeatureGenerator implements IWorldGenerator {
     }
 
     /** Attempts to spawn a stalactite at every coordinate pair in this region. */
-    private static void handleStalactiteRegion(int[][] heightMap, LargeStalactite st, Random rand, int x, int z, int distance, World world) {
+    private static void handleStalactiteRegion(
+        int[][] heightMap,
+        LargeStalactite st,
+        Random rand,
+        int x,
+        int z,
+        int distance,
+        World world
+    ) {
         for (int l = x; l < x + distance; l++) {
             for (int d = z; d < z + distance; d++) {
                 // Check this earlier -> do less when it fails.
@@ -129,6 +150,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         }
     }
 
+    /** Spawns a series of applicable structures at the input coorindates. */
     private static void generateStructures(int[][] heightMap, CaveGenerator gen, Random rand, int chunkX, int chunkZ, World world) {
         for (StructureSettings settings : gen.settings.structures) {
             for (int i = 0; i < settings.frequency; i++) {
@@ -139,7 +161,15 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         }
     }
 
-    private static void generateStructure(int[][] heightMap, StructureSettings settings, Random rand, int chunkX, int chunkZ, World world) {
+    /** Attempts to spawn a structure at the input chunk coordinates. */
+    private static void generateStructure(
+        int[][] heightMap,
+        StructureSettings settings,
+        Random rand,
+        int chunkX,
+        int chunkZ,
+        World world
+    ) {
         // As always, there's really no good way to retrieve this non-statically.
         // Would need to write the game myself to work around that.
         Map<String, Template> structures = Main.instance.structures;
@@ -161,23 +191,75 @@ public class CaveFeatureGenerator implements IWorldGenerator {
     }
 
     /** Attempts to determine a suitable spawn point in the current location. */
-    public static Optional<BlockPos> getSpawnPos(int[][] heightMap, StructureSettings settings, Template structure, Random rand, int chunkX, int chunkZ, World world) {
-        final BlockPos xz = randCoords(rand, structure.getSize(), chunkX, chunkZ);
-        final int x = xz.getX();
-        final int z = xz.getZ();
-        final int maxY = getMin(heightMap[x][z], settings.maxHeight);
-        final int minY = settings.minHeight; // More readable?
-        int y = -1;
-        // A quicker test than searching either up and down separately.
-        if (Direction.matchesVertical(settings.directions)) {
-            y = findOpeningVertical(rand, world, x, z, minY, maxY);
-        } else if (Direction.UP.matches(settings.directions)) {
-            y = randFindCeiling(world, rand, x, z, minY, maxY);
-        } else if (Direction.DOWN.matches(settings.directions)) {
-            y = randFindFloor(world, rand, x, z, minY, maxY);
+    private static Optional<BlockPos> getSpawnPos(
+        int[][] heightMap,
+        StructureSettings settings,
+        Template structure,
+        Random rand,
+        int chunkX,
+        int chunkZ,
+        World world
+    ) {
+        if (settings.directions.up || settings.directions.down) {
+            Optional<BlockPos> vertical =
+                getSpawnPosVertical(heightMap, settings, structure, rand, chunkX, chunkZ, world);
+            if (vertical.isPresent()) {
+                return vertical;
+            } // else, try horizontal
         }
-        // To - do: horizontal matches.
-        return y > 0 ? full(new BlockPos(x, y, z)) : empty();
+        if (settings.directions.side) {
+            return getSpawnPosHorizontal(settings, structure, rand, chunkX, chunkZ, world);
+        }
+        return empty();
+    }
+
+    /** Attempts to find a spawn point for this structure on the vertical axis. */
+    private static Optional<BlockPos> getSpawnPosVertical(
+        int[][] heightMap,
+        StructureSettings settings,
+        Template structure,
+        Random rand,
+        int chunkX,
+        int chunkZ,
+        World world
+    ) {
+        for (int i = 0; i < VERTICAL_RETRIES; i++) {
+            // Start with random (x, z) coordinates.
+            final BlockPos xz = randCoords(rand, structure.getSize(), chunkX, chunkZ);
+            final int x = xz.getX();
+            final int z = xz.getZ();
+            final int maxY = getMin(heightMap[x][z], settings.maxHeight);
+            final int minY = settings.minHeight; // More readable?
+            int y = -1;
+
+            if (settings.directions.up && settings.directions.down) {
+                y = findOpeningVertical(rand, world, x, z, minY, maxY);
+            } else if (settings.directions.up) {
+                y = randFindCeiling(world, rand, x, z, minY, maxY);
+            } else if (settings.directions.down) {
+                y = randFindFloor(world, rand, x, z, minY, maxY);
+            }
+            // Check to see if an opening was found, else retry;
+            if (y > 0) {
+                return full(new BlockPos(x, y, z));
+            }
+        }
+        return empty();
+    }
+
+    /** Attempts to find a spawn point for this structure on the horizontal axes. */
+    private static Optional<BlockPos> getSpawnPosHorizontal(
+        StructureSettings settings,
+        Template structure,
+        Random rand,
+        int chunkX,
+        int chunkZ,
+        World world
+    ) {
+        for (int i = 0; i < HORIZONTAL_RETRIES; i++) {
+            // To-do
+        }
+        return empty();
     }
 
     /** Moves each dimension by half of `size` in the opposite direction. */

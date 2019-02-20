@@ -13,7 +13,6 @@ import org.hjson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
@@ -205,17 +204,17 @@ public class GeneratorSettings {
 
         /** Default values used for the scalable floats here. */
         public static final ScalableFloat DEFAULT_TWIST_XZ =
-            new ScalableFloat(1.0f, 0.75f, 4.0f, 0.0f, 0.0f);
+            new ScalableFloat(0.0f, 0.0f, 0.75f, 4.0f, 1.0f);
         public static final ScalableFloat DEFAULT_TWIST_Y =
-            new ScalableFloat(1.0f, 0.9f, 4.0f, 0.0f, 0.0f);
+            new ScalableFloat(0.0f, 0.0f, 0.9f, 4.0f, 1.0f);
         public static final ScalableFloat DEFAULT_SCALE =
-            new ScalableFloat(1.0f, 1.0f, 0.0f, 0.0f, 1.0f);
+            new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
         public static final ScalableFloat DEFAULT_SCALE_Y =
-            new ScalableFloat(1.0f, 1.0f, 0.0f, 1.0f, 1.0f);
+            new ScalableFloat(1.0f, 1.0f, 1.0f, 0.0f, 1.0f);
         public static final ScalableFloat DEFAULT_ANGLE_XZ =
-            new ScalableFloat(1.0f, 1.0f, 0.0f, 0.0f, 1.0f);
+            new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
         public static final ScalableFloat DEFAULT_ANGLE_Y =
-            new ScalableFloat(1.0f, 1.0f, 0.0f, 0.0f, 0.25f);
+            new ScalableFloat(0.0f, 0.25f, 1.0f, 0.0f, 1.0f);
 
         /**
          * The primary constructor of this object. Necessary for allowing all
@@ -321,17 +320,17 @@ public class GeneratorSettings {
 
         /** Default values used for the scalable floats here. */
         public static final ScalableFloat DEFAULT_TWIST_XZ =
-            new ScalableFloat(1.0f, 0.5f, 4.0f, 0.0f, 0.0f);
+            new ScalableFloat(0.0f, 0.0f, 0.5f, 4.0f, 1.0f);
         public static final ScalableFloat DEFAULT_TWIST_Y =
-            new ScalableFloat(1.0f, 0.8f, 2.0f, 0.0f, 0.0f);
+            new ScalableFloat(0.0f, 0.0f, 0.8f, 2.0f, 1.0f);
         public static final ScalableFloat DEFAULT_SCALE =
-            new ScalableFloat(1.0f, 1.0f, 0.0f, 0.0f, 1.0f);
+            new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
         public static final ScalableFloat DEFAULT_SCALE_Y =
-            new ScalableFloat(1.0f, 1.0f, 0.0f, 1.0f, 1.0f);
+            new ScalableFloat(1.0f, 1.0f, 1.0f, 0.0f, 1.0f);
         public static final ScalableFloat DEFAULT_ANGLE_XZ =
-            new ScalableFloat(1.0f, 1.0f, 0.0f, 0.0f, 1.0f);
+            new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
         public static final ScalableFloat DEFAULT_ANGLE_Y =
-            new ScalableFloat(1.0f, 1.0f, 0.0f, 0.0f, 0.25f);
+            new ScalableFloat(0.0f, 0.25f, 1.0f, 0.0f, 1.0f);
 
         /** The default noise values to be used for ravine walls. */
         public static final NoiseSettings2D DEFAULT_WALL_NOISE =
@@ -491,7 +490,7 @@ public class GeneratorSettings {
         /** The source blocks that can be selected for this structure to spawn. */
         public final IBlockState[] matchers;
         /** Whether the structure should spawn on the floor, ceiling, or both. */
-        public final Direction[] directions;
+        public final Direction.Container directions;
         /** Any relative coordinates that should be air. */
         public final BlockPos[] airMatchers;
         /** Any relative coordinates that should be solid. */
@@ -539,7 +538,7 @@ public class GeneratorSettings {
             this.name = name;
             this.settings = settings;
             this.matchers = matchers;
-            this.directions = directions;
+            this.directions = Direction.Container.from(directions);
             this.airMatchers = airMatchers;
             this.solidMatchers = solidMatchers;
             this.offset = offset;

@@ -38,4 +38,40 @@ public enum Direction {
         return (ArrayUtils.contains(dirs, UP) && ArrayUtils.contains(dirs, DOWN)) ||
             ArrayUtils.contains(dirs, ALL);
     }
+
+    /**
+     * A DTO counter part to using Direction arrays.
+     */
+    public static class Container {
+        public final boolean up, down, side;
+
+        /** Primary constructor */
+        public Container(boolean up, boolean down, boolean side) {
+            this.up = up;
+            this.down = down;
+            this.side = side;
+        }
+
+        /** Converts a direction array into a Direction.Container */
+        public static Container from(Direction[] directions) {
+            // Empty array -> all == true
+            if (directions.length == 0) {
+                return new Container(true, true, true);
+            }
+            boolean up = false, down = false, side = false;
+            for (Direction direction : directions) {
+                switch (direction) {
+                    case UP : up = true; break;
+                    case DOWN : down = true; break;
+                    case SIDE : side = true; break;
+                    case ALL :
+                        up = true;
+                        down = true;
+                        side = true;
+                        break;
+                }
+            }
+            return new Container(up, down, side);
+        }
+    }
 }

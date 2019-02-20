@@ -191,6 +191,11 @@ public class HjsonTools {
         }
     }
 
+    /** Safely retrieves a JsonValue from the input object. */
+    public static Optional<JsonValue> getValue(JsonObject json, String field) {
+        return Optional.ofNullable(json.get(field));
+    }
+
     /**
      * Safely retrieves an array of JsonObjects from the input json.
      * To-do: Be more consistent and use Optional, instead.
@@ -483,17 +488,26 @@ public class HjsonTools {
      * values when necessary.
      */
     private static Optional<ScalableFloat> getScalableFloat(JsonObject json, String field, ScalableFloat defaults) {
-        // Access the object with name `field`. If it exists, get whichever
-        // values are present in the json, substituting from `defaults`,
-        // if the value does not exist.
-        return getObject(json, field).map(o -> ScalableFloat.fromDefaults(
-            defaults,
-            getFloat(o, "exponent"),
-            getFloat(o, "factor"),
-            getFloat(o, "randFactor"),
-            getFloat(o, "startVal"),
-            getFloat(o, "startValRandFactor")
-        ));
+        // Attempt to retrieve a corresponding JsonValue from `json`. If
+        // it exists, test to see whether it is an object. If it is an
+        // object, it should be converted into a ScalableFloat according
+        // to the presence of all relevant fields, substituting from
+        // `defaults`, when necessary. Else, attempt to parse it as an
+        // array. In this case, values are read according to their order
+        // and then passed directly into the constructor in-code. Absent
+        // values are likewise substituted from `defaults`.
+        // Asserting that the value must be an array means that non-array
+        // values can also be used at this position, according to the
+        // spec of our custom hjson parser. This is especially convenient
+        // for users who only want to change the starting value of the
+        // resultant float.
+        return getValue(json, field).map(v -> {
+            if (v.isArray()) {
+                return toScalableFloat(v.asArray(), defaults);
+            }
+            // Assert that the value must be an object.
+            return toScalableFloat(v.asObject(), defaults);
+        });
     }
 
     /** Retrieves a scalable float from the input json. Returns the default values when no object is found. */
@@ -509,6 +523,27 @@ public class HjsonTools {
         return getObject(json, field)
             .map(o -> toNoiseSettings(o, defaults))
             .orElse(defaults);
+    }
+
+    public static ScalableFloat toScalableFloat(JsonArray array, ScalableFloat defaults) {
+        return new ScalableFloat(
+            array.size() > 0 ? array.get(0).asFloat() : defaults.startVal,
+            array.size() > 1 ? array.get(1).asFloat() : defaults.startValRandFactor,
+            array.size() > 2 ? array.get(2).asFloat() : defaults.factor,
+            array.size() > 3 ? array.get(3).asFloat() : defaults.randFactor,
+            array.size() > 4 ? array.get(4).asFloat() : defaults.exponent
+        );
+    }
+
+    public static ScalableFloat toScalableFloat(JsonObject json, ScalableFloat defaults) {
+        return ScalableFloat.fromDefaults(
+            defaults,
+            getFloat(json, "startVal"),
+            getFloat(json, "startValRandFactor"),
+            getFloat(json, "factor"),
+            getFloat(json, "randFactor"),
+            getFloat(json, "exponent")
+        );
     }
 
     /** Safely retrieves a NoiseSettings2D object from the input json. */

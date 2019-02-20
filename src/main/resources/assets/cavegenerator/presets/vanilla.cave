@@ -45,9 +45,9 @@
  #      # throughout this mod, changing the scale in a noise   #
  #      # block alters the size of each area that gets         #
  #      # decorated.                                           #
- #     scale: floating point value                             #
+ #     scale: floating-point value                             #
  #      # Alters the distance between peaks of values.         #
- #     frequency: floating point value                         #
+ #     frequency: floating-point value                         #
  #      # The maximum possible value produced by this          #
  #      # generator.                                           #
  #     minVal: integer                                         #
@@ -63,13 +63,13 @@
  #    # case with 2D noise.                                    #
  #   noise3D {                                                 #
  #      # See scale above.                                     #
- #     scale: floating point value                             #
+ #     scale: floating-point value                             #
  #      # See frequency above.                                 #
- #     frequency: floating point value                         #
+ #     frequency: floating-point value                         #
  #      # Stretches and skews the scale on the vertical axis.  #
  #      # Literally means that clusters generated will be      #
  #      # either shorter or taller.                            #
- #     scaleY: floating point value                            #
+ #     scaleY: floating-point value                            #
  #      # The number of generation passes. This effectively    #
  #      # increases the resolution of clusters (makes them     #
  #      # *less* smooth) at the cost of performance.           #
@@ -88,6 +88,54 @@
  #     fractal: FractalType value; from string                 #
  #      # To-do: Include additional FastNoise parameters.      # 
  #   }                                                         #
+ # ########################################################### #
+ #                   ### ScalableFloats ###                    #
+ # ########################################################### #
+ #   Many of the fields inside of tunnels and ravines are      #
+ # referred to internally as "ScalableFloats." These           #
+ # objects technically all contain the same fields, but        #
+ # those fields are not used as consistently as in noise       #
+ # blocks. This is why they are not named according to their   #
+ # type, unlike noise blocks.                                  #
+ #   ScalableFloats essentially serve to update a floating-    #
+ # point value each time it gets used. So, their parameters    #
+ # are a reflection of that process. The basic function of     #
+ # field is documented below.                                  #
+ #   valueName: {                                              #
+ #      # Initial value                                        #
+ #     startVal: floating-point value                          #
+ #      # A random value from 0 to input which multiplies      #
+ #      # startVal.                                            #
+ #     startValRandFactor: floating-point value                #
+ #      # A constant value which multiplies the current value  #
+ #      # each use.                                            #
+ #     factor: floating-point value                            #
+ #      # A random value from 0 to input which multiplies the  #
+ #      # current value each use.                              #
+ #     randFactor: floating-point value                        #
+ #      # A constant value. The current value is raised to     #
+ #      # this power each use.                                 #
+ #     exponent: floating-point value                          #
+ #   }                                                         #
+ #   Despite the inconsistency in terms of which fields are    #
+ # actually used, their identical structure and use of only    #
+ # one single value type allows them to be written with a much #
+ # prettier syntax. Some users may prefer this syntax thanks   #
+ # to its concision. The following example shows how this      #
+ # would look.                                                 #
+ #    # Example values. Helps clarify the order.               #
+ #   standard: {                                               #
+ #     startVal: 1.0                                           #
+ #     startValRandFactor: 2.0                                 #
+ #     factor: 3.0                                             #
+ #     randFactor: 4.0                                         #
+ #     exponent: 5.0                                           #
+ #   }                                                         #
+ #    # Make sure to use an array here, not an object.         #
+ #    # Trailing values (near the end) can be ommitted, but    #
+ #    # intermediate values cannot, since the order does       #
+ #    # matter.                                                #
+ #   identical: [ 1.0, 2.0, 3.0, 4.0, 5.0 ]                    #
  # ----------------------------------------------------------- #
 {
      # Whether the preset is enabled globally.
@@ -116,12 +164,12 @@
      # if any other preset is placing blocks that this generator
      # should also be able to dig through.
     replaceableBlocks: [ "stone", "dirt" ]
-	 # Setting this field to true will automatically add all
-	 # WallDecorators, StoneClusters, etc. to the replaceableBlocks
-	 # list. These blocks usually should be added because 
-	 # multiple tunnel sections can overlap after decorators have
-	 # been placed, resulting in unwanted, floating decorators.
-	replaceDecorators: true
+     # Setting this field to true will automatically add all
+     # WallDecorators, StoneClusters, etc. to the replaceableBlocks
+     # list. These blocks usually should be added because 
+     # multiple tunnel sections can overlap after decorators have
+     # been placed, resulting in unwanted, floating decorators.
+    replaceDecorators: true
      # A collection of blocks that will be used instead of air 
      # at various height levels. Supports random and even 
      # noise-based placement.
@@ -169,7 +217,7 @@
             preference: replace_match
         }
         */
-	]
+    ]
      # Single, crcular spaces found near the center of cave 
      # systems.
     rooms: {
@@ -196,48 +244,53 @@
          # This has an effect of spawning each system in
          # isolated groups vs. everywhere.
         spawnIsolatedInverseChance: 7
-         # Whether the preset is enabled globally.
+         # Whether to reduce the amount of aberrations in
+         # in this cave's vertical angle. When this feature
+         # is enabled, the amount that noiseY can change is
+         # overall reduced, per segment.		 
         noiseYReduction: true
-         # Whether the preset is enabled globally.
+         # Whether branches should decrease in size from their
+         # original tunnel's scale. You will most likely want
+         # to disable this feature when using larger tunnels.
         resizeBranches: true
          # These values alter how much the horizontal angle
          # of each tunnel can change between segments.
         twistXZ: {
-             # angle = angle^x
-            exponent: 1
+             # angle first gets changed by x.
+            startVal: 0
              # angle = angle * x
             factor: 0.75
              # angle = angle + (randomValue * x)
             randFactor: 4
-             # angle first gets changed by x.
-            startVal: 0
+             # angle = angle^x
+            exponent: 1
         }
          # These values alter how much the vertical angle
          # of each tunnel can change between segments.
         twistY: {
-            exponent: 1
+            startVal: 0
             factor: 0.9
             randFactor: 2
-            startVal: 0
+            exponent: 1
         }
          # These values alter the radius in blocks of each
          # tunnel.
         scale: {
-            exponent: 1
+            startVal: 0
+             # startValue = startValue + (randomValue * x).
+            startValRandFactor: 1
             factor: 1
             randFactor: 0
-            startVal: 0
-             # startingValue = startingValue + (randomValue * x).
-            startValRandFactor: 1
+            exponent: 1
         }
          # scaleY is a multiple of scale on the vertical axis.
          # If scale == 6 and scaleY == 0.5, the height becomes 3.
          # These values alter scaleY between tunnel segments.
         scaleY: {
-            exponent: 1
+            startVal: 1
             factor: 1
             randFactor: 0
-            startVal: 1
+            exponent: 1
         }
          # The horizontal angle in radians.
         angleXZ: {
@@ -261,31 +314,31 @@
         maxHeight: 40
         distance: 0
         twistXZ: {
-            exponent: 1
+            startVal: 0
             factor: 0.5
             randFactor: 4
-            startVal: 0
+            exponent: 1
         }
         twistY: {
-            exponent: 1
+            startVal: 0
             factor: 0.8
             randFactor: 2
-            startVal: 0
+            exponent: 1
         }
         scale: {
-            exponent: 1
-            factor: 1
-            randFactor: 0
             startVal: 0
             startValRandFactor: 2
-        }
-        scaleY: {
-            exponent: 1
             factor: 1
             randFactor: 0
+            exponent: 1
+        }
+        scaleY: {
              # This is essentially the second most important
              # variable accounting for the look of ravines.
             startVal: 3
+            factor: 1
+            randFactor: 0
+            exponent: 1
         }
         angleXZ: {
             startVal: 0
@@ -297,22 +350,22 @@
         }
          # Similar to noiseYReduction, but not as random.
         noiseYFactor: 0.7
-		 # Contains an optional noise2D block used to change
-		 # the look of ravine walls. Placing / uncommenting
-		 # this block will completely override the vanilla
-		 # ravine wall generation features, producing
-		 # smoother, more organic surfaces.
-		wallNoise: {
-		    /*
-			noise2D {
-			     # Scale is ignored in this context.
-			    scale: 0.5
-				frequency: 0.1
-				minVal: 0
-				maxVal: 4
-			}
-			*/
-		}
+         # Contains an optional noise2D block used to change
+         # the look of ravine walls. Placing / uncommenting
+         # this block will completely override the vanilla
+         # ravine wall generation features, producing
+         # smoother, more organic surfaces.
+        wallNoise: {
+            /*
+            noise2D {
+                 # Scale is ignored in this context.
+                scale: 0.5
+                frequency: 0.1
+                minVal: 0
+                maxVal: 4
+            }
+            */
+        }
     }
      # See caverns.json for another example of caverns. These
      # are the default values.
@@ -332,17 +385,17 @@
              # The number of passes. Increases resolution at the
              # cost of performance.
             octaves: 1
-			type: SimplexFractal
-			fractal: FBM
+            type: SimplexFractal
+            fractal: FBM
         }
          # Optional 2D noise block for the cavern ceiling.
-		 # The value produced by ceilNoise is added to the terrain
+         # The value produced by ceilNoise is added to the terrain
          # height at any given coordinate. In order to stop caverns
          # from punching holes through the surface, use negative
          # values only.
         ceiling: {
             noise2D: {
-			     # No effect in this context.
+                 # No effect in this context.
                 scale: 0.5
                 frequency: 0.02
                 minVal: -17

@@ -104,11 +104,11 @@ class HjsonWriter {
     switch (value.getType()) {
       case OBJECT:
         JsonObject obj=value.asObject();
-        writeObject(obj, tw, level, separator, noIndent, forceQuotes);
+        writeObject(obj, tw, level, separator, noIndent);
         break;
       case ARRAY:
         JsonArray arr=value.asArray();
-        writeArray(arr, tw, level, separator, noIndent, forceQuotes);
+        writeArray(arr, tw, level, separator, noIndent);
         break;
       case BOOLEAN:
         tw.write(separator);
@@ -132,7 +132,7 @@ class HjsonWriter {
     }
   }
 
-  void writeObject(JsonObject obj, Writer tw, int level, String separator, boolean noIndent, boolean forceQuotes) throws IOException {
+  void writeObject(JsonObject obj, Writer tw, int level, String separator, boolean noIndent) throws IOException {
     // Start the beginning of the container.
     openContainer(tw, noIndent, level, separator, '{');
 
@@ -157,7 +157,7 @@ class HjsonWriter {
     closeContainer(tw, obj.isCondensed(), obj.size(), level, '}');
   }
 
-  void writeArray(JsonArray arr, Writer tw, int level, String separator, boolean noIndent, boolean forceQuotes) throws IOException {
+  void writeArray(JsonArray arr, Writer tw, int level, String separator, boolean noIndent) throws IOException {
     // Start the beginning of the container.
     openContainer(tw, noIndent, level, separator, '[');
 
@@ -165,7 +165,7 @@ class HjsonWriter {
     for (int i=0; i<n; i++) {
       JsonValue element = arr.get(i);
       if (this.outputComments && element.hasBOLComment()) {
-        writeBOLComment(tw, element, level+1);
+        writeBOLComment(tw, element, level);
       }
       handleContainerLines(tw, arr.isCondensed(), i, level, arr.getLineLength());
       // Multiple strings in an array would require quotes.
@@ -347,7 +347,7 @@ class HjsonWriter {
   }
 
   static boolean forceQuoteObject(JsonObject object) {
-    return object.isCondensed() || object.getLineLength() > 1;
+    return object.isCondensed() || object.getLineLength()>1;
   }
 
   static boolean needsQuotes(char c) {

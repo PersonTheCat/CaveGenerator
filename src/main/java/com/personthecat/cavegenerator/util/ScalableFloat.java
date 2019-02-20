@@ -16,17 +16,17 @@ public class ScalableFloat {
     public final float startValRandFactor;
 
     public ScalableFloat(
-        float exponent,
+        float startVal,
+        float startValRandFactor,
         float factor,
         float randFactor,
-        float startVal,
-        float startValRandFactor
+        float exponent
     ) {
-        this.exponent = exponent;
-        this.factor = factor;
-        this.randFactor = randFactor;
         this.startVal = startVal;
         this.startValRandFactor = startValRandFactor;
+        this.factor = factor;
+        this.randFactor = randFactor;
+        this.exponent = exponent;
     }
 
     /**
@@ -41,18 +41,18 @@ public class ScalableFloat {
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public static ScalableFloat fromDefaults(
         ScalableFloat defaults,
-        Optional<Float> exponent,
+        Optional<Float> startVal,
+        Optional<Float> startValRandFactor,
         Optional<Float> factor,
         Optional<Float> randFactor,
-        Optional<Float> startVal,
-        Optional<Float> startValRandFactor
+        Optional<Float> exponent
     ) {
         return new ScalableFloat(
-            exponent.orElse(defaults.exponent),
+            startVal.orElse(defaults.startVal),
+            startValRandFactor.orElse(defaults.startValRandFactor),
             factor.orElse(defaults.factor),
             randFactor.orElse(defaults.randFactor),
-            startVal.orElse(defaults.startVal),
-            startValRandFactor.orElse(defaults.startValRandFactor)
+            exponent.orElse(defaults.exponent)
         );
     }
 }
