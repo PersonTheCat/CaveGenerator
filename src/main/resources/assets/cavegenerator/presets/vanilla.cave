@@ -100,7 +100,7 @@
  #   ScalableFloats essentially serve to update a floating-    #
  # point value each time it gets used. So, their parameters    #
  # are a reflection of that process. The basic function of     #
- # field is documented below.                                  #
+ # this type of field is documented below.                     #
  #   valueName: {                                              #
  #      # Initial value                                        #
  #     startVal: floating-point value                          #

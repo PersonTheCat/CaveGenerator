@@ -45,7 +45,7 @@ public class HeightMapLocator {
     /** A convenient reference to water. */
     private static final IBlockState BLK_WATER = Blocks.WATER.getDefaultState();
 
-    /** Quickly determines the full height map for the input ChunkPrimer. */
+    /** Quickly determines the full heightmap for the input ChunkPrimer. */
     public static int[][] getHeightFromPrimer(ChunkPrimer primer) {
         int[][] map = new int[16][16];
         int previousHeight = getHeightFromBottom(primer, 0, 0);
@@ -79,6 +79,50 @@ public class HeightMapLocator {
         }
         // printMap(map);
         return map;
+    }
+
+    /**
+     * Generates a single, unified heightmap based on data from the
+     * intersection of four chunks, according to an offset of 8 on
+     * each axis. The index used for each coordinate is not based on
+     * its global or absolute position, but its relative position
+     * according to its original chunk. This means that, so long as
+     * the input coordinate is offset by 8, the correct height value
+     * can be still retrieved if it is converted to a chunk coordinate.
+     */
+    public static int[][] getHeightFromWorld(World world, int chunkX, int chunkZ) {
+        int[][] map = new int[16][16];
+        fillMapCorner(map, world, chunkX, chunkZ, 8, 15, 8, 15);
+        fillMapCorner(map, world, chunkX + 1, chunkZ, 0, 7, 8, 15);
+        fillMapCorner(map, world, chunkX, chunkZ + 1, 8, 15, 0, 7);
+        fillMapCorner(map, world, chunkX + 1, chunkZ + 1, 0, 7, 0, 7);
+        return map;
+    }
+
+    /** Fills in a quarter of the height map using data from its corresponding chunk. */
+    private static void fillMapCorner(int[][] map, World world, int chunkX, int chunkZ, int minX, int maxX, int minZ, int maxZ) {
+        final Chunk chunk = world.getChunkFromChunkCoords(chunkX, chunkZ);
+        final int seaLevel = world.getSeaLevel();
+        final int[] original = chunk.getHeightMap();
+        for (int x = chunkX + minX; x <= chunkX + maxX; x++) {
+            for (int z = chunkZ + minZ; z <= chunkZ + maxZ; z++) {
+                final int relX = toRelative(x);
+                final int relZ = toRelative(z);
+                final int originalY = original[relZ << 4 | relX];
+                if (originalY == seaLevel) {
+                    // We're at the sea level, which might imply that water has
+                    // been filled up to this point.
+                    map[x][z] = getHeight(chunk, relX, relZ, seaLevel - 1);
+                } else {
+                    map[x][z] = originalY;
+                }
+            }
+        }
+    }
+
+    /** Converts an absolute coordinate to a chunk coordinate. */
+    private static int toRelative(int absolute) {
+        return absolute & 15;
     }
 
     /**

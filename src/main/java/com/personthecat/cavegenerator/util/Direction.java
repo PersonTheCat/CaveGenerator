@@ -64,11 +64,7 @@ public enum Direction {
                     case UP : up = true; break;
                     case DOWN : down = true; break;
                     case SIDE : side = true; break;
-                    case ALL :
-                        up = true;
-                        down = true;
-                        side = true;
-                        break;
+                    case ALL : return new Container(true, true, true);
                 }
             }
             return new Container(up, down, side);

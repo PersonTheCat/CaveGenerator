@@ -502,11 +502,10 @@ public class HjsonTools {
         // for users who only want to change the starting value of the
         // resultant float.
         return getValue(json, field).map(v -> {
-            if (v.isArray()) {
-                return toScalableFloat(v.asArray(), defaults);
+            if (v.isObject()) {
+                return toScalableFloat(v.asObject(), defaults);
             }
-            // Assert that the value must be an object.
-            return toScalableFloat(v.asObject(), defaults);
+            return toScalableFloat(v.asArray(), defaults);
         });
     }
 
