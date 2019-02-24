@@ -32,8 +32,8 @@ public class JarFiles {
             .expect("Error: Unable to create the example preset directory. It is most likely in use.");
 
         for (String fileName : PRESETS) {
-            String fromLocation = "assets/cavegenerator/presets/" + fileName + ".json";
-            String toLocation = EXAMPLE_DIR.getPath() + "/" + fileName + ".json";
+            String fromLocation = "assets/cavegenerator/presets/" + fileName + ".cave";
+            String toLocation = EXAMPLE_DIR.getPath() + "/" + fileName + ".cave";
             copyFile(fromLocation, toLocation);
         }
 

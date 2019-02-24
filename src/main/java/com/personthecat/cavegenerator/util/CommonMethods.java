@@ -11,6 +11,8 @@ import java.util.Optional;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
+import net.minecraft.block.Block;
+import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
@@ -21,6 +23,7 @@ import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
+import org.apache.logging.log4j.Level;
 
 /**
  * A collection of methods and functions to be imported into
@@ -57,6 +60,14 @@ public class CommonMethods {
     /** Accesses the mod's main instance to send an error using its logger. */
     public static void error(String x, Object... args) {
         Main.instance.logger.error(x, args);
+    }
+
+    /** Accesses the mod's main instance to log information using its logger. */
+    public static void log(Level level, String x, Object... args) {
+        if (level.equals(Level.FATAL)) {
+            throw runExF(x, args);
+        }
+        Main.instance.logger.log(level, x, args);
     }
 
     /** Returns a clean-looking, general-purpose RuntimeException. */
@@ -253,6 +264,11 @@ public class CommonMethods {
             }
         }
         return false;
+    }
+
+    /** Shorthand for retrieving state variants directly from a block. */
+    public static <T extends Comparable<T>, V extends T> IBlockState getVariant(Block block, IProperty<T> property, V value) {
+        return block.getDefaultState().withProperty(property, value);
     }
 
     /** Returns the center block in the specified chunk */

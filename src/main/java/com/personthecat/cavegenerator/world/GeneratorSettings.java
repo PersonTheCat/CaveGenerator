@@ -3,6 +3,7 @@ package com.personthecat.cavegenerator.world;
 import com.personthecat.cavegenerator.util.*;
 import com.personthecat.cavegenerator.world.feature.GiantPillar;
 import com.personthecat.cavegenerator.world.feature.LargeStalactite;
+import jdk.nashorn.internal.ir.annotations.Immutable;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -13,6 +14,7 @@ import org.hjson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
@@ -27,6 +29,7 @@ import static com.personthecat.cavegenerator.util.HjsonTools.*;
  *
  * @author PersonTheCat
  */
+@Immutable
 public class GeneratorSettings {
     public final SpawnSettings conditions;
     public final IBlockState[] replaceable;
@@ -36,6 +39,7 @@ public class GeneratorSettings {
     public final CavernSettings caverns;
     public final StructureSettings[] structures;
     public final DecoratorSettings decorators;
+    public final JsonObject preset;
 
     /**
      * Primary and sole constructor.
@@ -50,7 +54,8 @@ public class GeneratorSettings {
         StructureSettings[] structures,
         DecoratorSettings decorators,
         IBlockState[] replaceable,
-        boolean replaceDecorators
+        boolean replaceDecorators,
+        JsonObject preset
     ) {
         this.conditions = conditions;
         this.tunnels = tunnels;
@@ -59,6 +64,7 @@ public class GeneratorSettings {
         this.caverns = caverns;
         this.structures = structures;
         this.decorators = decorators;
+        this.preset = preset;
         this.replaceable = getReplaceable(
             replaceable,
             decorators,
@@ -277,8 +283,12 @@ public class GeneratorSettings {
          * Using Optional#empty instead of raw values so that all default values
          * can remain within the first constructor above.
          */
-        public TunnelSettings() {
-            this(new JsonObject());
+        public TunnelSettings(boolean blankSlate) {
+            this(
+                blankSlate ?
+                new JsonObject().add("frequency", 0) :
+                new JsonObject()
+            );
         }
     }
 
@@ -387,8 +397,12 @@ public class GeneratorSettings {
         }
 
         /** Default values. */
-        public RavineSettings() {
-            this(new JsonObject());
+        public RavineSettings(boolean blankSlate) {
+            this(
+                blankSlate ?
+                new JsonObject().add("inverseChance", Integer.MAX_VALUE) :
+                new JsonObject()
+            );
         }
     }
 
@@ -417,8 +431,12 @@ public class GeneratorSettings {
         }
 
         /** Default values. */
-        public RoomSettings() {
-            this(new JsonObject());
+        public RoomSettings(boolean blankSlate) {
+            this(
+                blankSlate ?
+                new JsonObject().add("scale", 0) :
+                new JsonObject()
+            );
         }
     }
 
@@ -495,6 +513,10 @@ public class GeneratorSettings {
         public final BlockPos[] airMatchers;
         /** Any relative coordinates that should be solid. */
         public final BlockPos[] solidMatchers;
+        /** Any relative coordinates that should be non-solid. */
+        public final BlockPos[] nonSolidMatchers;
+        /** Any relative coordinates that should be water. */
+        public final BlockPos[] waterMatchers;
         /** Structure placement settings. */
         public final PlacementSettings settings;
         /** The relative coordinates to the selected block that this should spawn. */
@@ -526,6 +548,8 @@ public class GeneratorSettings {
             Direction[] directions,
             BlockPos[] airMatchers,
             BlockPos[] solidMatchers,
+            BlockPos[] nonSolidMatchers,
+            BlockPos[] waterMatchers,
             BlockPos offset,
             float minBurialPercentage,
             float chance,
@@ -541,6 +565,8 @@ public class GeneratorSettings {
             this.directions = Direction.Container.from(directions);
             this.airMatchers = airMatchers;
             this.solidMatchers = solidMatchers;
+            this.nonSolidMatchers = nonSolidMatchers;
+            this.waterMatchers = waterMatchers;
             this.offset = offset;
             this.minBurialPercentage = minBurialPercentage;
             this.chance = chance;
@@ -567,7 +593,9 @@ public class GeneratorSettings {
                 getDirectionsOr(structure, "directions", Direction.ALL),
                 getPositionsOr(structure, "airMatchers" /* No defaults */),
                 getPositionsOr(structure, "solidMatchers" /* No defaults */),
-                getPositionOr(structure, "offset", new BlockPos(0, 0, 0)),
+                getPositionsOr(structure, "nonSolidMatchers" /* No defaults */),
+                getPositionsOr(structure, "waterMatchers" /* No defaults */),
+                getPositionOr(structure, "offset", BlockPos.ORIGIN),
                 getFloatOr(structure, "minBurialPercentage", 0.0f),
                 getFloatOr(structure, "chance", 100.0f),
                 getIntOr(structure, "frequency", 10),
@@ -584,52 +612,74 @@ public class GeneratorSettings {
      * miscellaneous decorators should be shaped.
      */
     public static class DecoratorSettings {
-        public StoneCluster[] stoneClusters = new StoneCluster[0];
-        public StoneLayer[] stoneLayers = new StoneLayer[0];
-        public CaveBlocks[] caveBlocks = new CaveBlocks[] { CaveBlocks.VANILLA_LAVA };
-        public WallDecorators[] ceilingDecorators = new WallDecorators[0];
-        public WallDecorators[] floorDecorators = new WallDecorators[0];
-        public WallDecorators[] wallDecorators = new WallDecorators[0];
-        public LargeStalactite[] stalactites = new LargeStalactite[0];
-        public GiantPillar[] pillars = new GiantPillar[0];
+        public final StoneCluster[] stoneClusters;
+        public final StoneLayer[] stoneLayers;
+        public final CaveBlock[] caveBlocks;
+        public final WallDecorator[] ceilingDecorators;
+        public final WallDecorator[] floorDecorators;
+        public final WallDecorator[] wallDecorators;
+        public final LargeStalactite[] stalactites;
+        public final GiantPillar[] pillars;
+
+        /**
+         * Constructs a new instance of this object using optional
+         * values.
+         * @see GeneratorSettings.SpawnSettings#SpawnSettings for
+         * information on why Optional types are used here.
+         */
+        @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+        public DecoratorSettings(
+            StoneCluster[] stoneClusters,
+            StoneLayer[] stoneLayers,
+            Optional<CaveBlock[]> caveBlocks,
+            WallDecorator[] decorators,
+            LargeStalactite[] stalactites,
+            GiantPillar[] pillars,
+            boolean blankSlate
+        ) {
+            WallDecorator[][] sorted = sortWallDecorators(decorators);
+            this.caveBlocks = caveBlocks.orElse(blankSlate ?
+                new CaveBlock[0] : new CaveBlock[] { CaveBlock.VANILLA_LAVA });
+            this.ceilingDecorators = sorted[0];
+            this.floorDecorators = sorted[1];
+            this.wallDecorators = sorted[2];
+            this.stoneClusters = stoneClusters;
+            this.stoneLayers = stoneLayers;
+            this.stalactites = stalactites;
+            this.pillars = pillars;
+        }
 
         /** Sorts the input decorators into each appropriate field. */
-        public void sortWallDecorators(WallDecorators[] decorators) {
+        private WallDecorator[][] sortWallDecorators(WallDecorator[] decorators) {
             // Create separate arrays for each side to be decorated.
-            List<WallDecorators> ceiling = new ArrayList<>();
-            List<WallDecorators> floor = new ArrayList<>();
-            List<WallDecorators> wall = new ArrayList<>();
+            List<WallDecorator> ceiling = new ArrayList<>();
+            List<WallDecorator> floor = new ArrayList<>();
+            List<WallDecorator> wall = new ArrayList<>();
 
             // Match directions from each decorator.
-            for (WallDecorators decorator : decorators) {
+            for (WallDecorator decorator : decorators) {
                 for (Direction d : decorator.getDirections()) {
                     switch (d) {
-                        case UP :
-                            ceiling.add(decorator);
-                            break;
-                        case DOWN :
-                            floor.add(decorator);
-                            break;
-                        case SIDE :
-                            wall.add(decorator);
-                            break;
+                        case UP : ceiling.add(decorator); break;
+                        case DOWN : floor.add(decorator); break;
+                        case SIDE : wall.add(decorator); break;
                         default:
-                            // It's nice not having ownership.
                             ceiling.add(decorator);
                             floor.add(decorator);
                             wall.add(decorator);
                     }
                 }
             }
-
             // Convert the lists into standard arrays;
-            ceilingDecorators = toArray(ceiling, WallDecorators.class);
-            floorDecorators = toArray(floor, WallDecorators.class);
-            wallDecorators = toArray(wall, WallDecorators.class);
+            return new WallDecorator[][] {
+                toArray(ceiling, WallDecorator.class),
+                toArray(floor, WallDecorator.class),
+                toArray(wall, WallDecorator.class)
+            };
         }
 
         /** Retrieves an array of all blocks used blocks each decorator. */
-        private IBlockState[] getDecoratorBlocks() {
+        public IBlockState[] getDecoratorBlocks() {
             List<IBlockState> blocks = new ArrayList<>();
             for (StoneCluster cluster : stoneClusters) {
                 blocks.add(cluster.getState());
@@ -637,13 +687,13 @@ public class GeneratorSettings {
             for (StoneLayer layer : stoneLayers) {
                 blocks.add(layer.getState());
             }
-            for (WallDecorators wDecorators : ceilingDecorators) {
+            for (WallDecorator wDecorators : ceilingDecorators) {
                 blocks.add(wDecorators.getFillBlock());
             }
-            for (WallDecorators wDecorators : floorDecorators) {
+            for (WallDecorator wDecorators : floorDecorators) {
                 blocks.add(wDecorators.getFillBlock());
             }
-            for (WallDecorators wDecorators : wallDecorators) {
+            for (WallDecorator wDecorators : wallDecorators) {
                 blocks.add(wDecorators.getFillBlock());
             }
             return toArray(blocks, IBlockState.class);

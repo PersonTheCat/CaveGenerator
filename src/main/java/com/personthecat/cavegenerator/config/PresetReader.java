@@ -77,16 +77,18 @@ public class PresetReader {
      */
     public static GeneratorSettings getPreset(File file) {
         JsonObject json = loadJson(file).asObject();
+        final boolean b = blankSlateMode(json);
         return new GeneratorSettings(
             getSpawnSettings(json),
-            getTunnelSettings(json),
-            getRavineSettings(json),
-            getRoomSettings(json),
+            getTunnelSettings(json, b),
+            getRavineSettings(json, b),
+            getRoomSettings(json, b),
             getCavernSettings(json),
             getStructureSettings(json),
-            getDecoratorSettings(json),
+            getDecoratorSettings(json, b),
             getReplaceableBlocks(json),
-            getReplaceDecorators(json)
+            getReplaceDecorators(json),
+            json
         );
     }
 
@@ -117,6 +119,11 @@ public class PresetReader {
         }
     }
 
+    /** Determines whether the input object is in blank slate mode. */
+    private static boolean blankSlateMode(JsonObject json) {
+        return getBoolOr(json, "blankSlate", true);
+    }
+
     /** Parses various fields in the root of the input json related to spawn conditions. */
     private static SpawnSettings getSpawnSettings(JsonObject json) {
         return new SpawnSettings(json);
@@ -136,27 +143,27 @@ public class PresetReader {
     }
 
     /** Parses the field "tunnels" from this json into a TunnelSettings object. */
-    private static TunnelSettings getTunnelSettings(JsonObject json) {
+    private static TunnelSettings getTunnelSettings(JsonObject json, boolean blankSlate) {
         return getObject(json, "tunnels")
             .map(TunnelSettings::new) // The user defined a field.
-            .orElse(new TunnelSettings()); // The user did not define a field.
+            .orElse(new TunnelSettings(blankSlate)); // The user did not define a field.
     }
 
     /**
      * This seems fairly redundant, but isn't. The fields belong
      * to a separate object with mostly similar properties.
      */
-    private static RavineSettings getRavineSettings(JsonObject json) {
+    private static RavineSettings getRavineSettings(JsonObject json, boolean blankSlate) {
         return getObject(json, "ravines")
             .map(RavineSettings::new) // The user defined a field.
-            .orElse(new RavineSettings()); // The user did not define a field.
+            .orElse(new RavineSettings(blankSlate)); // The user did not define a field.
     }
 
     /** Parses the field "rooms" from this json into a RoomSettings object. */
-    private static RoomSettings getRoomSettings(JsonObject json) {
+    private static RoomSettings getRoomSettings(JsonObject json, boolean blankSlate) {
         return getObject(json, "rooms")
             .map(RoomSettings::new)
-            .orElse(new RoomSettings());
+            .orElse(new RoomSettings(blankSlate));
     }
 
     /** Parses the field "caverns" from this json into a CavernSettings object. */
@@ -169,7 +176,7 @@ public class PresetReader {
     /** Parses the field "structures" from this json into an array of StructureSettings objects. */
     private static StructureSettings[] getStructureSettings(JsonObject json) {
         List<StructureSettings> structures = new ArrayList<>();
-        for (JsonObject structure : getObjectArray(json, "Structures")) {
+        for (JsonObject structure : getObjectArray(json, "structures")) {
             // Construct and add the final structure settings.
             structures.add(new StructureSettings(structure));
         }
@@ -177,15 +184,16 @@ public class PresetReader {
     }
 
     /** Parses various decorator objects from this json.. */
-    private static DecoratorSettings getDecoratorSettings(JsonObject json) {
-        DecoratorSettings defaults = new DecoratorSettings();
-        defaults.stoneClusters = getStoneClusters(json);
-        defaults.stoneLayers = getStoneLayers(json);
-        defaults.stalactites = getLargeStalactites(json);
-        defaults.pillars = getGiantPillars(json);
-        defaults.sortWallDecorators(getWallDecorators(json));
-        getCaveBlocks(json).ifPresent(a -> defaults.caveBlocks = a);
-        return defaults;
+    private static DecoratorSettings getDecoratorSettings(JsonObject json, boolean blankSlate) {
+        return new DecoratorSettings(
+            getStoneClusters(json),
+            getStoneLayers(json),
+            getCaveBlocks(json),
+            getWallDecorators(json),
+            getLargeStalactites(json),
+            getGiantPillars(json),
+            blankSlate
+        );
     }
 
     /** Parses the field "stoneClusters" from this json into an array of StoneCluster objects. */
@@ -212,41 +220,41 @@ public class PresetReader {
         return toArray(stoneLayers, StoneLayer.class);
     }
 
-    /** Parses the field "caveblocks" from this json into an array of CaveBlocks objects. */
-    private static Optional<CaveBlocks[]> getCaveBlocks(JsonObject json) {
+    /** Parses the field "caveblocks" from this json into an array of CaveBlock objects. */
+    private static Optional<CaveBlock[]> getCaveBlocks(JsonObject json) {
         // Manually verify whether the field exists.
         // To-do: switch to Optional, instead.
         if (json.get("caveBlocks") == null) {
             return empty();
         }
         // Create an empty list.
-        List<CaveBlocks> caveBlocks = new ArrayList<>();
+        List<CaveBlock> caveBlocks = new ArrayList<>();
         for (JsonObject caveBlock : getObjectArray(json, "caveBlocks")) {
             // Start with the states. This field must exist.
             IBlockState[] states = getGuranteedStates(caveBlock, "CaveBlock");
 
             // Create a CaveBlock object for each state in the array.
             for (IBlockState state : states) {
-                // Create and push the CaveBlocks object into the array.
-                caveBlocks.add(new CaveBlocks(state, caveBlock));
+                // Create and push the CaveBlock object into the array.
+                caveBlocks.add(new CaveBlock(state, caveBlock));
             }
         }
-        return full(toArray(caveBlocks, CaveBlocks.class));
+        return full(toArray(caveBlocks, CaveBlock.class));
     }
 
     /** Parses the field "wallDecorators" from this json into an array of WallDecorator objects. */
-    private static WallDecorators[] getWallDecorators(JsonObject json) {
-        List<WallDecorators> decorators = new ArrayList<>();
+    private static WallDecorator[] getWallDecorators(JsonObject json) {
+        List<WallDecorator> decorators = new ArrayList<>();
         for (JsonObject decorator : getObjectArray(json, "wallDecorators")) {
             // Start with the states. This field must exist.
             IBlockState[] states = getGuranteedStates(decorator, "WallDecorator");
 
             // Construct an object for each state in the list.
             for (IBlockState state : states) {
-                decorators.add(new WallDecorators(state, decorator));
+                decorators.add(new WallDecorator(state, decorator));
             }
         }
-        return toArray(decorators, WallDecorators.class);
+        return toArray(decorators, WallDecorator.class);
     }
 
     /** Parses the large stalactites from this json into an array of LargeStalactite objects.  */

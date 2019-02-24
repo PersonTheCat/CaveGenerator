@@ -140,6 +140,13 @@
 {
      # Whether the preset is enabled globally.
     enabled: true
+	 # When this field is set to true, the absence of any object
+	 # in this file will result in missing features. In other
+	 # words: if it is not listed here, it does not exist in-game.
+	 # Setting this field to false means that absent fields will
+	 # produce vanilla functionality. Think of this as a sort of
+	 # "blank slate" mode vs. "override" mode.
+	blankSlate: true
      # A list of biomes for tunnels, rooms, ravines, and most 
      # (but not all) decorations to be restricted to.
     biomes: {
@@ -150,10 +157,12 @@
          # A list of Biome types.
         types: [ ]
     }
+	 # Whether to treat the biome list as a blacklist.
     useBiomeBlacklist: false
      # A list of dimension IDs for all features to be 
      # restricted to.
     dimensions: [ ]
+	 # Whether to treat the dimension list as a blacklist.
     useDimensionBlacklist: false
      # A list of blocks that can be replaced by this generator.
      # Bear in mind that very little world decoration has
@@ -182,8 +191,8 @@
              # Maximum height bounds.
             maxHeight: 10
         }
-         /* Defaults values; these do not spawn by default.
-         {  A comma might be missing, if this were here.
+         /* 
+         { Defaults values; these do not spawn by default.
              states: []
              chance: 100.0
              minHeight: 0
@@ -357,7 +366,7 @@
          # smoother, more organic surfaces.
         wallNoise: {
             /*
-            noise2D {
+            noise2D: {
                  # Scale is ignored in this context.
                 scale: 0.5
                 frequency: 0.1
@@ -505,7 +514,7 @@
          */
     ]
      # Structures are ideal for small decorations. Larger decorations
-     # (16x16)+ will cause cascading generation lag and should be
+     # (16x16)+ may cause cascading generation lag and should be
      # handled by another mod, such as recurrent complex or OTG.
      # Structures will be centered around X and Z, but not Y. Most of
      # this information can be left out. See underground_forest.cave
@@ -534,6 +543,8 @@
               # ]
              airMatchers: []
              solidMatchers: []
+             nonSolidMatchers: []
+             waterMatchers: []
               # Whether to log the coordinates every time this structure
               # spawns.
              debugSpawns: false

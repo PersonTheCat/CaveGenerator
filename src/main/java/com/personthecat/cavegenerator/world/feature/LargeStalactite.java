@@ -80,6 +80,10 @@ public class LargeStalactite extends WorldGenerator {
         return true;
     }
 
+    public Optional<NoiseSettings2D> getSettings() {
+        return settings;
+    }
+
     public boolean spawnInPatches() {
         return settings.isPresent();
     }
@@ -94,6 +98,10 @@ public class LargeStalactite extends WorldGenerator {
         return settings
             .orElseThrow(() -> runEx("Stalactite does not contain noise settings."))
             .selectionThreshold;
+    }
+
+    public IBlockState getState() {
+        return state;
     }
 
     /**

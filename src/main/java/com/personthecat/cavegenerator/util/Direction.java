@@ -40,7 +40,7 @@ public enum Direction {
     }
 
     /**
-     * A DTO counter part to using Direction arrays.
+     * A DTO counterpart to using Direction arrays.
      */
     public static class Container {
         public final boolean up, down, side;

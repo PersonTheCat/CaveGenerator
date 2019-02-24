@@ -13,7 +13,7 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
 
 /** Contains all of the data needed for spawning alternative blocks in caves. */
-public class CaveBlocks {
+public class CaveBlock {
     /** Percent spawn chance. */
     private final double chance;
     /** The block to place instead of air. */
@@ -34,10 +34,10 @@ public class CaveBlocks {
     public static final NoiseSettings3D DEFAULT_NOISE =
         new NoiseSettings3D(0.02f, 0.10f, 1.00f, 1);
     /** An instance of the vanilla lava CaveBlocks that exists by default in all presets. */
-    public static final CaveBlocks VANILLA_LAVA =
-        new CaveBlocks(Blocks.LAVA.getDefaultState(),100.0, 0, 10, empty());
+    public static final CaveBlock VANILLA_LAVA =
+        new CaveBlock(Blocks.LAVA.getDefaultState(),100.0, 0, 10, empty());
 
-    public CaveBlocks(IBlockState fillBlock, JsonObject caveBlock) {
+    public CaveBlock(IBlockState fillBlock, JsonObject caveBlock) {
         this(
             fillBlock,
             getFloatOr(caveBlock, "chance", 100.0f),
@@ -48,7 +48,7 @@ public class CaveBlocks {
     }
 
     /** Primary constructor. */
-    public CaveBlocks(
+    public CaveBlock(
         IBlockState fillBlock,
         double chance,
         int minHeight,

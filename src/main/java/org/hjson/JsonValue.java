@@ -33,10 +33,6 @@ import java.io.Writer;
  * a <strong>number</strong>, a <strong>string</strong>, or one of the literals
  * <strong>true</strong>, <strong>false</strong>, and <strong>null</strong>.
  * <p>
- * The literals <strong>true</strong>, <strong>false</strong>, and <strong>null</strong> are
- * represented by the constants {@link #TRUE}, {@link #FALSE}, and {@link #NULL}.
- * </p>
- * <p>
  * JSON <strong>objects</strong> and <strong>arrays</strong> are represented by the subtypes
  * {@link JsonObject} and {@link JsonArray}. Instances of these types can be created using the
  * public constructors of these classes.
@@ -63,27 +59,16 @@ import java.io.Writer;
 @SuppressWarnings("serial") // use default serial UID
 public abstract class JsonValue implements Serializable {
 
-  /**
-   * Represents the JSON literal <code>true</code>.
-   */
-  public static final JsonValue TRUE=JsonLiteral.TRUE;
-
-  /**
-   * Represents the JSON literal <code>false</code>.
-   */
-  public static final JsonValue FALSE=JsonLiteral.FALSE;
-
-  /**
-   * Represents the JSON literal <code>null</code>.
-   */
-  public static final JsonValue NULL=JsonLiteral.NULL;
-
   static String eol=System.getProperty("line.separator");
 
   /**
    * Comments that will be used by each type of value.
    */
   protected String bolComment="", eolComment="", intComment="";
+  /**
+   * A flag indicating whether this value has been specifically called for.
+   */
+  protected boolean accessed;
 
   /**
    * Gets the newline charater(s).
@@ -252,7 +237,7 @@ public abstract class JsonValue implements Serializable {
    * @return a JSON value that represents the given string
    */
   public static JsonValue valueOf(String string) {
-    return string==null ? NULL : new JsonString(string);
+    return string==null ? JsonLiteral.jsonNull() : new JsonString(string);
   }
 
   /**
@@ -262,7 +247,7 @@ public abstract class JsonValue implements Serializable {
    * @return a JSON value that represents the given value
    */
   public static JsonValue valueOf(boolean value) {
-    return value ? TRUE : FALSE;
+    return value ? JsonLiteral.jsonTrue() : JsonLiteral.jsonFalse();
   }
 
   /**
@@ -355,6 +340,15 @@ public abstract class JsonValue implements Serializable {
    */
   public boolean isNull() {
     return false;
+  }
+
+  public boolean isAccessed() {
+    return accessed;
+  }
+
+  public JsonValue setAccessed(boolean b) {
+    accessed=b;
+    return this;
   }
 
   /**

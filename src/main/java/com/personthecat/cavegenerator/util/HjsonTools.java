@@ -1,6 +1,6 @@
 package com.personthecat.cavegenerator.util;
 
-import com.personthecat.cavegenerator.world.WallDecorators;
+import com.personthecat.cavegenerator.world.WallDecorator;
 import fastnoise.FastNoise;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -367,15 +367,15 @@ public class HjsonTools {
     }
 
     /** Safely retrieves a Preference object from the input json. */
-    public static Optional<WallDecorators.Preference> getPreference(JsonObject json, String field) {
-        return getString(json, field).map(WallDecorators.Preference::from);
+    public static Optional<WallDecorator.Preference> getPreference(JsonObject json, String field) {
+        return getString(json, field).map(WallDecorator.Preference::from);
     }
 
     /**
      * Retrieves a Preference object from the input json, substituting
      * `orElse` if no object can be found.
      */
-    public static WallDecorators.Preference getPreferenceOr(JsonObject json, String field, WallDecorators.Preference orElse) {
+    public static WallDecorator.Preference getPreferenceOr(JsonObject json, String field, WallDecorator.Preference orElse) {
         return getPreference(json, field).orElse(orElse);
     }
 
@@ -569,8 +569,8 @@ public class HjsonTools {
     public static NoiseSettings2D toNoiseSettings(JsonObject json, NoiseSettings2D defaults) {
         float frequency = getFloat(json, "frequency").orElse(defaults.frequency);
         float scale = getFloat(json, "scale").orElse(defaults.getScale());
-        int min = getInt(json, "min").orElse(defaults.min);
-        int max = getInt(json, "max").orElse(defaults.max);
+        int min = getInt(json, "minVal").orElse(defaults.min);
+        int max = getInt(json, "maxVal").orElse(defaults.max);
         return new NoiseSettings2D(frequency, scale, min, max);
     }
 

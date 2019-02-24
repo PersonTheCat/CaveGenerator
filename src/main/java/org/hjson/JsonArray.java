@@ -319,7 +319,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, int value) {
-    values.set(index, valueOf(value));
+    set(index, valueOf(value));
     return this;
   }
 
@@ -338,7 +338,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, int value, String comment) {
-    values.set(index, valueOf(value).setComment(comment));
+    set(index, valueOf(value).setComment(comment));
     return this;
   }
 
@@ -356,7 +356,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, long value) {
-    values.set(index, valueOf(value));
+    set(index, valueOf(value));
     return this;
   }
 
@@ -375,7 +375,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, long value, String comment) {
-    values.set(index, valueOf(value).setComment(comment));
+    set(index, valueOf(value).setComment(comment));
     return this;
   }
 
@@ -393,7 +393,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, float value) {
-    values.set(index, valueOf(value));
+    set(index, valueOf(value));
     return this;
   }
 
@@ -412,7 +412,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, float value, String comment) {
-    values.set(index, valueOf(value).setComment(comment));
+    set(index, valueOf(value).setComment(comment));
     return this;
   }
 
@@ -430,7 +430,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, double value) {
-    values.set(index, valueOf(value));
+    set(index, valueOf(value));
     return this;
   }
 
@@ -449,7 +449,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, double value, String comment) {
-    values.set(index, valueOf(value).setComment(comment));
+    set(index, valueOf(value).setComment(comment));
     return this;
   }
 
@@ -467,7 +467,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, boolean value) {
-    values.set(index, valueOf(value));
+    set(index, valueOf(value));
     return this;
   }
 
@@ -486,7 +486,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, boolean value, String comment) {
-    values.set(index, valueOf(value).setComment(comment));
+    set(index, valueOf(value).setComment(comment));
     return this;
   }
 
@@ -504,7 +504,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, String value) {
-    values.set(index, valueOf(value));
+    set(index, valueOf(value));
     return this;
   }
 
@@ -523,7 +523,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonArray set(int index, String value, String comment) {
-    values.set(index, valueOf(value).setComment(comment));
+    set(index, valueOf(value).setComment(comment));
     return this;
   }
 
@@ -543,7 +543,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
     if (value==null) {
       throw new NullPointerException("value is null");
     }
-    values.set(index, value);
+    values.set(index, value).setAccessed(true);
     return this;
   }
 
@@ -565,7 +565,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
     if (value==null) {
       throw new NullPointerException("value is null");
     }
-    values.set(index, value.setComment(comment));
+    set(index, value.setComment(comment));
     return this;
   }
 
@@ -580,7 +580,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    * @return the array itself to enable chaining.
    */
   public JsonArray setComment(int index, String comment) {
-    values.get(index).setComment(comment);
+    get(index).setComment(comment);
     return this;
   }
 
@@ -599,7 +599,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    * @return the array itself to enable chaining.
    */
   public JsonArray setComment(int index, CommentType type, CommentStyle style, String comment) {
-    values.get(index).setComment(type, style, comment);
+    get(index).setComment(type, style, comment);
     return this;
   }
 
@@ -647,7 +647,7 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    *           <code>index &gt;= size</code>
    */
   public JsonValue get(int index) {
-    return values.get(index);
+    return values.get(index).setAccessed(true);
   }
 
   /**
@@ -696,6 +696,24 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    * @return this, to enable chaining
    */
   public JsonArray setCondensed(boolean value) { condensed=value; return this; }
+
+  /**
+   * Generates a list of paths that have not yet been accessed in-code.
+   * @return the list of unused paths.
+   */
+  public List<String> getUnusedPaths() {
+    List<String> paths=new ArrayList<String>();
+    int index=0;
+    for (JsonValue v : this) {
+      if (v.isObject()) {
+        for (String s : v.asObject().getUnusedPaths()) {
+          paths.add("["+index+"]."+s);
+        }
+      }
+      index++;
+    }
+    return paths;
+  }
 
   /**
    * Returns an iterator over the values of this array in document order. The returned iterator

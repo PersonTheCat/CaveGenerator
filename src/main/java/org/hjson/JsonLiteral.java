@@ -28,14 +28,22 @@ class JsonLiteral extends JsonValue {
 
   enum Iv { T, F, N };
 
-  static final JsonValue NULL=new JsonLiteral(Iv.N);
-  static final JsonValue TRUE=new JsonLiteral(Iv.T);
-  static final JsonValue FALSE=new JsonLiteral(Iv.F);
-
   private final Iv value;
 
   private JsonLiteral(Iv value) {
     this.value=value;
+  }
+
+  public static JsonValue jsonNull() {
+    return new JsonLiteral(Iv.N);
+  }
+
+  public static JsonValue jsonTrue() {
+    return new JsonLiteral(Iv.T);
+  }
+
+  public static JsonValue jsonFalse() {
+    return new JsonLiteral(Iv.F);
   }
 
   @Override

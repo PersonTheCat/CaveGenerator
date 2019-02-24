@@ -16,7 +16,7 @@ import java.util.Random;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
 
-public class WallDecorators {
+public class WallDecorator {
     /** Mandatory fields to be filled by the constructor. */
     private final double chance;
     private final IBlockState fillBlock;
@@ -34,7 +34,7 @@ public class WallDecorators {
         new NoiseSettings3D(0.02f, 0.10f, 1.00f, 1);
 
     /** From Json. */
-    public WallDecorators(IBlockState fillBlock, JsonObject wall) {
+    public WallDecorator(IBlockState fillBlock, JsonObject wall) {
         this(
             fillBlock,
             getFloatOr(wall, "chance", 100.0f),
@@ -47,7 +47,7 @@ public class WallDecorators {
         );
     }
 
-    public WallDecorators(
+    public WallDecorator(
         IBlockState fillBlock,
         double chance,
         int minHeight,
@@ -81,6 +81,10 @@ public class WallDecorators {
         return noise.isPresent();
     }
 
+    public Optional<NoiseSettings3D> getSettings() {
+        return settings;
+    }
+
     public boolean hasDirections() {
         return directions.length > 0;
     }
@@ -100,6 +104,14 @@ public class WallDecorators {
 
     public double getChance() {
         return chance;
+    }
+
+    public int getMinHeight() {
+        return minHeight;
+    }
+
+    public int getMaxHeight() {
+        return maxHeight;
     }
 
     public IBlockState getFillBlock() {

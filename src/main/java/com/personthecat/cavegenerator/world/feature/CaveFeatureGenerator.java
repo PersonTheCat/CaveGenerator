@@ -6,11 +6,11 @@ import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.HeightMapLocator;
 import fastnoise.FastNoise;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.IChunkGenerator;
 import net.minecraft.world.gen.structure.template.Template;
@@ -38,7 +38,6 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         final int dimension = world.provider.getDimension();
 
         if (CaveInit.anyGeneratorEnabled(generators, dimension)) {
-            final Chunk chunk = world.getChunkFromChunkCoords(chunkX, chunkZ);
             final int[][] heightMap = HeightMapLocator.getHeightFromWorld(world, chunkX, chunkZ);
 
             for (CaveGenerator generator : generators.values()) {
@@ -194,7 +193,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
                 y = findOpeningVertical(info.rand, info.world, x, z, minY, maxY);
             } else if (settings.directions.up) {
                 y = randFindCeiling(info.world, info.rand, x, z, minY, maxY);
-            } else if (settings.directions.down) {
+            } else {
                 y = randFindFloor(info.world, info.rand, x, z, minY, maxY);
             }
             // Check to see if an opening was found, else retry;
@@ -224,15 +223,17 @@ public class CaveFeatureGenerator implements IWorldGenerator {
 
     /** Moves each dimension by half of `size` in the opposite direction. */
     private static BlockPos centerBySize(BlockPos toCenter, BlockPos size) {
-        int xOffset = (size.getX() / 2) * -1;
-        int zOffset = (size.getZ() / 2) * -1;
+        final int xOffset = (size.getX() / 2) * -1;
+        final int zOffset = (size.getZ() / 2) * -1;
         return toCenter.add(xOffset, 0, zOffset);
     }
 
     private static boolean canGenerateStructure(StructureSettings settings, BlockPos pos, World world) {
         return matchSources(settings.matchers, world, pos) &&
+            matchNonSolid(settings.nonSolidMatchers, world, pos) &&
+            matchSolid(settings.solidMatchers, world, pos) &&
             matchAir(settings.airMatchers, world, pos) &&
-            matchSolid(settings.solidMatchers, world, pos);
+            matchWater(settings.waterMatchers, world, pos);
     }
 
     /** All operations related to structures before spawning should be organized herein. */
@@ -287,7 +288,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         // Start at a random coordinate. Then try from the top, if nothing is found.
         final int startY = numBetween(rand, minY, maxY);
         int y = findFloor(world, x, startY, z, minY);
-        if (y != NONE_FOUND) {
+        if (y == NONE_FOUND) {
             y = findFloor(world, x, maxY, z, startY);
         }
         return y;
@@ -302,7 +303,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         // Start at a random coordinate. Then try from the top, if nothing is found.
         final int startY = numBetween(rand, minY, maxY);
         int y = findCeiling(world, x, startY, z, maxY);
-        if (y != NONE_FOUND) {
+        if (y == NONE_FOUND) {
             y = findCeiling(world, x, minY, z, startY);
         }
         return y;
@@ -445,8 +446,8 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         return false;
     }
 
-    /** Determines whether air blocks exist at each of the relative coordinates. */
-    private static boolean matchAir(BlockPos[] relative, World world, BlockPos origin) {
+    /** Determines whether non-solid blocks exist at each of the relative coordinates. */
+    private static boolean matchNonSolid(BlockPos[] relative, World world, BlockPos origin) {
         for (BlockPos p : relative) {
             if (isSolid(world, origin.add(p.getX(), p.getY(), p.getZ()))) {
                 return false;
@@ -459,6 +460,26 @@ public class CaveFeatureGenerator implements IWorldGenerator {
     private static boolean matchSolid(BlockPos[] relative, World world, BlockPos origin) {
         for (BlockPos p : relative) {
             if (!isSolid(world, origin.add(p.getX(), p.getY(), p.getZ()))) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Determines whether air blocks exist at each of the relative coordinates. */
+    private static boolean matchAir(BlockPos[] relative, World world, BlockPos origin) {
+        for (BlockPos p : relative) {
+            if (!world.getBlockState(origin.add(p.getX(), p.getY(), p.getZ())).equals(Blocks.AIR.getDefaultState())) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /** Determines whether air blocks exist at each of the relative coordinates. */
+    private static boolean matchWater(BlockPos[] relative, World world, BlockPos origin) {
+        for (BlockPos p : relative) {
+            if (!world.getBlockState(origin.add(p.getX(), p.getY(), p.getZ())).equals(Blocks.WATER.getDefaultState())) {
                 return false;
             }
         }

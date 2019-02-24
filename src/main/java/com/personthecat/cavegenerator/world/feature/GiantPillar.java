@@ -80,6 +80,10 @@ public class GiantPillar extends WorldGenerator {
         });
     }
 
+    public IBlockState getPillarBlock() {
+        return pillarBlock;
+    }
+
     public int getFrequency() {
         return frequency;
     }
@@ -90,6 +94,14 @@ public class GiantPillar extends WorldGenerator {
 
     public int getMaxHeight() {
         return maxHeight;
+    }
+
+    public int getMinLength() {
+        return minLength;
+    }
+
+    public int getMaxLength() {
+        return maxLength;
     }
 
     /** @param pos is the top block in the pillar. */

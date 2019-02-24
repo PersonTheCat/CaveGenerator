@@ -1,6 +1,8 @@
 package com.personthecat.cavegenerator;
 
+import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.config.PresetReader;
+import com.personthecat.cavegenerator.config.PresetTester;
 import com.personthecat.cavegenerator.util.Result;
 import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.GeneratorSettings;
@@ -36,7 +38,11 @@ public class CaveInit {
         safeListFiles(DIR).ifPresent((files) -> { // Files found.
             for (File file : files) {
                 if (validExtension(file)) {
-                    presets.put(file.getName(), PresetReader.getPreset(file));
+                    String filename = file.getName();
+                    GeneratorSettings preset = PresetReader.getPreset(file);
+                    PresetTester tester = new PresetTester(preset, filename, ConfigFile.strictPresets);
+                    tester.run();
+                    presets.put(filename, preset);
                 }
             }
         });

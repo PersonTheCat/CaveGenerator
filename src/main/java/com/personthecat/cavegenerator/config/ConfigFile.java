@@ -28,4 +28,12 @@ public class ConfigFile {
         "Example: stalactites.blockFillers.stalactite, vanilla"})
     @RequiresMcRestart()
     public static String[] presetCombiners = new String[0];
+
+    @Comment({
+        "When this field is set to true, PresetTester is allowed to",
+        "crash the game when more serious errors are detected. Users",
+        "who are more serious about creating cleaner and more efficient" +
+        "presets should consider enabling this field to make sure that",
+        "nothing slips by."})
+    public static boolean strictPresets = false;
 }

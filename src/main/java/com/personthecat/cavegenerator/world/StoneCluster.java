@@ -13,6 +13,8 @@ public class StoneCluster {
     private final IBlockState state;
     /** A value from 0.0 to 92.0 which determines this cluster's frequency. */
     private final double selectionThreshold;
+    /** The original value used for indicating spawn rates. */
+    private final double frequency;
     private final int radiusX, radiusY, radiusZ;
     private final int radiusVariance;
     private final int startingHeight;
@@ -33,6 +35,7 @@ public class StoneCluster {
         int heightVariance
     ) {
         this.state = state;
+        this.frequency = frequency;
         this.selectionThreshold = (1.0 - frequency) * 92.0;
         this.radiusX = radiusX;
         this.radiusY = radiusY;
@@ -63,6 +66,10 @@ public class StoneCluster {
 
     public double getSelectionThreshold() {
         return selectionThreshold;
+    }
+
+    public double getFrequency() {
+        return frequency;
     }
 
     public int getRadiusX() {

@@ -588,7 +588,7 @@ public class CaveGenerator {
      * found and stop generating.
      */
     private boolean shouldTestForWater(int highestY) {
-        for (CaveBlocks filler : settings.decorators.caveBlocks) {
+        for (CaveBlock filler : settings.decorators.caveBlocks) {
             if (filler.getFillBlock().equals(BLK_WATER) &&
                 highestY <= filler.getMaxHeight() + 10) { // A little wiggle room.
                 return false;
@@ -832,7 +832,7 @@ public class CaveGenerator {
             if (foundTop && primer.getBlockState(x, yDown, z).equals(filler)) {
                 primer.setBlockState(x, yDown, z, top);
             }
-            for (CaveBlocks block : settings.decorators.caveBlocks) {
+            for (CaveBlock block : settings.decorators.caveBlocks) {
                 if (block.canGenerate(x, y, z, chunkX, chunkZ)) {
                     if (rand.nextFloat() * 100 <= block.getChance()) {
                         primer.setBlockState(x, y, z, block.getFillBlock());
@@ -860,14 +860,14 @@ public class CaveGenerator {
         // Up vs. down things.
         DecoratorSettings cfg = settings.decorators;
         int offset = up ? y + 1 : y - 1;
-        WallDecorators[] decorators = up ? cfg.ceilingDecorators : cfg.floorDecorators;
+        WallDecorator[] decorators = up ? cfg.ceilingDecorators : cfg.floorDecorators;
         // The candidate blockstate to be tested / replaced.
         IBlockState candidate = primer.getBlockState(x, offset, z);
         // Ignore air blocks.
         if (candidate.getMaterial().equals(Material.AIR)) {
             return false;
         }
-        for (WallDecorators decorator : decorators) {
+        for (WallDecorator decorator : decorators) {
             // Filter for valid generators at this position and for this blockstate.
             if (decorator.canGenerate(rand, candidate, x, y, z, chunkX, chunkZ)) {
                 // Place block -> return success if original was replaced.
@@ -882,7 +882,7 @@ public class CaveGenerator {
 
     private boolean decorateHorizontal(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ ) {
         // Avoid repeated calculations.
-        List<WallDecorators> testedDecorators = pretestDecorators(rand, x, y, z, chunkX, chunkZ);
+        List<WallDecorator> testedDecorators = pretestDecorators(rand, x, y, z, chunkX, chunkZ);
         // We'll need to reiterate through those decorators below.
         for (BlockPos pos : nsew(x, y, z)) {
             if (!areCoordsInChunk(pos.getX(), pos.getZ())) {
@@ -893,7 +893,7 @@ public class CaveGenerator {
             if (candidate.getMaterial().equals(Material.AIR)) {
                 continue;
             }
-            for (WallDecorators decorator : testedDecorators) {
+            for (WallDecorator decorator : testedDecorators) {
                 if (decorator.matchesBlock(candidate)) {
                     // Place block -> return success if original was replaced.
                     if (decorator.decidePlace(primer, x, y, z, pos.getX(), pos.getY(), pos.getZ())) {
@@ -906,9 +906,9 @@ public class CaveGenerator {
         return false;
     }
 
-    private List<WallDecorators> pretestDecorators(Random rand, int x, int y, int z, int chunkX, int chunkZ) {
-        List<WallDecorators> testedDecorators = new ArrayList<>();
-        for (WallDecorators decorator : settings.decorators.wallDecorators) {
+    private List<WallDecorator> pretestDecorators(Random rand, int x, int y, int z, int chunkX, int chunkZ) {
+        List<WallDecorator> testedDecorators = new ArrayList<>();
+        for (WallDecorator decorator : settings.decorators.wallDecorators) {
             // Filter for valid generators at this position only.
             if (decorator.canGenerate(rand, x, y, z, chunkX, chunkZ)) {
                 testedDecorators.add(decorator);
