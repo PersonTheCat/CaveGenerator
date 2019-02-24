@@ -48,11 +48,11 @@ public class StructureSpawner {
                 String name = file.getName();
                 // Read into the template, handling exceptions.
                 read(template, file)
-                        .expectF("Error: unable to read structure file %s", name);
+                    .expectF("Error: unable to read structure file %s", name);
                 // Warn users if the structure is too large.
                 warnSizeLimitations(template, name);
                 // Finally, place the structure into the map.
-                structures.put(name, template);
+                structures.put(removeNbt(name), template);
             }
         });
         // To-do: Make sure to return an error when nothing is returned.
@@ -80,7 +80,7 @@ public class StructureSpawner {
      * throws a RuntimeException when no template is found.
      */
     public static Template getTemplate(Map<String, Template> structures, String fileOrResource, World world) {
-        fileOrResource = fileOrResource.replace(".nbt", "");
+        fileOrResource = removeNbt(fileOrResource);
         // Attempt to load the preset directly from the map.
         Optional<Template> fromMap = safeGet(structures, fileOrResource);
         if (fromMap.isPresent()) {
@@ -114,5 +114,9 @@ public class StructureSpawner {
         IBlockState state = world.getBlockState(pos);
         world.notifyBlockUpdate(pos, state, state, 3);
         template.addBlocksToWorld(world, pos, settings);
+    }
+
+    private static String removeNbt(String name) {
+        return name.replace(".nbt", "");
     }
 }

@@ -152,8 +152,8 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         getSpawnPos(info, settings, structure).ifPresent(pos -> {
             if (canGenerateStructure(settings, pos, info.world)) {
                 preStructureSpawn(info, settings, pos);
-                BlockPos centered = centerBySize(pos, structure.getSize());
-                StructureSpawner.spawnStructure(structure, settings.settings, info.world, centered);
+                BlockPos adjusted = offset(centerBySize(pos, structure.getSize()), settings.offset);
+                StructureSpawner.spawnStructure(structure, settings.settings, info.world, adjusted);
             }
         });
     }
@@ -184,7 +184,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
             final int x = xz.getX();
             final int z = xz.getZ();
             // Determine the height bounds for these coordinates.
-            final int maxY = getMin(info.heightMap[x][z], settings.maxHeight);
+            final int maxY = getMin(info.heightMap[x & 15][z & 15], settings.maxHeight);
             final int minY = settings.minHeight; // More readable?
 
             int y = NONE_FOUND;
@@ -226,6 +226,11 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         final int xOffset = (size.getX() / 2) * -1;
         final int zOffset = (size.getZ() / 2) * -1;
         return toCenter.add(xOffset, 0, zOffset);
+    }
+
+    /** Applies an offset to the original BlockPos. */
+    private static BlockPos offset(BlockPos original, BlockPos offset) {
+        return original.add(offset.getX(), offset.getY(), offset.getZ());
     }
 
     private static boolean canGenerateStructure(StructureSettings settings, BlockPos pos, World world) {

@@ -96,6 +96,7 @@ public class HeightMapLocator {
         fillMapCorner(map, world, chunkX + 1, chunkZ, 0, 7, 8, 15);
         fillMapCorner(map, world, chunkX, chunkZ + 1, 8, 15, 0, 7);
         fillMapCorner(map, world, chunkX + 1, chunkZ + 1, 0, 7, 0, 7);
+        // printMap(map);
         return map;
     }
 
@@ -104,15 +105,13 @@ public class HeightMapLocator {
         final Chunk chunk = world.getChunkFromChunkCoords(chunkX, chunkZ);
         final int seaLevel = world.getSeaLevel();
         final int[] original = chunk.getHeightMap();
-        for (int x = chunkX + minX; x <= chunkX + maxX; x++) {
-            for (int z = chunkZ + minZ; z <= chunkZ + maxZ; z++) {
-                final int relX = toRelative(x);
-                final int relZ = toRelative(z);
-                final int originalY = original[relZ << 4 | relX];
+        for (int x = minX; x <= maxX; x++) {
+                for (int z = minZ; z <= maxZ; z++) {
+                final int originalY = original[z << 4 | x];
                 if (originalY == seaLevel) {
                     // We're at the sea level, which might imply that water has
                     // been filled up to this point.
-                    map[x][z] = getHeight(chunk, relX, relZ, seaLevel - 1);
+                    map[x][z] = getHeight(chunk, x, z, seaLevel - 1);
                 } else {
                     map[x][z] = originalY;
                 }

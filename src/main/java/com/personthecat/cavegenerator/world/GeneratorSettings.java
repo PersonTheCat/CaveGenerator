@@ -598,7 +598,7 @@ public class GeneratorSettings {
                 getPositionOr(structure, "offset", BlockPos.ORIGIN),
                 getFloatOr(structure, "minBurialPercentage", 0.0f),
                 getFloatOr(structure, "chance", 100.0f),
-                getIntOr(structure, "frequency", 10),
+                getIntOr(structure, "frequency", 1),
                 getIntOr(structure, "minHeight", 0),
                 getIntOr(structure, "maxHeight", 48),
                 getBoolOr(structure, "debugSpawns", false),
