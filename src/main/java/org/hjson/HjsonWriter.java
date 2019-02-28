@@ -134,7 +134,7 @@ class HjsonWriter {
 
   void writeObject(JsonObject obj, Writer tw, int level, String separator, boolean noIndent) throws IOException {
     // Start the beginning of the container.
-    openContainer(tw, noIndent, level, separator, '{');
+    openContainer(tw, noIndent, obj.isCondensed(), level, separator, '{');
 
     int index=0;
     for (JsonObject.Member pair : obj) {
@@ -159,7 +159,7 @@ class HjsonWriter {
 
   void writeArray(JsonArray arr, Writer tw, int level, String separator, boolean noIndent) throws IOException {
     // Start the beginning of the container.
-    openContainer(tw, noIndent, level, separator, '[');
+    openContainer(tw, noIndent, arr.isCondensed(), level, separator, '[');
 
     int n=arr.size();
     for (int i=0; i<n; i++) {
@@ -180,8 +180,8 @@ class HjsonWriter {
     closeContainer(tw, arr.isCondensed(), n, level, ']');
   }
 
-  void openContainer(Writer tw, boolean noIndent, int level, String separator, char openWith) throws IOException {
-    if (!noIndent) { if (bracesSameLine) tw.write(separator); else nl(tw, level); }
+  void openContainer(Writer tw, boolean noIndent, boolean condensed, int level, String separator, char openWith) throws IOException {
+    if (!noIndent) { if (bracesSameLine || condensed) tw.write(separator); else nl(tw, level); }
     tw.write(openWith);
   }
 
@@ -198,7 +198,6 @@ class HjsonWriter {
   void writeInteriorComment(Writer tw, JsonValue value, int level) throws IOException {
     nl(tw, level+1);
     writeComment(value.getInteriorComment(), tw, level+1);
-    nl(tw, level);
   }
 
   void writeEOLComment(Writer tw, JsonValue value, int level) throws IOException {
@@ -229,8 +228,10 @@ class HjsonWriter {
   }
 
   void closeContainer(Writer tw, boolean compact, int size, int level, char closeWith) throws IOException {
-    if (compact && allowCondense && allowMultiVal) tw.write(' ');
-    else if (size>0) nl(tw, level);
+    if (size>0) {
+      if (compact && allowCondense && allowMultiVal) tw.write(' ');
+      else nl(tw, level);
+    }
     tw.write(closeWith);
   }
 
@@ -280,7 +281,7 @@ class HjsonWriter {
         if (needsEscapeML(ch)) { noEscapeML=false; break; }
         else if (!HjsonParser.isWhiteSpace(ch)) allWhite=false;
       }
-      if (noEscapeML && !allWhite && !value.contains("'''")) writeMLString(value, tw, level, separator);
+      if (noEscapeML && !allWhite && !value.contains("'''")) writeMLString(value, tw, level);
       else tw.write("\""+JsonWriter.escapeString(value)+"\"");
     }
     else {
@@ -290,11 +291,11 @@ class HjsonWriter {
     }
   }
 
-  void writeMLString(String value, Writer tw, int level, String separator) throws IOException {
+  void writeMLString(String value, Writer tw, int level) throws IOException {
     String[] lines=value.replace("\r", "").split("\n", -1);
 
     if (lines.length==1) {
-      tw.write(separator+"'''");
+      tw.write("'''");
       tw.write(lines[0]);
       tw.write("'''");
     }

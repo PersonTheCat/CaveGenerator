@@ -1059,7 +1059,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   }
 
   private synchronized void readObject(ObjectInputStream inputStream) throws IOException,
-      ClassNotFoundException
+          ClassNotFoundException
   {
     inputStream.defaultReadObject();
     table=new HashIndexTable();

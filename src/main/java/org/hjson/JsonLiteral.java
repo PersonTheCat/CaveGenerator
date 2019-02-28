@@ -34,18 +34,6 @@ class JsonLiteral extends JsonValue {
     this.value=value;
   }
 
-  public static JsonValue jsonNull() {
-    return new JsonLiteral(Iv.N);
-  }
-
-  public static JsonValue jsonTrue() {
-    return new JsonLiteral(Iv.T);
-  }
-
-  public static JsonValue jsonFalse() {
-    return new JsonLiteral(Iv.F);
-  }
-
   @Override
   public String toString() {
     switch (value) {
@@ -54,6 +42,18 @@ class JsonLiteral extends JsonValue {
       case N: return "null";
       default: return null;
     }
+  }
+
+  public static JsonLiteral jsonNull() {
+    return new JsonLiteral(Iv.N);
+  }
+
+  public static JsonLiteral jsonTrue() {
+    return new JsonLiteral(Iv.T);
+  }
+
+  public static JsonLiteral jsonFalse() {
+    return new JsonLiteral(Iv.F);
   }
 
   @Override

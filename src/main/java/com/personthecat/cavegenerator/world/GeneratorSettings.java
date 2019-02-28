@@ -212,7 +212,7 @@ public class GeneratorSettings {
         public static final ScalableFloat DEFAULT_TWIST_XZ =
             new ScalableFloat(0.0f, 0.0f, 0.75f, 4.0f, 1.0f);
         public static final ScalableFloat DEFAULT_TWIST_Y =
-            new ScalableFloat(0.0f, 0.0f, 0.9f, 4.0f, 1.0f);
+            new ScalableFloat(0.0f, 0.0f, 0.9f, 2.0f, 1.0f);
         public static final ScalableFloat DEFAULT_SCALE =
             new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
         public static final ScalableFloat DEFAULT_SCALE_Y =
@@ -334,9 +334,9 @@ public class GeneratorSettings {
         public static final ScalableFloat DEFAULT_TWIST_Y =
             new ScalableFloat(0.0f, 0.0f, 0.8f, 2.0f, 1.0f);
         public static final ScalableFloat DEFAULT_SCALE =
-            new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
+            new ScalableFloat(0.0f, 2.0f, 1.0f, 0.0f, 1.0f);
         public static final ScalableFloat DEFAULT_SCALE_Y =
-            new ScalableFloat(1.0f, 1.0f, 1.0f, 0.0f, 1.0f);
+            new ScalableFloat(3.0f, 1.0f, 1.0f, 0.0f, 1.0f);
         public static final ScalableFloat DEFAULT_ANGLE_XZ =
             new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
         public static final ScalableFloat DEFAULT_ANGLE_Y =
