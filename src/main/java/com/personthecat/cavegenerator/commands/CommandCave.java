@@ -2,6 +2,7 @@ package com.personthecat.cavegenerator.commands;
 
 import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.Main;
+import com.personthecat.cavegenerator.config.PresetCombiner;
 import com.personthecat.cavegenerator.config.PresetReader;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -29,8 +30,6 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
 
 public class CommandCave extends CommandBase {
-    /** A message to display when the preset directory is somehow unavailable. */
-    private static final String NO_ACCESS = "Currently unable to access preset directory.";
     /** A tooltip for the enable button. */
     private static final HoverEvent ENABLE_BUTTON_HOVER =
         new HoverEvent(HoverEvent.Action.SHOW_TEXT, tcs("Enable this preset."));
@@ -160,13 +159,14 @@ public class CommandCave extends CommandBase {
     /** Combines two jsons using PresetCombiner */
     private static void combine(ICommandSender sender, String[] args) {
         requireArgs(args, 2);
-        // To-do
+        PresetCombiner.combine(args[0], args[1]);
+        sendMessage(sender, "Finished combining presets. The original was moved to the backup directory.");
     }
 
     /** Sets whether the specified preset is enabled. */
     private static void setCaveEnabled(ICommandSender sender, String[] args, boolean enabled) {
         requireArgs(args, 1);
-        Optional<File> located = locatePreset(args[0]);
+        Optional<File> located = CaveInit.locatePreset(args[0]);
         if (located.isPresent()) {
             File preset = located.get();
             // Logic could be improved.
@@ -291,26 +291,6 @@ public class CommandCave extends CommandBase {
     private static Optional<PotionEffect> getNightVision() {
         Potion potion = Potion.getPotionFromResourceLocation("night_vision");
         return full(new PotionEffect(potion, Integer.MAX_VALUE, 0, true, false));
-    }
-
-    /** Attempts to locate a preset using each of the possible extensions. */
-    private static Optional<File> locatePreset(String preset) {
-        for (String ext : CaveInit.EXTENSIONS) {
-            Optional<File> found = tryExtension(preset, ext);
-            if (found.isPresent()) {
-                return found;
-            }
-        }
-        return empty();
-    }
-
-    /** Attempts to locate a preset using a specific extension. */
-    private static Optional<File> tryExtension(String preset, String extension) {
-        File presetFile = new File(CaveInit.DIR, preset + "." + extension);
-        if (safeFileExists(presetFile, NO_ACCESS)) {
-            return full(presetFile);
-        }
-        return empty();
     }
 
     /** Ensures that at least `num` arguments are present. */

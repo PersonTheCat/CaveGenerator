@@ -9,10 +9,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
 import net.minecraftforge.common.BiomeDictionary;
 import org.apache.commons.io.output.NullWriter;
-import org.hjson.HjsonOptions;
-import org.hjson.JsonArray;
-import org.hjson.JsonObject;
-import org.hjson.JsonValue;
+import org.hjson.*;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -40,7 +37,11 @@ public class HjsonTools {
 
         try {
            tw = new FileWriter(file);
-           json.writeTo(tw, FORMATTER);
+           if (extension(file).equals("json")) { // Write as json.
+               json.writeTo(tw, Stringify.FORMATTED);
+           } else { // Write as hjson.
+               json.writeTo(tw, FORMATTER);
+           }
         } catch (IOException e) {
             result = Result.of(e);
         } finally {

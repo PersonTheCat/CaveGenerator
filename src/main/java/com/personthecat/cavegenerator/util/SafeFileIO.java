@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.file.Files;
 import java.util.Optional;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
@@ -45,6 +46,16 @@ public class SafeFileIO {
             throw runEx(error);
         }
         return ret;
+    }
+
+    /** Copies a file to the specified directory. May look clean more than it is actually safe. */
+    public static Result<IOException> safeCopy(File file, File toDir) {
+        try {
+            Files.copy(file.toPath(), new File(toDir, file.getName()).toPath());
+        } catch (IOException e) {
+            return Result.of(e);
+        }
+        return Result.ok();
     }
 
     /** Equivalent of calling File#listFiles. Does not return null. */

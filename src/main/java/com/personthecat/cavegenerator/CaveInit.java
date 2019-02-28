@@ -16,6 +16,8 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
+
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.SafeFileIO.*;
 
@@ -24,6 +26,8 @@ public class CaveInit {
     private static final String FOLDER = "cavegenerator/presets";
     public static final File DIR = new File(Loader.instance().getConfigDir(), FOLDER);
     public static final List<String> EXTENSIONS = Arrays.asList("hjson", "json", "cave");
+    /** A message to display when the preset directory is somehow unavailable. */
+    private static final String NO_ACCESS = "Currently unable to access preset directory.";
 
     /** Initializes the supplied map with presets from the directory. */
     public static Result<RuntimeException> initPresets(final Map<String, GeneratorSettings> presets) {
@@ -56,6 +60,26 @@ public class CaveInit {
         initPresets(presets).handleIfPresent((err) -> {
             throw runExF("Error loading presets: %s", err.getMessage());
         });
+    }
+
+    /** Attempts to locate a preset using each of the possible extensions. */
+    public static Optional<File> locatePreset(String preset) {
+        for (String ext : EXTENSIONS) {
+            Optional<File> found = tryExtension(preset, ext);
+            if (found.isPresent()) {
+                return found;
+            }
+        }
+        return empty();
+    }
+
+    /** Attempts to locate a preset using a specific extension. */
+    private static Optional<File> tryExtension(String preset, String extension) {
+        File presetFile = new File(CaveInit.DIR, preset + "." + extension);
+        if (safeFileExists(presetFile, NO_ACCESS)) {
+            return full(presetFile);
+        }
+        return empty();
     }
 
     public static boolean validExtension(File file) {
@@ -100,12 +124,6 @@ public class CaveInit {
     /** Returns whether any generator is enabled for the current dimension. */
     public static boolean anyGeneratorEnabled(final Map<String, CaveGenerator> generators, int dimension) {
         return find(generators.values(), (gen) -> gen.canGenerate(dimension))
-            .isPresent();
-    }
-
-    /** Returns whether any generator has wall decorations, requiring special handling. */
-    public static boolean correctionsNeeded(final Map<String, CaveGenerator> generators) {
-        return find(generators.values(), CaveGenerator::hasLocalWallDecorators)
             .isPresent();
     }
 }
