@@ -1,7 +1,7 @@
 package com.personthecat.cavegenerator.world;
 
 import com.personthecat.cavegenerator.util.NoiseSettings3D;
-import com.personthecat.cavegenerator.util.SimplexNoise3D;
+import fastnoise.FastNoise;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -27,7 +27,7 @@ public class CaveBlock {
      * improve performance (if necessary). However, in the meantime,
      * I'm not dealing with NPEs.
      */
-    private final Optional<SimplexNoise3D> noise;
+    private final Optional<FastNoise> noise;
     private final Optional<NoiseSettings3D> settings;
 
     /** The default noise values for CaveBlocks with noise. */
@@ -60,20 +60,8 @@ public class CaveBlock {
         this.minHeight = minHeight;
         this.maxHeight = maxHeight;
         this.settings = settings;
-        this.noise = setupNoiseGenerator();
-    }
-
-    /** Determines whether to use noise based on the presence of noise settings. */
-    private Optional<SimplexNoise3D> setupNoiseGenerator() {
-        if (settings.isPresent()) {
-            // The noise for this generator will be unique to the block ID.
-            return full(new SimplexNoise3D(Block.getStateId(fillBlock)));
-        }
-        return empty();
-    }
-
-    public boolean spawnInPatches() {
-        return noise.isPresent();
+        this.noise = settings.map(s ->
+            s.getNoise(Block.getStateId(fillBlock)));
     }
 
     public double getChance() {
@@ -93,30 +81,27 @@ public class CaveBlock {
     }
 
     public boolean canGenerate(int x, int y, int z, int chunkX, int chunkZ) {
-        // To-do: handle testing noise values here, as well.
-        return canGenerateAtHeight(y);
+        return canGenerateAtHeight(y) && testNoise(x, y, z, chunkX, chunkZ);
     }
 
     public boolean canGenerateAtHeight(final int y) {
         return y >= minHeight && y <= maxHeight;
     }
 
-//    /**
-//     * Returns true if the replacement doesn't have noise or
-//     * if its noise at the given coords meets the threshold.
-//     */
-//    public boolean testNoise(int chunkX, int chunkZ, int x, int y, int z) {
-//        int actualX = (chunkX * 16) + x;
-//        int actualZ = (chunkZ * 16) + z;
-//        return testNoise(actualX, y, actualZ);
-//    }
-//
-//    /** Variant of testNoise() that uses absolute coordinates. */
-//    public boolean testNoise(int x, int y, int z) {
-//        if (spawnInPatches()) {
-//            double noise = getNoise().getFractalNoise(x, y, z, 1, getPatchFrequency(), 1);
-//            return noise > getPatchThreshold();
-//        }
-//        return true;
-//    }
+    /**
+     * Returns true if the replacement doesn't have noise or
+     * if its noise at the given coords meets the threshold.
+     */
+    private boolean testNoise(int x, int y, int z, int chunkX, int chunkZ) {
+        int actualX = (chunkX * 16) + x;
+        int actualZ = (chunkZ * 16) + z;
+        return testNoise(actualX, y, actualZ);
+    }
+
+    /** Variant of testNoise() that uses absolute coordinates. */
+    private boolean testNoise(int x, int y, int z) {
+        // Calling Optional#get because `settings` will always be present when `noise` is present.
+        return noise.map(n -> n.GetAdjustedNoise(x, y, z) > settings.get().getSelectionThreshold())
+            .orElse(true);
+    }
 }

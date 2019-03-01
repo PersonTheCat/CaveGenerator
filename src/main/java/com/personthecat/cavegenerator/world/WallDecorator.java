@@ -2,7 +2,7 @@ package com.personthecat.cavegenerator.world;
 
 import com.personthecat.cavegenerator.util.Direction;
 import com.personthecat.cavegenerator.util.NoiseSettings3D;
-import com.personthecat.cavegenerator.util.SimplexNoise3D;
+import fastnoise.FastNoise;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -26,7 +26,7 @@ public class WallDecorator {
     private final Preference preference;
 
     /** Null-safe, optional noise settings. I'm not dealing with NPEs. */
-    private final Optional<SimplexNoise3D> noise;
+    private final Optional<FastNoise> noise;
     private final Optional<NoiseSettings3D> settings;
 
     /** The default noise values for WallDecorators with noise. */
@@ -65,16 +65,8 @@ public class WallDecorator {
         this.matchers = matchers;
         this.preference = preference;
         this.settings = settings;
-        this.noise = setupNoise();
-    }
-
-    /** Sets up a noise generator to use for placement. */
-    private Optional<SimplexNoise3D> setupNoise() {
-        if (settings.isPresent()) {
-            // The noise for this generator will be unique to the block ID.
-            return full(new SimplexNoise3D(Block.getStateId(fillBlock)));
-        }
-        return empty();
+        this.noise = settings.map(s ->
+            s.getNoise(Block.getStateId(fillBlock)));
     }
 
     public boolean spawnInPatches() {
@@ -85,17 +77,8 @@ public class WallDecorator {
         return settings;
     }
 
-    public boolean hasDirections() {
-        return directions.length > 0;
-    }
-
     public Direction[] getDirections() {
         return directions;
-    }
-
-    public boolean hasDirection(Direction direction) {
-        return find(directions, (dir) -> dir == Direction.ALL || dir == direction)
-            .isPresent();
     }
 
     public IBlockState[] getMatchers() {
@@ -119,14 +102,31 @@ public class WallDecorator {
     }
 
     public boolean canGenerate(Random rand, IBlockState state, int x, int y, int z, int chunkX, int chunkZ) {
-        return y >= minHeight && y <= maxHeight && // Height bounds
-            rand.nextDouble() * 100 <= chance && // Probability
-            matchesBlock(state); // Matchers
+        return canGenerate(rand, x, y, z, chunkX, chunkZ) &&
+            matchesBlock(state);
     }
 
     public boolean canGenerate(Random rand, int x, int y, int z, int chunkX, int chunkZ) {
         return y >= minHeight && y <= maxHeight && // Height bounds
-            rand.nextDouble() * 100 <= chance; // Probability
+            rand.nextDouble() * 100 <= chance &&
+            testNoise(x, y, z, chunkX, chunkZ); // Probability
+    }
+
+    /**
+     * Returns true if the replacement doesn't have noise or
+     * if its noise at the given coords meets the threshold.
+     */
+    private boolean testNoise(int x, int y, int z, int chunkX, int chunkZ) {
+        int actualX = (chunkX * 16) + x;
+        int actualZ = (chunkZ * 16) + z;
+        return testNoise(actualX, y, actualZ);
+    }
+
+    /** Variant of testNoise() that uses absolute coordinates. */
+    private boolean testNoise(int x, int y, int z) {
+        // Calling Optional#get because `settings` will always be present when `noise` is present.
+        return noise.map(n -> n.GetAdjustedNoise(x, y, z) > settings.get().getSelectionThreshold())
+            .orElse(true);
     }
 
     public boolean matchesBlock(IBlockState state) {
