@@ -23,7 +23,7 @@
          # Spawn rate roughly in half.
         frequency: 7
          # Most tunnels will spawn alone.
-        systemInverseChance: 2000
+        systemChance: 0.0005
         noiseYReduction: false
         resizeBranches: false
         twistY: {
