@@ -1,5 +1,7 @@
 package com.personthecat.cavegenerator.world;
 
+import com.personthecat.cavegenerator.CaveInit;
+import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.config.ConfigFile;
 import net.minecraftforge.event.terraingen.OreGenEvent.GenerateMinable;
 import net.minecraftforge.fml.common.eventhandler.Event.Result;
@@ -14,13 +16,13 @@ public class DisableVanillaStoneGen {
             // in the current dimension.
             int dimension = event.getWorld().provider.getDimension();
 
-//            /if (CaveInit.isAnyGeneratorEnabledForDimension(dimension)) {
+            if (CaveInit.anyGeneratorEnabled(Main.instance.generators, dimension)) {
                 switch (event.getType()) {
                     case ANDESITE :
                     case DIORITE :
                     case GRANITE : event.setResult(Result.DENY);
                     default : {}
-//                }
+                }
             }
         }
     }

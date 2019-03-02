@@ -20,8 +20,10 @@ import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.GameType;
 import net.minecraftforge.fml.common.Loader;
 import org.apache.commons.lang3.ArrayUtils;
+import org.hjson.JsonObject;
 
 import java.io.File;
+import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
@@ -72,6 +74,8 @@ public class CommandCave extends CommandBase {
         .setStyle(USAGE_HEADER_STYLE);
     /** The help message / usage text. */
     private static final ITextComponent USAGE_TEXT = createHelpMessage();
+    /** New line character */
+    private static final String NEW_LINE = System.getProperty("line.separator");
 
     @Override
     public String getName() {
@@ -91,11 +95,11 @@ public class CommandCave extends CommandBase {
             return;
         }
         // Allow multiple commands to be separated by `&&`.
-        final int splitIndex = ArrayUtils.indexOf(args, "&&");
+        final int splitIndex = ArrayUtils.lastIndexOf(args, "&&");
         if (splitIndex > 0 && args.length > splitIndex) {
             // Split the arguments into multiple arrays.
             String[] runFirst = ArrayUtils.subarray(args, 0, splitIndex);
-            args = ArrayUtils.subarray(args,splitIndex + 1, args.length);
+            args = ArrayUtils.subarray(args, splitIndex + 1, args.length);
             // Execute the first half of the arguments and then continue with the rest.
             this.execute(server, sender, runFirst);
         }
@@ -115,6 +119,8 @@ public class CommandCave extends CommandBase {
             case "enable" : setCaveEnabled(sender, args, true); break;
             case "disable" : setCaveEnabled(sender, args, false); break;
             case "list" : list(sender); break;
+            case "new" : newPreset(sender, args); break;
+            case "fixindent" : fixIndent(sender, args); break;
             default : helpCommand(sender);
         }
     }
@@ -131,7 +137,7 @@ public class CommandCave extends CommandBase {
                 sendMessage(sender, e.getMessage());
             })
             .andThen(() -> { // All is well. Inform the user of success.
-                sendMessage(sender, "Successfully reloaded caves.");
+                sendMessage(sender, "Successfully reloaded caves. View the log for diagnostics.");
             });
     }
 
@@ -175,10 +181,10 @@ public class CommandCave extends CommandBase {
                     "Whether the preset is enabled globally.");
                 // Try to write the updated preset to the disk.
                 writeJson(cave, preset)
-                    .expectF("Error writing to %spawnStructure", preset.getName());
+                    .expectF("Error writing to %s", preset.getName());
             });
         } else {
-            throw runExF("No preset was found named %spawnStructure", args[0]);
+            throw runExF("No preset was found named %s", args[0]);
         }
         sendMessage(sender, "Preset " + (enabled ? "enabled" : "disabled") + " successfully.");
     }
@@ -198,6 +204,49 @@ public class CommandCave extends CommandBase {
             }
         });
         sender.sendMessage(msg);
+    }
+
+    /** Generates a new cave preset with a name from args[0] */
+    private static void newPreset(ICommandSender sender, String[] args) {
+        requireArgs(args, 1);
+        final String presetName = noExtension(args[0]) + ".cave";
+        final File presetFile = new File(CaveInit.DIR, presetName);
+        if (safeFileExists(presetFile, "Unable to read from the preset directory.")) {
+            sendMessage(sender, "This preset already exists.");
+            return;
+        }
+        final JsonObject preset = new JsonObject()
+            .add("enabled", true);
+        writeJson(preset, presetFile);
+        sendMessage(sender, "Finished writing a new preset file.");
+    }
+
+    /** Replaces all tabs inside of the specified preset with spaces. */
+    private static void fixIndent(ICommandSender sender, String[] args) {
+        requireArgs(args, 1);
+        File presetFile = CaveInit.locatePreset(args[0])
+            .orElseThrow(() -> runExF("No preset named s found.", args[0]));
+        List<String> lines = safeContents(presetFile)
+            .orElseThrow(() -> runExF("Unable to read contents of %s.", presetFile.getName()));
+
+        StringBuilder updated = new StringBuilder();
+        int numCorrections = 0;
+        for (String line : lines) {
+            if (line.contains("\t")) {
+                line = line.replace("\t", "    ");
+                numCorrections++;
+            }
+            updated.append(line);
+            updated.append(NEW_LINE);
+        }
+
+        if (numCorrections > 0) {
+            safeWrite(presetFile, updated.toString())
+                .throwIfPresent();
+            sendMessage(sender, "Successfully updated " + numCorrections + " lines.");
+        } else {
+            sendMessage(sender, "There were no lines to update.");
+        }
     }
 
     private static ITextComponent getListElementText(File file) {
@@ -224,10 +273,12 @@ public class CommandCave extends CommandBase {
         msg.appendSibling(USAGE_HEADER);
         appendUsageText(msg, "reload", "Reloads the current presets from the disk.\n");
         appendUsageText(msg, "test", "Applies night vision and gamemode 3 for easy cave viewing.\n");
-        appendUsageText(msg, "combine <preset.path> <into_preset>", "Copies the first path into the second preset.\n");
+        appendUsageText(msg, "combine <preset.path> <preset>", "Copies the first path into the second preset.\n");
         appendUsageText(msg, "list", "Displays a list of all presets, with buttons for enabling / disabling.\n");
         appendUsageText(msg, "enable <name>", "Enables the preset with name <name>.\n");
-        appendUsageText(msg, "disable <name>", "Disables the preset with name <name>.");
+        appendUsageText(msg, "disable <name>", "Disables the preset with name <name>.\n");
+        appendUsageText(msg, "new <name>", "Generates a new preset file with name <name>.\n");
+        appendUsageText(msg, "fixindent <name>", "Replaces all tabs inside of the preset <name> with spaces.");
         return msg;
     }
 
@@ -248,7 +299,7 @@ public class CommandCave extends CommandBase {
     private static ITextComponent enableButton(String fileName) {
         final Style style = ENABLE_BUTTON_STYLE
             .createDeepCopy()
-            .setClickEvent(clickToRun("/cave enable " + fileName + " && list"));
+            .setClickEvent(clickToRun("/cave enable " + fileName + " && reload && list"));
         return tcs("[ENABLE]")
             .setStyle(style);
     }
@@ -257,7 +308,7 @@ public class CommandCave extends CommandBase {
     private static ITextComponent disableButton(String fileName) {
         final Style style = DISABLE_BUTTON_STYLE
             .createDeepCopy()
-            .setClickEvent(clickToRun("/cave disable " + fileName + " && list"));
+            .setClickEvent(clickToRun("/cave disable " + fileName + " && reload && list"));
         return tcs("[DISABLE]")
             .setStyle(style);
     }
@@ -284,8 +335,12 @@ public class CommandCave extends CommandBase {
 
     /** Gets the file name, minus the extension. */
     private static String noExtension(File file) {
-        return file.getName()
-            .split(Pattern.quote("."))[0];
+        return noExtension(file.getName());
+    }
+
+    /** Removes any extensions from the input filename. */
+    private static String noExtension(String name) {
+        return name.split(Pattern.quote("."))[0];
     }
 
     private static Optional<PotionEffect> getNightVision() {

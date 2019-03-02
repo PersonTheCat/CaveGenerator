@@ -1,33 +1,43 @@
+ # ----------------------------------------------------------- #
+ # ########################################################### #
+ #             ### flooded_vanilla.cave Info ###               #
+ # ########################################################### #
+ #   This is a simple preset which demonstrates the effect of  #
+ # CaveBlocks and WallDecorators. It is designed to imitate    #
+ # vanilla cave style with the addition of water and gravel on #
+ # on the floor.                                               #
+ # ----------------------------------------------------------- #
 {
     enabled: false
-    blockFillers: {
-        keys: [ "fallenGravel", "flood", "manualObsidian" ]
-        fallenGravel: {
-            state: minecraft:gravel:0
-            chance: 25
-            minHeight: 0
-            maxHeight: 63
-            "//": There's no need to list matchers unless you want to replace specific blocks with 'state.'
-            matchers: [
-                minecraft:stone:0
-                minecraft:dirt:0
-            ]
-            "//": Options for direction are: 'up,' 'down,' 'side,' and 'all.' You don't have to specify a direction.
-            directions: [ "down" ]
-            "//": Options for preference are: 'replace_match' and 'replace_original.'
-            preference: replace_match
-        }
-        flood: {
-            state: minecraft:water:0
-            chance: 100
+    blankSlate: false # Default tunnels, ravines, and rooms.
+    caveBlocks: [
+         # Fills y=(12-45) with water.
+        {
+            states: water
             minHeight: 12
             maxHeight: 45
         }
-        manualObsidian: {
-            state: minecraft:obsidian:0
-            chance: 100
+         # Manually places obsidian above lava.
+        {
+            states: obsidian
             minHeight: 11
             maxHeight: 11
         }
-    }
+         # Imitates the normal lava placement behavior.
+        {
+            states: lava
+            maxHeight: 10
+        }
+    ]
+    wallDecorators: [
+         # Spawns gravel on the floor.
+        {
+            states: gravel
+            chance: 25
+            minHeight: 0
+            maxHeight: 63
+            matchers: [ "stone", "dirt" ]
+            directions: down
+        }
+    ]
 }

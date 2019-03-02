@@ -164,10 +164,15 @@ public class HjsonTools {
         return getString(json, field).orElse(orElse);
     }
 
-    /** Safely retrieves a boolean from the input json. */
+    /** Safely retrieves a JsonArray from the input json. */
     public static Optional<JsonArray> getArray(JsonObject json, String field) {
         return Optional.ofNullable(json.get(field))
-            .map(JsonValue::asArray);
+            .map(HjsonTools::asOrToArray);
+    }
+
+    /** Casts or converts a JsonValue to a JsonArray.*/
+    private static JsonArray asOrToArray(JsonValue value) {
+        return value.isArray() ? value.asArray() : new JsonArray().add(value);
     }
 
     /** Shorthand for getArray().*/
@@ -249,14 +254,14 @@ public class HjsonTools {
     /** Safely retrieves a List of Strings from the input json. */
     public static Optional<List<String>> getStringArray(JsonObject json, String field) {
         return Optional.ofNullable(json.get(field))
-            .map((v) -> toStringArray(v.asArray()));
+            .map((v) -> toStringArray(asOrToArray(v)));
     }
 
     /** Shorthand for getStringArray(). */
     public static void getStringArray(JsonObject json, String field, Consumer<List<String>> ifPresent) {
         JsonValue value = json.get(field);
         if (value != null) {
-            ifPresent.accept(toStringArray(value.asArray()));
+            ifPresent.accept(toStringArray(asOrToArray(value)));
         }
     }
 
@@ -287,7 +292,7 @@ public class HjsonTools {
      */
     public static IBlockState[] getGuranteedStates(JsonObject json, String requiredFor) {
         JsonArray stateNames = getArray(json, "states")
-            .orElseThrow(() -> runEx("Each WallDecorator object must contain the field \"states.\""));
+            .orElseThrow(() -> runExF("Each %s object must contain the field \"states.\"", requiredFor));
         // Handles crashing when no block is found.
         return toBlocks(stateNames);
     }

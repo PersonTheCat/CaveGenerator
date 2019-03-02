@@ -96,14 +96,6 @@ public class GiantPillar extends WorldGenerator {
         return maxHeight;
     }
 
-    public int getMinLength() {
-        return minLength;
-    }
-
-    public int getMaxLength() {
-        return maxLength;
-    }
-
     /** @param pos is the top block in the pillar. */
     @Override
     public boolean generate(World world, Random rand, BlockPos pos) {
@@ -124,9 +116,9 @@ public class GiantPillar extends WorldGenerator {
             // Handle stair blocks, if applicable.
             if (stairBlock.isPresent()) {
                 if (y == actualMax) { // We're at the top. Place stairs upward.
-                    testPlaceStairs(world, rand, pos, EnumHalf.TOP); /** To-do; this block pos needs to be verified. */
+                    testPlaceStairs(world, rand, pos, EnumHalf.TOP); // To-do; this block pos needs to be verified.
                 } else if (y == actualMin) { // We're at the bottom. Place stairs downward.
-                    testPlaceStairs(world, rand, new BlockPos(pos.getX(), y, pos.getZ()), EnumHalf.BOTTOM);
+                    testPlaceStairs(world, rand, current, EnumHalf.BOTTOM);
                 }
             }
         }
@@ -175,40 +167,35 @@ public class GiantPillar extends WorldGenerator {
      * coordinates. Places stairs given a ~1/3 chance.
      */
     private void testPlaceDown(BlockPos pos, EnumFacing facing, Random rand, World world, EnumHalf topOrBottom) {
-        // Start one position downward.
-        final BlockPos down = pos.down();
-        final int y = down.getY();
         BlockPos previous = pos.down(4);
         // Iterate 3 blocks down, 3 blocks up.
-        for (int i = y - 3; i <= y + 3; i++) {
+        for (int i = - 3; i <= 3; i++) {
+            final BlockPos current = pos.up(i);
             // Verify that we're within the height bounds. Stop randomly.
-            if (i >= minHeight && rand.nextInt(2) == 0) {
-                final BlockPos current = pos.up(i);
+            if (current.getY() >= minHeight && rand.nextInt(2) == 0) {
                 // Find a boundary between solid and air.
-                if (world.getBlockState(current).isOpaqueCube() && world.getBlockState(previous).equals(BLK_AIR)) {
+                if (world.getBlockState(previous).isOpaqueCube() && world.getBlockState(current).equals(BLK_AIR)) {
                     // Replace air.
-                    world.setBlockState(previous, getStairRotation(facing, topOrBottom), 16);
+                    world.setBlockState(current, getStairRotation(facing, topOrBottom), 16);
                     return;
                 }
-                previous = current;
             }
+            previous = current;
         }
     }
 
     private void testPlaceUp(BlockPos pos, EnumFacing facing, Random rand, World world, EnumHalf topOrBottom) {
-        final BlockPos up = pos.up();
-        final int y = up.getY();
         BlockPos previous = pos.up(4);
-        for (int i = y + 3; i >= y - 3; i--) {
-            if (i >= minHeight && rand.nextInt(2) == 0) {
+        for (int i =  3; i >= - 3; i--) {
+            final BlockPos current = pos.up(i);
+            if (current.getY() >= minHeight && rand.nextInt(2) == 0) {
                 // pos.up will add or subtract and is thus still valid.
-                final BlockPos current = pos.up(i);
-                if (world.getBlockState(current).isOpaqueCube() && world.getBlockState(previous).equals(BLK_AIR)) {
-                    world.setBlockState(previous, getStairRotation(facing, topOrBottom), 16);
+                if (world.getBlockState(previous).isOpaqueCube() && world.getBlockState(current).equals(BLK_AIR)) {
+                    world.setBlockState(current, getStairRotation(facing, topOrBottom), 16);
                     return;
                 }
-                previous = current;
             }
+            previous = current;
         }
     }
 

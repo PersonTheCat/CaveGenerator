@@ -17,7 +17,7 @@ public class StoneCluster {
     private final double frequency;
     private final int radiusX, radiusY, radiusZ;
     private final int radiusVariance;
-    private final int startingHeight;
+    private final int startHeight;
     private final int heightVariance;
 
     /** A field indicating the seed for this stone cluster. */
@@ -31,7 +31,7 @@ public class StoneCluster {
         int radiusY,
         int radiusZ,
         int radiusVariance,
-        int startingHeight,
+        int startHeight,
         int heightVariance
     ) {
         this.state = state;
@@ -41,7 +41,7 @@ public class StoneCluster {
         this.radiusY = radiusY;
         this.radiusZ = radiusZ;
         this.radiusVariance = radiusVariance;
-        this.startingHeight = startingHeight;
+        this.startHeight = startHeight;
         this.heightVariance = heightVariance;
         this.ID = Block.getStateId(state);
     }
@@ -55,7 +55,7 @@ public class StoneCluster {
             getIntOr(cluster, "radiusY", 12),
             getIntOr(cluster, "radiusZ", 16),
             getIntOr(cluster, "radiusVariance", 6),
-            getIntOr(cluster, "startingHeight", 32),
+            getIntOr(cluster, "startHeight", 32),
             getIntOr(cluster, "heightVariance", 16)
         );
     }
@@ -88,8 +88,8 @@ public class StoneCluster {
         return radiusVariance;
     }
 
-    public int getStartingHeight() {
-        return startingHeight;
+    public int getStartHeight() {
+        return startHeight;
     }
 
     public int getHeightVariance() {

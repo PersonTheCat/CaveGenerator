@@ -1,21 +1,28 @@
+ # ----------------------------------------------------------- #
+ # ########################################################### #
+ #               ### large_caves.cave Info ###                 #
+ # ########################################################### #
+ #   This preset is designed to demonstrate a basic use case   #
+ # for Cave Generator. Its only effect is to increase the      #
+ # overall scale of tunnels and rooms.                         #
+ # ----------------------------------------------------------- #
 {
     enabled: false
+    blankSlate: false # Default ravines and lava settings.
     rooms: {
         scale: 7
         scaleY: 0.6
     }
     tunnels: {
-        extensions: {
-            "//": vanilla_branches would resize the extensions, thus being inconsistent in this case.
-            random: matching_branches
-        }
+         # Use consistent scale values.
+        resizeBranches: false
         scale: {
-            startingValue: 2.5
-            startingValueRandomnessFactor: 0.9
+            startVal: 2.5
+            startValRandFactor: 0.9
         }
         scaleY: {
-            randomnessFactor: 0.05
-            startingValue: 0.7
+            randFactor: 0.05
+            startVal: 0.7
         }
     }
 }

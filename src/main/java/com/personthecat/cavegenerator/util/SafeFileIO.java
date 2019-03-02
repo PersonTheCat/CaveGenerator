@@ -1,10 +1,8 @@
 package com.personthecat.cavegenerator.util;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
+import java.io.*;
 import java.nio.file.Files;
+import java.util.List;
 import java.util.Optional;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
@@ -61,6 +59,26 @@ public class SafeFileIO {
     /** Equivalent of calling File#listFiles. Does not return null. */
     public static Optional<File[]> safeListFiles(File dir) {
         return Optional.ofNullable(dir.listFiles());
+    }
+
+    /** Attempts to retrieve the contents of the input file. */
+    public static Optional<List<String>> safeContents(File file) {
+        try {
+            return full(Files.readAllLines(file.toPath()));
+        } catch (IOException ignored) {
+            return empty();
+        }
+    }
+
+    public static Result<IOException> safeWrite(File file, String contents) {
+        try {
+            Writer tw = new FileWriter(file);
+            tw.write(contents);
+            tw.close();
+            return Result.ok();
+        } catch (IOException e) {
+            return Result.of(e);
+        }
     }
 
     /** Standard stream copy process. Returns an exception, instead of throwing it. */

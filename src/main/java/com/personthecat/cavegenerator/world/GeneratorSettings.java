@@ -194,9 +194,9 @@ public class GeneratorSettings {
 
         // Inverse chance = (1 / #) chance.
         /** The chance that this tunnel will spawn as part of a system. */
-        public final int spawnInSystemInverseChance;
+        public final int systemInverseChance;
         /**  Increases the distance between tunnels. */
-        public final int spawnIsolatedInverseChance;
+        public final int isolatedInverseChance;
 
         /**
          * The expected distance of the first cave generated in this
@@ -235,8 +235,8 @@ public class GeneratorSettings {
             ScalableFloat scaleY,
             ScalableFloat angleXZ,
             ScalableFloat angleY,
-            int spawnInSystemInverseChance,
-            int spawnIsolatedInverseChance,
+            int systemInverseChance,
+            int isolatedInverseChance,
             int startingDistance,
             int minHeight,
             int maxHeight,
@@ -250,8 +250,8 @@ public class GeneratorSettings {
             this.scaleY = scaleY;
             this.angleXZ = angleXZ;
             this.angleY = angleY;
-            this.spawnInSystemInverseChance = spawnInSystemInverseChance;
-            this.spawnIsolatedInverseChance = spawnIsolatedInverseChance;
+            this.systemInverseChance = systemInverseChance;
+            this.isolatedInverseChance = isolatedInverseChance;
             this.startingDistance = startingDistance;
             this.minHeight = minHeight;
             this.maxHeight = maxHeight;
@@ -269,8 +269,8 @@ public class GeneratorSettings {
                 getScalableFloatOr(tun, "scaleY", DEFAULT_SCALE_Y),
                 getScalableFloatOr(tun, "angleXZ", DEFAULT_ANGLE_XZ),
                 getScalableFloatOr(tun, "angleY", DEFAULT_ANGLE_Y),
-                getIntOr(tun, "spawnInSystemInverseChance", 4),
-                getIntOr(tun, "spawnIsolatedInverseChance", 7),
+                getIntOr(tun, "systemInverseChance", 4),
+                getIntOr(tun, "isolatedInverseChance", 7),
                 getIntOr(tun, "distance", 0),
                 getIntOr(tun, "minHeight", 8),
                 getIntOr(tun, "maxHeight", 128),
@@ -392,7 +392,9 @@ public class GeneratorSettings {
                 getIntOr(rav, "maxHeight", 40),
                 getIntOr(rav, "inverseChance", 50),
                 getObject(rav, "wallNoise").isPresent(),
-                getNoiseSettingsOr(rav, "wallNoise", DEFAULT_WALL_NOISE)
+                getObject(rav, "wallNoise")
+                    .map(o -> getNoiseSettingsOr(o, "noise2D", DEFAULT_WALL_NOISE))
+                    .orElse(DEFAULT_WALL_NOISE) // To-do: noise blocks at optional levels.
             );
         }
 

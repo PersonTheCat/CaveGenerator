@@ -1,6 +1,6 @@
  # ----------------------------------------------------------- #
  # ########################################################### #
- #                 ### Vanilla.cave Info ###                   #
+ #                 ### vanilla.cave Info ###                   #
  # ########################################################### #
  #   This file contains all of the default values used by each #
  # preset. Any value that gets removed will default to its     #
@@ -140,29 +140,29 @@
 {
      # Whether the preset is enabled globally.
     enabled: true
-	 # When this field is set to true, the absence of any object
-	 # in this file will result in missing features. In other
-	 # words: if it is not listed here, it does not exist in-game.
-	 # Setting this field to false means that absent fields will
-	 # produce vanilla functionality. Think of this as a sort of
-	 # "blank slate" mode vs. "override" mode.
-	blankSlate: true
+     # When this field is set to true, the absence of any object
+     # in this file will result in missing features. In other
+     # words: if it is not listed here, it does not exist in-game.
+     # Setting this field to false means that absent fields will
+     # produce vanilla functionality. Think of this as a sort of
+     # "blank slate" mode vs. "override" mode.
+    blankSlate: true
      # A list of biomes for tunnels, rooms, ravines, and most 
      # (but not all) decorations to be restricted to.
     biomes: {
          # A list of registry names.
-        names: [ ]
+        names: []
          # A list of biome IDs.
-        IDs: [ ]
+        IDs: []
          # A list of Biome types.
-        types: [ ]
+        types: []
     }
-	 # Whether to treat the biome list as a blacklist.
+     # Whether to treat the biome list as a blacklist.
     useBiomeBlacklist: false
      # A list of dimension IDs for all features to be 
      # restricted to.
-    dimensions: [ ]
-	 # Whether to treat the dimension list as a blacklist.
+    dimensions: []
+     # Whether to treat the dimension list as a blacklist.
     useDimensionBlacklist: false
      # A list of blocks that can be replaced by this generator.
      # Bear in mind that very little world decoration has
@@ -199,11 +199,13 @@
              maxHeight: 50
               # This is a standard noise3D object. While it is more to
               # write, the fact that these are everywhere helps you
-              # know that they're all the same.
+              # know that they're all the same. This noise block is
+              # optional. If you do not want these to spawn according
+              # to noise generation, do *not* include this field.
              noise3D: {
                   # 0.0 - 1.0 scale.
                  scale: 0.1
-                 frequency: 50.00
+                 frequency: 0.02
                  scaleY: 1.0
                   # Number of generation passes. Increases
                   # resolution at the cost of performance.
@@ -215,17 +217,29 @@
      # Used for decorating walls with various blocks. Supports
      # random and noise-based placement. Needs more documentation.
     wallDecorators: [
-        /*
-        {
-            states: [ "stone:5", "gravel" ]
-            chance: 5.0
-            minHeight: 0
-            maxHeight: 64
-            directions: [ "side", "down" ]
-            matchers: [ "stone" ]
-            preference: replace_match
-        }
-        */
+         /*
+         {
+             states: []
+             chance: 100.0
+             minHeight: 10
+             maxHeight: 50
+              # Options 
+             directions: []
+             matchers: [ "stone" ]
+              # Possible options include 'replace_match' and 
+              # 'replace_original.'
+             preference: replace_match
+              # Optional noise3D block. If you don't want these to
+              # spawn according to noise generation, don't include
+              # this field.
+             noise3D: {
+                 scale: 0.1
+                 frequency: 0.02
+                 scaleY: 1.0
+                 ocaves: 1 
+             }
+         }
+         */
     ]
      # Single, crcular spaces found near the center of cave 
      # systems.
@@ -248,15 +262,15 @@
         distance: 0
          # The 1 / X chance chance that multiple tunnels will
          # be spawned at each origin, instead of just one.
-        spawnInSystemInverseChance: 4
+        systemInverseChance: 4
          # The 1 / X chance that any origin will be skipped.
          # This has an effect of spawning each system in
          # isolated groups vs. everywhere.
-        spawnIsolatedInverseChance: 7
+        isolatedInverseChance: 7
          # Whether to reduce the amount of aberrations in
          # in this cave's vertical angle. When this feature
          # is enabled, the amount that noiseY can change is
-         # overall reduced, per segment.		 
+         # overall reduced, per segment.
         noiseYReduction: true
          # Whether branches should decrease in size from their
          # original tunnel's scale. You will most likely want
@@ -286,7 +300,7 @@
          # tunnel.
         scale: {
             startVal: 0
-             # startValue = startValue + (randomValue * x).
+             # startVal = startVal + (randomValue * x).
             startValRandFactor: 1
             factor: 1
             randFactor: 0
@@ -365,15 +379,15 @@
          # ravine wall generation features, producing
          # smoother, more organic surfaces.
         wallNoise: {
-            /*
-            noise2D: {
-                 # Scale is ignored in this context.
-                scale: 0.5
-                frequency: 0.1
-                minVal: 0
-                maxVal: 4
-            }
-            */
+             /*
+             noise2D: {
+                  # Scale is ignored in this context.
+                 scale: 0.5
+                 frequency: 0.1
+                 minVal: 0
+                 maxVal: 4
+             }
+             */
         }
     }
      # See caverns.json for another example of caverns. These
@@ -458,7 +472,7 @@
              radiusY: 12
              radiusZ: 16
              radiusVariance: 6
-             startingHeight: 32
+             startHeight: 32
              heightVariance: 16
          }
          */
@@ -492,7 +506,7 @@
     ]
      # Same as largeStalactites. Spawns from the floor instead of
      # the ceiling.
-    largeStalagmites: [ ]
+    largeStalagmites: []
      # See underground_forest.cave for an example of giantPillars.
      # These are the defaults. You just need to specify a state.
     giantPillars: [

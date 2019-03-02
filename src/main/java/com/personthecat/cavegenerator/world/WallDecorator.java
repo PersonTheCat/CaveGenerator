@@ -31,7 +31,7 @@ public class WallDecorator {
 
     /** The default noise values for WallDecorators with noise. */
     public static final NoiseSettings3D DEFAULT_NOISE =
-        new NoiseSettings3D(0.02f, 0.10f, 1.00f, 1);
+        new NoiseSettings3D(0.02f, 0.50f, 1.00f, 1);
 
     /** From Json. */
     public WallDecorator(IBlockState fillBlock, JsonObject wall) {
@@ -81,10 +81,6 @@ public class WallDecorator {
         return directions;
     }
 
-    public IBlockState[] getMatchers() {
-        return matchers;
-    }
-
     public double getChance() {
         return chance;
     }
@@ -108,8 +104,8 @@ public class WallDecorator {
 
     public boolean canGenerate(Random rand, int x, int y, int z, int chunkX, int chunkZ) {
         return y >= minHeight && y <= maxHeight && // Height bounds
-            rand.nextDouble() * 100 <= chance &&
-            testNoise(x, y, z, chunkX, chunkZ); // Probability
+            rand.nextDouble() * 100 <= chance && // Probability
+            testNoise(x, y, z, chunkX, chunkZ); // Noise
     }
 
     /**
@@ -125,7 +121,7 @@ public class WallDecorator {
     /** Variant of testNoise() that uses absolute coordinates. */
     private boolean testNoise(int x, int y, int z) {
         // Calling Optional#get because `settings` will always be present when `noise` is present.
-        return noise.map(n -> n.GetAdjustedNoise(x, y, z) > settings.get().getSelectionThreshold())
+        return noise.map(n -> n.GetAdjustedNoise(x, y, z) < settings.get().getSelectionThreshold())
             .orElse(true);
     }
 
@@ -136,10 +132,6 @@ public class WallDecorator {
             }
         }
         return false;
-    }
-
-    public Preference getPreference() {
-        return preference;
     }
 
     public boolean decidePlace(ChunkPrimer primer, int xO, int yO, int zO, int xD, int yD, int zD) {

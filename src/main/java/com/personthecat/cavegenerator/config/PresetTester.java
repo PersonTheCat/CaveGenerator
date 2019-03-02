@@ -57,7 +57,7 @@ public class PresetTester {
     /** Primary constructor */
     public PresetTester(GeneratorSettings preset, String name, boolean allowCrash) {
         this.decorators = preset.decorators.getDecoratorBlocks();
-        this.low = allowCrash ? Level.WARN : Level.DEBUG;
+        this.low = allowCrash ? Level.WARN : Level.INFO;
         this.high = allowCrash ? Level.FATAL: Level.WARN;
         this.preset = preset;
         this.name = name;
@@ -177,6 +177,7 @@ public class PresetTester {
 
 
     private void testCaveBlocks(CaveBlock[] caveBlocks) {
+        int lastMinHeight = -1, lastMaxHeight = -1;
         boolean foundGuaranteed = false;
 
         for (CaveBlock c : caveBlocks) {
@@ -186,9 +187,14 @@ public class PresetTester {
                 log(high, "Additional CaveBlock objects found despite an earlier object where `chance=100`. " +
                     "{} will have no effect.", path);
             }
-            if (c.getChance() == 100) {
+            if (c.getChance() == 100 &&
+                lastMinHeight == c.getMinHeight() &&
+                lastMaxHeight == c.getMaxHeight()
+            ) {
                 foundGuaranteed = true;
             }
+            lastMinHeight = c.getMinHeight();
+            lastMaxHeight = c.getMaxHeight();
             // Normal tests.
             testChance(c.getChance(), path);
             testHeights(c.getMinHeight(), c.getMaxHeight(), path);
@@ -196,6 +202,7 @@ public class PresetTester {
     }
 
     private void testWallDecorators(WallDecorator[] wallDecorators) {
+        int lastMinHeight = -1, lastMaxHeight = -1;
         boolean foundGuaranteed = false;
 
         for (WallDecorator d : wallDecorators) {
@@ -205,10 +212,16 @@ public class PresetTester {
                 log(high, "Additional WallDecorator objects found despite an earlier object where `chance=100`. " +
                     "{} will have no effect.", path);
             }
-            if (d.getChance() == 100 && !d.spawnInPatches()) {
+            if (d.getChance() == 100 &&
+                !d.spawnInPatches() &&
+                lastMinHeight == d.getMinHeight() &&
+                lastMaxHeight == d.getMaxHeight()
+            ) {
                 log(low, "{} uses full coverage. It may be better to use StoneClusters.", path);
                 foundGuaranteed = true;
             }
+            lastMinHeight = d.getMinHeight();
+            lastMaxHeight = d.getMaxHeight();
             // Normal tests.
             d.getSettings().ifPresent(s -> testNoise(s, path));
             testChance(d.getChance(), path);

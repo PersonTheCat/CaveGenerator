@@ -144,7 +144,7 @@ public class CaveGenerator {
 
             // Determine the number of branches to spawn.
             int branches = 1;
-            if (rand.nextInt(settings.tunnels.spawnInSystemInverseChance) == 0) {
+            if (rand.nextInt(settings.tunnels.systemInverseChance) == 0) {
                 // Add a room at the center? of the system.
                 branches += rand.nextInt(4); // To-do: make this variable.
             }
@@ -503,7 +503,7 @@ public class CaveGenerator {
             frequency = rand.nextInt(rand.nextInt(rand.nextInt(frequency) + 1) + 1);
         }
         // Retrieve the baseline from the settings.
-        final int chance = settings.tunnels.spawnIsolatedInverseChance;
+        final int chance = settings.tunnels.isolatedInverseChance;
         // Maintain seed integrity, where possible.
         // To-do: verify this logic with the original.
         if (chance != 0 && rand.nextInt(chance) != 0) {
@@ -706,7 +706,7 @@ public class CaveGenerator {
                             final Random localRand = new Random(cX ^ cZ ^ clusterSeed);
                             // Randomly alter spawn height.
                             final double currentNoise = miscNoise.getValue(x, z) * heightVariance;
-                            final int y = cluster.getStartingHeight() + (int) currentNoise;
+                            final int y = cluster.getStartHeight() + (int) currentNoise;
                             // Finalize all values.
                             final BlockPos origin = new BlockPos(x, y, z);
                             final int offset = radiusVariance / 2;
@@ -861,13 +861,13 @@ public class CaveGenerator {
         DecoratorSettings cfg = settings.decorators;
         int offset = up ? y + 1 : y - 1;
         WallDecorator[] decorators = up ? cfg.ceilingDecorators : cfg.floorDecorators;
-        // The candidate blockstate to be tested / replaced.
-        IBlockState candidate = primer.getBlockState(x, offset, z);
-        // Ignore air blocks.
-        if (candidate.getMaterial().equals(Material.AIR)) {
-            return false;
-        }
         for (WallDecorator decorator : decorators) {
+            // The candidate blockstate to be tested / replaced.
+            IBlockState candidate = primer.getBlockState(x, offset, z);
+            // Ignore air blocks.
+            if (candidate.getMaterial().equals(Material.AIR)) {
+                return false;
+            }
             // Filter for valid generators at this position and for this blockstate.
             if (decorator.canGenerate(rand, candidate, x, y, z, chunkX, chunkZ)) {
                 // Place block -> return success if original was replaced.

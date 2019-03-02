@@ -1,23 +1,30 @@
- // Make sure to list these in order from bottom to top.
+ # ----------------------------------------------------------- #
+ # ########################################################### #
+ #               ### stone_layers.cave Info ###                #
+ # ########################################################### #
+ #   This preset is designed to demonstrate the use of the     #
+ # included StoneLayer objects. Make sure to list these in     #
+ # from bottom to top.                                         #
+ # ----------------------------------------------------------- #
 {
     enabled: false
-    stoneLayers: {
-        keys: [ "granite", "andesite", "stone", "diorite" ]
-        granite: {
-            state: stone:1
+    blankSlate: false # Default tunnels, ravines, etc.
+    stoneLayers: [
+        {
+            state: "stone:1" # granite
             maxHeight: 12
         }
-        andesite: {
-            state: stone:5
+        {
+            state: "stone:5" # andesite
             maxHeight: 23
         }
-        stone: {
-            state: stone
+        {
+            state: "stone" # normal stone
             maxHeight: 44
         }
-        diorite: {
-            state: stone:3
+        {
+            state: "stone:3" # diorite
             maxHeight: 60
         }
-    }
+    ]
 }

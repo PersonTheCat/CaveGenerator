@@ -1,34 +1,44 @@
- // I highly recommend disabling vanilla stone clusters in the config file.
- // It will look better and generate much faster.
+ # ----------------------------------------------------------- #
+ # ########################################################### #
+ #              ### stone_clusters.cave Info ###               #
+ # ########################################################### #
+ #   This preset is designed to demonstrate the use of the     #
+ # StoneCluster objects included with this mod. I highly       #
+ # recommend disabling vanilla stone clusters in the config    #
+ # file when using this feature. It will look and perform      #
+ # better without it.                                          #
+ # ----------------------------------------------------------- #
 {
     enabled: false
-    stoneClusters: {
-        keys: [ "andesite", "diorite", "granite" ]
-        andesite: {
-            state: stone:5
-            "//": Frequency is 0 - 1.
+    blankSlate: false # Default tunnels, ravines, etc.
+    stoneClusters: [
+        {
+            states: "stone:5" # anesite
             frequency: 0.15
-            radius: 19
+            radiusX: 19
+            radiusY: 14
+            radiusZ: 19
             radiusVariance: 7
-            startingHeight: 26
+            startHeight: 26
             heightVariance: 12
         }
-        diorite: {
-            state: stone:3
+        {
+            states: "stone:3" # diorite
             frequency: 0.25
-            radius: 14
             radiusVariance: 5
-            startingHeight: 53
+            startHeight: 53
             heightVariance: 9
         }
-        granite: {
-            state: stone:1
+        {
+            states: "stone:1" # granite
             frequency: 0.3
-            radius: 19
+            radiusX: 19
+            radiusY: 14
+            radiusZ: 19
             radiusVariance: 7
-            "//": Center height can be negative.
-            startingHeight: 0
+             # Center height can be negative.
+            startHeight: 0
             heightVariance: 6
         }
-    }
+    ]
 }

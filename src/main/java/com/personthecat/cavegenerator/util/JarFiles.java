@@ -16,8 +16,8 @@ public class JarFiles {
 
     private static final String[] PRESETS = new String[] {
         "flooded_vanilla", "large_caves", "spirals",
-        "tunnels", "caverns", "stone_layers",
-        "ravines", "stone_clusters", "stalactites_large",
+        "tunnels", "caverns", "stone_layers", "stalactites",
+        "ravines", "stone_clusters", "large_stalactites",
         "vanilla", "underground_forest"
     };
 

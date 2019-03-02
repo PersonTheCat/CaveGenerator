@@ -63,7 +63,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
                 final int z = ((info.rand.nextInt(6) * 2) + 1) + (info.chunkZ * 16); // 1 to 13
                 final int y = numBetween(info.rand, pillar.getMinHeight(), pillar.getMaxHeight());
 
-                final int opening = findFloor(info.world, x, y, z, pillar.getMinHeight());
+                final int opening = findCeiling(info.world, x, y, z, pillar.getMaxHeight());
                 if (opening != NONE_FOUND) {
                     pillar.generate(info.world, info.rand, new BlockPos(x, opening, z));
                 }
@@ -248,7 +248,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
             settings.settings.setRotation(randRotation);
         }
         if (settings.debugSpawns) {
-            debug("Spawning {} at {}", settings.name, pos);
+            info("Spawning {} at {}", settings.name, pos);
         }
     }
 
@@ -258,9 +258,9 @@ public class CaveFeatureGenerator implements IWorldGenerator {
      */
     private static int findFloor(World world, int x, int y, int z, int minY) {
         boolean previouslySolid = isSolid(world, x, y, z);
-        for (int h = y; h > minY; h--) {
+        for (int h = y - 1; h > minY; h--) {
             final boolean currentlySolid = isSolid(world, x, h, z);
-            if (previouslySolid && !currentlySolid) {
+            if (!previouslySolid && currentlySolid) {
                 return h;
             }
             previouslySolid = currentlySolid;
@@ -274,7 +274,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
      */
     private static int findCeiling(World world, int x, int y, int z, int maxY) {
         boolean previouslySolid = isSolid(world, x, y, z);
-        for (int h = y; h < maxY; h++) {
+        for (int h = y + 1; h < maxY; h++) {
             final boolean currentlySolid = isSolid(world, x, h, z);
             if (!previouslySolid && currentlySolid) {
                 return h;
@@ -346,7 +346,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         for (int h = y; h < maxY; h++) {
             final boolean currentlySolid = isSolid(world, x, h, z);
             if (previouslySolid ^ currentlySolid) {
-                return h;
+                return currentlySolid ? h : h - 1;
             }
             previouslySolid = currentlySolid;
         }
@@ -362,7 +362,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         for (int h = y; h > minY; h--) {
             final boolean currentlySolid = isSolid(world, x, h, z);
             if (previouslySolid ^ currentlySolid) {
-                return h;
+                return currentlySolid ? h : h + 1;
             }
             previouslySolid = currentlySolid;
         }
@@ -493,7 +493,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
 
     /** Determines whether the input LargeStalactite can spawn at this location. */
     private static boolean canSpawnStalactite(LargeStalactite st, FastNoise noise, int x, int z) {
-        return !st.spawnInPatches() || noise.GetAdjustedNoise(x, z) > st.getThreshold();
+        return !st.spawnInPatches() || noise.GetAdjustedNoise(x, z) < st.getThreshold();
     }
 
     /**
