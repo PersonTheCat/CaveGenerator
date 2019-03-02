@@ -834,7 +834,7 @@ public class CaveGenerator {
             }
             for (CaveBlock block : settings.decorators.caveBlocks) {
                 if (block.canGenerate(x, y, z, chunkX, chunkZ)) {
-                    if (rand.nextFloat() * 100 <= block.getChance()) {
+                    if (rand.nextFloat() <= block.getChance()) {
                         primer.setBlockState(x, y, z, block.getFillBlock());
                         return true;
                     }

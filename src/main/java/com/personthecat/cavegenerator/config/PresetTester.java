@@ -157,7 +157,7 @@ public class PresetTester {
     private void testClusters(StoneCluster[] clusters) {
         for (StoneCluster c : clusters) {
             final String path = "stoneClusters[state=" + c.getState() + "]";
-            testFrequency(c.getFrequency(), path);
+            testChance(c.getChance(), path);
         }
     }
 
@@ -184,10 +184,10 @@ public class PresetTester {
             final String path = "caveBlocks[state=" + c.getFillBlock() + "]";
             // Check for unreachable objects.
             if (foundGuaranteed) {
-                log(high, "Additional CaveBlock objects found despite an earlier object where `chance=100`. " +
+                log(high, "Additional CaveBlock objects found despite an earlier object where `chance=1`. " +
                     "{} will have no effect.", path);
             }
-            if (c.getChance() == 100 &&
+            if (c.getChance() == 1 &&
                 lastMinHeight == c.getMinHeight() &&
                 lastMaxHeight == c.getMaxHeight()
             ) {
@@ -209,10 +209,10 @@ public class PresetTester {
             final String path = "wallDecorators[state=" + d.getFillBlock() + "]";
             // Check for unreachable objects.
             if (foundGuaranteed) {
-                log(high, "Additional WallDecorator objects found despite an earlier object where `chance=100`. " +
+                log(high, "Additional WallDecorator objects found despite an earlier object where `chance=1`. " +
                     "{} will have no effect.", path);
             }
-            if (d.getChance() == 100 &&
+            if (d.getChance() == 1 &&
                 !d.spawnInPatches() &&
                 lastMinHeight == d.getMinHeight() &&
                 lastMaxHeight == d.getMaxHeight()
@@ -303,17 +303,10 @@ public class PresetTester {
         testNoiseScale(noise.getScale(), path);
     }
 
-    /** Chance should always be between 0 and 100. */
+    /** Chance should always be between 0 and 1. */
     private void testChance(double chance, String path) {
-        if (chance < 0 || chance > 100) {
-            log(low, "Poor chance @ {}. Use a value between 0 and 100.", path);
-        }
-    }
-
-    /** Frequency should always be between 0 and 1. */
-    private void testFrequency(double frequency, String path) {
-        if (frequency < 0 || frequency > 1) {
-            log(low, "Poor frequency value @ {}. Use a value between 0 and 1.", path);
+        if (chance < 0 || chance > 1) {
+            log(low, "Poor chance @ {}. Use a value between 0 and 1.", path);
         }
     }
 

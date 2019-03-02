@@ -14,7 +14,7 @@
     stoneClusters: [
         {
             states: "stone:5" # anesite
-            frequency: 0.15
+            chance: 0.15
             radiusX: 19
             radiusY: 14
             radiusZ: 19
@@ -24,14 +24,14 @@
         }
         {
             states: "stone:3" # diorite
-            frequency: 0.25
+            chance: 0.25
             radiusVariance: 5
             startHeight: 53
             heightVariance: 9
         }
         {
             states: "stone:1" # granite
-            frequency: 0.3
+            chance: 0.3
             radiusX: 19
             radiusY: 14
             radiusZ: 19

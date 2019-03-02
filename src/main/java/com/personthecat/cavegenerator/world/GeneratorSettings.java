@@ -269,8 +269,8 @@ public class GeneratorSettings {
                 getScalableFloatOr(tun, "scaleY", DEFAULT_SCALE_Y),
                 getScalableFloatOr(tun, "angleXZ", DEFAULT_ANGLE_XZ),
                 getScalableFloatOr(tun, "angleY", DEFAULT_ANGLE_Y),
-                getIntOr(tun, "systemInverseChance", 4),
-                getIntOr(tun, "isolatedInverseChance", 7),
+                invert(getFloatOr(tun, "systemChance", 0.25f)),
+                invert(getFloatOr(tun, "isolatedChance", 0.14f)),
                 getIntOr(tun, "distance", 0),
                 getIntOr(tun, "minHeight", 8),
                 getIntOr(tun, "maxHeight", 128),
@@ -390,7 +390,7 @@ public class GeneratorSettings {
                 getIntOr(rav, "distance", 0),
                 getIntOr(rav, "minHeight", 20),
                 getIntOr(rav, "maxHeight", 40),
-                getIntOr(rav, "inverseChance", 50),
+                invert(getFloatOr(rav, "chance", 0.02f)),
                 getObject(rav, "wallNoise").isPresent(),
                 getObject(rav, "wallNoise")
                     .map(o -> getNoiseSettingsOr(o, "noise2D", DEFAULT_WALL_NOISE))
@@ -402,7 +402,7 @@ public class GeneratorSettings {
         public RavineSettings(boolean blankSlate) {
             this(
                 blankSlate ?
-                new JsonObject().add("inverseChance", Integer.MAX_VALUE) :
+                new JsonObject().add("chance", 0) :
                 new JsonObject()
             );
         }
@@ -525,7 +525,7 @@ public class GeneratorSettings {
         public final BlockPos offset;
         /** The minimum percentage of blocks that must be surrounded by air. */
         public final float minBurialPercentage;
-        /** The 0-100% chance that this structure should spawn in a chunk. */
+        /** The 0-1 chance that this structure should spawn in a chunk. */
         public final float chance;
         /** The number of times per chunk this structure should try to spawn. */
         public final int frequency;
@@ -599,7 +599,7 @@ public class GeneratorSettings {
                 getPositionsOr(structure, "waterMatchers" /* No defaults */),
                 getPositionOr(structure, "offset", BlockPos.ORIGIN),
                 getFloatOr(structure, "minBurialPercentage", 0.0f),
-                getFloatOr(structure, "chance", 100.0f),
+                getFloatOr(structure, "chance", 1.0f),
                 getIntOr(structure, "frequency", 1),
                 getIntOr(structure, "minHeight", 0),
                 getIntOr(structure, "maxHeight", 48),

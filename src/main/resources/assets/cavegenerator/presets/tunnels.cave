@@ -12,7 +12,7 @@
     wallDecorators: [
         {
             states: dirt
-            chance: 15
+            chance: 0.15
             minHeight: 20
             maxHeight: 40
             matchers: stone
@@ -21,7 +21,7 @@
         }
         {
             states: gravel
-            chance: 15
+            chance: 0.15
             minHeight: 20
             maxHeight: 40
             matchers: [ "stone", "dirt" ]
@@ -37,7 +37,7 @@
         minHeight: 27
         maxHeight: 33
          # Most tunnels spawn alone.
-        systemInverseChance: 1000
+        systemChance: 0.001
         noiseYReduction: false
         twistXZ: {
             factor: 0.9

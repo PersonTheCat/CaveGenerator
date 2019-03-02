@@ -25,7 +25,7 @@
             matchers: [ "stone", "stone:5", "grass", "gravel", "dirt:1" ]
             directions: down
             integrity: 0.7
-            chance: 3.0
+            chance: 0.03
         }
          # Hanging spawners from cave ceilings.
         {
@@ -36,7 +36,7 @@
                 [ 0, -6, 0 ] # Require air 6 blocks below the source.
             ]
             directions: up
-            chance: 15.0
+            chance: 0.15
         }
          # Giant red mushrooms
         {
@@ -45,7 +45,7 @@
             matchers: [ "stone", "stone:5", "grass", "gravel", "dirt:1" ]
             directions: down
             frequency: 2
-            chance: 9.0
+            chance: 0.09
             minHeight: 18
         }
     ]
@@ -54,7 +54,7 @@
          # Giant andesite veins.
         {
             states: "stone:5" # andesite
-            frequency: 0.15
+            chance: 0.15
             radiusX: 19
             radiusY: 15
             radiusZ: 19
@@ -95,7 +95,7 @@
          # Sporadic gravel.
         {
             states: gravel
-            chance: 75.0
+            chance: 0.75
             minHeight: 9
             directions: down
             matchers: [ "stone", "stone:1" ]
@@ -104,7 +104,7 @@
          # Sporadic coarse dirt.
         {
             states: "dirt:1" # Coarse dirt
-            chance: 30.0
+            chance: 0.3
             minHeight: 9
             directions: down
             matchers: [ "stone", "stone:1" ]
@@ -113,7 +113,7 @@
          # Lights on the ceiling.
         {
             states: sea_lantern
-            chance: 0.3
+            chance: 0.003
             minHeight: 9
             directions: up
             matchers: [ "stone", "stone:1" ]
@@ -122,7 +122,7 @@
          # Cobwebs on the ceiling.
         {
             states: web
-            chance: 0.1
+            chance: 0.001
             minHeight: 9
             directions: up
             matchers: [ "stone", "stone:1" ]
@@ -133,7 +133,7 @@
          # Spawns extra ferns on the ground.
         {
             states: tallgrass:2
-            chance: 5
+            chance: 0.05
             minHeight: 9
             directions: down
             matchers: grass
@@ -142,7 +142,7 @@
          # Extra tall grass on the ground.
         {
             states: tallgrass:1
-            chance: 20
+            chance: 0.2
             minHeight: 9
             directions: down
             matchers: grass
@@ -151,7 +151,7 @@
          # Poppies
         {
             states: red_flower
-            chance: 2
+            chance: 0.02
             minHeight: 9
             maxHeight: 50
             directions: down
@@ -161,7 +161,7 @@
          # Dandelions
         {
             states: yellow_flower
-            chance: 1
+            chance: 0.01
             minHeight: 9
             directions: down
             matchers: grass
@@ -170,7 +170,7 @@
          # Mushrooms
         {
             states: [ "red_mushroom", "brown_mushroom" ]
-            chance: 2
+            chance: 0.02
             minHeight: 9
             directions: down
             matchers: [ "grass", "stone", "stone:1" ]
@@ -185,7 +185,7 @@
             maxLength: 3
             minHeight: 20
             maxHeight: 40
-            chance: 10
+            chance: 0.10
             matchers: [ "stone", "stone:1" ]
             noise2D: {
                 frequency: 0.0125
@@ -209,7 +209,7 @@
             maxLength: 3
             minHeight: 15
             maxHeight: 50
-            chance: 5
+            chance: 0.05
             noise2D: {}
         }
     ]

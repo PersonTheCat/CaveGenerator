@@ -103,7 +103,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         for (int l = x; l < x + distance; l++) {
             for (int d = z; d < z + distance; d++) {
                 // Check this earlier -> do less when it fails.
-                if (rand.nextDouble() * 100 >= st.getChance()) {
+                if (rand.nextDouble() >= st.getChance()) {
                     continue;
                 }
                 final int maxHeight = getMin(info.heightMap[l & 15][d & 15], st.getMaxHeight());
@@ -135,7 +135,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
     private static void generateStructures(DecoratorInfo info) {
         for (StructureSettings settings : info.gen.settings.structures) {
             for (int i = 0; i < settings.frequency; i++) {
-                if (info.rand.nextDouble() * 100 <= settings.chance) {
+                if (info.rand.nextDouble() <= settings.chance) {
                     generateStructure(info, settings);
                 }
             }

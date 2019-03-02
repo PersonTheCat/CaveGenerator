@@ -24,8 +24,7 @@
  #   These are some of the keywords that get reused throughout #
  # the preset:                                                 #
  #   * factor: Multiplies a value.                             #
- #   * chance: 0.0-100.0% probability.                         #
- #   * inverseChance: 1 / X chance.                            #
+ #   * chance: 0.0-1.0% probability.                           #
  #   * frequency: Relative # of tries.                         #
  # ########################################################### #
  #                    ### Noise Blocks ###                     #
@@ -194,7 +193,7 @@
          /* 
          { Defaults values; these do not spawn by default.
              states: []
-             chance: 100.0
+             chance: 1.0
              minHeight: 0
              maxHeight: 50
               # This is a standard noise3D object. While it is more to
@@ -220,7 +219,7 @@
          /*
          {
              states: []
-             chance: 100.0
+             chance: 1.0
              minHeight: 10
              maxHeight: 50
               # Options 
@@ -262,11 +261,11 @@
         distance: 0
          # The 1 / X chance chance that multiple tunnels will
          # be spawned at each origin, instead of just one.
-        systemInverseChance: 4
+        systemChance: 0.25
          # The 1 / X chance that any origin will be skipped.
          # This has an effect of spawning each system in
          # isolated groups vs. everywhere.
-        isolatedInverseChance: 7
+        isolatedChance: 0.142
          # Whether to reduce the amount of aberrations in
          # in this cave's vertical angle. When this feature
          # is enabled, the amount that noiseY can change is
@@ -330,9 +329,7 @@
      # horizontal scale. You could theoretically use this as
      # your main tunnels, if you're using multiple presets.
     ravines: {
-         # The 1 / X chance for this ravine to start in any
-         # given chunk.
-        inverseChance: 50
+        chance: 0.02
         minHeight: 20
         maxHeight: 40
         distance: 0
@@ -465,8 +462,8 @@
          { Default values; these don't spawn by default.
               # A list of blocks to spawn under these conditions.
              states: []
-              # The 0 - 1 spawn frequency.
-             frequency: 0.15
+              # The 0 - 1 spawn probability.
+             chance: 0.15
               # The radius of this cluster on the x-axis.
              radiusX: 16
              radiusY: 12
@@ -486,14 +483,14 @@
              state: null
               # The maximum number of blocks this structure can be.
              maxLength: 3
-             chance: 16.7
+             chance: 0.167
              minHeight: 11
              maxHeight: 55
              matchers: []
               # Optional noise block. Will perform better without.
              noise2D: {
-                 scale: 0.425
-                 frequency: 40.0
+                 scale: 0.7125
+                 frequency: 0.025
                   # Not used at all in this context. Can be omitted.
                   # -1 is effectively the default.
                  minVal: -1
@@ -545,7 +542,7 @@
              offset: [0, 0, 0]
               # Number of tries per chunk. Should be low.
              frequency: 1
-              # The percent chance any try will succeed.
+              # The 0 - 1 chance any try will succeed.
              chance: 0.05
              minHeight: 10
              maxHeight: 50

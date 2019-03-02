@@ -33,7 +33,7 @@
          # Spawns gravel on the floor.
         {
             states: gravel
-            chance: 25
+            chance: 0.25
             minHeight: 0
             maxHeight: 63
             matchers: [ "stone", "dirt" ]

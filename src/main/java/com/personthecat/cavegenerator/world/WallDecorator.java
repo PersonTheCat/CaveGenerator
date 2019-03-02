@@ -37,7 +37,7 @@ public class WallDecorator {
     public WallDecorator(IBlockState fillBlock, JsonObject wall) {
         this(
             fillBlock,
-            getFloatOr(wall, "chance", 100.0f),
+            getFloatOr(wall, "chance", 1.0f),
             getIntOr(wall, "minHeight", 10),
             getIntOr(wall, "maxHeight", 50),
             getDirectionsOr(wall, "directions", Direction.ALL),
@@ -104,7 +104,7 @@ public class WallDecorator {
 
     public boolean canGenerate(Random rand, int x, int y, int z, int chunkX, int chunkZ) {
         return y >= minHeight && y <= maxHeight && // Height bounds
-            rand.nextDouble() * 100 <= chance && // Probability
+            rand.nextDouble() <= chance && // Probability
             testNoise(x, y, z, chunkX, chunkZ); // Noise
     }
 

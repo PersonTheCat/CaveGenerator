@@ -14,7 +14,7 @@ public class StoneCluster {
     /** A value from 0.0 to 92.0 which determines this cluster's frequency. */
     private final double selectionThreshold;
     /** The original value used for indicating spawn rates. */
-    private final double frequency;
+    private final double chance;
     private final int radiusX, radiusY, radiusZ;
     private final int radiusVariance;
     private final int startHeight;
@@ -23,10 +23,10 @@ public class StoneCluster {
     /** A field indicating the seed for this stone cluster. */
     private final int ID;
 
-    /** Where frequency is a value between 0.0 and 1.0. */
+    /** Where chance is a value between 0.0 and 1.0. */
     public StoneCluster(
         IBlockState state,
-        double frequency,
+        double chance,
         int radiusX,
         int radiusY,
         int radiusZ,
@@ -35,8 +35,8 @@ public class StoneCluster {
         int heightVariance
     ) {
         this.state = state;
-        this.frequency = frequency;
-        this.selectionThreshold = (1.0 - frequency) * 92.0;
+        this.chance = chance;
+        this.selectionThreshold = (1.0 - chance) * 92.0;
         this.radiusX = radiusX;
         this.radiusY = radiusY;
         this.radiusZ = radiusZ;
@@ -50,7 +50,7 @@ public class StoneCluster {
     public StoneCluster(IBlockState state, JsonObject cluster) {
         this(
             state,
-            getFloatOr(cluster, "frequency", 0.15f),
+            getFloatOr(cluster, "chance", 0.15f),
             getIntOr(cluster,"radiusX", 16),
             getIntOr(cluster, "radiusY", 12),
             getIntOr(cluster, "radiusZ", 16),
@@ -68,8 +68,8 @@ public class StoneCluster {
         return selectionThreshold;
     }
 
-    public double getFrequency() {
-        return frequency;
+    public double getChance() {
+        return chance;
     }
 
     public int getRadiusX() {

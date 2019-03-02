@@ -10,7 +10,7 @@
     enabled: false
     ravines: {
          # Increase ravine frequency.
-        inverseChance: 30
+        chance: 0.0333
         minHeight: 10
         maxHeight: 50
         distance: 140

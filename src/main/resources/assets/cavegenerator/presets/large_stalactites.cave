@@ -21,7 +21,7 @@
     largeStalagmites: [
         {
             state: cobblestone_wall
-            chance: 10
+            chance: 0.10
             minHeight: 20
             maxHeight: 50
              # Spawn this decorator according to its default

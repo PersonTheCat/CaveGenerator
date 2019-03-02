@@ -11,7 +11,7 @@
     enabled: false
     tunnels: {
          # Most tunnels will spawn alone.
-        systemInverseChance: 1000
+        systemChance: 0.001
         noiseYReduction: false
         twistXZ: {
              # Twist is multiplied by this number. 1.0 means 

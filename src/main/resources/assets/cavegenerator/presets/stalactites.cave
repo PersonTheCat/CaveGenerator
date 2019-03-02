@@ -17,7 +17,7 @@
              # There aren't really any good stalagmite blocks
              # in vanilla. This will have to do.
             states: cobblestone_wall
-            chance: 15
+            chance: 0.15
             minHeight: 10
             maxHeight: 55
             matchers: stone
@@ -27,7 +27,7 @@
          # Direction#UP -> stalactites
         {
             states: cobblestone_wall
-            chance: 15
+            chance: 0.15
             minHeight: 10
             maxHeight: 55
             matchers: stone

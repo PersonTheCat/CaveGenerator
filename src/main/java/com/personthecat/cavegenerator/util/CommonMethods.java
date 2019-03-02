@@ -161,6 +161,11 @@ public class CommonMethods {
         return a > b ? a : b;
     }
 
+    /** Divides 1 / `value` without any divide by zero errors or unsightly casting. */
+    public static int invert(double value) {
+        return value == 0 ? 0 : (int) (1 / value);
+    }
+
     /*
      * ///////////////////////////////////////////////////////////////////////
      *                   Functions related to Forge / MC

@@ -33,7 +33,7 @@ public class LargeStalactite extends WorldGenerator {
         this(
             getGuranteedState(stalactite, "LargeStalactite"),
             type,
-            getFloatOr(stalactite, "chance", 16.7f),
+            getFloatOr(stalactite, "chance", 0.167f),
             getIntOr(stalactite, "maxLength", 3),
             getIntOr(stalactite, "minHeight", 11),
             getIntOr(stalactite, "maxHeight", 55),
