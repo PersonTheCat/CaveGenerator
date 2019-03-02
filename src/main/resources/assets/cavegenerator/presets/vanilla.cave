@@ -390,7 +390,7 @@
      # See caverns.json for another example of caverns. These
      # are the default values.
     caverns: {
-        enabled: true
+        enabled: false
         minHeight: 10
         maxHeight: 50
          # Optional 3D noise block for the main cavern shapes.
