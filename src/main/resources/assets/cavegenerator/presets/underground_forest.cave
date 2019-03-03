@@ -75,8 +75,8 @@
     }
     caveBlocks: [
         {
-             # Imitates standard lava placement, 2 blocks lower.
-            states: lava
+             # Water in the place of lava, 2 blocks lower.
+            states: water
              # Maximum height bounds.
             maxHeight: 8
         }
@@ -189,7 +189,7 @@
             matchers: [ "stone", "stone:1" ]
             noise2D: {
                 frequency: 0.0125
-                scale: 0.25
+                scale: 0.4
             }
         }
          # Hanging leaves

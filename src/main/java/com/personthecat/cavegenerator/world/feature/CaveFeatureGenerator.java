@@ -112,7 +112,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
                 // Stalagmite -> go down and find a surface.
                 final int y = st.getType() == LargeStalactite.Type.STALACTITE ?
                     findCeiling(info.world, l, startHeight, d, maxHeight):
-                    findFloor(info.world, l, startHeight, d, maxHeight);
+                    findFloor(info.world, l, startHeight, d, st.getMinHeight());
                 trySpawnStalactite(st, rand, l, y, d, info.world);
             }
         }
