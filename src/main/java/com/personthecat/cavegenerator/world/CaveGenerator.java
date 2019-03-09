@@ -49,18 +49,18 @@ public class CaveGenerator {
         this.settings = settings;
         // Noise generators.
         long seed = world.getSeed();
-        selector = new RandomChunkSelector(seed);
-        miscNoise = new NoiseGeneratorSimplex(new Random(seed));
+        this.selector = new RandomChunkSelector(seed);
+        this.miscNoise = new NoiseGeneratorSimplex(new Random(seed));
         // To-do: ensure that this is more unique (integer overflow).
-        cavernNoise = //settings.caverns.noise.getGenerator((int) seed);
-            new FastNoise()
-                .SetNoiseType(FastNoise.NoiseType.Cellular)
-                .SetFrequency(0.02f)
-                .SetFractalOctaves(5)
-                .SetCellularDistanceFunction(FastNoise.CellularDistanceFunction.Euclidean)
-                .SetCellularReturnType(FastNoise.CellularReturnType.Distance2Div);
-        ceilNoise = settings.caverns.ceilNoise.getGenerator((int) seed >> 2);
-        floorNoise = settings.caverns.floorNoise.getGenerator((int) seed >> 4);
+        this.cavernNoise = settings.caverns.noise.getGenerator((int) seed);
+//            new FastNoise()
+//                .SetNoiseType(FastNoise.NoiseType.Cellular)
+//                .SetFrequency(0.02f)
+//                .SetFractalOctaves(5)
+//                .SetCellularDistanceFunction(FastNoise.CellularDistanceFunction.Euclidean)
+//                .SetCellularReturnType(FastNoise.CellularReturnType.Distance2Div);
+        this.ceilNoise = settings.caverns.ceilNoise.getGenerator((int) seed >> 2);
+        this.floorNoise = settings.caverns.floorNoise.getGenerator((int) seed >> 4);
     }
 
     /** Returns whether the generator is enabled globally. */

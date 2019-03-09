@@ -179,7 +179,7 @@ public class TunnelPathInfo {
     private float adjustScale(float original, Random rand, ScalableFloat f) {
         original = (float) Math.pow(original, f.exponent);
         original *= f.factor;
-        original += f.randFactor * (rand.nextFloat() - 0.5F);
+        //original += f.randFactor * (rand.nextFloat() - 0.5F);
         if (original < 0) original = 0;
         return original;
     }
