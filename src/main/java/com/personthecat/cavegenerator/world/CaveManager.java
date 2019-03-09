@@ -54,7 +54,7 @@ public class CaveManager extends MapGenBase {
         for (CaveGenerator generator : Main.instance.generators.values()) {
             Biome centerBiome = world.getBiome(centerCoords(chunkX, chunkZ));
             if (generator.canGenerate(world.provider.getDimension(), centerBiome)) {
-                generator.startTunnelSystem(rand, chunkX, chunkZ, originalX, originalZ, primer);
+                generator.startTunnels(rand, chunkX, chunkZ, originalX, originalZ, primer);
             }
         }
     }

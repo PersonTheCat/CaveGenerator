@@ -1,7 +1,6 @@
 package com.personthecat.cavegenerator.world;
 
 import com.personthecat.cavegenerator.util.RandomChunkSelector;
-import com.personthecat.cavegenerator.util.ScalableFloat;
 import fastnoise.FastNoise;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -16,6 +15,8 @@ import net.minecraft.world.chunk.ChunkPrimer;
 import com.personthecat.cavegenerator.world.StoneCluster.ClusterInfo;
 import com.personthecat.cavegenerator.world.GeneratorSettings.DecoratorSettings;
 import com.personthecat.cavegenerator.world.GeneratorSettings.SpawnSettings;
+import com.personthecat.cavegenerator.world.GeneratorSettings.TunnelSettings;
+import com.personthecat.cavegenerator.world.GeneratorSettings.RavineSettings;
 import net.minecraft.world.gen.NoiseGeneratorSimplex;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -27,7 +28,6 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
 public class CaveGenerator {
     /** A few convenient values. */
-    private static final float PI_TIMES_2 = (float) (Math.PI * 2);
     private static final float PI_OVER_2 = (float) (Math.PI / 2);
     private static final IBlockState BLK_AIR = Blocks.AIR.getDefaultState();
     private static final IBlockState BLK_WATER = Blocks.WATER.getDefaultState();
@@ -35,19 +35,12 @@ public class CaveGenerator {
 
     /** Mandatory fields that must be initialized by the constructor */
     private final World world;
-    // The elusive public final field. It's just too convenient
-    // in this context.
     public final GeneratorSettings settings;
 
-    /** Information regarding the stone clusters to be spawned. */
-    private final List<ClusterInfo> finalClusters = new ArrayList<>();
-    /** A series of random floats between 1-4 for distorting ravine walls. */
-    private final float[] mut = new float[256];
-
-    // Noise generators.
+    /** Noise generators. */
     private final RandomChunkSelector selector;
     private final NoiseGeneratorSimplex miscNoise;
-    private final FastNoise ceilNoise, floorNoise;
+    private final FastNoise cavernNoise, ceilNoise, floorNoise;
 
     /** Primary constructor. */
     public CaveGenerator(World world, GeneratorSettings settings) {
@@ -58,6 +51,14 @@ public class CaveGenerator {
         long seed = world.getSeed();
         selector = new RandomChunkSelector(seed);
         miscNoise = new NoiseGeneratorSimplex(new Random(seed));
+        // To-do: ensure that this is more unique (integer overflow).
+        cavernNoise = //settings.caverns.noise.getGenerator((int) seed);
+            new FastNoise()
+                .SetNoiseType(FastNoise.NoiseType.Cellular)
+                .SetFrequency(0.02f)
+                .SetFractalOctaves(5)
+                .SetCellularDistanceFunction(FastNoise.CellularDistanceFunction.Euclidean)
+                .SetCellularReturnType(FastNoise.CellularReturnType.Distance2Div);
         ceilNoise = settings.caverns.ceilNoise.getGenerator((int) seed >> 2);
         floorNoise = settings.caverns.floorNoise.getGenerator((int) seed >> 4);
     }
@@ -108,28 +109,15 @@ public class CaveGenerator {
             settings.decorators.wallDecorators.length > 0;
     }
 
-    /** Returns whether the generator has any wall decorators. */
-    public boolean hasLocalWallDecorators() {
-        return settings.decorators.wallDecorators.length > 0;
-    }
-
-    /**
-     * Returns whether this generator is both enabled and has wall decorators, indicating
-     * that a special chunk border correction process will need to take place.
-     */
-    public boolean requiresCorrections() {
-        return enabled() && hasLocalWallDecorators();
-    }
-
-    /** Returns whether this generator has any noise-based features available. */
-    public boolean hasNoiseFeatures() {
-        return settings.caverns.enabled ||
-            settings.decorators.stoneClusters.length > 0 ||
-            settings.decorators.stoneLayers.length > 0;
+    /** Returns whether the generator has any world decorators. */
+    public boolean hasWorldDecorators() {
+        return settings.decorators.pillars.length > 0 ||
+            settings.decorators.stalactites.length > 0 ||
+            settings.structures.length > 0;
     }
 
     /** Starts a tunnel system between the input chunk coordinates. */
-    public void startTunnelSystem(Random rand, int chunkX, int chunkZ, int originalX, int originalZ, ChunkPrimer primer) {
+    public void startTunnels(Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
         final int frequency = getTunnelFrequency(rand);
         for (int i = 0; i < frequency; i++) {
             // Retrieve the height parameters from the settings.
@@ -138,9 +126,9 @@ public class CaveGenerator {
             final int heightDiff = maxHeight - minHeight;
 
             // Get random coordinates in destination chunk.
-            final double x = (double) ((chunkX * 16) + rand.nextInt(16));
-            final double y = (double) (rand.nextInt(rand.nextInt(heightDiff) + minHeight));
-            final double z = (double) ((chunkZ * 16) + rand.nextInt(16));
+            final float x = (float) ((destChunkX * 16) + rand.nextInt(16));
+            final float y = (float) (rand.nextInt(rand.nextInt(heightDiff) + minHeight));
+            final float z = (float) ((destChunkZ * 16) + rand.nextInt(16));
 
             // Determine the number of branches to spawn.
             int branches = 1;
@@ -150,56 +138,41 @@ public class CaveGenerator {
             }
 
             for (int j = 0; j < branches; j++) {
-                float angleXZ = settings.tunnels.angleXZ.startVal;
-                float angleY = settings.tunnels.angleY.startVal;
-                float scale = settings.tunnels.scale.startVal;
-
-                angleXZ += settings.tunnels.angleXZ.startValRandFactor * (rand.nextFloat() * PI_TIMES_2);
-                angleY += settings.tunnels.angleY.startValRandFactor * (rand.nextFloat() - 0.50f);
-                scale += settings.tunnels.scale.startValRandFactor * (rand.nextFloat() * 2.00f + rand.nextFloat());
+                TunnelSettings cfg = settings.tunnels;
+                final int distance = cfg.startDistance;
+                PrimerData data = new PrimerData(primer, chunkX, chunkZ);
+                TunnelPathInfo path = new TunnelPathInfo(cfg, rand, x, y, z);
 
                 // Per-vanilla: this randomly increases the size.
                 if (rand.nextInt(10) == 0) {
-                    addRoom(rand, originalX, originalZ, primer, x, y, z);
-                    // Exact equation might be silly. Maintains seed fidelity.
-                    scale *= rand.nextFloat() * rand.nextFloat() * 3.00f + 1.00f;
+                    addRoom(rand, data, x, y, z);
+                    // Randomly alter scale. Average difference depends on original value.
+                    path.multiplyScale(rand.nextFloat() * rand.nextFloat() * 3.00F + 1.00F);
                 }
-
-                final int distance = settings.tunnels.startingDistance;
-                final float scaleY = settings.tunnels.scaleY.startVal;
-
-                addTunnel(rand.nextLong(), originalX, originalZ, primer, x, y, z, scale, angleXZ, angleY, 0, distance, scaleY);
+                addTunnel(rand.nextLong(), data, path,0, distance);
             }
         }
     }
 
     /** Starts a ravine between the input chunk coordinates. */
-    public void startRavine(Random rand, int chunkX, int chunkZ, int originalX, int originalZ, ChunkPrimer primer) {
+    public void startRavine(Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
         // Retrieve the height parameters from the settings.
         final int minHeight = settings.ravines.minHeight;
         final int maxHeight = settings.ravines.maxHeight;
         final int heightDiff = maxHeight - minHeight;
 
         // Get random coordinates in destination chunk.
-        final double x = (double) ((chunkX * 16) + rand.nextInt(16));
+        final float x = (float) ((destChunkX * 16) + rand.nextInt(16));
         // To-do: verify these numbers.
-        final double y = (double) (rand.nextInt(rand.nextInt(maxHeight) + 8) + heightDiff);
-        final double z = (double) ((chunkZ * 16) + rand.nextInt(16));
+        final float y = (float) (rand.nextInt(rand.nextInt(maxHeight) + 8) + heightDiff);
+        final float z = (float) ((destChunkZ * 16) + rand.nextInt(16));
 
-        float angleXZ = settings.ravines.angleXZ.startVal;
-        float angleY = settings.ravines.angleY.startVal;
-        float scale = settings.ravines.scale.startVal;
+        RavineSettings cfg = settings.ravines;
+        final int distance = cfg.startDistance;
+        PrimerData data = new PrimerData(primer, chunkX, chunkZ);
+        TunnelPathInfo path = new TunnelPathInfo(cfg, rand, x, y, z);
 
-        // Randomly orient the angle.
-        angleXZ += rand.nextFloat() * PI_TIMES_2;
-        angleY += settings.ravines.angleY.startValRandFactor * (rand.nextFloat() - 0.50f);
-        // Randomly adjust the scale.
-        scale += settings.ravines.scale.startValRandFactor * (rand.nextFloat() * 2.00f + rand.nextFloat());
-
-        final int distance = settings.ravines.startingDistance;
-        final float scaleY = settings.ravines.scaleY.startVal;
-
-        addRavine(rand.nextLong(), originalX, originalZ, primer, x, y, z, scale, angleXZ, angleY, 0, distance, scaleY);
+        addRavine(rand.nextLong(), data, path, distance);
     }
 
     /** Generates any applicable noise-based features in the current chunk. */
@@ -221,133 +194,48 @@ public class CaveGenerator {
      * angled spheres in the world. Supports object-specific replacement of most
      * variables, as well as a few new variables for controlling shapes, adding
      * noise-base alternatives to air, and wall decorations.
-     *
      * @param seed      The world's seed. Use to create a local Random object for
      *                  regen parity.
-     * @param originalX The X coordinate of the starting chunk.
-     * @param originalZ The Z coordinate of the starting chunk.
-     * @param primer    Contains data about the chunk being generated.
-     * @param x         The X coordinate of the destination block.
-     * @param y         The Y coordinate of the destination block.
-     * @param z         The Z coordinate of the destination block.
-     * @param scale     The diameter? in blocks of the current tunnel.
-     * @param angleXZ   The horizontal angle in radians for starting this tunnel.
-     * @param angleY    The vertical angle in radians for starting this tunnel.
+     * @param data      Data containing the current chunk primer and coordinates.
+     * @param path      Data containing information about the path of tunnel segments to be created.
      * @param position  A measure of progress until `distance`.
      * @param distance  The length of the tunnel. 0 -> # ( 132 to 176 ).
-     * @param scaleY    A vertical multiple of scale. 1.0 -> same as scale.
      */
-    private void addTunnel(
-        long seed,
-        int originalX,
-        int originalZ,
-        ChunkPrimer primer,
-        double x,
-        double y,
-        double z,
-        float scale,
-        float angleXZ,
-        float angleY,
-        int position,
-        int distance,
-        float scaleY
-    ) {
-        // The amount to alter angle(XZ/Y) per-segment.
-        float twistXZ = settings.tunnels.twistXZ.startVal;
-        float twistY = settings.tunnels.twistY.startVal;
-        // The center of the current chunk;
-        final double centerX = originalX * 16 + 8;
-        final double centerZ = originalZ * 16 + 8;
-        // Initialize the local Random object.
-        final Random rand = new Random(seed);
-        // A second rand to avoid breaking seeds;
-        final Random rand2 = new Random(seed);
-        distance = getTunnelDistance(rand, distance);
+    private void addTunnel(long seed, PrimerData data, TunnelPathInfo path, int position, int distance) {
+        // Master RNG for this tunnel.
+        final Random mast = new Random(seed);
+        // Avoid issues with inconsistent Random calls.
+        final Random dec = new Random(seed);
+        distance = getTunnelDistance(mast, distance);
         // Determine where to place branches, if applicable.
-        final int randomBranchIndex = rand.nextInt(distance / 2) + distance / 4;
-        final boolean randomNoiseCorrection = rand.nextInt(6) == 0;
+        final int randomBranchIndex = mast.nextInt(distance / 2) + distance / 4;
+        final boolean randomNoiseCorrection = mast.nextInt(6) == 0;
 
         for (int currentPos = position; currentPos < distance; currentPos++) {
             // Determine the radius by `scale`.
-            final double radiusXZ = 1.5D + (MathHelper.sin(currentPos * (float) Math.PI / distance) * scale);
-            final double radiusY = radiusXZ * scaleY;
-            // To-do: verify this function's purpose.
-            final float cos = MathHelper.cos(angleY);
-            final float sin = MathHelper.sin(angleY);
-            x += MathHelper.cos(angleXZ) * cos;
-            y += sin;
-            z += MathHelper.sin(angleXZ) * cos;
-            // Vertical noise control.
-            if (settings.tunnels.noiseYReduction) {
-                angleY *= randomNoiseCorrection ? 0.92f : 0.70f;
-            }
-            // Adjust the angle based on current twist(XZ/Y). twist
-            // will have been recalculated on subsequent iterations.
-            // The potency of twist is reduced immediately.
-            angleXZ += twistXZ * 0.1f;
-            angleY += twistY * 0.1f;
-            // Rotates the beginning of the chain around the end.
-            twistY = adjustTwist(twistY, rand, settings.tunnels.twistY);
-            // Positive is counterclockwise, negative is clockwise.
-            twistXZ = adjustTwist(twistXZ, rand, settings.tunnels.twistXZ);
-            // Adjust the scale each iteration. This doesn't? happen
-            // in vanilla, so a separate Random object is used in
-            // order to avoid breaking seeds, as much as possible.
-            scale = adjustScale(scale, rand2, settings.tunnels.scale);
-            scaleY = adjustScale(scaleY, rand2, settings.tunnels.scaleY);
+            final double radiusXZ = 1.5D + (MathHelper.sin(currentPos * (float) Math.PI / distance) * path.getScale());
+            final double radiusY = radiusXZ * path.getScaleY();
+            path.update(mast, settings.tunnels.noiseYReduction, randomNoiseCorrection ? 0.92F : 0.70F, 0.1F);
 
-            // Add branches.
-            if (scale > 1.00f && distance > 0 && currentPos == randomBranchIndex) {
-                if (settings.tunnels.resizeBranches) {
-                    // In vanilla, tunnels are resized when branching.
-                    addTunnel(rand.nextLong(), originalX, originalZ, primer, x, y, z, rand.nextFloat() * 0.5F + 0.5F,
-                        angleXZ - PI_OVER_2, angleY / 3.0F, currentPos, distance, 1.00f);
-                    addTunnel(rand.nextLong(), originalX, originalZ, primer, x, y, z, rand.nextFloat() * 0.5F + 0.5F,
-                        angleXZ + PI_OVER_2, angleY / 3.0F, currentPos, distance, 1.00f);
-                } else {
-                    // Continue with the same size (not vanilla).
-                    addTunnel(rand.nextLong(), originalX, originalZ, primer, x, y, z, scale,
-                        angleXZ - PI_OVER_2, angleY / 3.0F, currentPos, distance, scaleY);
-                    addTunnel(rand.nextLong(), originalX, originalZ, primer, x, y, z, scale,
-                        angleXZ + PI_OVER_2, angleY / 3.0F, currentPos, distance, scaleY);
-                }
+            if (path.getScale() > 1.00F && distance > 0 && currentPos == randomBranchIndex) {
+                addBranches(mast, data, path, currentPos, distance);
                 return;
             }
-            // Occasionally do nothing when no branch is placed.
-            // Not sure why we came this far.
-            if (rand.nextInt(4) == 0) {
+            // Randomly stop?
+            if (mast.nextInt(4) == 0) {
                 continue;
             }
             // Make sure we haven't travelled too far?
-            if (travelledTooFar(x, centerX, z, centerZ, distance, currentPos, scale)) {
-                // Leaving a comment here to remember the 50% increase
-                // in generation time caused by using `continue`
-                // instead of `return` here. Lest we never forget.
+            if (path.travelledTooFar(data, currentPos, distance)) {
                 return;
             }
-            // Make sure we're inside of the sphere?
-            double diameterXZ = radiusXZ * 2.0;
-            if (x >= centerX - 16.0 - diameterXZ &&
-                z >= centerZ - 16.0 - diameterXZ &&
-                x <= centerX + 16.0 + diameterXZ &&
-                z <= centerZ + 16.0 + diameterXZ
-            ) {
+            if (path.touchesChunk(data, radiusXZ * 2.0)) {
                 // Calculate all of the positions in the section.
                 // We'll be using them multiple times.
-                final TunnelSectionInfo sectionInfo = new TunnelSectionInfo(x, y, z, radiusXZ, radiusY, originalX, originalZ);
-                sectionInfo.calculate();
-
-                // If we need to test this section for water -> is there water?
-                if (!(shouldTestForWater(sectionInfo.getHighestY()) && testForWater(primer, sectionInfo))) {
-                    // Generate the actual sphere.
-                    replaceSection(rand2, primer, sectionInfo, originalX, originalZ);
-                    // We need to generate twice; once to create walls,
-                    // and once again to decorate those walls.
-                    if (hasLocalDecorators()) {
-                        // Decorate the sphere.
-                        decorateSection(rand2, primer, sectionInfo, originalX, originalZ);
-                    }
-                }
+                final TunnelSectionInfo section =
+                    new TunnelSectionInfo(data, path, radiusXZ, radiusY)
+                    .calculate();
+                createFullSection(dec, data, section);
             }
         }
     }
@@ -357,7 +245,7 @@ public class CaveGenerator {
      * single, symmetrical spheres, known internally as "rooms." This may be
      * slightly more redundant, but it should increase the algorithm's readability.
      */
-    private void addRoom(Random master, int originalX, int originalZ, ChunkPrimer primer, double x, double y, double z) {
+    private void addRoom(Random master, PrimerData data, double x, double y, double z) {
         // Construct these initial values using `rand`, consistent
         // with the vanilla setup.
         final long seed = master.nextLong();
@@ -381,20 +269,27 @@ public class CaveGenerator {
 
         // Calculate all of the positions in the section.
         // We'll be using them multiple times.
-        final TunnelSectionInfo sectionInfo = new TunnelSectionInfo(x, y, z, radiusXZ, radiusY, originalX, originalZ);
-        sectionInfo.calculate();
+        final TunnelSectionInfo section =
+            new TunnelSectionInfo(data, x, y, z, radiusXZ, radiusY)
+            .calculate();
+        createFullSection(master, data, section);
+    }
 
-        // If we need to test this section for water -> is there water?
-        if (!(shouldTestForWater(sectionInfo.getHighestY()) && testForWater(primer, sectionInfo))) {
-            // Generate the actual sphere.
-            replaceSection(rand, primer, sectionInfo, originalX, originalZ);
-            // We need to generate twice; once to create walls,
-            // and once again to decorate those walls.
-            if (hasLocalDecorators()) {
-                // Decorate the sphere.
-                decorateSection(rand, primer, sectionInfo, originalX, originalZ);
-            }
+    private void addBranches(Random rand, PrimerData data, TunnelPathInfo path, int currentPos, int distance) {
+        final float angleXZ1 = path.getAngleXZ() - PI_OVER_2;
+        final float angleXZ2 = path.getAngleXZ() + PI_OVER_2;
+        final float angleY = path.getAngleY() / 3.0F;
+        TunnelPathInfo reset1, reset2;
+
+        if (settings.tunnels.resizeBranches) { // In vanilla, tunnels are resized when branching.
+            reset1 = path.reset(angleXZ1, angleY, rand.nextFloat() * 0.5F + 0.5F, 1.00F);
+            reset2 = path.reset(angleXZ2, angleY, rand.nextFloat() * 0.5F + 0.5F, 1.00F);
+        } else { // Continue with the same size (not vanilla).
+            reset1 = path.reset(angleXZ1, angleY, path.getScale(), path.getScaleY());
+            reset2 = path.reset(angleXZ2, angleY, path.getScale(), path.getScaleY());
         }
+        addTunnel(rand.nextLong(), data, reset1, currentPos, distance);
+        addTunnel(rand.nextLong(), data, reset2, currentPos, distance);
     }
 
     /**
@@ -403,94 +298,36 @@ public class CaveGenerator {
      * values between 1-4, stored above. The difference in scale typically observed in
      * ravines is the result of arguments input to this function.
      */
-    private void addRavine(
-        long seed,
-        int originalX,
-        int originalZ,
-        ChunkPrimer primer,
-        double x,
-        double y,
-        double z,
-        float scale,
-        float angleXZ,
-        float angleY,
-        int position,
-        int distance,
-        float scaleY
-    ) {
-        // The amount to alter angle(XZ/Y) per-segment.
-        float twistXZ = settings.ravines.twistXZ.startVal;
-        float twistY = settings.ravines.twistY.startVal;
-        // The center of the current chunk;
-        final double centerX = originalX * 16 + 8;
-        final double centerZ = originalZ * 16 + 8;
-        // Initialize the local Random object.
-        final Random rand = new Random(seed);
-        // A second rand to avoid breaking seeds;
-        final Random rand2 = new Random(seed);
-        distance = getTunnelDistance(rand, distance);
-        // Update the ravine wall mutations to be unique to this chasm.
-        updateMutations(rand);
+    private void addRavine(long seed, PrimerData data, TunnelPathInfo path, int distance) {
+        // Master RNG for this tunnel.
+        final Random mast = new Random(seed);
+        // Avoid issues with inconsistent Random calls.
+        final Random dec = new Random(seed);
+        distance = getTunnelDistance(mast, distance);
+        // Unique wall mutations for this chasm.
+        final float[] mut = getMutations(mast);
 
-        for (int currentPos = position; currentPos < distance; currentPos++) {
+        for (int currentPos = 0; currentPos < distance; currentPos++) {
             // Determine the radius by `scale`.
-            final double radiusXZ = 1.5D + (MathHelper.sin(currentPos * (float) Math.PI / distance) * scale);
-            final double radiusY = radiusXZ * scaleY;
-            // To-do: verify this function's purpose.
-            final float cos = MathHelper.cos(angleY);
-            final float sin = MathHelper.sin(angleY);
-            x += MathHelper.cos(angleXZ) * cos;
-            y += sin;
-            z += MathHelper.sin(angleXZ) * cos;
-            // Vertical noise control.
-            angleY *= settings.ravines.noiseYFactor;
-            // Adjust the angle based on current twist(XZ/Y). twist
-            // will have been recalculated on subsequent iterations.
-            // The potency of twist is reduced immediately.
-            angleXZ += twistXZ * 0.05f; // Adjustments matter less for ravines
-            angleY += twistY * 0.05f;
-            // Rotates the beginning of the chain around the end.
-            twistY = adjustTwist(twistY, rand, settings.ravines.twistY);
-            // Positive is counterclockwise, negative is clockwise.
-            twistXZ = adjustTwist(twistXZ, rand, settings.ravines.twistXZ);
-            // Adjust the scale each iteration. This doesn't? happen
-            // in vanilla, so a separate Random object is used in
-            // order to avoid breaking seeds, as much as possible.
-            scale = adjustScale(scale, rand2, settings.ravines.scale);
-            scaleY = adjustScale(scaleY, rand2, settings.ravines.scaleY);
+            final double radiusXZ = 1.5D + (MathHelper.sin(currentPos * (float) Math.PI / distance) * path.getScale());
+            final double radiusY = radiusXZ * path.getScaleY();
+            path.update(mast, true, settings.ravines.noiseYFactor, 0.05F);
 
-            // Not sure why we came this far.
-            // Even more so in the case of ravines.
-            if (rand.nextInt(4) == 0) {
+            // Randomly stop?
+            if (mast.nextInt(4) == 0) {
                 continue;
             }
             // Make sure we haven't travelled too far?
-            if (travelledTooFar(x, centerX, z, centerZ, distance, currentPos, scale)) {
+            if (path.travelledTooFar(data, currentPos, distance)) {
                 return;
             }
-            // Make sure we're inside of the sphere?
-            double diameterXZ = radiusXZ * 2.0;
-            if (x >= centerX - 16.0 - diameterXZ &&
-                z >= centerZ - 16.0 - diameterXZ &&
-                x <= centerX + 16.0 + diameterXZ &&
-                z <= centerZ + 16.0 + diameterXZ
-            ) {
+            if (path.touchesChunk(data, radiusXZ * 2.0)) {
                 // Calculate all of the positions in the section.
                 // We'll be using them multiple times.
-                final TunnelSectionInfo sectionInfo = new TunnelSectionInfo(x, y, z, radiusXZ, radiusY, originalX, originalZ);
-                sectionInfo.calculateMutated(mut);
-
-                // If we need to test this section for water -> is there water?
-                if (!(shouldTestForWater(sectionInfo.getHighestY()) && testForWater(primer, sectionInfo))) {
-                    // Generate the actual sphere.
-                    replaceSection(rand2, primer, sectionInfo, originalX, originalZ);
-                    // We need to generate twice; once to create walls,
-                    // and once again to decorate those walls.
-                    if (hasLocalDecorators()) {
-                        // Decorate the sphere.
-                        decorateSection(rand2, primer, sectionInfo, originalX, originalZ);
-                    }
-                }
+                final TunnelSectionInfo section =
+                    new TunnelSectionInfo(data, path, radiusXZ, radiusY)
+                    .calculateMutated(mut);
+                createFullSection(dec, data, section);
             }
         }
     }
@@ -522,65 +359,49 @@ public class CaveGenerator {
         return input;
     }
 
-    /** Updates the value of `original` based on the input settings. */
-    private float adjustTwist(float original, Random rand, ScalableFloat f) {
-        original = (float) Math.pow(original, f.exponent);
-        original *= f.factor;
-        original += f.randFactor * (rand.nextFloat() - rand.nextFloat()) * rand.nextFloat();
-        return original;
-    }
-
-    /** Updates the value of `original` based on the input settings. */
-    private float adjustScale(float original, Random rand, ScalableFloat f) {
-        original = (float) Math.pow(original, f.exponent);
-        original *= f.factor;
-        original += f.randFactor * (rand.nextFloat() - 0.5F);
-        if (original < 0) original = 0;
-        return original;
-    }
-
     /** Used to produce the variations in horizontal scale seen in ravines. */
-    private void updateMutations(Random rand) {
+    private float[] getMutations(Random rand) {
         if (settings.ravines.useWallNoise) {
-            updateMutationsNoise(rand);
-        } else {
-            updateMutationsVanilla(rand);
+            return getMutationsNoise(rand);
         }
+        return getMutationsVanilla(rand);
     }
 
-    /** The effectively vanilla implementation of updateMutations(). */
-    private void updateMutationsVanilla(Random rand) {
+    /** The effectively vanilla implementation of getMutations(). */
+    private float[] getMutationsVanilla(Random rand) {
+        float[] mut = new float[256];
         float val = 1.0f;
-        for (int i = 0; i < 256; i++) {
+        for (int i = 0; i < mut.length; i++) {
             if (i == 0 || rand.nextInt(3) == 0) {
                 val = rand.nextFloat() * rand.nextFloat() + 1.0f;
             }
             mut[i] = val * val;
         }
+        return mut;
     }
 
-    /** Variant of updateMutations() which produces aberrations using a noise generator. */
-    private void updateMutationsNoise(Random rand) {
+    /** Variant of getMutations() which produces aberrations using a noise generator. */
+    private float[] getMutationsNoise(Random rand) {
+        float[] mut = new float[256];
         FastNoise noise = settings.ravines.wallNoise.getGenerator(rand.nextInt());
-        for (int i = 0; i < 256; i++) {
+        for (int i = 0; i < mut.length; i++) {
             mut[i] = noise.GetAdjustedNoise(0, i);
         }
+        return mut;
     }
 
-    /** To-do: Better commentary. */
-    private boolean travelledTooFar(double x, double centerX, double z, double centerZ, int distance, int currentPos, float scale) {
-        final double fromCenterX = x - centerX;
-        final double fromCenterZ = z - centerZ;
-        // Name? Is this related to Y?
-        final double distanceRemaining = distance - currentPos;
-        final double adjustedScale = scale + 18.00;
-
-        final double fromCenterX2 = fromCenterX * fromCenterX;
-        final double fromCenterZ2 = fromCenterZ * fromCenterZ;
-        final double distanceRemaining2 = distanceRemaining * distanceRemaining;
-        final double adjustedScale2 = adjustedScale * adjustedScale;
-
-        return (fromCenterX2 + fromCenterZ2 - distanceRemaining2) > adjustedScale2;
+    private void createFullSection(Random rand, PrimerData data, TunnelSectionInfo section) {
+        // If we need to test this section for water -> is there water?
+        if (!(shouldTestForWater(section.getHighestY()) && testForWater(data.p, section))) {
+            // Generate the actual sphere.
+            replaceSection(rand, data, section);
+            // We need to generate twice; once to create walls,
+            // and once again to decorate those walls.
+            if (hasLocalDecorators()) {
+                // Decorate the sphere.
+                decorateSection(rand, data, section);
+            }
+        }
     }
 
     /**
@@ -598,16 +419,14 @@ public class CaveGenerator {
     }
 
     /** Determines whether any water exists in the current section. */
-    private boolean testForWater(ChunkPrimer primer, TunnelSectionInfo info) {
-        return info.test(pos ->
+    private boolean testForWater(ChunkPrimer primer, TunnelSectionInfo section) {
+        return section.test(pos ->
             primer.getBlockState(pos.getX(), pos.getY(), pos.getZ()).equals(BLK_WATER)
         );
     }
 
     /** Generates giant air pockets in this chunk using a 3D noise generator. */
     private void generateCaverns(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
-        // To-do: ensure that this is more unique (integer overflow).
-        FastNoise noise = settings.caverns.noise.getNoise((int) world.getSeed());
         final int[][] heightMap = HeightMapLocator.getHeightFromPrimer(primer);
         // Using an array to store calculations instead of redoing all of the
         // noise generation below when decorating caverns. Some calculations
@@ -615,9 +434,9 @@ public class CaveGenerator {
         final boolean[][][] caverns = new boolean[settings.caverns.maxHeight][16][16];
 
         for (int x = 0; x < 16; x++) {
-            final float actualX = x + (chunkX * 16);
+            final int actualX = x + (chunkX * 16);
             for (int z = 0; z < 16; z++) {
-                final float actualZ = z + (chunkZ * 16);
+                final int actualZ = z + (chunkZ * 16);
                 final int ceil = (int) ceilNoise.GetAdjustedNoise(actualX, actualZ);
                 final int floor = (int) floorNoise.GetAdjustedNoise(actualX, actualZ);
                 // Use this cavern's max height or the terrain height, whichever is lower.
@@ -627,7 +446,7 @@ public class CaveGenerator {
                 for (int y = min; y <= max; y++) {
                     final float scaledY = y / settings.caverns.noise.getScaleY();
 
-                    if (noise.GetNoise(actualX, scaledY, actualZ) < settings.caverns.noise.getSelectionThreshold()) {
+                    if (cavernNoise.GetNoise(actualX, scaledY, actualZ) < settings.caverns.noise.getSelectionThreshold()) {
                         final IBlockState state = primer.getBlockState(x, y, z);
 
                         if (state.equals(BLK_STONE)) { // Only replace actual stone.
@@ -666,9 +485,9 @@ public class CaveGenerator {
         SpawnSettings cfg = settings.conditions;
 
         for (int x = 0; x < 16; x++) {
-            final double actualX = x + (chunkX * 16);
+            final int actualX = x + (chunkX * 16);
             for (int z = 0; z < 16; z++) {
-                final double actualZ = z + (chunkZ * 16);
+                final int actualZ = z + (chunkZ * 16);
                 for (int y = cfg.maxHeight; y >= cfg.minHeight; y--) {
                     IBlockState original = primer.getBlockState(x, y, z);
                     // Only decorate actual stone.
@@ -771,23 +590,23 @@ public class CaveGenerator {
     }
 
     /** Replaces all blocks inside of this section. */
-    private void replaceSection(Random rand, ChunkPrimer primer, TunnelSectionInfo info, int chunkX, int chunkZ) {
-        info.run(pos -> {
+    private void replaceSection(Random rand, PrimerData data, TunnelSectionInfo section) {
+        section.run(pos -> {
             final int x = pos.getX();
             final int y = pos.getY();
             final int z = pos.getZ();
-            final boolean isTopBlock = isTopBlock(primer, x, y, z, chunkX, chunkZ);
-            replaceBlock(rand, primer, x, y, z, chunkX, chunkZ, isTopBlock);
+            final boolean isTopBlock = isTopBlock(data.p, x, y, z, data.chunkX, data.chunkZ);
+            replaceBlock(rand, data.p, x, y, z, data.chunkX, data.chunkZ, isTopBlock);
         });
     }
 
     /** Decorates all blocks inside of this section. */
-    private void decorateSection(Random rand, ChunkPrimer primer, TunnelSectionInfo info, int chunkX, int chunkZ) {
-        info.run(pos -> {
+    private void decorateSection(Random rand, PrimerData data, TunnelSectionInfo section) {
+        section.run(pos -> {
             final int x = pos.getX();
             final int y = pos.getY();
             final int z = pos.getZ();
-            decorateBlock(rand, primer, x, y, z, chunkX, chunkZ);
+            decorateBlock(rand, data.p, x, y, z, data.chunkX, data.chunkZ);
         });
     }
 
@@ -820,7 +639,7 @@ public class CaveGenerator {
      * @param foundTop True if we've encountered the biome's top block.
      *                 Ideally, if we've broken the surface.
      */
-    private boolean replaceBlock(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop) {
+    private void replaceBlock(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop) {
         final Biome biome = world.getBiome(absoluteCoords(chunkX, chunkZ));
         final IBlockState state = primer.getBlockState(x, y, z);
         final IBlockState top = biome.topBlock;
@@ -836,24 +655,22 @@ public class CaveGenerator {
                 if (block.canGenerate(x, y, z, chunkX, chunkZ)) {
                     if (rand.nextFloat() <= block.getChance()) {
                         primer.setBlockState(x, y, z, block.getFillBlock());
-                        return true;
+                        return;
                     }
                 }
             }
             primer.setBlockState(x, y, z, BLK_AIR);
-            return true;
         }
-        return false;
     }
 
     /** Conditionally replaces the current block with blocks from this generator's WallDecorators. */
-    private boolean decorateBlock(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ) {
+    private void decorateBlock(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ) {
         if (decorateVertical(rand, primer, x, y, z, chunkX, chunkZ, true)) {
-            return true;
+            return;
         } else if (decorateVertical(rand, primer, x, y, z, chunkX, chunkZ, false)) {
-            return true;
+            return;
         }
-        return decorateHorizontal(rand, primer, x, y, z, chunkX, chunkZ);
+        decorateHorizontal(rand, primer, x, y, z, chunkX, chunkZ);
     }
 
     private boolean decorateVertical(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ, boolean up) {
@@ -880,7 +697,7 @@ public class CaveGenerator {
         return false;
     }
 
-    private boolean decorateHorizontal(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ ) {
+    private void decorateHorizontal(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ ) {
         // Avoid repeated calculations.
         List<WallDecorator> testedDecorators = pretestDecorators(rand, x, y, z, chunkX, chunkZ);
         // We'll need to reiterate through those decorators below.
@@ -897,13 +714,11 @@ public class CaveGenerator {
                 if (decorator.matchesBlock(candidate)) {
                     // Place block -> return success if original was replaced.
                     if (decorator.decidePlace(primer, x, y, z, pos.getX(), pos.getY(), pos.getZ())) {
-                        return true;
+                        return;
                     } // else continue iterating through decorators.
                 }
             }
         }
-        // Everything failed.
-        return false;
     }
 
     private List<WallDecorator> pretestDecorators(Random rand, int x, int y, int z, int chunkX, int chunkZ) {
@@ -924,40 +739,6 @@ public class CaveGenerator {
             new BlockPos(x + 1, y, z), // East
             new BlockPos(x - 1, y, z)  // West
         };
-    }
-
-    /**
-     * Attempts to retrieve a block from the input ChunkPrimer. Returns air or stone if the
-     * coordinates would be outside of the current chunk.
-     */
-    private IBlockState safeGetBlock(ChunkPrimer primer, TunnelSectionInfo info, boolean useMut, int x, int y, int z) {
-        // If the coordinates are outside of the current chunk,
-        // there is no way to accurately determine which block
-        // will exist at this coordinate. That would need to be
-        // handled on a later event, causing a substantial loss
-        // in performance.
-        if (areCoordsInChunk(x, z)) {
-            return primer.getBlockState(x, y, z);
-        } else if (useMut) {
-            if (info.testCoords(x, y, z, mut)){
-                return BLK_AIR;
-            }
-            return BLK_STONE;
-        } else if (info.testCoords(x, y, z)) {
-            return BLK_AIR;
-        }
-        return BLK_STONE;
-    }
-
-    /** Variant of safeGetBlock() which uses a noise generator instead of TunnelSectionInfo. */
-    private IBlockState safeGetBlock(ChunkPrimer primer, FastNoise noise, float threshold, int x, int y, int z, int actualX, int actualZ) {
-        // See above.
-        if (areCoordsInChunk(x, z)) {
-            return primer.getBlockState(x, y, z);
-        } else if (noise.GetNoise(actualX, y, actualZ) < threshold) {
-            return BLK_AIR;
-        }
-        return BLK_STONE;
     }
 
     private boolean areCoordsInChunk(int x, int z) {

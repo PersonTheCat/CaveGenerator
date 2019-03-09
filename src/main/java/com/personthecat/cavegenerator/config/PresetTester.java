@@ -120,14 +120,14 @@ public class PresetTester {
     }
 
     private void testTunnels(TunnelSettings s) {
-        testDistance(s.startingDistance, "tunnels.distance");
+        testDistance(s.startDistance, "tunnels.distance");
         testHeights(s.minHeight, s.maxHeight, "tunnels");
         testAngle(s.angleXZ, "tunnels.angleXZ");
         testAngle(s.angleY, "tunnels.angleY");
     }
 
     private void testRavines(RavineSettings s) {
-        testDistance(s.startingDistance, "ravines.distance");
+        testDistance(s.startDistance, "ravines.distance");
         testHeights(s.minHeight, s.maxHeight, "ravines");
         testAngle(s.angleXZ, "ravines.angleXZ");
         testAngle(s.angleY, "ravines.angleY");

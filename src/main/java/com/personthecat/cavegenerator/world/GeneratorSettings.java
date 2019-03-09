@@ -202,7 +202,7 @@ public class GeneratorSettings {
          * The expected distance of the first cave generated in this
          * system. 0 -> (132 to 136)?
          */
-        public final int startingDistance;
+        public final int startDistance;
 
         public final int minHeight;
         public final int maxHeight;
@@ -252,7 +252,7 @@ public class GeneratorSettings {
             this.angleY = angleY;
             this.systemInverseChance = systemInverseChance;
             this.isolatedInverseChance = isolatedInverseChance;
-            this.startingDistance = startingDistance;
+            this.startDistance = startingDistance;
             this.minHeight = minHeight;
             this.maxHeight = maxHeight;
             this.frequency = frequency;
@@ -317,7 +317,7 @@ public class GeneratorSettings {
         public final ScalableFloat angleY;
 
         /** The expected distance of the first cave generated in this system. 0 -> 121? */
-        public final int startingDistance;
+        public final int startDistance;
 
         // Inverse chance = (1 / #) chance.
         public final int inverseChance;
@@ -369,7 +369,7 @@ public class GeneratorSettings {
             this.scaleY = scaleY;
             this.angleXZ = angleXZ;
             this.angleY = angleY;
-            this.startingDistance = startingDistance;
+            this.startDistance = startingDistance;
             this.minHeight = minHeight;
             this.maxHeight = maxHeight;
             this.inverseChance = inverseChance;

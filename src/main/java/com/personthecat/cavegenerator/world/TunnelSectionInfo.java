@@ -29,30 +29,31 @@ public class TunnelSectionInfo {
     /** Stores all valid positions to avoid redundant calculations. */
     private BlockPos[] positions;
 
-    /** Temporary noise generator */
-    private final FastNoise noise = new FastNoise().SetFrequency(0.001f).SetRange(-5f, 5f).SetNoiseType(FastNoise.NoiseType.SimplexFractal);
+    public TunnelSectionInfo(PrimerData data, TunnelPathInfo path, double radiusXZ, double radiusY) {
+        this(data, path.getX(), path.getY(), path.getZ(), radiusXZ, radiusY);
+    }
 
-    public TunnelSectionInfo(double x, double y, double z, double radiusXZ, double radiusY, int originalX, int originalZ) {
+    public TunnelSectionInfo(PrimerData data, double x, double y, double z, double radiusXZ, double radiusY) {
         this.centerX = x;
         this.centerY = y;
         this.centerZ = z;
         this.radiusXZ = radiusXZ;
         this.radiusY = radiusY;
-        this.chunkX = originalX;
-        this.chunkZ = originalZ;
+        this.chunkX = data.chunkX;
+        this.chunkZ = data.chunkZ;
         // Always stay within the chunk bounds.
-        this.startX = applyLimitXZ(MathHelper.floor(x - radiusXZ) - originalX * 16 - 1);
-        this.endX = applyLimitXZ(MathHelper.floor(x + radiusXZ) - originalX * 16 + 1);
-        this.startY = applyLimitY(MathHelper.floor(y - radiusY) - 1);
-        this.endY = applyLimitY(MathHelper.floor(y + radiusY) + 1);
-        this.startZ = applyLimitXZ(MathHelper.floor(z - radiusXZ) - originalZ * 16 - 1);
-        this.endZ = applyLimitXZ(MathHelper.floor(z + radiusXZ) - originalZ * 16 + 1);
+        this.startX = applyLimitXZ(MathHelper.floor(centerX - radiusXZ) - chunkX * 16 - 1);
+        this.endX = applyLimitXZ(MathHelper.floor(centerX + radiusXZ) - chunkX * 16 + 1);
+        this.startY = applyLimitY(MathHelper.floor(centerY - radiusY) - 1);
+        this.endY = applyLimitY(MathHelper.floor(centerY + radiusY) + 1);
+        this.startZ = applyLimitXZ(MathHelper.floor(centerZ - radiusXZ) - chunkZ * 16 - 1);
+        this.endZ = applyLimitXZ(MathHelper.floor(centerZ + radiusXZ) - chunkZ * 16 + 1);
         // Setup the array to the maximum possible size;
         initializePositions();
     }
 
     /** Pre-calculates positions and stores them into an array. */
-    public void calculate() {
+    public TunnelSectionInfo calculate() {
         // Monitor the index for pushing values to the array;
         int index = 0;
         for (int x = startX; x < endX; x++) {
@@ -77,10 +78,11 @@ public class TunnelSectionInfo {
             }
         }
         shrinkPositionsToSize(index);
+        return this;
     }
 
     /** Variant of calculate() that uses the random values from MapGenRavine. */
-    public void calculateMutated(float[] mut) {
+    public TunnelSectionInfo calculateMutated(float[] mut) {
         int index = 0;
         for (int x = startX; x < endX; x++) {
             final double distX = ((x + chunkX * 16) + 0.5 - centerX) / radiusXZ;
@@ -102,6 +104,7 @@ public class TunnelSectionInfo {
             }
         }
         shrinkPositionsToSize(index);
+        return this;
     }
 
     /** Sets the positions array to be the maximum possible size for this section. */

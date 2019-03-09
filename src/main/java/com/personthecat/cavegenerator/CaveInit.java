@@ -62,6 +62,15 @@ public class CaveInit {
         });
     }
 
+    /** Loads all generators using the current World object. */
+    public static void loadGenerators(Map<String, GeneratorSettings> presets, Map<String, CaveGenerator> gens, World world) {
+        gens.clear();
+        for (Entry<String, GeneratorSettings> entry : presets.entrySet()) {
+            CaveGenerator generator = new CaveGenerator(world, entry.getValue());
+            gens.put(entry.getKey(), generator);
+        }
+    }
+
     /** Attempts to locate a preset using each of the possible extensions. */
     public static Optional<File> locatePreset(String preset) {
         for (String ext : EXTENSIONS) {
@@ -99,7 +108,16 @@ public class CaveInit {
     public static void onWorldEventLoad(WorldEvent.Load event) {
         // Obtain a reference to the current world from `event`.
         World world = event.getWorld();
+        // As always, there's no other way to access additional
+        // information non-statically when using Forge's
+        // SubscribeEvents. I would have preferred to avoid that.
+        Map<String, GeneratorSettings> presets = Main.instance.presets;
+        Map<String, CaveGenerator> generators = Main.instance.generators;
 
+        // Only load once.
+        if (generators.size() > 0) {
+            return;
+        }
         // Verify the integrity of `world` before proceeding.
         if (world == null) {
             throw runEx(
@@ -109,21 +127,24 @@ public class CaveInit {
                 "PersonTheCat know, but it may not be fixable."
             );
         }
+        loadGenerators(presets, generators, world);
+    }
 
-        // Clear existing generators. Allow them to be reset.
+    @SubscribeEvent
+    @SuppressWarnings("unused")
+    public static void onWorldEventUnload(WorldEvent.Unload event) {
         Main.instance.generators.clear();
-        // As always, there's no other way to access additional
-        // information non-statically when using Forge's
-        // SubscribeEvents. I would have preferred to avoid that.
-        for (Entry<String, GeneratorSettings> entry : Main.instance.presets.entrySet()) {
-            CaveGenerator generator = new CaveGenerator(world, entry.getValue());
-            Main.instance.generators.put(entry.getKey(), generator);
-        }
     }
 
     /** Returns whether any generator is enabled for the current dimension. */
     public static boolean anyGeneratorEnabled(final Map<String, CaveGenerator> generators, int dimension) {
         return find(generators.values(), (gen) -> gen.canGenerate(dimension))
+            .isPresent();
+    }
+
+    /** Returns whether any generator is enabled for the current dimension and has world decorators. */
+    public static boolean anyHasWorldDecorator(final Map<String, CaveGenerator> generators, int dimension) {
+        return find(generators.values(), (gen) -> gen.canGenerate(dimension) && gen.hasWorldDecorators())
             .isPresent();
     }
 }

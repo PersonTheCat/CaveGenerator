@@ -61,7 +61,7 @@ public class CaveBlock {
         this.maxHeight = maxHeight;
         this.settings = settings;
         this.noise = settings.map(s ->
-            s.getNoise(Block.getStateId(fillBlock)));
+            s.getGenerator(Block.getStateId(fillBlock)));
     }
 
     public double getChance() {

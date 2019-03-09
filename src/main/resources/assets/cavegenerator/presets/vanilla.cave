@@ -370,13 +370,13 @@
         }
          # Similar to noiseYReduction, but not as random.
         noiseYFactor: 0.7
-         # Contains an optional noise2D block used to change
-         # the look of ravine walls. Placing / uncommenting
-         # this block will completely override the vanilla
-         # ravine wall generation features, producing
-         # smoother, more organic surfaces.
-        wallNoise: {
-             /*
+         /*
+          # Contains an optional noise2D block used to change
+          # the look of ravine walls. Placing / uncommenting
+          # this block will completely override the vanilla
+          # ravine wall generation features, producing
+          # smoother, more organic surfaces.
+         wallNoise: {
              noise2D: {
                   # Scale is ignored in this context.
                  scale: 0.5
@@ -384,8 +384,8 @@
                  minVal: 0
                  maxVal: 4
              }
-             */
-        }
+         }
+         */
     }
      # See caverns.json for another example of caverns. These
      # are the default values.

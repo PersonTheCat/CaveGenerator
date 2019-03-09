@@ -64,7 +64,7 @@ public class NoiseSettings3D {
         return fractalType;
     }
 
-    public FastNoise getNoise(int seed) {
+    public FastNoise getGenerator(int seed) {
         return new FastNoise(seed)
             .SetNoiseType(noiseType)
             .SetFrequency(frequency)

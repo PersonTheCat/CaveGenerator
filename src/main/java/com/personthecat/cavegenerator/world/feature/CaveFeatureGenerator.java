@@ -37,7 +37,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
         final Map<String, CaveGenerator> generators = Main.instance.generators;
         final int dimension = world.provider.getDimension();
 
-        if (CaveInit.anyGeneratorEnabled(generators, dimension)) {
+        if (CaveInit.anyHasWorldDecorator(generators, dimension)) {
             final int[][] heightMap = HeightMapLocator.getHeightFromWorld(world, chunkX, chunkZ);
 
             for (CaveGenerator generator : generators.values()) {
@@ -107,6 +107,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
                     continue;
                 }
                 final int maxHeight = getMin(info.heightMap[l & 15][d & 15], st.getMaxHeight());
+                if (st.getMinHeight() >= maxHeight) continue; // If the heightmap value is <= minHeight;
                 final int startHeight = numBetween(rand, st.getMinHeight(), maxHeight);
                 // Stalactite -> go up and find a surface.
                 // Stalagmite -> go down and find a surface.
@@ -520,7 +521,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
 
     /** Returns a random number between the input bounds. */
     private static int numBetween(Random rand, int min, int max) {
-        return rand.nextInt(max - min) + min;
+        return min == max ? min : rand.nextInt(max - min) + min;
     }
 
     /**

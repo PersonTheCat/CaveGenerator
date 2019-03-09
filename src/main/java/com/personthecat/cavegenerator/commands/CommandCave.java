@@ -136,7 +136,8 @@ public class CommandCave extends CommandBase {
             .handleIfPresent((e) -> { // That didn't work. Forward the error to the user.
                 sendMessage(sender, e.getMessage());
             })
-            .andThen(() -> { // All is well. Inform the user of success.
+            .andThen(() -> { // Load generators and inform the user.
+                CaveInit.loadGenerators(Main.instance.presets, Main.instance.generators, sender.getServer().getWorld(0));
                 sendMessage(sender, "Successfully reloaded caves. View the log for diagnostics.");
             });
     }

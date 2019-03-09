@@ -30,7 +30,7 @@ import java.util.Optional;
 @Mod(
     modid = "cavegenerator",
     name = "Cave Generator",
-    version = "0.13",
+    version = "0.14",
     dependencies = "after:worleycaves;",
     acceptableRemoteVersions = "*"
 )

@@ -66,7 +66,7 @@ public class WallDecorator {
         this.preference = preference;
         this.settings = settings;
         this.noise = settings.map(s ->
-            s.getNoise(Block.getStateId(fillBlock)));
+            s.getGenerator(Block.getStateId(fillBlock)));
     }
 
     public boolean spawnInPatches() {
