@@ -2,6 +2,7 @@ package com.personthecat.cavegenerator.util;
 
 import com.personthecat.cavegenerator.world.WallDecorator;
 import fastnoise.FastNoise;
+import fastnoise.FastNoise.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -560,15 +561,30 @@ public class HjsonTools {
 
     /** Converts the input json into a NoiseSettings3D object. */
     public static NoiseSettings3D toNoiseSettings(JsonObject json, NoiseSettings3D defaults) {
-        float frequency = getFloat(json, "frequency").orElse(defaults.getFrequency());
-        float scale = getFloat(json, "scale").orElse(defaults.getScale());
-        float scaleY = getFloat(json, "scaleY").orElse(defaults.getScaleY());
-        int octaves = getInt(json, "octaves").orElse(defaults.getOctaves());
-        FastNoise.NoiseType type = getString(json, "type").map(HjsonTools::noiseType)
-            .orElse(defaults.getNoiseType());
-        FastNoise.FractalType fractal = getString(json, "fractal").map(HjsonTools::fractalType)
-            .orElse(defaults.getFractalType());
-        return new NoiseSettings3D(frequency, scale, scaleY, octaves, type, fractal);
+        float frequency = getFloat(json, "frequency").orElse(defaults.frequency);
+        float scale = getFloat(json, "scale").orElse(defaults.scale);
+        float scaleY = getFloat(json, "scaleY").orElse(defaults.scaleY);
+        float lacunarity = getFloat(json, "lacunarity").orElse(defaults.lacunarity);
+        float gain = getFloat(json, "gain").orElse(defaults.gain);
+        float perturbAmp = getFloat(json, "perturbAmp").orElse(defaults.perturbAmp);
+        float jitter = getFloat(json, "jitter").orElse(defaults.jitter);
+        int octaves = getInt(json, "octaves").orElse(defaults.octaves);
+        boolean perturb = getBool(json, "perturb").orElse(defaults.perturb);
+        boolean invert = getBool(json, "invert").orElse(defaults.invert);
+        Interp interp = getString(json, "interp").map(HjsonTools::interp)
+            .orElse(defaults.interp);
+        NoiseType type = getString(json, "type").map(HjsonTools::noiseType)
+            .orElse(defaults.noiseType);
+        FractalType fractal = getString(json, "fractal").map(HjsonTools::fractalType)
+            .orElse(defaults.fractalType);
+        CellularDistanceFunction distanceFunction = getString(json, "distFunc").map(HjsonTools::distanceFunction)
+            .orElse(defaults.distanceFunction);
+        CellularReturnType returnType = getString(json, "returnType").map(HjsonTools::returnType)
+            .orElse(defaults.returnType);
+        NoiseType cellularLookup = getString(json, "cellularLookup").map(HjsonTools::noiseType)
+            .orElse(defaults.cellularLookup);
+        return new NoiseSettings3D(frequency, scale, scaleY, lacunarity, gain, perturbAmp, jitter, octaves,
+            invert, perturb, interp, type, fractal, distanceFunction, returnType, cellularLookup);
     }
 
     /** Converts the input json into a NoiseSettings2D object. */
@@ -580,19 +596,43 @@ public class HjsonTools {
         return new NoiseSettings2D(frequency, scale, min, max);
     }
 
-    public static FastNoise.NoiseType noiseType(String s) {
-        Optional<FastNoise.NoiseType> dir = find(FastNoise.NoiseType.values(), (v) -> v.toString().equalsIgnoreCase(s));
+    public static Interp interp(String s) {
+        Optional<Interp> dir = find(Interp.values(), (v) -> v.toString().equalsIgnoreCase(s));
         return dir.orElseThrow(() -> {
-            final String o = Arrays.toString(FastNoise.NoiseType.values());
+            final String o = Arrays.toString(Interp.values());
+            return runExF("Error: Interp \"%s\" does not exist. The following are valid options:\n\n", s, o);
+        });
+    }
+
+    public static NoiseType noiseType(String s) {
+        Optional<NoiseType> dir = find(NoiseType.values(), (v) -> v.toString().equalsIgnoreCase(s));
+        return dir.orElseThrow(() -> {
+            final String o = Arrays.toString(NoiseType.values());
             return runExF("Error: NoiseType \"%s\" does not exist. The following are valid options:\n\n", s, o);
         });
     }
 
-    public static FastNoise.FractalType fractalType(String s) {
-        Optional<FastNoise.FractalType> dir = find(FastNoise.FractalType.values(), (v) -> v.toString().equalsIgnoreCase(s));
+    public static FractalType fractalType(String s) {
+        Optional<FractalType> dir = find(FractalType.values(), (v) -> v.toString().equalsIgnoreCase(s));
         return dir.orElseThrow(() -> {
-            final String o = Arrays.toString(FastNoise.FractalType.values());
+            final String o = Arrays.toString(FractalType.values());
             return runExF("Error: FractalType \"%s\" does not exist. The following are valid options:\n\n", s, o);
+        });
+    }
+
+    public static CellularDistanceFunction distanceFunction(String s) {
+        Optional<CellularDistanceFunction> dir = find(CellularDistanceFunction.values(), (v) -> v.toString().equalsIgnoreCase(s));
+        return dir.orElseThrow(() -> {
+            final String o = Arrays.toString(CellularDistanceFunction.values());
+            return runExF("Error: CellularDistanceFunction \"%s\" does not exist. The following are valid options:\n\n", s, o);
+        });
+    }
+
+    public static CellularReturnType returnType(String s) {
+        Optional<CellularReturnType> dir = find(CellularReturnType.values(), (v) -> v.toString().equalsIgnoreCase(s));
+        return dir.orElseThrow(() -> {
+            final String o = Arrays.toString(CellularReturnType.values());
+            return runExF("Error: CellularReturnType \"%s\" does not exist. The following are valid options:\n\n", s, o);
         });
     }
 

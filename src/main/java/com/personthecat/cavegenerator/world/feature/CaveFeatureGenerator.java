@@ -494,7 +494,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
 
     /** Determines whether the input LargeStalactite can spawn at this location. */
     private static boolean canSpawnStalactite(LargeStalactite st, FastNoise noise, int x, int z) {
-        return !st.spawnInPatches() || noise.GetAdjustedNoise(x, z) < st.getThreshold();
+        return !st.spawnInPatches() || noise.GetBoolean(x, z);
     }
 
     /**

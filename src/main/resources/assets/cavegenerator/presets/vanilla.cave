@@ -37,13 +37,15 @@
  #    # determine whether a particular horizontal space is     #
  #    # acceptable for decoration based on a threshold which   #
  #    # is calculated from `scale`.                            #
- #   noise2D {                                                 #
+ #   noise2D: {                                                #
  #      # Limits the range of acceptable values. In a sense,   #
  #      # this effectively increases or decreases the width    #
  #      # of each peak of values generated. In most cases      #
  #      # throughout this mod, changing the scale in a noise   #
  #      # block alters the size of each area that gets         #
- #      # decorated.                                           #
+ #      # decorated. This parameter is only used whenever the  #
+ #      # noise generator is used to produce a boolean. It     #
+ #      # works by scaling the threshold of acceptable values. #
  #     scale: floating-point value                             #
  #      # Alters the distance between peaks of values.         #
  #     frequency: floating-point value                         #
@@ -60,7 +62,7 @@
  #    # particular y-coordinate is valid does not imply that   #
  #    # everything below it is also valid, as would be the     #
  #    # case with 2D noise.                                    #
- #   noise3D {                                                 #
+ #   noise3D: {                                                #
  #      # See scale above.                                     #
  #     scale: floating-point value                             #
  #      # See frequency above.                                 #
@@ -69,24 +71,63 @@
  #      # Literally means that clusters generated will be      #
  #      # either shorter or taller.                            #
  #     scaleY: floating-point value                            #
+ #      # The octave lacunarity of fractal noise types. Higher #
+ #      # values produce deeper and more precise fractals.     #
+ #     lacunarity: floating-point value                        #
+ #      # The octave gain for fractal noise types.             #
+ #     gain: floating-point value                              #
+ #      # Sets the maximum amount to warp coordinates when     #
+ #      # perturb is enabled.                                  #
+ #     perturbAmp: floating-point value                        #
+ #      # The maximum distance a cellular point can move from  #
+ #      # its grid position when using cellular types.         #
+ #     jitter: floating-point value                            #
  #      # The number of generation passes. This effectively    #
  #      # increases the resolution of clusters (makes them     #
  #      # *less* smooth) at the cost of performance.           #
  #     octaves: integer value                                  #
+ #      # Whether to apply a gradient perturb all values input #
+ #      # to the noise generator, warping the output.          #
+ #     perturb: boolean value                                  #
+ #      # Inverts the noise generator's output.                #
+ #     invert: boolean value                                   #
  #      # The type of noise to be used by this generator.      #
  #      # Possible values include: Value, ValueFractal,        #
  #      # Perlin, PerlinFractal, Simplex, SimplexFractal,      #
  #      # Cellular, WhiteNoise, Cubic, and CubicFractal.       #
  #      # Not case sensitive.                                  #
  #     type: NoiseType value; from string                      #
+ #      # The type of interpolation to use.                    #
+ #      # Possible values include: Linear, Hermite, and        #
+ #      # Quintic.                                             #
+ #     interp: Interp value; from string                       #
  #      # Determines how this noise will be fractalized, when  #
  #      # applicable.                                          #
  #      # Possible values include: FBM, Billow, and            #
  #      # RigidMulti.                                          #
  #      # Not case sensitive.                                  #
  #     fractal: FractalType value; from string                 #
- #      # To-do: Include additional FastNoise parameters.      # 
+ #      # The type of distance function in cellular noise      #
+ #      # calcuations.                                         #
+ #      # Possible values include: Euclidian, Manhattan, and   #
+ #      # Natural.                                             #
+ #     distFunc: CellularDistanceFunction type; from string    #
+ #      # The return type from cellular noise calculations.    #
+ #      # Possible values include: CellValue, NoiseLookup,     #
+ #      # Distance, Distance2, Distance2Add, Distance2Sub,     #
+ #      # Distance2Mul, and Distance2Div.                      #
+ #     returnType: CellularReturnType type; from string        #
+ #      # Sets the noise type used when returnType is set to   #
+ #      # NoiseLookup. See `type` for possible values.         #
+ #     cellularLookup: NoiseType type; from string             #
  #   }                                                         #
+ #   The majority of all noise parameters above have           #
+ # equivalent counterparts in the standard FastNoise library.  #
+ # The easiest way to learn what they do is to visit the link  #
+ # below and see them in action. It would be a great idea to   #
+ # download the FastNoise preview application and try changing #
+ # the parameters on your own to get a fast, graphical         #
+ # representation of how your changes will look in-game.       #
  # ########################################################### #
  #                   ### ScalableFloats ###                    #
  # ########################################################### #
@@ -201,15 +242,8 @@
               # know that they're all the same. This noise block is
               # optional. If you do not want these to spawn according
               # to noise generation, do *not* include this field.
-             noise3D: {
-                  # 0.0 - 1.0 scale.
-                 scale: 0.1
-                 frequency: 0.02
-                 scaleY: 1.0
-                  # Number of generation passes. Increases
-                  # resolution at the cost of performance.
-                 ocaves: 1
-             }
+              # See above for additional parameters.
+             noise3D: {}
          }
          */
     ]
@@ -231,12 +265,8 @@
               # Optional noise3D block. If you don't want these to
               # spawn according to noise generation, don't include
               # this field.
-             noise3D: {
-                 scale: 0.1
-                 frequency: 0.02
-                 scaleY: 1.0
-                 ocaves: 1 
-             }
+              # See above for additional parameters.
+             noise3D: {}
          }
          */
     ]
@@ -394,6 +424,7 @@
         minHeight: 10
         maxHeight: 50
          # Optional 3D noise block for the main cavern shapes.
+         # See above for additional parameters.
         noise3D: {
              # This does refer to noise frequency, but its use in
              # the case of caverns has the opposite effect. Higher
@@ -402,11 +433,6 @@
              # scale for noise-based objects is from 0-1.
             scale: 0.2
             scaleY: 0.5
-             # The number of passes. Increases resolution at the
-             # cost of performance.
-            octaves: 1
-            type: SimplexFractal
-            fractal: FBM
         }
          # Optional 2D noise block for the cavern ceiling.
          # The value produced by ceilNoise is added to the terrain
@@ -481,6 +507,8 @@
          /*
          { Default values; these don't spawn by default.
              state: null
+              # Whether the stalactite should be full-sized.
+             wide: true
               # The maximum number of blocks this structure can be.
              maxLength: 3
              chance: 0.167

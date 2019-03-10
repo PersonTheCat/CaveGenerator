@@ -53,12 +53,6 @@ public class CaveGenerator {
         this.miscNoise = new NoiseGeneratorSimplex(new Random(seed));
         // To-do: ensure that this is more unique (integer overflow).
         this.cavernNoise = settings.caverns.noise.getGenerator((int) seed);
-//            new FastNoise()
-//                .SetNoiseType(FastNoise.NoiseType.Cellular)
-//                .SetFrequency(0.02f)
-//                .SetFractalOctaves(5)
-//                .SetCellularDistanceFunction(FastNoise.CellularDistanceFunction.Euclidean)
-//                .SetCellularReturnType(FastNoise.CellularReturnType.Distance2Div);
         this.ceilNoise = settings.caverns.ceilNoise.getGenerator((int) seed >> 2);
         this.floorNoise = settings.caverns.floorNoise.getGenerator((int) seed >> 4);
     }
@@ -190,10 +184,10 @@ public class CaveGenerator {
 
     /**
      * Mod of {~~@link net.minecraft.world.gen.MapGenCaves#addTunnel} by PersonTheCat.
-     * The is the basic function responsible for spawning a chained sequence of
+     * This is the basic function responsible for spawning a chained sequence of
      * angled spheres in the world. Supports object-specific replacement of most
      * variables, as well as a few new variables for controlling shapes, adding
-     * noise-base alternatives to air, and wall decorations.
+     * noise-based alternatives to air, and wall decorations.
      * @param seed      The world's seed. Use to create a local Random object for
      *                  regen parity.
      * @param data      Data containing the current chunk primer and coordinates.
@@ -444,9 +438,9 @@ public class CaveGenerator {
                 final int min = floor + settings.caverns.minHeight;
 
                 for (int y = min; y <= max; y++) {
-                    final float scaledY = y / settings.caverns.noise.getScaleY();
+                    final float scaledY = y / settings.caverns.noise.scaleY;
 
-                    if (cavernNoise.GetNoise(actualX, scaledY, actualZ) < settings.caverns.noise.getSelectionThreshold()) {
+                    if (cavernNoise.GetBoolean(actualX, scaledY, actualZ)) {
                         final IBlockState state = primer.getBlockState(x, y, z);
 
                         if (state.equals(BLK_STONE)) { // Only replace actual stone.

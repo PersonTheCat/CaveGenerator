@@ -2,7 +2,6 @@ package com.personthecat.cavegenerator.world.feature;
 
 import fastnoise.FastNoise;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.feature.WorldGenerator;
@@ -153,7 +152,7 @@ public class LargeStalactite extends WorldGenerator {
     public float getThreshold() {
         return settings
             .orElseThrow(() -> runEx("Stalactite does not contain noise settings."))
-            .selectionThreshold;
+            .booleanThreshold;
     }
 
     public IBlockState getState() {

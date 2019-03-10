@@ -1,67 +1,72 @@
 package com.personthecat.cavegenerator.util;
 
 import fastnoise.FastNoise;
+import fastnoise.FastNoise.*;
 
 /**
- * Variant of NoiseSettings2D
+ * Variant of NoiseSettings2D.
+ * May be deleted as soon as some additional parameters are
+ * merged directly into FastNoise.
  */
 public class NoiseSettings3D {
-    private final float selectionThreshold; // Calculated from scale.
-    private final float frequency;
-    private final float scaleY;
-    private final int octaves;
-    private final FastNoise.NoiseType noiseType;
-    private final FastNoise.FractalType fractalType;
+    public final float scale; // Calculated from scale.
+    public final float frequency;
+    public final float scaleY;
+    public final float lacunarity;
+    public final float gain;
+    public final float perturbAmp;
+    public final float jitter;
+    public final int octaves;
+    public final boolean perturb;
+    public final boolean invert;
+    public final NoiseType noiseType;
+    public final Interp interp;
+    public final FractalType fractalType;
+    public final CellularDistanceFunction distanceFunction;
+    public final CellularReturnType returnType;
+    public final NoiseType cellularLookup;
 
     /** Where @param scale is a value between 0.0 and 1.0. */
     public NoiseSettings3D(
         float frequency,
         float scale,
         float scaleY,
+        float lacunarity,
+        float gain,
+        float perturbAmp,
+        float jitter,
         int octaves,
-        FastNoise.NoiseType noiseType,
-        FastNoise.FractalType fractalType
+        boolean perturb,
+        boolean invert,
+        Interp interp,
+        NoiseType noiseType,
+        FractalType fractalType,
+        CellularDistanceFunction distanceFunction,
+        CellularReturnType returnType,
+        NoiseType cellularLookup
     ) {
-        // Convert scale into a range from -1.0 to +1.0.
-        this.selectionThreshold = (scale * 2.0f) - 1.0f;
+        this.scale = scale;
         this.frequency = frequency;
         this.scaleY = scaleY;
+        this.lacunarity = lacunarity;
+        this.gain = gain;
+        this.perturbAmp = perturbAmp;
+        this.jitter = jitter;
         this.octaves = octaves;
+        this.perturb = perturb;
+        this.invert = invert;
+        this.interp = interp;
         this.noiseType = noiseType;
         this.fractalType = fractalType;
+        this.distanceFunction = distanceFunction;
+        this.returnType = returnType;
+        this.cellularLookup = cellularLookup;
     }
 
-    /** Variant of the primary constructor with a default value for noiseType. */
+    /** Variant of the primary constructor with a default value for noiseType, etc. */
     public NoiseSettings3D(float frequency, float scale, float scaleY, int octaves) {
-        this(frequency, scale, scaleY, octaves, FastNoise.NoiseType.SimplexFractal, FastNoise.FractalType.FBM);
-    }
-
-    public float getSelectionThreshold() {
-        return selectionThreshold;
-    }
-
-    public float getFrequency() {
-        return frequency;
-    }
-
-    public float getScale() {
-        return (selectionThreshold + 1.0f) / 2.0f;
-    }
-
-    public float getScaleY() {
-        return scaleY;
-    }
-
-    public int getOctaves() {
-        return octaves;
-    }
-
-    public FastNoise.NoiseType getNoiseType() {
-        return noiseType;
-    }
-
-    public FastNoise.FractalType getFractalType() {
-        return fractalType;
+        this(frequency, scale, scaleY, 1.0f, 0.5f, 1.0f, 0.45f, octaves, false, false, Interp.Hermite, NoiseType.SimplexFractal,
+            FractalType.FBM, CellularDistanceFunction.Euclidean, CellularReturnType.Distance2, NoiseType.Simplex);
     }
 
     public FastNoise getGenerator(int seed) {
@@ -69,8 +74,17 @@ public class NoiseSettings3D {
             .SetNoiseType(noiseType)
             .SetFrequency(frequency)
             .SetFractalType(fractalType)
-            .SetFractalOctaves(octaves);
-//            .SetCellularNoiseLookup(new FastNoise())
-//            .SetCellularReturnType(FastNoise.CellularReturnType.NoiseLookup);
+            .SetFractalOctaves(octaves)
+            .SetInvert(invert)
+            .SetFractalGain(gain)
+            .SetCellularReturnType(returnType)
+            .SetGradientPerturbAmp(perturbAmp)
+            .SetGradientPerturb(perturb)
+            .SetFractalLacunarity(lacunarity)
+            .SetCellularNoiseLookup(cellularLookup)
+            .SetCellularDistanceFunction(distanceFunction)
+            .SetInterp(interp)
+            .SetCellularJitter(jitter)
+            .SetScale(scale);
     }
 }
