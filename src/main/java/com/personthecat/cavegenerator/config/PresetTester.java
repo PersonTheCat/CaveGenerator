@@ -290,8 +290,8 @@ public class PresetTester {
 
     /** Verify the ranges of `frequency` and `scale`. */
     private void testNoise(NoiseSettings3D noise, String path) {
-        testNoiseFrequency(noise.getFrequency(), path);
-        testNoiseScale(noise.getScale(), path);
+        testNoiseFrequency(noise.frequency, path);
+        testNoiseScale(noise.scale, path);
     }
 
     /** 2D noise includes an addition `minVal` and `maxVal`. */
@@ -300,7 +300,7 @@ public class PresetTester {
             log(high, "Invalid range @ {}. minVal > maxVal.", path);
         }
         testNoiseFrequency(noise.frequency, path);
-        testNoiseScale(noise.getScale(), path);
+        testNoiseScale(noise.scale, path);
     }
 
     /** Chance should always be between 0 and 1. */

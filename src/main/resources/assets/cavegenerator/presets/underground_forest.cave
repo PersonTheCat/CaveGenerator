@@ -73,13 +73,9 @@
             scaleY: 0.3
         }
     }
+     # Water in the place of lava, 2 blocks lower.
     caveBlocks: [
-        {
-             # Water in the place of lava, 2 blocks lower.
-            states: water
-             # Maximum height bounds.
-            maxHeight: 8
-        }
+        { states: "water", maxHeight: 8 }
     ]
      # A variety of blocks on the ground and ceiling.
     wallDecorators: [

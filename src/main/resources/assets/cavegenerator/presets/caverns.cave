@@ -8,7 +8,7 @@
  # ----------------------------------------------------------- #
 {
     enabled: false
-    blankSlate: false # Default ravines, rooms, and lava settings.
+    blankSlate: false # Default ravines and lava settings.
     caverns: {
         enabled: true
         minHeight: 7
@@ -39,6 +39,4 @@
             startVal: 0.6
         }
     }
-     # Manually override these settings since `blankSlate` is used.
-    rooms: { "scale": 0 }
 }

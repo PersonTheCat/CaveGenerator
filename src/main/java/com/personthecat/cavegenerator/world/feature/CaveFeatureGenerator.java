@@ -187,6 +187,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
             // Determine the height bounds for these coordinates.
             final int maxY = getMin(info.heightMap[x & 15][z & 15], settings.maxHeight);
             final int minY = settings.minHeight; // More readable?
+            if (minY >= maxY) continue;
 
             int y = NONE_FOUND;
             // Search both -> just up -> just down.

@@ -567,6 +567,7 @@ public class HjsonTools {
         float lacunarity = getFloat(json, "lacunarity").orElse(defaults.lacunarity);
         float gain = getFloat(json, "gain").orElse(defaults.gain);
         float perturbAmp = getFloat(json, "perturbAmp").orElse(defaults.perturbAmp);
+        float perturbFreq = getFloat(json, "perturbFreq").orElse(defaults.perturbFreq);
         float jitter = getFloat(json, "jitter").orElse(defaults.jitter);
         int octaves = getInt(json, "octaves").orElse(defaults.octaves);
         boolean perturb = getBool(json, "perturb").orElse(defaults.perturb);
@@ -583,14 +584,14 @@ public class HjsonTools {
             .orElse(defaults.returnType);
         NoiseType cellularLookup = getString(json, "cellularLookup").map(HjsonTools::noiseType)
             .orElse(defaults.cellularLookup);
-        return new NoiseSettings3D(frequency, scale, scaleY, lacunarity, gain, perturbAmp, jitter, octaves,
-            invert, perturb, interp, type, fractal, distanceFunction, returnType, cellularLookup);
+        return new NoiseSettings3D(frequency, scale, scaleY, lacunarity, gain, perturbAmp, perturbFreq, jitter,
+            octaves, perturb, invert, interp, type, fractal, distanceFunction, returnType, cellularLookup);
     }
 
     /** Converts the input json into a NoiseSettings2D object. */
     public static NoiseSettings2D toNoiseSettings(JsonObject json, NoiseSettings2D defaults) {
         float frequency = getFloat(json, "frequency").orElse(defaults.frequency);
-        float scale = getFloat(json, "scale").orElse(defaults.getScale());
+        float scale = getFloat(json, "scale").orElse(defaults.scale);
         int min = getInt(json, "minVal").orElse(defaults.min);
         int max = getInt(json, "maxVal").orElse(defaults.max);
         return new NoiseSettings2D(frequency, scale, min, max);

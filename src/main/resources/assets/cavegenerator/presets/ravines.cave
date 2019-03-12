@@ -1,6 +1,6 @@
  # ----------------------------------------------------------- #
  # ########################################################### #
- #             ### flooded_vanilla.cave Info ###               #
+ #                 ### ravines.cave Info ###                   #
  # ########################################################### #
  #   This preset is designed to demonstrate a basic use case   #
  # for Cave Generator which increases the frequency and shape  #
@@ -32,4 +32,7 @@
             }
         }
     }
+    caveBlocks: [
+        { states: "lava", maxHeight: 10 }
+    ]
 }

@@ -121,7 +121,7 @@ public class WallDecorator {
     /** Variant of testNoise() that uses absolute coordinates. */
     private boolean testNoise(int x, int y, int z) {
         // Calling Optional#get because `settings` will always be present when `noise` is present.
-        return noise.map(n -> n.GetAdjustedNoise(x, y, z) < settings.get().getBooleanThreshold())
+        return noise.map(n -> n.GetBoolean(x, y, z))
             .orElse(true);
     }
 

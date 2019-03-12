@@ -15,6 +15,7 @@ public class NoiseSettings3D {
     public final float lacunarity;
     public final float gain;
     public final float perturbAmp;
+    public final float perturbFreq;
     public final float jitter;
     public final int octaves;
     public final boolean perturb;
@@ -34,6 +35,7 @@ public class NoiseSettings3D {
         float lacunarity,
         float gain,
         float perturbAmp,
+        float perturbFreq,
         float jitter,
         int octaves,
         boolean perturb,
@@ -51,6 +53,7 @@ public class NoiseSettings3D {
         this.lacunarity = lacunarity;
         this.gain = gain;
         this.perturbAmp = perturbAmp;
+        this.perturbFreq = perturbFreq;
         this.jitter = jitter;
         this.octaves = octaves;
         this.perturb = perturb;
@@ -65,7 +68,7 @@ public class NoiseSettings3D {
 
     /** Variant of the primary constructor with a default value for noiseType, etc. */
     public NoiseSettings3D(float frequency, float scale, float scaleY, int octaves) {
-        this(frequency, scale, scaleY, 1.0f, 0.5f, 1.0f, 0.45f, octaves, false, false, Interp.Hermite, NoiseType.SimplexFractal,
+        this(frequency, scale, scaleY, 1.0f, 0.5f, 1.0f, 0.1f, 0.45f, octaves, false, false, Interp.Hermite, NoiseType.SimplexFractal,
             FractalType.FBM, CellularDistanceFunction.Euclidean, CellularReturnType.Distance2, NoiseType.Simplex);
     }
 
@@ -79,6 +82,7 @@ public class NoiseSettings3D {
             .SetFractalGain(gain)
             .SetCellularReturnType(returnType)
             .SetGradientPerturbAmp(perturbAmp)
+            .SetGradientPerturbFrequency(perturbFreq)
             .SetGradientPerturb(perturb)
             .SetFractalLacunarity(lacunarity)
             .SetCellularNoiseLookup(cellularLookup)

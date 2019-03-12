@@ -149,12 +149,6 @@ public class LargeStalactite extends WorldGenerator {
             .getGenerator(seed);
     }
 
-    public float getThreshold() {
-        return settings
-            .orElseThrow(() -> runEx("Stalactite does not contain noise settings."))
-            .booleanThreshold;
-    }
-
     public IBlockState getState() {
         return state;
     }

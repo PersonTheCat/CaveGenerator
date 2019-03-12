@@ -18,7 +18,7 @@ public class JarFiles {
         "flooded_vanilla", "large_caves", "spirals",
         "tunnels", "caverns", "stone_layers", "stalactites",
         "ravines", "stone_clusters", "large_stalactites",
-        "vanilla", "underground_forest"
+        "vanilla", "underground_forest", "euclids_tunnels"
     };
 
     private static final String[] STRUCTURES = new String[] {
