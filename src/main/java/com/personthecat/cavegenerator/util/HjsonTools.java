@@ -27,7 +27,7 @@ public class HjsonTools {
         .setAllowCondense(true)
         .setAllowMultiVal(true)
         .setCommentSpace(1)
-        .setSpace(4)
+        .setSpace(2)
         .setBracesSameLine(true)
         .setOutputComments(true);
 

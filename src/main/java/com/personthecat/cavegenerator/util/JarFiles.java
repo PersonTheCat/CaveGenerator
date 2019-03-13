@@ -14,14 +14,14 @@ public class JarFiles {
     private static final String FOLDER = "cavegenerator/example_presets";
     private static final File EXAMPLE_DIR = new File(Loader.instance().getConfigDir(), FOLDER);
 
-    private static final String[] PRESETS = new String[] {
+    private static final String[] PRESETS = {
         "flooded_vanilla", "large_caves", "spirals",
         "tunnels", "caverns", "stone_layers", "stalactites",
         "ravines", "stone_clusters", "large_stalactites",
         "vanilla", "underground_forest", "euclids_tunnels"
     };
 
-    private static final String[] STRUCTURES = new String[] {
+    private static final String[] STRUCTURES = {
         "hanging_spawner", "red_mushroom"
     };
 

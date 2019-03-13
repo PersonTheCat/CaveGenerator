@@ -257,7 +257,7 @@ public class CommandCave extends CommandBase {
         int numCorrections = 0;
         for (String line : lines) {
             if (line.contains("\t")) {
-                line = line.replace("\t", "    ");
+                line = line.replace("\t", "  ");
                 numCorrections++;
             }
             updated.append(line);

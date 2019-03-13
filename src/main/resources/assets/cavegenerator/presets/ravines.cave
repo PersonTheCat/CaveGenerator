@@ -7,32 +7,32 @@
  # of ravines, while disabling other cave-related features.    #
  # ----------------------------------------------------------- #
 {
-    enabled: false
-    ravines: {
-         # Increase ravine frequency.
-        chance: 0.0333
-        minHeight: 10
-        maxHeight: 50
-        distance: 140
-        twistXZ: { randFactor: 5 }
-        scaleY: { startVal: 4 }
-        angleXZ: { startValRandFactor: 1.5 }
-        angleY: { startValRandFactor: 0.75 }
-        scale: {
-            startVal: 2
-            startValRandFactor: 2
-        }
-        noiseYFactor: 0.9
-         # Use a noise generator to handle wall shape.
-        wallNoise: {
-            noise2D: {
-                frequency: 0.1
-                minVal: 0
-                maxVal: 4
-            }
-        }
+  enabled: false
+  ravines: {
+     # Increase ravine frequency.
+    chance: 0.0333
+    minHeight: 10
+    maxHeight: 50
+    distance: 140
+    twistXZ: { randFactor: 5 }
+    scaleY: { startVal: 4 }
+    angleXZ: { startValRandFactor: 1.5 }
+    angleY: { startValRandFactor: 0.75 }
+    scale: {
+      startVal: 2
+      startValRandFactor: 2
     }
-    caveBlocks: [
-        { states: "lava", maxHeight: 10 }
-    ]
+    noiseYFactor: 0.9
+     # Use a noise generator to handle wall shape.
+    wallNoise: {
+      noise2D: {
+        frequency: 0.1
+        minVal: 0
+        maxVal: 4
+      }
+    }
+  }
+  caveBlocks: [
+    { states: "lava", maxHeight: 10 }
+  ]
 }

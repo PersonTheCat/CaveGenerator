@@ -9,36 +9,36 @@
  # better without it.                                          #
  # ----------------------------------------------------------- #
 {
-    enabled: false
-    blankSlate: false # Default tunnels, ravines, etc.
-    stoneClusters: [
-        {
-            states: "stone:5" # anesite
-            chance: 0.15
-            radiusX: 19
-            radiusY: 14
-            radiusZ: 19
-            radiusVariance: 7
-            startHeight: 26
-            heightVariance: 12
-        }
-        {
-            states: "stone:3" # diorite
-            chance: 0.25
-            radiusVariance: 5
-            startHeight: 53
-            heightVariance: 9
-        }
-        {
-            states: "stone:1" # granite
-            chance: 0.3
-            radiusX: 19
-            radiusY: 14
-            radiusZ: 19
-            radiusVariance: 7
-             # Center height can be negative.
-            startHeight: 0
-            heightVariance: 6
-        }
-    ]
+  enabled: false
+  blankSlate: false # Default tunnels, ravines, etc.
+  stoneClusters: [
+    {
+      states: "stone:5" # anesite
+      chance: 0.15
+      radiusX: 19
+      radiusY: 14
+      radiusZ: 19
+      radiusVariance: 7
+      startHeight: 26
+      heightVariance: 12
+    }
+    {
+      states: "stone:3" # diorite
+      chance: 0.25
+      radiusVariance: 5
+      startHeight: 53
+      heightVariance: 9
+    }
+    {
+      states: "stone:1" # granite
+      chance: 0.3
+      radiusX: 19
+      radiusY: 14
+      radiusZ: 19
+      radiusVariance: 7
+       # Center height can be negative.
+      startHeight: 0
+      heightVariance: 6
+    }
+  ]
 }

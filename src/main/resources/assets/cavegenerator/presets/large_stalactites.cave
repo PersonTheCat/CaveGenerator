@@ -8,32 +8,32 @@
  # caves that spawn them. They will appear anywhere they can.  #
  # ----------------------------------------------------------- #
 {
-    enabled: false
-     # Default lava.
-    caveBlocks: [
-        { states: "lava", maxHeight: 10 }
-    ]
-    largeStalactites: [
-        {
-            state: stone
-            chance: 0.075
-            maxLength: 6
-            minHeight: 15
-            maxHeight: 50
-            matchers: stone
-        }
-    ]
-    largeStalagmites: [
-        {
-            state: stone
-            chance: 0.05
-            minHeight: 10
-            maxHeight: 50
-             # Spawn this decorator according to its default
-             # noise settings.
-            noise2D: {}
-        }
-    ]
-     # These fit better in caverns or at least larger tunnels.
-    caverns: { enabled: true }
+  enabled: false
+   # Default lava.
+  caveBlocks: [
+    { states: "lava", maxHeight: 10 }
+  ]
+  largeStalactites: [
+    {
+      state: stone
+      chance: 0.075
+      maxLength: 6
+      minHeight: 15
+      maxHeight: 50
+      matchers: stone
+    }
+  ]
+  largeStalagmites: [
+    {
+      state: stone
+      chance: 0.05
+      minHeight: 10
+      maxHeight: 50
+       # Spawn this decorator according to its default
+       # noise settings.
+      noise2D: {}
+    }
+  ]
+   # These fit better in caverns or at least larger tunnels.
+  caverns: { enabled: true }
 }

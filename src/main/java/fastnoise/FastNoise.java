@@ -528,10 +528,6 @@ public class FastNoise {
 	}
 
 	public float GetNoise(float x, float y, float z) {
-		x *= m_frequency;
-		y *= m_frequency;
-		z *= m_frequency;
-
 		if (m_gradientPerturb) {
 			Vector3f vec = new Vector3f(x, y, z);
 			GradientPerturb(vec);
@@ -539,6 +535,9 @@ public class FastNoise {
 			y = vec.y;
 			z = vec.z;
 		}
+		x *= m_frequency;
+		y *= m_frequency;
+		z *= m_frequency;
 
 		switch (m_noiseType) {
 			case Value:

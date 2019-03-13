@@ -9,30 +9,30 @@
  # can do, in addition to just replacing cave walls.           #
  # ----------------------------------------------------------- #
 {
-    enabled: false
-    blankSlate: false # Default tunnels, ravines, etc.
-    wallDecorators: [
-         # Direction#DOWN -> stalagmites
-        {
-             # There aren't really any good stalagmite blocks
-             # in vanilla. This will have to do.
-            states: cobblestone_wall
-            chance: 0.15
-            minHeight: 10
-            maxHeight: 55
-            matchers: stone
-            directions: down
-            preference: replace_original
-        }
-         # Direction#UP -> stalactites
-        {
-            states: cobblestone_wall
-            chance: 0.15
-            minHeight: 10
-            maxHeight: 55
-            matchers: stone
-            directions: up
-            preference: replace_original
-        }
-    ]
+  enabled: false
+  blankSlate: false # Default tunnels, ravines, etc.
+  wallDecorators: [
+     # Direction#DOWN -> stalagmites
+    {
+       # There aren't really any good stalagmite blocks
+       # in vanilla. This will have to do.
+      states: cobblestone_wall
+      chance: 0.15
+      minHeight: 10
+      maxHeight: 55
+      matchers: stone
+      directions: down
+      preference: replace_original
+    }
+     # Direction#UP -> stalactites
+    {
+      states: cobblestone_wall
+      chance: 0.15
+      minHeight: 10
+      maxHeight: 55
+      matchers: stone
+      directions: up
+      preference: replace_original
+    }
+  ]
 }

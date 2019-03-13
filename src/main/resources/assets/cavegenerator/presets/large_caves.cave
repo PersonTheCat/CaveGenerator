@@ -7,22 +7,22 @@
  # overall scale of tunnels and rooms.                         #
  # ----------------------------------------------------------- #
 {
-    enabled: false
-    blankSlate: false # Default ravines and lava settings.
-    rooms: {
-        scale: 7
-        scaleY: 0.6
+  enabled: false
+  blankSlate: false # Default ravines and lava settings.
+  rooms: {
+    scale: 7
+    scaleY: 0.6
+  }
+  tunnels: {
+     # Use consistent scale values.
+    resizeBranches: false
+    scale: {
+      startVal: 2.5
+      startValRandFactor: 0.9
     }
-    tunnels: {
-         # Use consistent scale values.
-        resizeBranches: false
-        scale: {
-            startVal: 2.5
-            startValRandFactor: 0.9
-        }
-        scaleY: {
-            randFactor: 0.05
-            startVal: 0.7
-        }
+    scaleY: {
+      randFactor: 0.05
+      startVal: 0.7
     }
+  }
 }

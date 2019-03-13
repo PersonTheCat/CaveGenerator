@@ -163,7 +163,7 @@ public class GeneratorSettings {
                 getBoolOr(json, "useBiomeBlacklist", false),
                 getObject(json, "biomes").map(HjsonTools::getAllBiomes).orElse(new Biome[0]),
                 getBoolOr(json, "useDimensionBlacklist", false),
-                getIntArrayOr(json, "dimensions", new int[0]),
+                getIntArrayOr(json, "dimensions", new int[] {0}),
                 getIntOr(json, "minHeight", 8),
                 getIntOr(json, "maxHeight", 128)
             );

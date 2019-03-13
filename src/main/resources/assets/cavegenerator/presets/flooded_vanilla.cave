@@ -8,36 +8,36 @@
  # on the floor.                                               #
  # ----------------------------------------------------------- #
 {
-    enabled: false
-    blankSlate: false # Default tunnels, ravines, and rooms.
-    caveBlocks: [
-         # Fills y=(12-45) with water.
-        {
-            states: water
-            minHeight: 12
-            maxHeight: 45
-        }
-         # Manually places obsidian above lava.
-        {
-            states: obsidian
-            minHeight: 11
-            maxHeight: 11
-        }
-         # Imitates the normal lava placement behavior.
-        {
-            states: lava
-            maxHeight: 10
-        }
-    ]
-    wallDecorators: [
-         # Spawns gravel on the floor.
-        {
-            states: gravel
-            chance: 0.25
-            minHeight: 0
-            maxHeight: 63
-            matchers: [ "stone", "dirt" ]
-            directions: down
-        }
-    ]
+  enabled: false
+  blankSlate: false # Default tunnels, ravines, and rooms.
+  caveBlocks: [
+     # Fills y=(12-45) with water.
+    {
+      states: water
+      minHeight: 12
+      maxHeight: 45
+    }
+     # Manually places obsidian above lava.
+    {
+      states: obsidian
+      minHeight: 11
+      maxHeight: 11
+    }
+     # Imitates the normal lava placement behavior.
+    {
+      states: lava
+      maxHeight: 10
+    }
+  ]
+  wallDecorators: [
+     # Spawns gravel on the floor.
+    {
+      states: gravel
+      chance: 0.25
+      minHeight: 0
+      maxHeight: 63
+      matchers: [ "stone", "dirt" ]
+      directions: down
+    }
+  ]
 }
