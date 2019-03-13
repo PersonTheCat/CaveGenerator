@@ -23,6 +23,7 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.hjson.JsonObject;
 
 import java.io.File;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
@@ -69,11 +70,25 @@ public class CommandCave extends CommandBase {
     /** The button used for opening the preset directory. */
     private static final ITextComponent VIEW_BUTTON = tcs("\n --- [OPEN PRESET DIRECTORY] ---")
         .setStyle(VIEW_BUTTON_STYLE);
+    /** The actual text to be used by the help messages. */
+    private static final String[][] USAGE_TEXT = {
+        { "reload", "Reloads the current presets from the the", "disk." },
+        { "test", "Applies night vision and gamemode 3 for easy", "cave viewing." },
+        { "combine <preset.path> <preset>", "Copies the first", "path into the second preset." },
+        { "list", "Displays a list of all presets, with buttons", "for enabling / disabling." },
+        { "enable <name>", "Enables the preset with name <name>." },
+        { "disable <name>", "Disables the preset with name <name>." },
+        { "new <name>", "Generates a new preset file with name", "<name>" },
+        { "fixindent <name>", "Replaces all tabs inside of the", "preset <name> with spaces." },
+        { "tojson <name>", "Backs up and converts the specified", "file from hjson to standard JSON." },
+        { "tohjson <name>", "Backs up and converts the specified", "file from standard JSON to hjson." },
+    };
+    /** The number of lines to occupy each page of the help message. */
+    private static final int USAGE_LENGTH = 5;
     /** The header to be used by the help message / usage text. */
-    private static final ITextComponent USAGE_HEADER = tcs("\n --- Cave Command Usage ---\n")
-        .setStyle(USAGE_HEADER_STYLE);
+    private static final String USAGE_HEADER = " --- Cave Command Usage (X / Y) ---";
     /** The help message / usage text. */
-    private static final ITextComponent USAGE_TEXT = createHelpMessage();
+    private static final ITextComponent[] USAGE_MSG = createHelpMessage();
     /** New line character */
     private static final String NEW_LINE = System.getProperty("line.separator");
 
@@ -91,7 +106,7 @@ public class CommandCave extends CommandBase {
     public void execute(MinecraftServer server, ICommandSender sender, String[] args) {
         // The user did not specify which command to run. Inform them and stop.
         if (args.length == 0) {
-            helpCommand(sender);
+            displayHelp(sender, 1);
             return;
         }
         // Allow multiple commands to be separated by `&&`.
@@ -121,13 +136,21 @@ public class CommandCave extends CommandBase {
             case "list" : list(sender); break;
             case "new" : newPreset(sender, args); break;
             case "fixindent" : fixIndent(sender, args); break;
-            default : helpCommand(sender);
+            case "tojson" : convert(sender, args, true); break;
+            case "tohjson" : convert(sender, args, false); break;
+            case "page" :
+            case "help" : helpCommand(sender, args); break;
+            default : displayHelp(sender, 1);
         }
     }
 
     /** Sends the formatted command usage to the user. */
-    private static void helpCommand(ICommandSender sender) {
-        sender.sendMessage(USAGE_TEXT);
+    private static void displayHelp(ICommandSender sender, int page) {
+        if (page > USAGE_MSG.length || page <= 0) {
+            sendMessage(sender, "Invalid page #.");
+            return;
+        }
+        sender.sendMessage(USAGE_MSG[page - 1]);
     }
 
     /** Reloads all presets from the disk. */
@@ -250,6 +273,39 @@ public class CommandCave extends CommandBase {
         }
     }
 
+    /** Converts the specified file to between JSON and hjson. */
+    private static void convert(ICommandSender sender, String[] args, boolean toJson) {
+        requireArgs(args, 1);
+        final Optional<File> preset = CaveInit.locatePreset(args[0]);
+        if (!preset.isPresent()) {
+            sendMessage(sender, "No preset found named " + args[0]);
+            return;
+        }
+        final File presetFile = preset.get();
+        if (toJson == extension(presetFile).equals("json")) {
+            sendMessage(sender, "Preset is already in the desired format.");
+            return;
+        }
+        final Optional<JsonObject> json = PresetReader.getPresetJson(presetFile);
+        if (!json.isPresent()) {
+            sendMessage(sender, "The file could not be parsed.");
+            return;
+        }
+        final String extension = toJson ? ".json" : ".cave";
+        File newPreset = new File(CaveInit.DIR, noExtension(presetFile) + extension);
+        // The output file's extension determines the format.
+        writeJson(json.get(), newPreset);
+        backup(presetFile);
+        presetFile.delete();
+        sendMessage(sender, "Converted successfully. The original was moved to the backup directory.");
+    }
+
+    /** The standard help command, specifying the page number. */
+    private static void helpCommand(ICommandSender sender, String[] args) {
+        requireArgs(args, 1);
+        displayHelp(sender, Integer.parseInt(args[0]));
+    }
+
     private static ITextComponent getListElementText(File file) {
         String fileName = noExtension(file);
         if (isPresetEnabled(file)) {
@@ -269,18 +325,49 @@ public class CommandCave extends CommandBase {
     }
 
     /** Generates the help message, displaying usage for each sub-command. */
-    private static ITextComponent createHelpMessage() {
-        ITextComponent msg = tcs("");
-        msg.appendSibling(USAGE_HEADER);
-        appendUsageText(msg, "reload", "Reloads the current presets from the disk.\n");
-        appendUsageText(msg, "test", "Applies night vision and gamemode 3 for easy cave viewing.\n");
-        appendUsageText(msg, "combine <preset.path> <preset>", "Copies the first path into the second preset.\n");
-        appendUsageText(msg, "list", "Displays a list of all presets, with buttons for enabling / disabling.\n");
-        appendUsageText(msg, "enable <name>", "Enables the preset with name <name>.\n");
-        appendUsageText(msg, "disable <name>", "Disables the preset with name <name>.\n");
-        appendUsageText(msg, "new <name>", "Generates a new preset file with name <name>.\n");
-        appendUsageText(msg, "fixindent <name>", "Replaces all tabs inside of the preset <name> with spaces.");
-        return msg;
+    private static ITextComponent[] createHelpMessage() {
+        List<TextComponentString> msgs = new ArrayList<>();
+        final int numLines = getNumElements(USAGE_TEXT) - USAGE_TEXT.length;
+        final int numPages = numLines / USAGE_LENGTH - 1;
+        // The actual pages..
+        for (int i = 0; i < USAGE_TEXT.length; i += USAGE_LENGTH) {
+            final TextComponentString header = getUsageHeader((i / USAGE_LENGTH) + 1, numPages);
+            // The elements on each pages.
+            for (int j = i; j < i + USAGE_LENGTH; j++) {
+                final String[] full = USAGE_TEXT[j];
+                // Append the required elements.
+                header.appendText("\n");
+                appendUsageText(header, full[0], full[1]);
+                // Append any extra lines below.
+                for (int k  = 2; k < full.length; k++) {
+                    header.appendText("\n");
+                    header.appendText((full[k]));
+                }
+            }
+            msgs.add(header);
+        }
+        return toArray(msgs, TextComponentString.class);
+    }
+
+    private static int getNumElements(String[][] matrix) {
+        int numElements = 0;
+        for (int i = 0; i < matrix.length; i++) {
+            for (int j = 0; j < matrix[i].length; j++) {
+                numElements++;
+            }
+        }
+        return numElements;
+    }
+
+    private static TextComponentString getUsageHeader(int page, int max) {
+        final String header = USAGE_HEADER
+            .replace("X", String.valueOf(page))
+            .replace("Y", String.valueOf(max));
+        TextComponentString full = tcs("");
+        TextComponentString headerTCS = tcs(header);
+        headerTCS.setStyle(USAGE_HEADER_STYLE);
+        full.appendSibling(headerTCS);
+        return full;
     }
 
     /** A slightly neater way to append so many components to the help message. */

@@ -1,7 +1,6 @@
 package com.personthecat.cavegenerator.config;
 
 import com.personthecat.cavegenerator.CaveInit;
-import net.minecraftforge.fml.common.Loader;
 import org.apache.commons.lang3.ArrayUtils;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
@@ -10,14 +9,10 @@ import java.io.File;
 import java.util.regex.Pattern;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
-import static com.personthecat.cavegenerator.util.SafeFileIO.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
 
 /** Used for merging JsonObject paths between json files. */
 public class PresetCombiner {
-
-    /** The directory where all preset backups will be stored. */
-    private static final File BACKUP_DIR = new File(Loader.instance().getConfigDir(), "cavegenerator/backup");
 
     /** Responsible for loading all necessary data for merging JsonObjects. */
     public static void combine(String from, String to) {
@@ -59,17 +54,5 @@ public class PresetCombiner {
             toCurrent = toValue.asObject();
         }
         writeJson(to, fileTo).throwIfPresent();
-    }
-
-    /** Copies a file to the backup directory. */
-    private static void backup(File file) {
-        final File backup = new File(BACKUP_DIR, file.getName());
-        if (!safeFileExists(BACKUP_DIR, "Unable to handle backup directory.")) {
-            safeMkdirs(BACKUP_DIR);
-        }
-        if (safeFileExists(backup, "Unable to handle existing backup file.")) {
-            backup.delete();
-        }
-        safeCopy(file, BACKUP_DIR).throwIfPresent();
     }
 }

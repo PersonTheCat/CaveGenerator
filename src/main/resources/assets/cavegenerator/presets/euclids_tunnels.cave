@@ -7,7 +7,7 @@
  # vanilla.cave.                                               #
  # ----------------------------------------------------------- #
 {
-    enabled: true
+    enabled: false
     caverns: {
         enabled: true
         minHeight: 5
@@ -22,10 +22,11 @@
             perturb: true
             perturbAmp: 10
             perturbFreq: 0.025
+            invert: true
         }
     }
      # Default lava.
     caveBlocks: [
-        { "states": "lava", "maxHeight": 10 }
+        { states: "lava", maxHeight: 10 }
     ]
 }

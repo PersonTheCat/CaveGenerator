@@ -22,7 +22,7 @@
         {
             name: fossils/fossil_spine_03
             offset: [ 0, -4, 0 ]
-            matchers: [ "stone", "stone:5", "grass", "gravel", "dirt:1" ]
+            matchers: [ "stone", "stone:5", "grass", "gravel" ]
             directions: down
             integrity: 0.7
             chance: 0.03
@@ -42,7 +42,7 @@
         {
             name: red_mushroom
             offset: [ 0, 1, 0 ]
-            matchers: [ "stone", "stone:5", "grass", "gravel", "dirt:1" ]
+            matchers: [ "stone", "stone:5", "grass", "gravel" ]
             directions: down
             frequency: 2
             chance: 0.09
@@ -73,9 +73,9 @@
             scaleY: 0.3
         }
     }
-     # Water in the place of lava, 2 blocks lower.
+     # Imitates standard lava placement, 2 blocks lower.
     caveBlocks: [
-        { states: "water", maxHeight: 8 }
+        { "states": "water", "maxHeight": 8 }
     ]
      # A variety of blocks on the ground and ceiling.
     wallDecorators: [
@@ -84,7 +84,7 @@
             states: grass
             minHeight: 9 # maxHeight defaults to 50.
             directions: down
-            matchers: [ "stone", "stone:1" ]
+            matchers: [ "stone", "stone:5" ]
             preference: replace_match
             noise3D: {}
         }
@@ -94,7 +94,7 @@
             chance: 0.75
             minHeight: 9
             directions: down
-            matchers: [ "stone", "stone:1" ]
+            matchers: [ "stone", "stone:5" ]
             preference: replace_match
         }
          # Sporadic coarse dirt.
@@ -103,7 +103,7 @@
             chance: 0.3
             minHeight: 9
             directions: down
-            matchers: [ "stone", "stone:1" ]
+            matchers: [ "stone", "stone:5" ]
             preference: replace_match
         }
          # Lights on the ceiling.
@@ -112,7 +112,7 @@
             chance: 0.003
             minHeight: 9
             directions: up
-            matchers: [ "stone", "stone:1" ]
+            matchers: [ "stone", "stone:5" ]
             preference: replace_match
         }
          # Cobwebs on the ceiling.
@@ -121,7 +121,7 @@
             chance: 0.001
             minHeight: 9
             directions: up
-            matchers: [ "stone", "stone:1" ]
+            matchers: [ "stone", "stone:5" ]
             preference: replace_original
         }
          # Grass can be matched in this case because the original
@@ -169,7 +169,7 @@
             chance: 0.02
             minHeight: 9
             directions: down
-            matchers: [ "grass", "stone", "stone:1" ]
+            matchers: [ "grass", "stone", "stone:5" ]
             preference: replace_original
         }
     ]
@@ -178,11 +178,12 @@
          # Rare glowstone in the ceiling.
         {
             state: glowstone
+            wide: false
             maxLength: 3
             minHeight: 20
             maxHeight: 40
-            chance: 0.10
-            matchers: [ "stone", "stone:1" ]
+            chance: 0.1
+            matchers: [ "stone", "stone:5" ]
             noise2D: {
                 frequency: 0.0125
                 scale: 0.4
@@ -191,21 +192,31 @@
          # Hanging leaves
         {
             state: leaves:1
+            wide: false
             maxLength: 4
             minHeight: 15
             maxHeight: 50
-            matchers: [ "stone", "stone:1" ]
+            matchers: [ "stone", "stone:5" ]
             noise2D: { frequency: 0.2 }
+        }
+         # Actual stalactites
+        {
+            state: stone
+            maxLength: 8
+            minHeight: 15
+            maxHeight: 50
+            chance: 0.01
+            matchers: stone
         }
     ]
     largeStalagmites: [
-         # Small stone boulders.
+         # Small stone boulders
         {
             state: stone
             maxLength: 3
             minHeight: 15
             maxHeight: 50
-            chance: 0.05
+            chance: 0.02
             noise2D: {}
         }
     ]
