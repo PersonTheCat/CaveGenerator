@@ -20,16 +20,6 @@ public class ConfigFile {
     public static boolean otherGeneratorEnabled = false;
 
     @Comment({
-        "Moves fields from one preset to another. Could theoretically",
-        "be used for any two jsons of the same type. This will remove",
-        "comments and any two fields that have the same name. (i.e. \"//\")",
-        "Syntax: originalPresetName.fieldName, newPresetName",
-        "Example: stone_clusters.stoneClusters, vanilla",
-        "Example: stalactites.blockFillers.stalactite, vanilla"})
-    @RequiresMcRestart()
-    public static String[] presetCombiners = new String[0];
-
-    @Comment({
         "When this field is set to true, PresetTester is allowed to",
         "crash the game when more serious errors are detected. Users",
         "who are more serious about creating cleaner and more efficient" +

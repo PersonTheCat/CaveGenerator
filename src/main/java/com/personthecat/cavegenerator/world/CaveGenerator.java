@@ -441,12 +441,8 @@ public class CaveGenerator {
                     final float scaledY = y / settings.caverns.noise.scaleY;
 
                     if (cavernNoise.GetBoolean(actualX, scaledY, actualZ)) {
-                        final IBlockState state = primer.getBlockState(x, y, z);
-
-                        if (state.equals(BLK_STONE)) { // Only replace actual stone.
-                            replaceBlock(rand, primer, x, y, z, chunkX, chunkZ, false);
-                            caverns[y][z][x] = true;
-                        }
+                        replaceBlock(rand, primer, x, y, z, chunkX, chunkZ, false);
+                        caverns[y][z][x] = true;
                     }
                 }
             }
