@@ -89,6 +89,7 @@ public class NoiseSettings3D {
             .SetCellularDistanceFunction(distanceFunction)
             .SetInterp(interp)
             .SetCellularJitter(jitter)
-            .SetScale(scale);
+            .SetScale(scale)
+            .SetScaleY(scaleY);
     }
 }

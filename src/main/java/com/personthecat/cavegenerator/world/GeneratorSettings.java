@@ -450,7 +450,7 @@ public class GeneratorSettings {
         public final boolean enabled;
         public final int minHeight;
         public final int maxHeight;
-        public final NoiseSettings3D noise;
+        public final NoiseSettings3D noise[];
         public final NoiseSettings2D ceilNoise, floorNoise;
 
         /** Default values used for the noise settings here. */
@@ -466,7 +466,7 @@ public class GeneratorSettings {
             boolean enabled,
             int minHeight,
             int maxHeight,
-            NoiseSettings3D noise,
+            NoiseSettings3D[] noise,
             NoiseSettings2D ceilNoise,
             NoiseSettings2D floorNoise
         ) {
@@ -484,7 +484,7 @@ public class GeneratorSettings {
                 getBoolOr(caverns, "enabled", false),
                 getIntOr(caverns, "minHeight", 10),
                 getIntOr(caverns, "maxHeight", 50),
-                getNoiseSettingsOr(caverns, "noise3D", DEFAULT_NOISE),
+                getNoiseArray(caverns, "noise3D", DEFAULT_NOISE),
                 getObject(caverns, "ceiling").map(o ->
                     getNoiseSettingsOr(o, "noise2D", DEFAULT_CEIL_NOISE))
                     .orElse(DEFAULT_CEIL_NOISE),

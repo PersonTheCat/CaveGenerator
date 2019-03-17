@@ -588,6 +588,18 @@ public class HjsonTools {
             octaves, perturb, invert, interp, type, fractal, distanceFunction, returnType, cellularLookup);
     }
 
+    /** Retrieves either an array of noise settings or a single value containing `defaults`. */
+    public static NoiseSettings3D[] getNoiseArray(JsonObject json, String field, NoiseSettings3D defaults) {
+        List<NoiseSettings3D> noise = new ArrayList<>();
+        JsonArray array = getValue(json, field)
+            .map(HjsonTools::asOrToArray)
+            .orElse(new JsonArray().add(new JsonObject()));
+        for (JsonValue value : array) {
+            noise.add(toNoiseSettings(value.asObject(), defaults));
+        }
+        return toArray(noise, NoiseSettings3D.class);
+    }
+
     /** Converts the input json into a NoiseSettings2D object. */
     public static NoiseSettings2D toNoiseSettings(JsonObject json, NoiseSettings2D defaults) {
         float frequency = getFloat(json, "frequency").orElse(defaults.frequency);

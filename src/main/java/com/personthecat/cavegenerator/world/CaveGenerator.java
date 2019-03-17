@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.world;
 
+import com.personthecat.cavegenerator.util.NoiseSettings3D;
 import com.personthecat.cavegenerator.util.RandomChunkSelector;
 import fastnoise.FastNoise;
 import net.minecraft.block.material.Material;
@@ -37,7 +38,8 @@ public class CaveGenerator {
     /** Noise generators. */
     private final RandomChunkSelector selector;
     private final NoiseGeneratorSimplex miscNoise;
-    private final FastNoise cavernNoise, ceilNoise, floorNoise;
+    private final FastNoise ceilNoise, floorNoise;
+    private final FastNoise[] cavernNoise;
 
     /** Primary constructor. */
     public CaveGenerator(World world, GeneratorSettings settings) {
@@ -49,7 +51,7 @@ public class CaveGenerator {
         this.selector = new RandomChunkSelector(seed);
         this.miscNoise = new NoiseGeneratorSimplex(new Random(seed));
         // To-do: ensure that this is more unique (integer overflow).
-        this.cavernNoise = settings.caverns.noise.getGenerator((int) seed);
+        this.cavernNoise = getCavernNoise(new Random(seed), settings.caverns);
         this.ceilNoise = settings.caverns.ceilNoise.getGenerator((int) seed >> 2);
         this.floorNoise = settings.caverns.floorNoise.getGenerator((int) seed >> 4);
     }
@@ -105,6 +107,14 @@ public class CaveGenerator {
         return settings.decorators.pillars.length > 0 ||
             settings.decorators.stalactites.length > 0 ||
             settings.structures.length > 0;
+    }
+
+    private FastNoise[] getCavernNoise(Random rand, CavernSettings cfg) {
+        FastNoise[] noise = new FastNoise[cfg.noise.length];
+        for (int i = 0; i < cfg.noise.length; i++) {
+            noise[i] = cfg.noise[i].getGenerator(rand.nextInt());
+        }
+        return noise;
     }
 
     /** Starts a tunnel system between the input chunk coordinates. */
@@ -435,11 +445,12 @@ public class CaveGenerator {
                 final int min = floor + settings.caverns.minHeight;
 
                 for (int y = min; y <= max; y++) {
-                    final float scaledY = y / settings.caverns.noise.scaleY;
-
-                    if (cavernNoise.GetBoolean(actualX, scaledY, actualZ)) {
-                        replaceBlock(rand, primer, x, y, z, chunkX, chunkZ, false);
-                        caverns[y][z][x] = true;
+                    for (FastNoise noise : cavernNoise) {
+                        if (noise.GetBoolean(actualX, y, actualZ)) {
+                            replaceBlock(rand, primer, x, y, z, chunkX, chunkZ, false);
+                            caverns[y][z][x] = true;
+                            break;
+                        }
                     }
                 }
             }

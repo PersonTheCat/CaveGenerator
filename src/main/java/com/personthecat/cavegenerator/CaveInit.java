@@ -9,9 +9,7 @@ import com.personthecat.cavegenerator.world.GeneratorSettings;
 import net.minecraft.world.World;
 import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod.EventHandler;
 
 import java.io.File;
 import java.util.Arrays;

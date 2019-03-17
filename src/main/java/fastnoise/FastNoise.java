@@ -66,6 +66,7 @@ public class FastNoise {
 
 	private float m_multiple = 1.0f;
 	private float m_addend = 0.0f;
+	private float m_scaleY = 1.0f;
 
 	private boolean m_invert = false;
 
@@ -242,6 +243,11 @@ public class FastNoise {
 	// Default: 0.5 -> 0.0.
 	public FastNoise SetScale(float scale) {
 		m_booleanThreshold = (scale * 2.0f) - 1.0f;
+		return this;
+	}
+
+	public FastNoise SetScaleY(float scale) {
+		m_scaleY = scale;
 		return this;
 	}
 
@@ -528,6 +534,7 @@ public class FastNoise {
 	}
 
 	public float GetNoise(float x, float y, float z) {
+		y /= m_scaleY;
 		if (m_gradientPerturb) {
 			Vector3f vec = new Vector3f(x, y, z);
 			GradientPerturb(vec);
@@ -618,6 +625,7 @@ public class FastNoise {
 	}
 
 	public float GetNoise(float x, float y) {
+		y /= m_scaleY;
 		x *= m_frequency;
 		y *= m_frequency;
 

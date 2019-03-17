@@ -136,7 +136,9 @@ public class PresetTester {
 
     private void testCaverns(CavernSettings s) {
         testHeights(s.minHeight, s.maxHeight, "caverns");
-        testNoise(s.noise, "caverns.noise3D");
+        for (int i = 0; i < s.noise.length; i++) {
+            testNoise(s.noise[i], "caverns.noise3D[" + i + "]");
+        }
         testNoise(s.ceilNoise, "caverns.ceiling");
         testNoise(s.floorNoise, "caverns.floor");
     }
