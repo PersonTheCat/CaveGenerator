@@ -19,6 +19,7 @@ import net.minecraftforge.fml.common.Mod.Instance;
 import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 
+import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -69,5 +70,12 @@ public class Main {
     public static void onServerStartingEvent(FMLServerStartingEvent event) {
         event.registerServerCommand(new CommandCave());
         info("Cave Generator commands registered.");
+    }
+
+    @EventHandler
+    @SuppressWarnings("unused")
+    public static void onServerStoppingEvent(FMLServerStoppingEvent event) {
+        instance.generators.clear();
+        info("All cave generators unloaded successfully.");
     }
 }

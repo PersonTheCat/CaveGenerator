@@ -290,7 +290,7 @@
      }
      */
   ]
-   # Single, crcular spaces found near the center of cave 
+   # Single, circular spaces found near the center of cave 
    # systems.
   rooms: {
      # The radius in blocks.

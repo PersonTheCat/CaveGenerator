@@ -13,10 +13,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import com.personthecat.cavegenerator.world.StoneCluster.ClusterInfo;
-import com.personthecat.cavegenerator.world.GeneratorSettings.DecoratorSettings;
-import com.personthecat.cavegenerator.world.GeneratorSettings.SpawnSettings;
-import com.personthecat.cavegenerator.world.GeneratorSettings.TunnelSettings;
-import com.personthecat.cavegenerator.world.GeneratorSettings.RavineSettings;
+import com.personthecat.cavegenerator.world.GeneratorSettings.*;
 import net.minecraft.world.gen.NoiseGeneratorSimplex;
 import org.apache.commons.lang3.ArrayUtils;
 
@@ -425,7 +422,7 @@ public class CaveGenerator {
         // Using an array to store calculations instead of redoing all of the
         // noise generation below when decorating caverns. Some calculations
         // *cannot* be done twice, but this should still be faster, regardless.
-        final boolean[][][] caverns = new boolean[settings.caverns.maxHeight][16][16];
+        final boolean[][][] caverns = new boolean[getMaxCaveHeight(settings.caverns)][16][16];
 
         for (int x = 0; x < 16; x++) {
             final int actualX = x + (chunkX * 16);
@@ -450,6 +447,11 @@ public class CaveGenerator {
         if (hasLocalDecorators()) {
             decorateCaverns(rand, primer, chunkX, chunkZ, caverns);
         }
+    }
+
+    private int getMaxCaveHeight(CavernSettings cfg) {
+        final int ceilMax = cfg.ceilNoise.max;
+        return cfg.maxHeight + (ceilMax > 0 ? ceilMax : 0) + 1;
     }
 
     /**
