@@ -28,13 +28,13 @@ public class TunnelPathInfo {
     private static final float PI_TIMES_2 = (float) (Math.PI * 2);
 
     /** Neatly constructs a new object based on values from tunnel settings. */
-    public TunnelPathInfo(TunnelSettings cfg, Random rand, float x, float y, float z) {
-        this(cfg.angleXZ, cfg.angleY, cfg.twistXZ, cfg.twistY, cfg.scale, cfg.scaleY, rand, x, y, z);
+    public TunnelPathInfo(TunnelSettings cfg, Random rand, int destChunkX, int destChunkZ) {
+        this(cfg.angleXZ, cfg.angleY, cfg.twistXZ, cfg.twistY, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.minHeight, cfg.maxHeight);
     }
 
     /** Neatly constructs a new object based on values from ravine settings. */
-    public TunnelPathInfo(RavineSettings cfg, Random rand, float x, float y, float z) {
-        this(cfg.angleXZ, cfg.angleY, cfg.twistXZ, cfg.twistY, cfg.scale, cfg.scaleY, rand, x, y, z);
+    public TunnelPathInfo(RavineSettings cfg, Random rand, int destChunkX, int destChunkZ) {
+        this(cfg.angleXZ, cfg.angleY, cfg.twistXZ, cfg.twistY, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.minHeight, cfg.maxHeight);
     }
 
     /** Used for handling initial encapsulation of inner values. */
@@ -46,9 +46,10 @@ public class TunnelPathInfo {
         ScalableFloat scale,
         ScalableFloat scaleY,
         Random rand,
-        float x,
-        float y,
-        float z
+        int destChunkX,
+        int destChunkZ,
+        int minHeight,
+        int maxHeight
     ) {
         this.angleXZ = angleXZ.startVal + angleXZ.startValRandFactor * (rand.nextFloat() * PI_TIMES_2);
         this.angleY = angleY.startVal + angleY.startValRandFactor * (rand.nextFloat() - 0.50F);
@@ -62,9 +63,11 @@ public class TunnelPathInfo {
         this.sfTwistY = twistY;
         this.sfScale = scale;
         this.sfScaleY = scaleY;
-        this.x = x;
-        this.y = y;
-        this.z = z;
+        // Random coordinates in the destination chunk.
+        final int heightDiff = maxHeight - minHeight;
+        this.x = (float) ((destChunkX * 16) + rand.nextInt(16));
+        this.y = rand.nextInt(rand.nextInt(heightDiff) + 2) + minHeight;
+        this.z = (float) ((destChunkZ * 16) + rand.nextInt(16));
     }
 
     /** Used for constructing updated or cloned instances. */

@@ -381,7 +381,7 @@
   ravines: {
     chance: 0.02
     minHeight: 20
-    maxHeight: 40
+    maxHeight: 66
     distance: 0
     twistXZ: {
       startVal: 0

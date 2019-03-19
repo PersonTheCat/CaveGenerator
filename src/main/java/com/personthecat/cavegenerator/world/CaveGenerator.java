@@ -121,16 +121,7 @@ public class CaveGenerator {
     public void startTunnels(Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
         final int frequency = getTunnelFrequency(rand);
         for (int i = 0; i < frequency; i++) {
-            // Retrieve the height parameters from the settings.
-            final int minHeight = settings.tunnels.minHeight;
-            final int maxHeight = settings.tunnels.maxHeight;
-            final int heightDiff = maxHeight - minHeight;
-
-            // Get random coordinates in destination chunk.
-            final float x = (float) ((destChunkX * 16) + rand.nextInt(16));
-            final float y = (float) (rand.nextInt(rand.nextInt(heightDiff) + minHeight));
-            final float z = (float) ((destChunkZ * 16) + rand.nextInt(16));
-
+            TunnelSettings cfg = settings.tunnels;
             // Determine the number of branches to spawn.
             int branches = 1;
             if (rand.nextInt(settings.tunnels.systemInverseChance) == 0) {
@@ -139,14 +130,13 @@ public class CaveGenerator {
             }
 
             for (int j = 0; j < branches; j++) {
-                TunnelSettings cfg = settings.tunnels;
                 final int distance = cfg.startDistance;
                 PrimerData data = new PrimerData(primer, chunkX, chunkZ);
-                TunnelPathInfo path = new TunnelPathInfo(cfg, rand, x, y, z);
+                TunnelPathInfo path = new TunnelPathInfo(cfg, rand, destChunkX, destChunkZ);
 
                 // Per-vanilla: this randomly increases the size.
                 if (rand.nextInt(10) == 0) {
-                    addRoom(rand, data, x, y, z);
+                    addRoom(rand, data, path.getX(), path.getY(), path.getZ());
                     // Randomly alter scale. Average difference depends on original value.
                     path.multiplyScale(rand.nextFloat() * rand.nextFloat() * 3.00F + 1.00F);
                 }
@@ -157,21 +147,10 @@ public class CaveGenerator {
 
     /** Starts a ravine between the input chunk coordinates. */
     public void startRavine(Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
-        // Retrieve the height parameters from the settings.
-        final int minHeight = settings.ravines.minHeight;
-        final int maxHeight = settings.ravines.maxHeight;
-        final int heightDiff = maxHeight - minHeight;
-
-        // Get random coordinates in destination chunk.
-        final float x = (float) ((destChunkX * 16) + rand.nextInt(16));
-        // To-do: verify these numbers.
-        final float y = (float) (rand.nextInt(rand.nextInt(maxHeight) + 8) + heightDiff);
-        final float z = (float) ((destChunkZ * 16) + rand.nextInt(16));
-
         RavineSettings cfg = settings.ravines;
         final int distance = cfg.startDistance;
         PrimerData data = new PrimerData(primer, chunkX, chunkZ);
-        TunnelPathInfo path = new TunnelPathInfo(cfg, rand, x, y, z);
+        TunnelPathInfo path = new TunnelPathInfo(cfg, rand, destChunkX, destChunkZ);
 
         addRavine(rand.nextLong(), data, path, distance);
     }
