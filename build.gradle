@@ -11,9 +11,9 @@ apply plugin: 'net.minecraftforge.gradle.forge'
 //Only edit below this line, the above code adds and enables the necessary things for Forge to be setup.
 
 
-version = "0.14"
+version = "0.15"
 group = "PersonTheCat" // http://maven.apache.org/guides/mini/guide-naming-conventions.html
-archivesBaseName = "cavegenerator"
+archivesBaseName = "CaveGenerator"
 
 sourceCompatibility = targetCompatibility = '1.8' // Need this here so eclipse task generates correctly.
 compileJava {
@@ -21,7 +21,7 @@ compileJava {
 }
 
 minecraft {
-    version = "1.12.1-14.22.1.2478"
+    version = "1.12-14.21.1.2387"
     runDir = "run"
     
     // the mappings can be changed at any time, and must be in the following format.
@@ -55,6 +55,8 @@ dependencies {
     // http://www.gradle.org/docs/current/userguide/artifact_dependencies_tutorial.html
     // http://www.gradle.org/docs/current/userguide/dependency_management.html
 
+// implementation 'org.jetbrains:annotations:15.0'
+//     implementation 'org.jetbrains:annotations:15.0'
 }
 
 processResources {

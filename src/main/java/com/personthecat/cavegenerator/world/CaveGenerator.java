@@ -31,6 +31,9 @@ public class CaveGenerator {
     private static final IBlockState BLK_WATER = Blocks.WATER.getDefaultState();
     private static final IBlockState BLK_STONE = Blocks.STONE.getDefaultState();
 
+    /** The vertical distance to the nearest water source block that can be ignored. */
+    private static final int WATER_WIGGLE_ROOM = 7;
+
     /** Mandatory fields that must be initialized by the constructor */
     private final World world;
     public final GeneratorSettings settings;
@@ -372,7 +375,9 @@ public class CaveGenerator {
 
     private void createFullSection(Random rand, PrimerData data, TunnelSectionInfo section) {
         // If we need to test this section for water -> is there water?
-        if (!(shouldTestForWater(section.getHighestY()) && testForWater(data.p, section))) {
+        if (!(shouldTestForWater(section.getLowestY(), section.getHighestY()) &&
+            testForWater(data.p, section)))
+        {
             // Generate the actual sphere.
             replaceSection(rand, data, section);
             // We need to generate twice; once to create walls,
@@ -388,11 +393,14 @@ public class CaveGenerator {
      * Returns whether a test should be run to determine whether water is
      * found and stop generating.
      */
-    private boolean shouldTestForWater(int highestY) {
+    private boolean shouldTestForWater(int lowestY, int highestY) {
         for (CaveBlock filler : settings.decorators.caveBlocks) {
-            if (filler.getFillBlock().equals(BLK_WATER) &&
-                highestY <= filler.getMaxHeight() + 10) { // A little wiggle room.
-                return false;
+            if (filler.getFillBlock().equals(BLK_WATER)) {
+                if (highestY <= filler.getMaxHeight() + WATER_WIGGLE_ROOM &&
+                    lowestY >= filler.getMinHeight() - WATER_WIGGLE_ROOM)
+                {
+                    return false;
+                }
             }
         }
         return true;

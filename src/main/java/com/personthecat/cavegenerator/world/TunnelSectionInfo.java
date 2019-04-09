@@ -149,6 +149,10 @@ public class TunnelSectionInfo {
         return 0;
     }
 
+    public int getLowestY() {
+        return startY;
+    }
+
     public int getHighestY() {
         return endY;
     }

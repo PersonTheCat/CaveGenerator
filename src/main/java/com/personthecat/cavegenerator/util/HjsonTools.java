@@ -203,17 +203,22 @@ public class HjsonTools {
         return Optional.ofNullable(json.get(field));
     }
 
+    public static void getValue(JsonObject json, String field, Consumer<JsonValue> ifPresent) {
+        getValue(json, field).ifPresent(ifPresent);
+    }
+
     /**
      * Safely retrieves an array of JsonObjects from the input json.
      * To-do: Be more consistent and use Optional, instead.
      */
     public static List<JsonObject> getObjectArray(JsonObject json, String field) {
         List<JsonObject> array = new ArrayList<>();
-        getArray(json, field, a -> a.forEach(e -> {
-            // This is assumed to be an object. If it isn't,
-            // The user should be informed (i.e. crash).
-            array.add(e.asObject());
-        }));
+        getValue(json, field).map(HjsonTools::asOrToArray)
+            .ifPresent(a -> a.forEach(e -> {
+                // This is assumed to be an object. If it isn't,
+                // The user should be informed (i.e. crash).
+                array.add(e.asObject());
+            }));
         return array;
     }
 

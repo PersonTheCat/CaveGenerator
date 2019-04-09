@@ -65,9 +65,9 @@ public class TunnelPathInfo {
         this.sfScaleY = scaleY;
         // Random coordinates in the destination chunk.
         final int heightDiff = maxHeight - minHeight;
-        this.x = (float) ((destChunkX * 16) + rand.nextInt(16));
+        this.x = (destChunkX * 16) + rand.nextInt(16);
         this.y = rand.nextInt(rand.nextInt(heightDiff) + 2) + minHeight;
-        this.z = (float) ((destChunkZ * 16) + rand.nextInt(16));
+        this.z = (destChunkZ * 16) + rand.nextInt(16);
     }
 
     /** Used for constructing updated or cloned instances. */
