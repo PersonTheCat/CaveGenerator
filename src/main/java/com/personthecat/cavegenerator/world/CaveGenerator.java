@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.world;
 
+import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.util.NoiseSettings3D;
 import com.personthecat.cavegenerator.util.RandomChunkSelector;
 import fastnoise.FastNoise;
@@ -18,6 +19,7 @@ import com.personthecat.cavegenerator.world.GeneratorSettings.*;
 import net.minecraft.world.gen.NoiseGeneratorSimplex;
 import org.apache.commons.lang3.ArrayUtils;
 
+import java.lang.ref.WeakReference;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -35,7 +37,7 @@ public class CaveGenerator {
     private static final int WATER_WIGGLE_ROOM = 7;
 
     /** Mandatory fields that must be initialized by the constructor */
-    private final World world;
+    private WeakReference<World> world;
     public final GeneratorSettings settings;
 
     /** Noise generators. */
@@ -43,20 +45,27 @@ public class CaveGenerator {
     private final NoiseGeneratorSimplex miscNoise;
     private final FastNoise ceilNoise, floorNoise;
     private final FastNoise[] cavernNoise;
+    private long seed;
 
     /** Primary constructor. */
     public CaveGenerator(World world, GeneratorSettings settings) {
         // Main values.
-        this.world = world;
+        this.world = new WeakReference<>(world);
         this.settings = settings;
         // Noise generators.
-        long seed = world.getSeed();
+        this.seed = world.getSeed();
         this.selector = new RandomChunkSelector(seed);
         this.miscNoise = new NoiseGeneratorSimplex(new Random(seed));
         // To-do: ensure that this is more unique (integer overflow).
         this.cavernNoise = getCavernNoise(new Random(seed), settings.caverns);
         this.ceilNoise = settings.caverns.ceilNoise.getGenerator((int) seed >> 2);
         this.floorNoise = settings.caverns.floorNoise.getGenerator((int) seed >> 4);
+    }
+
+    /** Updates the weak reference to a valid world **/
+    public void updateWorld (World world) {
+        this.world = new WeakReference<>(world);
+        this.seed = world.getSeed();
     }
 
     /** Returns whether the generator is enabled globally. */
@@ -470,7 +479,8 @@ public class CaveGenerator {
 
     /** Generates any possible giant cluster sections in the current chunk. */
     private void generateClusters(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
-        rand.setSeed(world.getSeed()); // rand must be reset.
+        // The seed shouldn't change from when it was first provided
+        rand.setSeed(seed); // rand must be reset.
         List<ClusterInfo> info = locateFinalClusters(rand, chunkX, chunkZ);
         SpawnSettings cfg = settings.conditions;
 
@@ -510,7 +520,8 @@ public class CaveGenerator {
                         final int x = (cX * 16) + 8, z = (cZ * 16) + 8;
                         // Origins can only spawn in valid biomes, but can extend
                         // as far as needed.
-                        if (canGenerate(world.getBiome(new BlockPos(x, 0, z)))) {
+                        // Only actually fetch the biome from the weak reference if it's needed
+                        if ((enabled() && settings.conditions.biomes.length == 0) || (world.get() != null && canGenerate(world.get().getBiome(new BlockPos(x, 0, z))))) {
                             // Get an RNG unique to this chunk.
                             final Random localRand = new Random(cX ^ cZ ^ clusterSeed);
                             // Randomly alter spawn height.
@@ -528,6 +539,10 @@ public class CaveGenerator {
 
                             // Add the new information to be returned.
                             info.add(new ClusterInfo(cluster, origin, radiusY, radiusX2, radiusY2, radiusZ2));
+                        }
+
+                        if (world.get() == null) {
+                            Main.instance.logger.info(String.format("[CaveGenerator] Warning: call to locateFinalClusters for chunk: %d/%d had a null world.", chunkX, chunkZ));
                         }
                     }
                 }
@@ -606,9 +621,19 @@ public class CaveGenerator {
      * biomes with sand. May remove anyway.
      */
     private boolean isTopBlock(ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ) {
-        Biome biome = world.getBiome(absoluteCoords(chunkX, chunkZ));
         IBlockState state = primer.getBlockState(x, y, z);
-        return isExceptionBiome(biome) ? state.getBlock() == Blocks.GRASS : state.getBlock() == biome.topBlock;
+        // This is a rather sideways attempt at providing an alternative if the weak reference has been culled
+        if (world.get() != null) {
+            Biome biome = world.get().getBiome(absoluteCoords(chunkX, chunkZ));
+            if (isExceptionBiome(biome)) {
+                return state.getBlock() == Blocks.GRASS;
+            } else {
+                return state.getBlock() == biome.topBlock;
+            }
+        } else {
+            Main.instance.logger.info(String.format("[CaveGenerator] Call to isTopBlock for %d/%d/%d in chunk %d/%d had a null world.", x, y, z, chunkX, chunkZ));
+            return state.getBlock() == Blocks.GRASS;
+        }
     }
 
     /** From Forge docs: helps imitate vanilla bugs? */
@@ -630,10 +655,18 @@ public class CaveGenerator {
      *                 Ideally, if we've broken the surface.
      */
     private void replaceBlock(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop) {
-        final Biome biome = world.getBiome(absoluteCoords(chunkX, chunkZ));
         final IBlockState state = primer.getBlockState(x, y, z);
-        final IBlockState top = biome.topBlock;
-        final IBlockState filler = biome.fillerBlock;
+        IBlockState top = null;
+        IBlockState filler = null;
+
+        if (world.get() != null) {
+            final Biome biome = world.get().getBiome(absoluteCoords(chunkX, chunkZ));
+            top = biome.topBlock;
+            filler = biome.fillerBlock;
+        } else {
+            Main.instance.logger.info(String.format("[CaveGenerator] Warning: replaceBlock call for %d/%d/%d in chunk: %d/%d had a null world.", x, y, z, chunkX, chunkZ));
+        }
+
         final int yDown = y - 1;
 
         if (canReplaceBlock(state) || state.equals(top) || state.equals(filler)) {

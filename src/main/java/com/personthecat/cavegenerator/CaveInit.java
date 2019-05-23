@@ -62,14 +62,14 @@ public class CaveInit {
         });
     }
 
-    /** Loads all generators using the current World object. */
+    /*/** Loads all generators using the current World object. * /
     public static void loadGenerators(Map<String, GeneratorSettings> presets, Map<String, CaveGenerator> gens, World world) {
         gens.clear();
         for (Entry<String, GeneratorSettings> entry : presets.entrySet()) {
             CaveGenerator generator = new CaveGenerator(world, entry.getValue());
             gens.put(entry.getKey(), generator);
         }
-    }
+    }*/
 
     /** Attempts to locate a preset using each of the possible extensions. */
     public static Optional<File> locatePreset(String preset) {
@@ -103,7 +103,7 @@ public class CaveInit {
         }
     }
 
-    @SubscribeEvent
+    /*@SubscribeEvent
     @SuppressWarnings("unused")
     public static void onWorldEventLoad(WorldEvent.Load event) {
         // Obtain a reference to the current world from `event`.
@@ -128,7 +128,7 @@ public class CaveInit {
             );
         }
         loadGenerators(presets, generators, world);
-    }
+    }*/
 
     /** Returns whether any generator is enabled for the current dimension. */
     public static boolean anyGeneratorEnabled(final Map<String, CaveGenerator> generators, int dimension) {

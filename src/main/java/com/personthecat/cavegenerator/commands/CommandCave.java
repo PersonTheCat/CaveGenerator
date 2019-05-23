@@ -160,7 +160,9 @@ public class CommandCave extends CommandBase {
                 sendMessage(sender, e.getMessage());
             })
             .andThen(() -> { // Load generators and inform the user.
-                CaveInit.loadGenerators(Main.instance.presets, Main.instance.generators, sender.getServer().getWorld(0));
+                Main.instance.generatorMap.clear();
+                Main.instance.getGenerators(sender.getEntityWorld());
+                Main.instance.getGenerators(sender.getServer().getWorld(0));
                 sendMessage(sender, "Successfully reloaded caves. View the log for diagnostics.");
             });
     }

@@ -17,7 +17,7 @@ public class RavineManager extends MapGenBase {
     public void generate(World world, int x, int z, ChunkPrimer primer) {
         // Again, these must be retrieved statically. Can't
         // Change this method's signature.
-        Map<String, CaveGenerator> generators = Main.instance.generators;
+        Map<String, CaveGenerator> generators = Main.instance.getGenerators(world);
         int dimension = world.provider.getDimension();
 
         if (ConfigFile.otherGeneratorEnabled) {
@@ -41,7 +41,7 @@ public class RavineManager extends MapGenBase {
     @Override
     protected void recursiveGenerate(World world, int chunkX, int chunkZ, int originalX, int originalZ, ChunkPrimer primer) {
         int dimension = world.provider.getDimension();
-        for (CaveGenerator gen : Main.instance.generators.values()) {
+        for (CaveGenerator gen : Main.instance.getGenerators(world).values()) {
             Biome centerBiome = world.getBiome(centerCoords(chunkX, chunkZ));
             int chance = gen.settings.ravines.inverseChance;
 
