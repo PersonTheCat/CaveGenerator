@@ -6,10 +6,8 @@ import com.personthecat.cavegenerator.config.PresetTester;
 import com.personthecat.cavegenerator.util.Result;
 import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.GeneratorSettings;
-import net.minecraft.world.World;
-import net.minecraftforge.event.world.WorldEvent;
 import net.minecraftforge.fml.common.Loader;
-import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.File;
 import java.util.Arrays;
@@ -62,15 +60,6 @@ public class CaveInit {
         });
     }
 
-    /*/** Loads all generators using the current World object. * /
-    public static void loadGenerators(Map<String, GeneratorSettings> presets, Map<String, CaveGenerator> gens, World world) {
-        gens.clear();
-        for (Entry<String, GeneratorSettings> entry : presets.entrySet()) {
-            CaveGenerator generator = new CaveGenerator(world, entry.getValue());
-            gens.put(entry.getKey(), generator);
-        }
-    }*/
-
     /** Attempts to locate a preset using each of the possible extensions. */
     public static Optional<File> locatePreset(String preset) {
         for (String ext : EXTENSIONS) {
@@ -103,42 +92,28 @@ public class CaveInit {
         }
     }
 
-    /*@SubscribeEvent
-    @SuppressWarnings("unused")
-    public static void onWorldEventLoad(WorldEvent.Load event) {
-        // Obtain a reference to the current world from `event`.
-        World world = event.getWorld();
-        // As always, there's no other way to access additional
-        // information non-statically when using Forge's
-        // SubscribeEvents. I would have preferred to avoid that.
-        Map<String, GeneratorSettings> presets = Main.instance.presets;
-        Map<String, CaveGenerator> generators = Main.instance.generators;
-
-        // Only load once.
-        if (generators.size() > 0) {
-            return;
-        }
-        // Verify the integrity of `world` before proceeding.
-        if (world == null) {
-            throw runEx(
-                "Received a null World object on WorldEvent.Load. " +
-                "This was most likely caused by another mod running " +
-                "with a dedicated WorldProvider service. Please let " +
-                "PersonTheCat know, but it may not be fixable."
-            );
-        }
-        loadGenerators(presets, generators, world);
-    }*/
-
     /** Returns whether any generator is enabled for the current dimension. */
     public static boolean anyGeneratorEnabled(final Map<String, CaveGenerator> generators, int dimension) {
-        return find(generators.values(), (gen) -> gen.canGenerate(dimension))
+        return find(generators.values(), gen -> gen.canGenerate(dimension))
             .isPresent();
+    }
+
+    /** Returns whether any generator in the current dimension has caverns enabled. */
+    public static boolean anyCavernsEnabled(final Map<String, CaveGenerator> generators, int dimension) {
+        return find(generators.values(), gen -> gen.canGenerate(dimension))
+            .map(gen -> gen.settings.caverns.enabled)
+            .orElse(false);
+    }
+
+    /** Returns whether the input settings are valid for the current dimension. */
+    public static boolean validPreset(final GeneratorSettings cfg, int dimension) {
+        return cfg.conditions.enabled && (cfg.conditions.dimensions.length == 0 ||
+            (ArrayUtils.contains(cfg.conditions.dimensions, dimension) != cfg.conditions.dimensionBlacklist));
     }
 
     /** Returns whether any generator is enabled for the current dimension and has world decorators. */
     public static boolean anyHasWorldDecorator(final Map<String, CaveGenerator> generators, int dimension) {
-        return find(generators.values(), (gen) -> gen.canGenerate(dimension) && gen.hasWorldDecorators())
+        return find(generators.values(), gen -> gen.canGenerate(dimension) && gen.hasWorldDecorators())
             .isPresent();
     }
 }

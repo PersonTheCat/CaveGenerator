@@ -45,6 +45,12 @@ public class HeightMapLocator {
     /** A convenient reference to water. */
     private static final IBlockState BLK_WATER = Blocks.WATER.getDefaultState();
 
+    /** The height to be used when filling the substitute height map below. */
+    public static final int FAUX_MAP_HEIGHT = 63;
+
+    /** A substitute height map with all values at the level specified above. */
+    public static final int[][] FAUX_MAP = getFauxMap();
+
     /** Quickly determines the full heightmap for the input ChunkPrimer. */
     public static int[][] getHeightFromPrimer(ChunkPrimer primer) {
         int[][] map = new int[16][16];
@@ -215,6 +221,15 @@ public class HeightMapLocator {
             }
         }
         return y;
+    }
+
+    /** Generates a substitute height map where all values equal 64; */
+    private static int[][] getFauxMap() {
+        final int[][] map = new int[16][16];
+        for (int[] x : map) {
+            Arrays.fill(x, FAUX_MAP_HEIGHT);
+        }
+        return map;
     }
 
     /** A debug function used to display the heightMap found. */

@@ -17,7 +17,7 @@ public class CaveManager extends MapGenBase {
     public void generate(World world, int x, int z, ChunkPrimer primer) {
         // Again, these must be retrieved statically. Can't
         // Change this method's signature.
-        Map<String, CaveGenerator> generators = Main.instance.getGenerators(world);
+        Map<String, CaveGenerator> generators = Main.instance.loadGenerators(world);
         int dimension = world.provider.getDimension();
 
         if (ConfigFile.otherGeneratorEnabled) {
@@ -41,16 +41,22 @@ public class CaveManager extends MapGenBase {
 
     /** Handle all noise-based generation for this generator. */
     private void noiseGenerate(Map<String, CaveGenerator> gens, World world, int dim, int x, int z, ChunkPrimer primer) {
+        final int[][] heightMap = CaveInit.anyCavernsEnabled(Main.instance.generators.get(dim), dim) ?
+            HeightMapLocator.getHeightFromPrimer(primer) :
+            HeightMapLocator.FAUX_MAP;
         for (CaveGenerator generator : gens.values()) {
             Biome centerBiome = world.getBiome(centerCoords(x, z));
             if (generator.canGenerate(dim, centerBiome)) {
-                generator.addNoiseFeatures(rand, primer, x, z);
+                generator.addNoiseFeatures(heightMap, rand, primer, x, z);
+            } else { // Don't allow caverns to be biome-specific, for now.
+                generator.cavernOverride(heightMap, rand, primer, x, z);
             }
         }
     }
 
     @Override
     protected void recursiveGenerate(World world, int chunkX, int chunkZ, int originalX, int originalZ, ChunkPrimer primer) {
+        // Generators were loaded before this function was called. No need to reload.
         for (CaveGenerator generator : Main.instance.getGenerators(world).values()) {
             Biome centerBiome = world.getBiome(centerCoords(chunkX, chunkZ));
             if (generator.canGenerate(world.provider.getDimension(), centerBiome)) {

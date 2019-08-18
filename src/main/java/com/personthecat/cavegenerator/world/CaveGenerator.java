@@ -1,7 +1,6 @@
 package com.personthecat.cavegenerator.world;
 
 import com.personthecat.cavegenerator.Main;
-import com.personthecat.cavegenerator.util.NoiseSettings3D;
 import com.personthecat.cavegenerator.util.RandomChunkSelector;
 import fastnoise.FastNoise;
 import net.minecraft.block.material.Material;
@@ -37,7 +36,7 @@ public class CaveGenerator {
     private static final int WATER_WIGGLE_ROOM = 7;
 
     /** Mandatory fields that must be initialized by the constructor */
-    private WeakReference<World> world;
+    private final WeakReference<World> world;
     public final GeneratorSettings settings;
 
     /** Noise generators. */
@@ -45,7 +44,7 @@ public class CaveGenerator {
     private final NoiseGeneratorSimplex miscNoise;
     private final FastNoise ceilNoise, floorNoise;
     private final FastNoise[] cavernNoise;
-    private long seed;
+    private final long seed;
 
     /** Primary constructor. */
     public CaveGenerator(World world, GeneratorSettings settings) {
@@ -60,12 +59,6 @@ public class CaveGenerator {
         this.cavernNoise = getCavernNoise(new Random(seed), settings.caverns);
         this.ceilNoise = settings.caverns.ceilNoise.getGenerator((int) seed >> 2);
         this.floorNoise = settings.caverns.floorNoise.getGenerator((int) seed >> 4);
-    }
-
-    /** Updates the weak reference to a valid world **/
-    public void updateWorld (World world) {
-        this.world = new WeakReference<>(world);
-        this.seed = world.getSeed();
     }
 
     /** Returns whether the generator is enabled globally. */
@@ -168,15 +161,26 @@ public class CaveGenerator {
     }
 
     /** Generates any applicable noise-based features in the current chunk. */
-    public void addNoiseFeatures(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+    public void addNoiseFeatures(int[][] heightMap, Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
         if (settings.caverns.enabled) {
-            generateCaverns(rand, primer, chunkX, chunkZ);
+            generateCaverns(heightMap, rand, primer, chunkX, chunkZ);
         }
         if (settings.decorators.stoneClusters.length > 0) {
             generateClusters(rand, primer, chunkX, chunkZ);
         }
         if (settings.decorators.stoneLayers.length > 0) {
             generateLayers(primer, chunkX, chunkZ);
+        }
+    }
+
+    /**
+     * Caverns still need to be generated even if none are enabled in the current
+     * biome. This will be necessary until a better way to smooth transitions between
+     * borders is implemented.
+     */
+    public void cavernOverride(int[][] heightMap, Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+        if (settings.caverns.enabled) {
+            generateCaverns(heightMap, rand, primer, chunkX, chunkZ);
         }
     }
 
@@ -423,8 +427,7 @@ public class CaveGenerator {
     }
 
     /** Generates giant air pockets in this chunk using a 3D noise generator. */
-    private void generateCaverns(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
-        final int[][] heightMap = HeightMapLocator.getHeightFromPrimer(primer);
+    private void generateCaverns(int[][] heightMap, Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
         // Using an array to store calculations instead of redoing all of the
         // noise generation below when decorating caverns. Some calculations
         // *cannot* be done twice, but this should still be faster, regardless.
