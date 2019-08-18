@@ -34,7 +34,7 @@ public class CaveFeatureGenerator implements IWorldGenerator {
     @Override
     public void generate(Random rand, int chunkX, int chunkZ, World world, IChunkGenerator chunkGen, IChunkProvider chunkProv) {
         // Once again, there is no way to avoid retrieving this statically.
-        final Map<String, CaveGenerator> generators = Main.instance.generators;
+        final Map<String, CaveGenerator> generators = Main.instance.getGenerators(world);
         final int dimension = world.provider.getDimension();
 
         if (CaveInit.anyHasWorldDecorator(generators, dimension)) {

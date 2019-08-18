@@ -102,7 +102,7 @@ public class HeightMapLocator {
 
     /** Fills in a quarter of the height map using data from its corresponding chunk. */
     private static void fillMapCorner(int[][] map, World world, int chunkX, int chunkZ, int minX, int maxX, int minZ, int maxZ) {
-        final Chunk chunk = world.getChunkFromChunkCoords(chunkX, chunkZ);
+        final Chunk chunk = world.getChunk(chunkX, chunkZ);
         final int seaLevel = world.getSeaLevel();
         final int[] original = chunk.getHeightMap();
         for (int x = minX; x <= maxX; x++) {

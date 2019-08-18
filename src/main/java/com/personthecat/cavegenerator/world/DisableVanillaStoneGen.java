@@ -16,7 +16,7 @@ public class DisableVanillaStoneGen {
             // in the current dimension.
             int dimension = event.getWorld().provider.getDimension();
 
-            if (CaveInit.anyGeneratorEnabled(Main.instance.generators, dimension)) {
+            if (CaveInit.anyGeneratorEnabled(Main.instance.getGenerators(event.getWorld()), dimension)) {
                 switch (event.getType()) {
                     case ANDESITE :
                     case DIORITE :
