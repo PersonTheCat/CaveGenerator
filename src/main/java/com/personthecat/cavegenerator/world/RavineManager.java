@@ -44,12 +44,11 @@ public class RavineManager extends MapGenBase {
         final int dimension = world.provider.getDimension();
         for (CaveGenerator gen : Main.instance.getGenerators(world).values()) {
             Biome centerBiome = world.getBiome(centerCoords(chunkX, chunkZ));
-            int chance = gen.settings.ravines.inverseChance;
 
             // Filter generators that aren't enabled under these conditions
             // and generate by probability.
-            if (gen.canGenerate(dimension, centerBiome) && rand.nextInt(chance) == 0) {
-                gen.startRavine(rand, chunkX, chunkZ, originalX, originalZ, primer);
+            if (gen.canGenerate(dimension, centerBiome)) {
+                gen.startRavines(rand, chunkX, chunkZ, originalX, originalZ, primer);
             }
         }
     }

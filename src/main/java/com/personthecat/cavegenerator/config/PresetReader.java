@@ -143,20 +143,26 @@ public class PresetReader {
     }
 
     /** Parses the field "tunnels" from this json into a TunnelSettings object. */
-    private static TunnelSettings getTunnelSettings(JsonObject json, boolean blankSlate) {
-        return getObject(json, "tunnels")
-            .map(TunnelSettings::new) // The user defined a field.
-            .orElse(new TunnelSettings(blankSlate)); // The user did not define a field.
+    private static TunnelSettings[] getTunnelSettings(JsonObject json, boolean blankSlate) {
+        final TunnelSettings[] cfg = getObjectArray(json, "tunnels").stream()
+            .map(TunnelSettings::new)
+            .toArray(TunnelSettings[]::new);
+        return cfg.length == 0 ? // The user did not define a field.
+            new TunnelSettings[] { new TunnelSettings(blankSlate) } :
+            cfg; // The user defined a field.
     }
 
     /**
      * This seems fairly redundant, but isn't. The fields belong
      * to a separate object with mostly similar properties.
      */
-    private static RavineSettings getRavineSettings(JsonObject json, boolean blankSlate) {
-        return getObject(json, "ravines")
-            .map(RavineSettings::new) // The user defined a field.
-            .orElse(new RavineSettings(blankSlate)); // The user did not define a field.
+    private static RavineSettings[] getRavineSettings(JsonObject json, boolean blankSlate) {
+        final RavineSettings[] cfg = getObjectArray(json, "ravines").stream()
+            .map(RavineSettings::new)
+            .toArray(RavineSettings[]::new);
+        return cfg.length == 0 ? //  The user did not define a field.
+            new RavineSettings[] { new RavineSettings(blankSlate) } :
+            cfg; // The user defined a field.
     }
 
     /** Parses the field "rooms" from this json into a RoomSettings object. */

@@ -122,22 +122,29 @@ public class CaveGenerator {
         return noise;
     }
 
-    /** Starts a tunnel system between the input chunk coordinates. */
+    /** Handles spawning all tunnels for this preset. */
     public void startTunnels(Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
-        final int frequency = getTunnelFrequency(rand);
+        for (TunnelSettings cfg : settings.tunnels) {
+            startTunnel(cfg, rand.nextLong(), destChunkX, destChunkZ, chunkX, chunkZ, primer);
+        }
+    }
+
+    /** Starts a tunnel system between the input chunk coordinates. */
+    private void startTunnel(TunnelSettings cfg, long seed, int destX, int destZ, int x, int z, ChunkPrimer primer) {
+        final Random rand = new Random(seed);
+        final int frequency = getTunnelFrequency(cfg, rand);
         for (int i = 0; i < frequency; i++) {
-            TunnelSettings cfg = settings.tunnels;
             // Determine the number of branches to spawn.
             int branches = 1;
-            if (rand.nextInt(settings.tunnels.systemInverseChance) == 0) {
+            if (rand.nextInt(cfg.systemInverseChance) == 0) {
                 // Add a room at the center? of the system.
                 branches += rand.nextInt(4); // To-do: make this variable.
             }
 
             for (int j = 0; j < branches; j++) {
                 final int distance = cfg.startDistance;
-                PrimerData data = new PrimerData(primer, chunkX, chunkZ);
-                TunnelPathInfo path = new TunnelPathInfo(cfg, rand, destChunkX, destChunkZ);
+                PrimerData data = new PrimerData(primer, x, z);
+                TunnelPathInfo path = new TunnelPathInfo(cfg, rand, destX, destZ);
 
                 // Per-vanilla: this randomly increases the size.
                 if (rand.nextInt(10) == 0) {
@@ -145,19 +152,29 @@ public class CaveGenerator {
                     // Randomly alter scale. Average difference depends on original value.
                     path.multiplyScale(rand.nextFloat() * rand.nextFloat() * 3.00F + 1.00F);
                 }
-                addTunnel(rand.nextLong(), data, path,0, distance);
+                addTunnel(cfg, rand.nextLong(), data, path,0, distance);
+            }
+        }
+    }
+
+    /** Handles spawning all ravines for this preset. */
+    public void startRavines(Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+        for (RavineSettings cfg : settings.ravines) {
+            int chance = cfg.inverseChance;
+            if (rand.nextInt(chance) == 0) {
+                startRavine(cfg, rand.nextLong(), destChunkX, destChunkZ, chunkX, chunkZ, primer);
             }
         }
     }
 
     /** Starts a ravine between the input chunk coordinates. */
-    public void startRavine(Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
-        RavineSettings cfg = settings.ravines;
+    private void startRavine(RavineSettings cfg, long seed, int destX, int destZ, int x, int z, ChunkPrimer primer) {
+        final Random rand = new Random(seed);
         final int distance = cfg.startDistance;
-        PrimerData data = new PrimerData(primer, chunkX, chunkZ);
-        TunnelPathInfo path = new TunnelPathInfo(cfg, rand, destChunkX, destChunkZ);
+        PrimerData data = new PrimerData(primer, x, z);
+        TunnelPathInfo path = new TunnelPathInfo(cfg, rand, destX, destZ);
 
-        addRavine(rand.nextLong(), data, path, distance);
+        addRavine(cfg, rand.nextLong(), data, path, distance);
     }
 
     /** Generates any applicable noise-based features in the current chunk. */
@@ -197,7 +214,7 @@ public class CaveGenerator {
      * @param position  A measure of progress until `distance`.
      * @param distance  The length of the tunnel. 0 -> # ( 132 to 176 ).
      */
-    private void addTunnel(long seed, PrimerData data, TunnelPathInfo path, int position, int distance) {
+    private void addTunnel(TunnelSettings cfg, long seed, PrimerData data, TunnelPathInfo path, int position, int distance) {
         // Master RNG for this tunnel.
         final Random mast = new Random(seed);
         // Avoid issues with inconsistent Random calls.
@@ -211,10 +228,10 @@ public class CaveGenerator {
             // Determine the radius by `scale`.
             final double radiusXZ = 1.5D + (MathHelper.sin(currentPos * (float) Math.PI / distance) * path.getScale());
             final double radiusY = radiusXZ * path.getScaleY();
-            path.update(mast, settings.tunnels.noiseYReduction, randomNoiseCorrection ? 0.92F : 0.70F, 0.1F);
+            path.update(mast, cfg.noiseYReduction, randomNoiseCorrection ? 0.92F : 0.70F, 0.1F);
 
             if (path.getScale() > 1.00F && distance > 0 && currentPos == randomBranchIndex) {
-                addBranches(mast, data, path, currentPos, distance);
+                addBranches(cfg, mast, data, path, currentPos, distance);
                 return;
             }
             // Randomly stop?
@@ -271,21 +288,21 @@ public class CaveGenerator {
         createFullSection(master, data, section);
     }
 
-    private void addBranches(Random rand, PrimerData data, TunnelPathInfo path, int currentPos, int distance) {
+    private void addBranches(TunnelSettings cfg, Random rand, PrimerData data, TunnelPathInfo path, int currentPos, int distance) {
         final float angleXZ1 = path.getAngleXZ() - PI_OVER_2;
         final float angleXZ2 = path.getAngleXZ() + PI_OVER_2;
         final float angleY = path.getAngleY() / 3.0F;
         TunnelPathInfo reset1, reset2;
 
-        if (settings.tunnels.resizeBranches) { // In vanilla, tunnels are resized when branching.
+        if (cfg.resizeBranches) { // In vanilla, tunnels are resized when branching.
             reset1 = path.reset(angleXZ1, angleY, rand.nextFloat() * 0.5F + 0.5F, 1.00F);
             reset2 = path.reset(angleXZ2, angleY, rand.nextFloat() * 0.5F + 0.5F, 1.00F);
         } else { // Continue with the same size (not vanilla).
             reset1 = path.reset(angleXZ1, angleY, path.getScale(), path.getScaleY());
             reset2 = path.reset(angleXZ2, angleY, path.getScale(), path.getScaleY());
         }
-        addTunnel(rand.nextLong(), data, reset1, currentPos, distance);
-        addTunnel(rand.nextLong(), data, reset2, currentPos, distance);
+        addTunnel(cfg, rand.nextLong(), data, reset1, currentPos, distance);
+        addTunnel(cfg, rand.nextLong(), data, reset2, currentPos, distance);
     }
 
     /**
@@ -294,20 +311,20 @@ public class CaveGenerator {
      * values between 1-4, stored above. The difference in scale typically observed in
      * ravines is the result of arguments input to this function.
      */
-    private void addRavine(long seed, PrimerData data, TunnelPathInfo path, int distance) {
+    private void addRavine(RavineSettings cfg, long seed, PrimerData data, TunnelPathInfo path, int distance) {
         // Master RNG for this tunnel.
         final Random mast = new Random(seed);
         // Avoid issues with inconsistent Random calls.
         final Random dec = new Random(seed);
         distance = getTunnelDistance(mast, distance);
         // Unique wall mutations for this chasm.
-        final float[] mut = getMutations(mast);
+        final float[] mut = getMutations(cfg, mast);
 
         for (int currentPos = 0; currentPos < distance; currentPos++) {
             // Determine the radius by `scale`.
             final double radiusXZ = 1.5D + (MathHelper.sin(currentPos * (float) Math.PI / distance) * path.getScale());
             final double radiusY = radiusXZ * path.getScaleY();
-            path.update(mast, true, settings.ravines.noiseYFactor, 0.05F);
+            path.update(mast, true, cfg.noiseYFactor, 0.05F);
 
             // Randomly stop?
             if (mast.nextInt(4) == 0) {
@@ -329,14 +346,14 @@ public class CaveGenerator {
     }
 
     /** Determines the number of cave systems to try and spawn. */
-    private int getTunnelFrequency(Random rand) {
-        int frequency = settings.tunnels.frequency;
+    private int getTunnelFrequency(TunnelSettings cfg, Random rand) {
+        int frequency = cfg.frequency;
         // Verify that we have positive bounds to avoid a crash.
         if (frequency != 0) {
             frequency = rand.nextInt(rand.nextInt(rand.nextInt(frequency) + 1) + 1);
         }
         // Retrieve the baseline from the settings.
-        final int chance = settings.tunnels.isolatedInverseChance;
+        final int chance = cfg.isolatedInverseChance;
         // Maintain seed integrity, where possible.
         // To-do: verify this logic with the original.
         if (chance != 0 && rand.nextInt(chance) != 0) {
@@ -356,9 +373,9 @@ public class CaveGenerator {
     }
 
     /** Used to produce the variations in horizontal scale seen in ravines. */
-    private float[] getMutations(Random rand) {
-        if (settings.ravines.useWallNoise) {
-            return getMutationsNoise(rand);
+    private float[] getMutations(RavineSettings cfg, Random rand) {
+        if (cfg.useWallNoise) {
+            return getMutationsNoise(cfg, rand);
         }
         return getMutationsVanilla(rand);
     }
@@ -377,9 +394,9 @@ public class CaveGenerator {
     }
 
     /** Variant of getMutations() which produces aberrations using a noise generator. */
-    private float[] getMutationsNoise(Random rand) {
+    private float[] getMutationsNoise(RavineSettings cfg, Random rand) {
         float[] mut = new float[256];
-        FastNoise noise = settings.ravines.wallNoise.getGenerator(rand.nextInt());
+        FastNoise noise = cfg.wallNoise.getGenerator(rand.nextInt());
         for (int i = 0; i < mut.length; i++) {
             mut[i] = noise.GetAdjustedNoise(0, i);
         }
@@ -521,10 +538,11 @@ public class CaveGenerator {
                     if (selector.getBooleanForCoordinates(ID, cX, cZ, threshold)) {
                         // Get absolute coordinates, generate in the center.
                         final int x = (cX * 16) + 8, z = (cZ * 16) + 8;
-                        // Origins can only spawn in valid biomes, but can extend
-                        // as far as needed.
-                        // Only actually fetch the biome from the weak reference if it's needed
-                        if ((enabled() && settings.conditions.biomes.length == 0) || (world.get() != null && canGenerate(world.get().getBiome(new BlockPos(x, 0, z))))) {
+                        // Origins can only spawn in valid biomes, but can extend as far as needed.
+                        // Only actually fetch the biome from the weak reference if it's needed.
+                        if (settings.conditions.biomes.length == 0 ||
+                            (world.get() != null && canGenerate(world.get().getBiome(new BlockPos(x, 0, z))))
+                        ) {
                             // Get an RNG unique to this chunk.
                             final Random localRand = new Random(cX ^ cZ ^ clusterSeed);
                             // Randomly alter spawn height.
@@ -545,7 +563,7 @@ public class CaveGenerator {
                         }
 
                         if (world.get() == null) {
-                            Main.instance.logger.info(String.format("[CaveGenerator] Warning: call to locateFinalClusters for chunk: %d/%d had a null world.", chunkX, chunkZ));
+                            warn("Call to locateFinalClusters for chunk {}/{} had a null world.", chunkX, chunkZ);
                         }
                     }
                 }
@@ -634,7 +652,7 @@ public class CaveGenerator {
                 return state.getBlock() == biome.topBlock;
             }
         } else {
-            Main.instance.logger.info(String.format("[CaveGenerator] Call to isTopBlock for %d/%d/%d in chunk %d/%d had a null world.", x, y, z, chunkX, chunkZ));
+            warn("Call to isTopBlock for {}/{}/{} in chunk {}/{} had a null world.", x, y, z, chunkX, chunkZ);
             return state.getBlock() == Blocks.GRASS;
         }
     }
@@ -667,7 +685,7 @@ public class CaveGenerator {
             top = biome.topBlock;
             filler = biome.fillerBlock;
         } else {
-            Main.instance.logger.info(String.format("[CaveGenerator] Warning: replaceBlock call for %d/%d/%d in chunk: %d/%d had a null world.", x, y, z, chunkX, chunkZ));
+            warn("replaceBlock call for {}/{}/{} in chunk: {}/{} had a null world.", x, y, z, chunkX, chunkZ);
         }
 
         final int yDown = y - 1;

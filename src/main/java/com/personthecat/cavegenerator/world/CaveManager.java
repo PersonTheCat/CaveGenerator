@@ -41,6 +41,7 @@ public class CaveManager extends MapGenBase {
 
     /** Handle all noise-based generation for this generator. */
     private void noiseGenerate(Map<String, CaveGenerator> gens, World world, int dim, int x, int z, ChunkPrimer primer) {
+        // Only generate this map once per chunk.
         final int[][] heightMap = CaveInit.anyCavernsEnabled(Main.instance.generators.get(dim), dim) ?
             HeightMapLocator.getHeightFromPrimer(primer) :
             HeightMapLocator.FAUX_MAP;

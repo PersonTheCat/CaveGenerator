@@ -33,8 +33,8 @@ import static com.personthecat.cavegenerator.util.HjsonTools.*;
 public class GeneratorSettings {
     public final SpawnSettings conditions;
     public final IBlockState[] replaceable;
-    public final TunnelSettings tunnels;
-    public final RavineSettings ravines;
+    public final TunnelSettings[] tunnels;
+    public final RavineSettings[] ravines;
     public final RoomSettings rooms;
     public final CavernSettings caverns;
     public final StructureSettings[] structures;
@@ -47,8 +47,8 @@ public class GeneratorSettings {
      */
     public GeneratorSettings(
         SpawnSettings conditions,
-        TunnelSettings tunnels,
-        RavineSettings ravines,
+        TunnelSettings[] tunnels,
+        RavineSettings[] ravines,
         RoomSettings rooms,
         CavernSettings caverns,
         StructureSettings[] structures,

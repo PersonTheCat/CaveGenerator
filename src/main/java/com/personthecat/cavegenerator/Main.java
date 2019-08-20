@@ -20,11 +20,9 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import org.apache.commons.lang3.ArrayUtils;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.Arrays;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.HashMap;
@@ -35,7 +33,7 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 @Mod(
     modid = "cavegenerator",
     name = "Cave Generator",
-    version = "0.15",
+    version = "0.16",
     dependencies = "after:worleycaves;",
     acceptableRemoteVersions = "*"
 )

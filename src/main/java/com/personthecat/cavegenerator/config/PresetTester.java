@@ -119,14 +119,26 @@ public class PresetTester {
         testHeights(s.minHeight, s.maxHeight, "root");
     }
 
-    private void testTunnels(TunnelSettings s) {
+    private void testTunnels(TunnelSettings[] s) {
+        for (TunnelSettings cfg : s) {
+            testTunnel(cfg);
+        }
+    }
+
+    private void testTunnel(TunnelSettings s) {
         testDistance(s.startDistance, "tunnels.distance");
         testHeights(s.minHeight, s.maxHeight, "tunnels");
         testAngle(s.angleXZ, "tunnels.angleXZ");
         testAngle(s.angleY, "tunnels.angleY");
     }
 
-    private void testRavines(RavineSettings s) {
+    private void testRavines(RavineSettings[] s) {
+        for (RavineSettings cfg : s) {
+            testRavine(cfg);
+        }
+    }
+
+    private void testRavine(RavineSettings s) {
         testDistance(s.startDistance, "ravines.distance");
         testHeights(s.minHeight, s.maxHeight, "ravines");
         testAngle(s.angleXZ, "ravines.angleXZ");
