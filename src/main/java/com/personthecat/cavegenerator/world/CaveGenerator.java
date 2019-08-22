@@ -1,6 +1,5 @@
 package com.personthecat.cavegenerator.world;
 
-import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.util.RandomChunkSelector;
 import fastnoise.FastNoise;
 import net.minecraft.block.material.Material;

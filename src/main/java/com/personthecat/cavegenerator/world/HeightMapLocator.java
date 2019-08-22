@@ -27,13 +27,11 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
  *  in that context may justify its existence.
  */
 public class HeightMapLocator {
-
     /**
      * The relative distance to be checked around each previous y coordinate.
      * Used when searching ChunkPrimers only. Should always be greater than 1.
      */
     private static final int RELATIVE_DISTANCE = 5;
-
     /**
      * The number of coordinates to skip when searching for land below water.
      * Higher numbers may slightly increase performance, but decrease accuracy.
@@ -56,7 +54,7 @@ public class HeightMapLocator {
         int[][] map = new int[16][16];
         int previousHeight = getHeightFromBottom(primer, 0, 0);
         for (int x = 0; x < 16; x = x + 2) {
-            fillTwoRows(primer, map, previousHeight, x);
+            previousHeight = fillTwoRows(primer, map, previousHeight, x);
         }
         // printMap(map);
         return map;
@@ -108,7 +106,7 @@ public class HeightMapLocator {
 
     /** Fills in a quarter of the height map using data from its corresponding chunk. */
     private static void fillMapCorner(int[][] map, World world, int chunkX, int chunkZ, int minX, int maxX, int minZ, int maxZ) {
-        final Chunk chunk = world.getChunk(chunkX, chunkZ);
+        final Chunk chunk = world.getChunkFromChunkCoords(chunkX, chunkZ);
         final int seaLevel = world.getSeaLevel();
         final int[] original = chunk.getHeightMap();
         for (int x = minX; x <= maxX; x++) {
