@@ -34,9 +34,9 @@ public class CaveManager extends MapGenBase {
             );
             return;
         }
-        noiseGenerate(generators, world, dimension, x, z, primer);
         // Calls `recursiveGenerate()` recursively.
         super.generate(world, x, z, primer);
+        noiseGenerate(generators, world, dimension, x, z, primer);
     }
 
     /** Handle all noise-based generation for this generator. */
@@ -46,11 +46,16 @@ public class CaveManager extends MapGenBase {
             HeightMapLocator.getHeightFromPrimer(primer) :
             HeightMapLocator.FAUX_MAP;
         for (CaveGenerator generator : gens.values()) {
+            // Don't allow caverns to be biome-specific, for now.
+            if (generator.canGenerate(dim)) {
+                generator.generateCaverns(heightMap, rand, primer, x, z);
+            }
+        }
+        for (CaveGenerator generator : gens.values()) {
             Biome centerBiome = world.getBiome(centerCoords(x, z));
             if (generator.canGenerate(dim, centerBiome)) {
-                generator.addNoiseFeatures(heightMap, rand, primer, x, z);
-            } else { // Don't allow caverns to be biome-specific, for now.
-                generator.cavernOverride(heightMap, rand, primer, x, z);
+                generator.generateClusters(rand, primer, x, z);
+                generator.generateLayers(primer, x, z);
             }
         }
     }

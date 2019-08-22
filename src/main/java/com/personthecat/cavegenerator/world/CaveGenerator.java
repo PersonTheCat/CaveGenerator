@@ -176,30 +176,6 @@ public class CaveGenerator {
         addRavine(cfg, rand.nextLong(), data, path, distance);
     }
 
-    /** Generates any applicable noise-based features in the current chunk. */
-    public void addNoiseFeatures(int[][] heightMap, Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
-        if (settings.caverns.enabled) {
-            generateCaverns(heightMap, rand, primer, chunkX, chunkZ);
-        }
-        if (settings.decorators.stoneClusters.length > 0) {
-            generateClusters(rand, primer, chunkX, chunkZ);
-        }
-        if (settings.decorators.stoneLayers.length > 0) {
-            generateLayers(primer, chunkX, chunkZ);
-        }
-    }
-
-    /**
-     * Caverns still need to be generated even if none are enabled in the current
-     * biome. This will be necessary until a better way to smooth transitions between
-     * borders is implemented.
-     */
-    public void cavernOverride(int[][] heightMap, Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
-        if (settings.caverns.enabled) {
-            generateCaverns(heightMap, rand, primer, chunkX, chunkZ);
-        }
-    }
-
     /**
      * Mod of {~~@link net.minecraft.world.gen.MapGenCaves#addTunnel} by PersonTheCat.
      * This is the basic function responsible for spawning a chained sequence of
@@ -443,7 +419,8 @@ public class CaveGenerator {
     }
 
     /** Generates giant air pockets in this chunk using a 3D noise generator. */
-    private void generateCaverns(int[][] heightMap, Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+    public void generateCaverns(int[][] heightMap, Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+        if (!settings.caverns.enabled) return;
         // Using an array to store calculations instead of redoing all of the
         // noise generation below when decorating caverns. Some calculations
         // *cannot* be done twice, but this should still be faster, regardless.
@@ -497,7 +474,8 @@ public class CaveGenerator {
     }
 
     /** Generates any possible giant cluster sections in the current chunk. */
-    private void generateClusters(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+    public void generateClusters(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+        if (settings.decorators.stoneClusters.length == 0) return;
         // The seed shouldn't change from when it was first provided
         rand.setSeed(seed); // rand must be reset.
         List<ClusterInfo> info = locateFinalClusters(rand, chunkX, chunkZ);
@@ -590,7 +568,8 @@ public class CaveGenerator {
     }
 
     /** Generates all possible stone layers in the current chunk. */
-    private void generateLayers(ChunkPrimer primer, int chunkX, int chunkZ) {
+    public void generateLayers(ChunkPrimer primer, int chunkX, int chunkZ) {
+        if (settings.decorators.stoneLayers.length == 0) return;
         for (int x = 0; x < 16; x++) {
             final float actualX = x + (chunkX * 16);
             for (int z = 0; z < 16; z++) {
