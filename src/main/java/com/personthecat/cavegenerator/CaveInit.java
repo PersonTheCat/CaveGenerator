@@ -100,9 +100,8 @@ public class CaveInit {
 
     /** Returns whether any generator in the current dimension has caverns enabled. */
     public static boolean anyCavernsEnabled(final Map<String, CaveGenerator> generators, int dimension) {
-        return find(generators.values(), gen -> gen.canGenerate(dimension))
-            .map(gen -> gen.settings.caverns.enabled)
-            .orElse(false);
+        return find(generators.values(), gen -> gen.canGenerate(dimension) && gen.settings.caverns.enabled)
+            .isPresent();
     }
 
     /** Returns whether the input settings are valid for the current dimension. */
