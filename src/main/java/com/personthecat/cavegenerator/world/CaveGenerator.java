@@ -137,7 +137,7 @@ public class CaveGenerator {
             int branches = 1;
             if (rand.nextInt(cfg.systemInverseChance) == 0) {
                 // Add a room at the center? of the system.
-                branches += rand.nextInt(cfg.systemDensity); // To-do: make this variable.
+                branches += rand.nextInt(cfg.systemDensity);
             }
 
             for (int j = 0; j < branches; j++) {
@@ -209,7 +209,8 @@ public class CaveGenerator {
                 addBranches(cfg, mast, data, path, currentPos, distance);
                 return;
             }
-            // Randomly stop?
+            // Effectively sets the tunnel resolution by randomly skipping
+            // tunnel segments, increasing performance.
             if (mast.nextInt(4) == 0) {
                 continue;
             }
@@ -414,7 +415,7 @@ public class CaveGenerator {
     /** Determines whether any water exists in the current section. */
     private boolean testForWater(ChunkPrimer primer, TunnelSectionInfo section) {
         return section.test(pos ->
-            primer.getBlockState(pos.getX(), pos.getY(), pos.getZ()).equals(BLK_WATER)
+            primer.getBlockState(pos.getX(), pos.getY() + 1, pos.getZ()).equals(BLK_WATER)
         );
     }
 
