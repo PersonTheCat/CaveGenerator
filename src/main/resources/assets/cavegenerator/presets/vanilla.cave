@@ -316,6 +316,9 @@
      # This has an effect of spawning each system in
      # isolated groups vs. everywhere.
     isolatedChance: 0.142
+     # The maximum possible number of branches at system 
+     # origins.
+    systemDensity: 4
      # Whether to reduce the amount of aberrations in
      # in this cave's vertical angle. When this feature
      # is enabled, the amount that noiseY can change is

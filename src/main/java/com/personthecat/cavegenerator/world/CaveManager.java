@@ -34,9 +34,9 @@ public class CaveManager extends MapGenBase {
             );
             return;
         }
+        noiseGenerate(generators, world, dimension, x, z, primer);
         // Calls `recursiveGenerate()` recursively.
         super.generate(world, x, z, primer);
-        noiseGenerate(generators, world, dimension, x, z, primer);
     }
 
     /** Handle all noise-based generation for this generator. */

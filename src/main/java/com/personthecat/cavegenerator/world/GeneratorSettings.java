@@ -197,6 +197,8 @@ public class GeneratorSettings {
         public final int systemInverseChance;
         /**  Increases the distance between tunnels. */
         public final int isolatedInverseChance;
+        /** The maximum possible number of branches at system origins. */
+        public final int systemDensity;
 
         /**
          * The expected distance of the first cave generated in this
@@ -237,6 +239,7 @@ public class GeneratorSettings {
             ScalableFloat angleY,
             int systemInverseChance,
             int isolatedInverseChance,
+            int systemDensity,
             int startingDistance,
             int minHeight,
             int maxHeight,
@@ -252,6 +255,7 @@ public class GeneratorSettings {
             this.angleY = angleY;
             this.systemInverseChance = systemInverseChance;
             this.isolatedInverseChance = isolatedInverseChance;
+            this.systemDensity = systemDensity;
             this.startDistance = startingDistance;
             this.minHeight = minHeight;
             this.maxHeight = maxHeight;
@@ -271,6 +275,7 @@ public class GeneratorSettings {
                 getScalableFloatOr(tun, "angleY", DEFAULT_ANGLE_Y),
                 invert(getFloatOr(tun, "systemChance", 0.25f)),
                 invert(getFloatOr(tun, "isolatedChance", 0.14f)),
+                getIntOr(tun, "systemDensity", 4),
                 getIntOr(tun, "distance", 0),
                 getIntOr(tun, "minHeight", 8),
                 getIntOr(tun, "maxHeight", 128),

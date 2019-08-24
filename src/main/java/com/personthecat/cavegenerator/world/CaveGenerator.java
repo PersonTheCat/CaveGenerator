@@ -137,7 +137,7 @@ public class CaveGenerator {
             int branches = 1;
             if (rand.nextInt(cfg.systemInverseChance) == 0) {
                 // Add a room at the center? of the system.
-                branches += rand.nextInt(4); // To-do: make this variable.
+                branches += rand.nextInt(cfg.systemDensity); // To-do: make this variable.
             }
 
             for (int j = 0; j < branches; j++) {
@@ -655,8 +655,9 @@ public class CaveGenerator {
      */
     private void replaceBlock(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ, boolean foundTop) {
         final IBlockState state = primer.getBlockState(x, y, z);
-        IBlockState top = null;
-        IBlockState filler = null;
+        final IBlockState top;
+        final IBlockState filler;
+        final int yDown = y - 1;
 
         if (world.get() != null) {
             final Biome biome = world.get().getBiome(absoluteCoords(chunkX, chunkZ));
@@ -664,9 +665,9 @@ public class CaveGenerator {
             filler = biome.fillerBlock;
         } else {
             warn("replaceBlock call for {}/{}/{} in chunk: {}/{} had a null world.", x, y, z, chunkX, chunkZ);
+            top = null;
+            filler = null;
         }
-
-        final int yDown = y - 1;
 
         if (canReplaceBlock(state) || state.equals(top) || state.equals(filler)) {
             // This must be a vanilla bug?
