@@ -5,33 +5,41 @@ import com.personthecat.cavegenerator.util.Lazy;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
+import org.apache.commons.lang3.ArrayUtils;
+
 import java.util.Optional;
+
+import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
 public class ReplaceVanillaCaveGen {
 
     /** Determines whether any presets are enabled in dim -1. */
     private static final Lazy<Boolean> netherPresetExists = new Lazy<>(
-        () -> Main.instance.generators.containsKey(-1)
+        () -> find(Main.instance.presets.values(), cfg -> ArrayUtils.contains(cfg.conditions.dimensions, -1))
+            .isPresent()
     );
 
     @SuppressWarnings("unused")
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onInitMapGen(InitMapGenEvent event) {
-        if (event.getNewGen().equals(event.getOriginalGen())) {
-            return;
-        }
         switch (event.getType()) {
             case CAVE :
-                Main.instance.priorCaves = Optional.of(event.getNewGen());
+                if (!event.getNewGen().equals(event.getOriginalGen())) {
+                    Main.instance.priorCaves = Optional.of(event.getNewGen());
+                }
                 event.setNewGen(new CaveManager());
                 break;
             case RAVINE :
-                Main.instance.priorRavines = Optional.of(event.getNewGen());
+                if (!event.getNewGen().equals(event.getOriginalGen())) {
+                    Main.instance.priorRavines = Optional.of(event.getNewGen());
+                }
                 event.setNewGen(new RavineManager());
                 break;
-            case NETHER_CAVE:
+            case NETHER_CAVE :
                 if (netherPresetExists.get()) {
-                    Main.instance.priorNetherCaves = Optional.of(event.getNewGen());
+                    if (!event.getNewGen().equals(event.getOriginalGen())) {
+                        Main.instance.priorNetherCaves = Optional.of(event.getNewGen());
+                    }
                     event.setNewGen(new CaveManager());
                 }
         }
