@@ -128,6 +128,7 @@ public class PresetTester {
     private void testTunnel(TunnelSettings s) {
         testDistance(s.startDistance, "tunnels.distance");
         testHeights(s.minHeight, s.maxHeight, "tunnels");
+        assertGreaterThan(s.systemDensity, 0, "tunnels.systemDensity");
         testAngle(s.angleXZ, "tunnels.angleXZ");
         testAngle(s.angleY, "tunnels.angleY");
     }
@@ -285,6 +286,13 @@ public class PresetTester {
     private void testHeights(int min, int max, String path) {
         if (min > max) {
             log(high, "Invalid range @ {}. minHeight > maxHeight", path);
+        }
+    }
+
+    /** Ensures that val > ref */
+    private void assertGreaterThan(int val, int ref, String path) {
+        if (val <= ref) {
+            log(high, "Invalid number # {}. It must be greater than {}", path, ref);
         }
     }
 

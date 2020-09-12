@@ -22,7 +22,7 @@ public class ConfigFile {
     @Comment({
         "When this field is set to true, PresetTester is allowed to",
         "crash the game when more serious errors are detected. Users",
-        "who are more serious about creating cleaner and more efficient" +
+        "who are more serious about creating cleaner and more efficient",
         "presets should consider enabling this field to make sure that",
         "nothing slips by."})
     public static boolean strictPresets = false;

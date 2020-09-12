@@ -33,7 +33,7 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 @Mod(
     modid = "cavegenerator",
     name = "Cave Generator",
-    version = "0.16",
+    version = "0.17",
     dependencies = "after:worleycaves;",
     acceptableRemoteVersions = "*"
 )
@@ -52,6 +52,8 @@ public class Main {
     public Optional<MapGenBase> priorCaves = empty();
     /** A non-null instance of the most recent, non-vanilla ravine generator. */
     public Optional<MapGenBase> priorRavines = empty();
+    /** A non-null instance of the most recent, non-vanilla nether cave generator. */
+    public Optional<MapGenBase> priorNetherCaves = empty();
 
     @EventHandler
     @SuppressWarnings("unused")
@@ -96,11 +98,5 @@ public class Main {
         }
         this.generators.put(dim, generators);
         return generators;
-    }
-
-    /** Retrieves a map of generators for the current dimension. */
-    public Map<String, CaveGenerator> getGenerators(World world) {
-        int dim = world.provider.getDimension();
-        return this.generators.get(dim);
     }
 }

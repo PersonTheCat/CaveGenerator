@@ -251,7 +251,7 @@ public class CommandCave extends CommandBase {
     private static void fixIndent(ICommandSender sender, String[] args) {
         requireArgs(args, 1);
         File presetFile = CaveInit.locatePreset(args[0])
-            .orElseThrow(() -> runExF("No preset named s found.", args[0]));
+            .orElseThrow(() -> runExF("No preset named %s found.", args[0]));
         List<String> lines = safeContents(presetFile)
             .orElseThrow(() -> runExF("Unable to read contents of %s.", presetFile.getName()));
 
@@ -380,8 +380,8 @@ public class CommandCave extends CommandBase {
     /** Formats the input text to nicely display a command'spawnStructure usage. */
     private static ITextComponent usageText(String command, String usage) {
         ITextComponent msg = tcs(""); // Parent has no formatting.
-        msg.appendSibling(tcs(command).setStyle(USAGE_STYLE));
-        msg.appendSibling(tcs(" : " + usage));
+        msg.appendSibling(tcs(command));
+        msg.appendSibling(tcs(" :\n " + usage).setStyle(USAGE_STYLE));
         return msg;
     }
 

@@ -9,6 +9,7 @@ import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.MapGenBase;
 
 import java.util.Map;
+import java.util.Optional;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
@@ -17,19 +18,23 @@ public class CaveManager extends MapGenBase {
     public void generate(World world, int x, int z, ChunkPrimer primer) {
         // Again, these must be retrieved statically. Can't
         // Change this method's signature.
-        Map<String, CaveGenerator> generators = Main.instance.loadGenerators(world);
-        int dimension = world.provider.getDimension();
+        final Map<String, CaveGenerator> generators = Main.instance.loadGenerators(world);
+        final int dimension = world.provider.getDimension();
+
+        final Optional<MapGenBase> priorCaves = dimension == -1
+            ? Main.instance.priorNetherCaves
+            : Main.instance.priorCaves;
 
         if (ConfigFile.otherGeneratorEnabled) {
             // Generate simultaneously with one other generator.
-            Main.instance.priorCaves.ifPresent((gen) ->
+            priorCaves.ifPresent((gen) ->
                 gen.generate(world, x, z, primer)
             );
         } else if (!CaveInit.anyGeneratorEnabled(generators, dimension)) {
             // No generators are enabled for this dimension.
             // Allow the most recent mod in the queue to
             // generate and then move on.
-            Main.instance.priorCaves.ifPresent((gen) ->
+            priorCaves.ifPresent((gen) ->
                 gen.generate(world, x, z, primer)
             );
             return;
@@ -63,7 +68,7 @@ public class CaveManager extends MapGenBase {
     @Override
     protected void recursiveGenerate(World world, int chunkX, int chunkZ, int originalX, int originalZ, ChunkPrimer primer) {
         // Generators were loaded before this function was called. No need to reload.
-        for (CaveGenerator generator : Main.instance.getGenerators(world).values()) {
+        for (CaveGenerator generator : Main.instance.loadGenerators(world).values()) {
             Biome centerBiome = world.getBiome(centerCoords(chunkX, chunkZ));
             if (generator.canGenerate(world.provider.getDimension(), centerBiome)) {
                 generator.startTunnels(rand, chunkX, chunkZ, originalX, originalZ, primer);
