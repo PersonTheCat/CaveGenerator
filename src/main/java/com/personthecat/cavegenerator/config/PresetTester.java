@@ -129,8 +129,8 @@ public class PresetTester {
         testDistance(s.startDistance, "tunnels.distance");
         testHeights(s.minHeight, s.maxHeight, "tunnels");
         assertGreaterThan(s.systemDensity, 0, "tunnels.systemDensity");
-        testAngle(s.angleXZ, "tunnels.angleXZ");
-        testAngle(s.angleY, "tunnels.angleY");
+        testAngle(s.yaw, "tunnels.yaw");
+        testAngle(s.pitch, "tunnels.pitch");
     }
 
     private void testRavines(RavineSettings[] s) {
@@ -142,8 +142,8 @@ public class PresetTester {
     private void testRavine(RavineSettings s) {
         testDistance(s.startDistance, "ravines.distance");
         testHeights(s.minHeight, s.maxHeight, "ravines");
-        testAngle(s.angleXZ, "ravines.angleXZ");
-        testAngle(s.angleY, "ravines.angleY");
+        testAngle(s.yaw, "ravines.yaw");
+        testAngle(s.pitch, "ravines.pitch");
         testNoise(s.wallNoise, "ravines.wallNoise");
     }
 

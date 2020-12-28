@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator;
 
 import com.personthecat.cavegenerator.config.ConfigFile;
+import com.personthecat.cavegenerator.config.PresetCompat;
 import com.personthecat.cavegenerator.config.PresetReader;
 import com.personthecat.cavegenerator.config.PresetTester;
 import com.personthecat.cavegenerator.util.Result;
@@ -23,7 +24,7 @@ public class CaveInit {
     /** A setting indicating the location where presets will be kept. */
     private static final String FOLDER = "cavegenerator/presets";
     public static final File DIR = new File(Loader.instance().getConfigDir(), FOLDER);
-    public static final List<String> EXTENSIONS = Arrays.asList("hjson", "json", "cave");
+    private static final List<String> EXTENSIONS = Arrays.asList("hjson", "json", "cave");
     /** A message to display when the preset directory is somehow unavailable. */
     private static final String NO_ACCESS = "Currently unable to access preset directory.";
 
@@ -34,13 +35,13 @@ public class CaveInit {
             .expect("Error: Unable to create the preset directory. It is most likely in use.");
         // Go ahead and clear this to allow presets to be reloaded.
         presets.clear();
-        // Initialize a result to be returned.
-        Result<RuntimeException> result = Result.ok();
         // Handle all files in the preset directory.
-        safeListFiles(DIR).ifPresent((files) -> { // Files found.
+        final Optional<File[]> list = safeListFiles(DIR);
+        list.ifPresent(files -> { // Files found.
             for (File file : files) {
                 if (validExtension(file)) {
                     String filename = file.getName();
+                    // PresetCompat occurs here. Need to use internal functions in PresetReader.
                     GeneratorSettings preset = PresetReader.getPreset(file);
                     PresetTester tester = new PresetTester(preset, filename, ConfigFile.strictPresets);
                     tester.run();
@@ -50,11 +51,11 @@ public class CaveInit {
         });
         // Inform the user of which presets were loaded.
         printLoadedPresets(presets);
-        return result; // To do: return an error if safeListFiles() returns empty.
+        return list.isPresent() ? Result.ok() : Result.of(runExF("Error reading {}", DIR));
     }
 
     /** Loads all presets, crashing if an error is present. */
-    public static void forceInitPresets(final Map<String, GeneratorSettings> presets) {
+    static void forceInitPresets(final Map<String, GeneratorSettings> presets) {
         initPresets(presets).handleIfPresent((err) -> {
             throw runExF("Error loading presets: %s", err.getMessage());
         });
@@ -105,7 +106,7 @@ public class CaveInit {
     }
 
     /** Returns whether the input settings are valid for the current dimension. */
-    public static boolean validPreset(final GeneratorSettings cfg, int dimension) {
+    static boolean validPreset(final GeneratorSettings cfg, int dimension) {
         return cfg.conditions.enabled && (cfg.conditions.dimensions.length == 0 ||
             (ArrayUtils.contains(cfg.conditions.dimensions, dimension) != cfg.conditions.dimensionBlacklist));
     }

@@ -15,34 +15,34 @@ import java.util.Random;
  */
 public class TunnelPathInfo {
     /** The angles in radians for this tunnel. */
-    private float angleXZ, angleY;
+    private float yaw, pitch;
     /** The amount to alter angle(XZ/Y) per-segment. */
-    private float twistXZ, twistY;
+    private float dYaw, dPitch;
     private float scale, scaleY;
     /** Coordinates of this tunnel's current destination. */
     private float x, y, z;
-    private final ScalableFloat sfAngleXZ, sfAngleY;
-    private final ScalableFloat sfTwistXZ, sfTwistY;
+    private final ScalableFloat sfYaw, sfPitch;
+    private final ScalableFloat sfdYaw, sfdPitch;
     private final ScalableFloat sfScale, sfScaleY;
 
     private static final float PI_TIMES_2 = (float) (Math.PI * 2);
 
     /** Neatly constructs a new object based on values from tunnel settings. */
     public TunnelPathInfo(TunnelSettings cfg, Random rand, int destChunkX, int destChunkZ) {
-        this(cfg.angleXZ, cfg.angleY, cfg.twistXZ, cfg.twistY, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.minHeight, cfg.maxHeight);
+        this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.minHeight, cfg.maxHeight);
     }
 
     /** Neatly constructs a new object based on values from ravine settings. */
     public TunnelPathInfo(RavineSettings cfg, Random rand, int destChunkX, int destChunkZ) {
-        this(cfg.angleXZ, cfg.angleY, cfg.twistXZ, cfg.twistY, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.minHeight, cfg.maxHeight);
+        this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.minHeight, cfg.maxHeight);
     }
 
     /** Used for handling initial encapsulation of inner values. */
     private TunnelPathInfo(
-        ScalableFloat angleXZ,
-        ScalableFloat angleY,
-        ScalableFloat twistXZ,
-        ScalableFloat twistY,
+        ScalableFloat yaw,
+        ScalableFloat pitch,
+        ScalableFloat dYaw,
+        ScalableFloat dPitch,
         ScalableFloat scale,
         ScalableFloat scaleY,
         Random rand,
@@ -51,16 +51,16 @@ public class TunnelPathInfo {
         int minHeight,
         int maxHeight
     ) {
-        this.angleXZ = angleXZ.startVal + angleXZ.startValRandFactor * (rand.nextFloat() * PI_TIMES_2);
-        this.angleY = angleY.startVal + angleY.startValRandFactor * (rand.nextFloat() - 0.50F);
+        this.yaw = yaw.startVal + yaw.startValRandFactor * (rand.nextFloat() * PI_TIMES_2);
+        this.pitch = pitch.startVal + pitch.startValRandFactor * (rand.nextFloat() - 0.50F);
         this.scale = scale.startVal + scale.startValRandFactor * (rand.nextFloat() * 2.00F + rand.nextFloat());
-        this.twistXZ = twistXZ.startVal;
-        this.twistY = twistY.startVal;
+        this.dYaw = dYaw.startVal;
+        this.dPitch = dPitch.startVal;
         this.scaleY = scaleY.startVal;
-        this.sfAngleXZ = angleXZ;
-        this.sfAngleY = angleY;
-        this.sfTwistXZ = twistXZ;
-        this.sfTwistY = twistY;
+        this.sfYaw = yaw;
+        this.sfPitch = pitch;
+        this.sfdYaw = dYaw;
+        this.sfdPitch = dPitch;
         this.sfScale = scale;
         this.sfScaleY = scaleY;
         // Random coordinates in the destination chunk.
@@ -73,27 +73,27 @@ public class TunnelPathInfo {
     /** Used for constructing updated or cloned instances. */
     private TunnelPathInfo(
         TunnelPathInfo from,
-        float angleXZ,
-        float angleY,
-        float twistXZ,
-        float twistY,
+        float yaw,
+        float pitch,
+        float dYaw,
+        float dPitch,
         float scale,
         float scaleY,
         float x,
         float y,
         float z
     ) {
-        this.sfAngleXZ = from.sfAngleXZ;
-        this.sfAngleY = from.sfAngleY;
-        this.sfTwistXZ = from.sfTwistXZ;
-        this.sfTwistY = from.sfTwistY;
+        this.sfYaw = from.sfYaw;
+        this.sfPitch = from.sfPitch;
+        this.sfdYaw = from.sfdYaw;
+        this.sfdPitch = from.sfdPitch;
         this.sfScale = from.sfScale;
         this.sfScaleY = from.sfScaleY;
-        this.angleXZ = angleXZ;
-        this.angleY = angleY;
+        this.yaw = yaw;
+        this.pitch = pitch;
         this.scale = scale;
-        this.twistXZ = twistXZ;
-        this.twistY = twistY;
+        this.dYaw = dYaw;
+        this.dPitch = dPitch;
         this.scaleY = scaleY;
         this.x = x;
         this.y = y;
@@ -102,15 +102,15 @@ public class TunnelPathInfo {
 
     /** Returns a new instance, resetting all primary fields to the input values. */
     public TunnelPathInfo reset(float angleXZ, float angleY, float scale, float scaleY) {
-        return new TunnelPathInfo(this, angleXZ, angleY, sfTwistXZ.startVal, sfTwistY.startVal, scale, scaleY, x, y, z);
+        return new TunnelPathInfo(this, angleXZ, angleY, sfdYaw.startVal, sfdPitch.startVal, scale, scaleY, x, y, z);
     }
 
-    public float getAngleXZ() {
-        return angleXZ;
+    public float getYaw() {
+        return yaw;
     }
 
-    public float getAngleY() {
-        return angleY;
+    public float getPitch() {
+        return pitch;
     }
 
     public float getScale() {
@@ -142,30 +142,30 @@ public class TunnelPathInfo {
         nextPos();
         // Vertical noise control.
         if (noiseYReduction) {
-            angleY *= angleYFactor;
+            pitch *= angleYFactor;
         }
         // Recalculate the size / angle data for the next segment.
         updateVals(rand, twistPotential);
     }
 
     public void nextPos() {
-        final float cos = MathHelper.cos(angleY);
-        final float sin = MathHelper.sin(angleY);
-        x += MathHelper.cos(angleXZ) * cos;
+        final float cos = MathHelper.cos(pitch);
+        final float sin = MathHelper.sin(pitch);
+        x += MathHelper.cos(yaw) * cos;
         y += sin;
-        z += MathHelper.sin(angleXZ) * cos;
+        z += MathHelper.sin(yaw) * cos;
     }
 
     public void updateVals(Random rand, float twistPotential) {
         // Adjust the angle based on current twist(XZ/Y). twist
         // will have been recalculated on subsequent iterations.
         // The potency of twist is reduced immediately.
-        angleXZ += twistXZ * twistPotential;
-        angleY += twistY * twistPotential;
+        yaw += dYaw * twistPotential;
+        pitch += dPitch * twistPotential;
         // Rotates the beginning of the chain around the end.
-        twistY = adjustTwist(twistY, rand, sfTwistY);
+        dPitch = adjustTwist(dPitch, rand, sfdPitch);
         // Positive is counterclockwise, negative is clockwise.
-        twistXZ = adjustTwist(twistXZ, rand, sfTwistXZ);
+        dYaw = adjustTwist(dYaw, rand, sfdYaw);
         scale = adjustScale(scale, rand, sfScale);
         scaleY = adjustScale(scaleY, rand, sfScaleY);
     }

@@ -14,10 +14,10 @@
     minHeight: 10
     maxHeight: 50
     distance: 140
-    twistXZ: { randFactor: 5 }
+    dYaw: { randFactor: 5 }
     scaleY: { startVal: 4 }
-    angleXZ: { startValRandFactor: 1.5 }
-    angleY: { startValRandFactor: 0.75 }
+    yaw: { startValRandFactor: 1.5 }
+    pitch: { startValRandFactor: 0.75 }
     scale: {
       startVal: 2
       startValRandFactor: 2

@@ -250,8 +250,8 @@ public class CaveGenerator {
         // Determine the radius by `scale`.
         final double radiusXZ = 1.5D + (MathHelper.sin(position * (float) Math.PI / distance) * scale);
         final double radiusY = radiusXZ * scaleY;
-        // Coordinates are normally shifted based on angleXZ
-        // and angleY. When the input angle would otherwise
+        // Coordinates are normally shifted based on yaw
+        // and pitch. When the input angle would otherwise
         // just be 0.0, this is the only value that would
         // actually change.
         x += 1;
@@ -265,17 +265,17 @@ public class CaveGenerator {
     }
 
     private void addBranches(TunnelSettings cfg, Random rand, PrimerData data, TunnelPathInfo path, int currentPos, int distance) {
-        final float angleXZ1 = path.getAngleXZ() - PI_OVER_2;
-        final float angleXZ2 = path.getAngleXZ() + PI_OVER_2;
-        final float angleY = path.getAngleY() / 3.0F;
+        final float yaw1 = path.getYaw() - PI_OVER_2;
+        final float yaw2 = path.getYaw() + PI_OVER_2;
+        final float pitch = path.getPitch() / 3.0F;
         TunnelPathInfo reset1, reset2;
 
         if (cfg.resizeBranches) { // In vanilla, tunnels are resized when branching.
-            reset1 = path.reset(angleXZ1, angleY, rand.nextFloat() * 0.5F + 0.5F, 1.00F);
-            reset2 = path.reset(angleXZ2, angleY, rand.nextFloat() * 0.5F + 0.5F, 1.00F);
+            reset1 = path.reset(yaw1, pitch, rand.nextFloat() * 0.5F + 0.5F, 1.00F);
+            reset2 = path.reset(yaw2, pitch, rand.nextFloat() * 0.5F + 0.5F, 1.00F);
         } else { // Continue with the same size (not vanilla).
-            reset1 = path.reset(angleXZ1, angleY, path.getScale(), path.getScaleY());
-            reset2 = path.reset(angleXZ2, angleY, path.getScale(), path.getScaleY());
+            reset1 = path.reset(yaw1, pitch, path.getScale(), path.getScaleY());
+            reset2 = path.reset(yaw2, pitch, path.getScale(), path.getScaleY());
         }
         addTunnel(cfg, rand.nextLong(), data, reset1, currentPos, distance);
         addTunnel(cfg, rand.nextLong(), data, reset2, currentPos, distance);

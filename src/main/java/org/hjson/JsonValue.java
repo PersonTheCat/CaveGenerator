@@ -27,6 +27,9 @@ import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringWriter;
 import java.io.Writer;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Represents a JSON value. This can be a JSON <strong>object</strong>, an <strong> array</strong>,
@@ -65,6 +68,7 @@ public abstract class JsonValue implements Serializable {
    * Comments that will be used by each type of value.
    */
   protected String bolComment="", eolComment="", intComment="";
+
   /**
    * A flag indicating whether this value has been specifically called for.
    */
@@ -261,6 +265,38 @@ public abstract class JsonValue implements Serializable {
   }
 
   /**
+   * Returns a JsonValue from an Object of unknown type.
+   *
+   * @param value the value to get a JSON representation for
+   * @return a new JsonValue.
+   */
+  @SuppressWarnings("unchecked")
+  public static JsonValue valueOf(Object value) {
+    if (value instanceof Number) {
+      return new JsonNumber(((Number) value).doubleValue());
+    } else if (value instanceof String) {
+      return new JsonString((String) value);
+    } else if (value instanceof Boolean) {
+      return (Boolean) value ? JsonLiteral.jsonTrue() : JsonLiteral.jsonFalse();
+    } else if (value instanceof List) {
+      JsonArray array=new JsonArray();
+      for (Object o : (List) value) {
+        array.add(valueOf(o));
+      }
+      return array;
+    } else if (value instanceof Map) {
+      Set<Map.Entry> entries=((Map)value).entrySet();
+      JsonObject object=new JsonObject();
+      for (Map.Entry entry : entries) {
+        object.set(entry.getKey().toString(), valueOf(entry.getValue()));
+      }
+      return object;
+    } else {
+      throw new UnsupportedOperationException("Unable to determine type.");
+    }
+  }
+
+  /**
    * Gets the type of this JSON value.
    *
    * @return the type for this instance.
@@ -342,10 +378,19 @@ public abstract class JsonValue implements Serializable {
     return false;
   }
 
+  /**
+   *  Detects whether this value has been accessed in-code.
+   * @return true if the value has been used.
+   */
   public boolean isAccessed() {
     return accessed;
   }
 
+  /**
+   * Overrides whether this field has been accessed in-code.
+   * @param b The value to override with.
+   * @return This, to enable chaining.
+   */
   public JsonValue setAccessed(boolean b) {
     accessed=b;
     return this;
@@ -597,6 +642,26 @@ public abstract class JsonValue implements Serializable {
   public Object asDsf() {
     throw new UnsupportedOperationException("Not a DSF");
   }
+
+  /**
+   * Unsafe. Returns the raw form of this JSON value. For compatibility with other config wrappers.
+   * @param <T> the type of object to be returned.
+   * @return the raw object.
+   * @throws ClassCastException when the type returned does not match the original value.
+   */
+  @SuppressWarnings("unchecked")
+  public <T> T asRaw() {
+    switch (getType()) {
+      case STRING : return (T) asString();
+      case NUMBER : return (T) Double.valueOf(asDouble());
+      case OBJECT : return (T) asObject();
+      case ARRAY : return (T) asArray().asRawList();
+      case BOOLEAN : return (T) Boolean.valueOf(asBoolean());
+      case DSF : return (T) asDsf();
+      default : return null;
+    }
+  }
+
   /**
    * Writes the JSON representation of this value to the given writer in its minimal form, without
    * any additional whitespace.

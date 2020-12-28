@@ -16,12 +16,12 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
 
 /**
- *   Contains all of the tools and processes used for parsing .json, .hjson,
- * and .cave files into GeneratorSettings objects. The basic design
- * philosophy is that all fields should be optional and have default values,
- * unless completely necessary. I've tried to reduce the syntax for parsing
- * fields to be as small as possible, but there is still some room for
- * improvement. Essentially, the current syntax works like this:
+ *   This class contains all of the tools and processes used for parsing
+ * .json, .hjson, and .cave files into GeneratorSettings objects. The basic
+ * design philosophy is that all fields should be optional and have default
+ * values, unless completely necessary. I've tried to reduce the syntax for
+ * parsing fields to be as small as possible, but there is still some room
+ * for improvement. Essentially, the current syntax works like this:
  * ```
  *   // Defaults are stored inside of the constructor. You only need
  *   // to call the default initializer when no JsonObject is found.
@@ -65,9 +65,6 @@ import static com.personthecat.cavegenerator.util.HjsonTools.*;
  * likely also do it with FastNoise, and would really like to avoid over-doing it.
  *   As always, any suggestions for improvement can be submitted in the form of an
  * issue or pull request on GitHub. -PersonTheCat
- *
- * To-do: Test objects for potential errors and improvements and report them to
- * the user.
  */
 public class PresetReader {
     /**
@@ -77,6 +74,8 @@ public class PresetReader {
      */
     public static GeneratorSettings getPreset(File file) {
         JsonObject json = loadJson(file).asObject();
+        PresetCompat.update(json, file)
+            .expectF("Error fixing {}", file.getName());
         final boolean b = blankSlateMode(json);
         return new GeneratorSettings(
             getSpawnSettings(json),
@@ -99,7 +98,7 @@ public class PresetReader {
     public static Optional<JsonObject> getPresetJson(File file) {
         try {
             return full(loadJson(file).asObject());
-        } catch (RuntimeException e) {
+        } catch (RuntimeException ignored) {
             return empty();
         }
     }
@@ -114,7 +113,7 @@ public class PresetReader {
             } else {
                 return JsonObject.readHjson(reader);
             }
-        } catch (IOException e) {
+        } catch (IOException ignored) {
             throw runExF("Unable to load preset file %s.", file.getName());
         }
     }

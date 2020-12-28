@@ -140,9 +140,9 @@ class HjsonParser {
       read();
       boolean isEol=current<0 || current=='\r' || current=='\n';
       if (isEol || current==',' ||
-        current=='}' || current==']' ||
-        current=='#' ||
-        current=='/' && (peek()=='/' || peek()=='*')
+              current=='}' || current==']' ||
+              current=='#' ||
+              current=='/' && (peek()=='/' || peek()=='*')
       ) {
         switch (first) {
           case 'f':
@@ -172,7 +172,8 @@ class HjsonParser {
     // Skip the opening brace.
     if (expectCloser) read();
     JsonObject object=new JsonObject();
-    ContainerData data=new ContainerData(isContainerCompact());
+    boolean compact=isContainerCompact(expectCloser);
+    ContainerData data=new ContainerData(compact);
 
     while (true) {
       // Comment above / before name.
@@ -209,7 +210,8 @@ class HjsonParser {
   private JsonArray readArray() throws IOException {
     read(); // Clear the opening bracket.
     JsonArray array=new JsonArray();
-    ContainerData data=new ContainerData(isContainerCompact());
+    boolean compact=isContainerCompact(true);
+    ContainerData data=new ContainerData(compact);
 
     while (true) {
       // Any comments above / before value.
@@ -281,14 +283,14 @@ class HjsonParser {
     return -1;
   }
 
-  private boolean isContainerCompact() throws IOException {
+  private boolean isContainerCompact(boolean expectCloser) throws IOException {
     skipToNL();
     readIf('\r');
     // The object is compact if there is non-whitespace
     // on the same line. If any further values are placed
     // on subsequent lines, they will most likely look
     // better this way, anyway.
-    return current!='\n';
+    return current!='\n' && expectCloser;
   }
 
   private String readName() throws IOException {
@@ -644,8 +646,8 @@ class HjsonParser {
 
   private boolean isHexDigit() {
     return current>='0' && current<='9'
-      || current>='a' && current<='f'
-      || current>='A' && current<='F';
+            || current>='a' && current<='f'
+            || current>='A' && current<='F';
   }
 
   private boolean isEndOfText() {
@@ -688,14 +690,14 @@ class HjsonParser {
 
     private JsonArray into(JsonArray array) {
       return array
-        .setLineLength(finalLineLength(array.size()))
-        .setCondensed(condensed);
+              .setLineLength(finalLineLength(array.size()))
+              .setCondensed(condensed);
     }
 
     private JsonObject into(JsonObject object) {
       return object
-        .setLineLength(finalLineLength(object.size()))
-        .setCondensed(condensed);
+              .setLineLength(finalLineLength(object.size()))
+              .setCondensed(condensed);
     }
   }
 }

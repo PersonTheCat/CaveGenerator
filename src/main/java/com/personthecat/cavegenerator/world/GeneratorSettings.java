@@ -180,17 +180,17 @@ public class GeneratorSettings {
         public final boolean resizeBranches;
 
         /** Horizontal rotation. */
-        public final ScalableFloat twistXZ;
+        public final ScalableFloat dYaw;
         /** Vertical rotation. */
-        public final ScalableFloat twistY;
+        public final ScalableFloat dPitch;
         /** Overall scale. */
         public final ScalableFloat scale;
         /** Vertical scale. */
         public final ScalableFloat scaleY;
         /** Horizontal angle in radians. */
-        public final ScalableFloat angleXZ;
+        public final ScalableFloat yaw;
         /** Vertical angle in radians. */
-        public final ScalableFloat angleY;
+        public final ScalableFloat pitch;
 
         // Inverse chance = (1 / #) chance.
         /** The chance that this tunnel will spawn as part of a system. */
@@ -211,17 +211,17 @@ public class GeneratorSettings {
         public final int frequency;
 
         /** Default values used for the scalable floats here. */
-        public static final ScalableFloat DEFAULT_TWIST_XZ =
+        public static final ScalableFloat DEFAULT_DELTA_YAW =
             new ScalableFloat(0.0f, 0.0f, 0.75f, 4.0f, 1.0f);
-        public static final ScalableFloat DEFAULT_TWIST_Y =
+        public static final ScalableFloat DEFAULT_DELTA_PITCH =
             new ScalableFloat(0.0f, 0.0f, 0.9f, 2.0f, 1.0f);
         public static final ScalableFloat DEFAULT_SCALE =
             new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
         public static final ScalableFloat DEFAULT_SCALE_Y =
             new ScalableFloat(1.0f, 1.0f, 1.0f, 0.0f, 1.0f);
-        public static final ScalableFloat DEFAULT_ANGLE_XZ =
+        public static final ScalableFloat DEFAULT_YAW =
             new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
-        public static final ScalableFloat DEFAULT_ANGLE_Y =
+        public static final ScalableFloat DEFAULT_PITCH =
             new ScalableFloat(0.0f, 0.25f, 1.0f, 0.0f, 1.0f);
 
         /**
@@ -231,12 +231,12 @@ public class GeneratorSettings {
         public TunnelSettings(
             boolean noiseYReduction,
             boolean resizeBranches,
-            ScalableFloat twistXZ,
-            ScalableFloat twistY,
+            ScalableFloat dYaw,
+            ScalableFloat dPitch,
             ScalableFloat scale,
             ScalableFloat scaleY,
-            ScalableFloat angleXZ,
-            ScalableFloat angleY,
+            ScalableFloat yaw,
+            ScalableFloat pitch,
             int systemInverseChance,
             int isolatedInverseChance,
             int systemDensity,
@@ -247,12 +247,12 @@ public class GeneratorSettings {
         ) {
             this.noiseYReduction = noiseYReduction;
             this.resizeBranches = resizeBranches;
-            this.twistXZ = twistXZ;
-            this.twistY = twistY;
+            this.dYaw = dYaw;
+            this.dPitch = dPitch;
             this.scale = scale;
             this.scaleY = scaleY;
-            this.angleXZ = angleXZ;
-            this.angleY = angleY;
+            this.yaw = yaw;
+            this.pitch = pitch;
             this.systemInverseChance = systemInverseChance;
             this.isolatedInverseChance = isolatedInverseChance;
             this.systemDensity = systemDensity;
@@ -267,12 +267,12 @@ public class GeneratorSettings {
             this(
                 getBoolOr(tun, "noiseYReduction", true),
                 getBoolOr(tun, "resizeBranches", true),
-                getScalableFloatOr(tun, "twistXZ", DEFAULT_TWIST_XZ),
-                getScalableFloatOr(tun, "twistY", DEFAULT_TWIST_Y),
+                getScalableFloatOr(tun, "dYaw", DEFAULT_DELTA_YAW),
+                getScalableFloatOr(tun, "dPitch", DEFAULT_DELTA_PITCH),
                 getScalableFloatOr(tun, "scale", DEFAULT_SCALE),
                 getScalableFloatOr(tun, "scaleY", DEFAULT_SCALE_Y),
-                getScalableFloatOr(tun, "angleXZ", DEFAULT_ANGLE_XZ),
-                getScalableFloatOr(tun, "angleY", DEFAULT_ANGLE_Y),
+                getScalableFloatOr(tun, "yaw", DEFAULT_YAW),
+                getScalableFloatOr(tun, "pitch", DEFAULT_PITCH),
                 invert(getFloatOr(tun, "systemChance", 0.25f)),
                 invert(getFloatOr(tun, "isolatedChance", 0.14f)),
                 getIntOr(tun, "systemDensity", 4),
@@ -309,17 +309,17 @@ public class GeneratorSettings {
         public final float noiseYFactor;
 
         /** Horizontal rotation. */
-        public final ScalableFloat twistXZ;
+        public final ScalableFloat dYaw;
         /** Vertical rotation. */
-        public final ScalableFloat twistY;
+        public final ScalableFloat dPitch;
         /** Overall scale. */
         public final ScalableFloat scale;
         /** Vertical scale. */
         public final ScalableFloat scaleY;
         /** Horizontal angle in radians. */
-        public final ScalableFloat angleXZ;
+        public final ScalableFloat yaw;
         /** Vertical angle in radians. */
-        public final ScalableFloat angleY;
+        public final ScalableFloat pitch;
 
         /** The expected distance of the first cave generated in this system. 0 -> 121? */
         public final int startDistance;
@@ -334,17 +334,17 @@ public class GeneratorSettings {
         public final NoiseSettings2D wallNoise;
 
         /** Default values used for the scalable floats here. */
-        public static final ScalableFloat DEFAULT_TWIST_XZ =
+        public static final ScalableFloat DEFAULT_DELTA_YAW =
             new ScalableFloat(0.0f, 0.0f, 0.5f, 4.0f, 1.0f);
-        public static final ScalableFloat DEFAULT_TWIST_Y =
+        public static final ScalableFloat DEFAULT_DELTA_PITCH =
             new ScalableFloat(0.0f, 0.0f, 0.8f, 2.0f, 1.0f);
         public static final ScalableFloat DEFAULT_SCALE =
             new ScalableFloat(0.0f, 2.0f, 1.0f, 0.0f, 1.0f);
         public static final ScalableFloat DEFAULT_SCALE_Y =
             new ScalableFloat(3.0f, 1.0f, 1.0f, 0.0f, 1.0f);
-        public static final ScalableFloat DEFAULT_ANGLE_XZ =
+        public static final ScalableFloat DEFAULT_YAW =
             new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
-        public static final ScalableFloat DEFAULT_ANGLE_Y =
+        public static final ScalableFloat DEFAULT_PITCH =
             new ScalableFloat(0.0f, 0.25f, 1.0f, 0.0f, 1.0f);
 
         /** The default noise values to be used for ravine walls. */
@@ -354,12 +354,12 @@ public class GeneratorSettings {
         /** Primary constructor. */
         public RavineSettings(
             float noiseYFactor,
-            ScalableFloat twistXZ,
-            ScalableFloat twistY,
+            ScalableFloat dYaw,
+            ScalableFloat dPitch,
             ScalableFloat scale,
             ScalableFloat scaleY,
-            ScalableFloat angleXZ,
-            ScalableFloat angleY,
+            ScalableFloat yaw,
+            ScalableFloat pitch,
             int startingDistance,
             int minHeight,
             int maxHeight,
@@ -368,12 +368,12 @@ public class GeneratorSettings {
             NoiseSettings2D wallNoise
         ) {
             this.noiseYFactor = noiseYFactor;
-            this.twistXZ = twistXZ;
-            this.twistY = twistY;
+            this.dYaw = dYaw;
+            this.dPitch = dPitch;
             this.scale = scale;
             this.scaleY = scaleY;
-            this.angleXZ = angleXZ;
-            this.angleY = angleY;
+            this.yaw = yaw;
+            this.pitch = pitch;
             this.startDistance = startingDistance;
             this.minHeight = minHeight;
             this.maxHeight = maxHeight;
@@ -386,12 +386,12 @@ public class GeneratorSettings {
         public RavineSettings(JsonObject rav) {
             this(
                 getFloatOr(rav, "noiseYFactor", 0.7f),
-                getScalableFloatOr(rav, "twistXZ", DEFAULT_TWIST_XZ),
-                getScalableFloatOr(rav, "twistY", DEFAULT_TWIST_Y),
+                getScalableFloatOr(rav, "dYaw", DEFAULT_DELTA_YAW),
+                getScalableFloatOr(rav, "dPitch", DEFAULT_DELTA_PITCH),
                 getScalableFloatOr(rav, "scale", DEFAULT_SCALE),
                 getScalableFloatOr(rav, "scaleY", DEFAULT_SCALE_Y),
-                getScalableFloatOr(rav, "angleXZ", DEFAULT_ANGLE_XZ),
-                getScalableFloatOr(rav, "angleY", DEFAULT_ANGLE_Y),
+                getScalableFloatOr(rav, "yaw", DEFAULT_YAW),
+                getScalableFloatOr(rav, "pitch", DEFAULT_PITCH),
                 getIntOr(rav, "distance", 0),
                 getIntOr(rav, "minHeight", 20),
                 getIntOr(rav, "maxHeight", 40),

@@ -330,7 +330,7 @@
     resizeBranches: true
      # These values alter how much the horizontal angle
      # of each tunnel can change between segments.
-    twistXZ: {
+    dYaw: {
        # angle first gets changed by x.
       startVal: 0
        # angle = angle * x
@@ -342,7 +342,7 @@
     }
      # These values alter how much the vertical angle
      # of each tunnel can change between segments.
-    twistY: {
+    dPitch: {
       startVal: 0
       factor: 0.9
       randFactor: 2
@@ -368,12 +368,12 @@
       exponent: 1
     }
      # The horizontal angle in radians.
-    angleXZ: {
+    yaw: {
       startVal: 0
       startValRandFactor: 1
     }
      # The vertical angle in radians.
-    angleY: {
+    pitch: {
       startVal: 0
       startValRandFactor: 0.25
     }
@@ -386,13 +386,13 @@
     minHeight: 20
     maxHeight: 66
     distance: 0
-    twistXZ: {
+    dYaw: {
       startVal: 0
       factor: 0.5
       randFactor: 4
       exponent: 1
     }
-    twistY: {
+    dPitch: {
       startVal: 0
       factor: 0.8
       randFactor: 2
@@ -413,11 +413,11 @@
       randFactor: 0
       exponent: 1
     }
-    angleXZ: {
+    yaw: {
       startVal: 0
       startValRandFactor: 1
     }
-    angleY: {
+    pitch: {
       startVal: 0
       startValRandFactor: 0.25
     }

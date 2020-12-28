@@ -1,6 +1,5 @@
 package com.personthecat.cavegenerator.world;
 
-import fastnoise.FastNoise;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.ArrayUtils;
