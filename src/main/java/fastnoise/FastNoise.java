@@ -57,7 +57,9 @@ public class FastNoise {
 	private CellularDistanceFunction m_cellularDistanceFunction = CellularDistanceFunction.Euclidean;
 	private CellularReturnType m_cellularReturnType = CellularReturnType.CellValue;
 	private FastNoise m_cellularNoiseLookup = null;
-	private float m_cellularJitter = 0.45f;
+	private float m_cellularJitterX = 0.45f;
+	private float m_cellularJitterY = 0.45f;
+	private float m_cellularJitterZ = 0.45f;
 	private boolean m_cellular3Edge = false;
 
 	private boolean m_gradientPerturb = false;
@@ -197,7 +199,24 @@ public class FastNoise {
 	// Setting this high will make artifacts more common
 	// Default: 0.45
 	public FastNoise SetCellularJitter(float jitter) {
-		m_cellularJitter = jitter;
+		m_cellularJitterX = jitter;
+		m_cellularJitterY = jitter;
+		m_cellularJitterZ = jitter;
+		return this;
+	}
+
+	public FastNoise SetCellularJitterX(float jitter) {
+		m_cellularJitterX = jitter;
+		return this;
+	}
+
+	public FastNoise SetCellularJitterY(float jitter) {
+		m_cellularJitterY = jitter;
+		return this;
+	}
+
+	public FastNoise SetCellularJitterZ(float jitter) {
+		m_cellularJitterZ = jitter;
 		return this;
 	}
 
@@ -1936,9 +1955,9 @@ public class FastNoise {
 						for (int zi = zr - 1; zi <= zr + 1; zi++) {
 							Float3 vec = CELL_3D[Hash3D(m_seed, xi, yi, zi) & 255];
 
-							float vecX = xi - x + vec.x * m_cellularJitter;
-							float vecY = yi - y + vec.y * m_cellularJitter;
-							float vecZ = zi - z + vec.z * m_cellularJitter;
+							float vecX = xi - x + vec.x * m_cellularJitterX;
+							float vecY = yi - y + vec.y * m_cellularJitterY;
+							float vecZ = zi - z + vec.z * m_cellularJitterZ;
 
 							float newDistance = vecX * vecX + vecY * vecY + vecZ * vecZ;
 
@@ -1958,9 +1977,9 @@ public class FastNoise {
 						for (int zi = zr - 1; zi <= zr + 1; zi++) {
 							Float3 vec = CELL_3D[Hash3D(m_seed, xi, yi, zi) & 255];
 
-							float vecX = xi - x + vec.x * m_cellularJitter;
-							float vecY = yi - y + vec.y * m_cellularJitter;
-							float vecZ = zi - z + vec.z * m_cellularJitter;
+							float vecX = xi - x + vec.x * m_cellularJitterX;
+							float vecY = yi - y + vec.y * m_cellularJitterY;
+							float vecZ = zi - z + vec.z * m_cellularJitterZ;
 
 							float newDistance = Math.abs(vecX) + Math.abs(vecY) + Math.abs(vecZ);
 
@@ -1980,9 +1999,9 @@ public class FastNoise {
 						for (int zi = zr - 1; zi <= zr + 1; zi++) {
 							Float3 vec = CELL_3D[Hash3D(m_seed, xi, yi, zi) & 255];
 
-							float vecX = xi - x + vec.x * m_cellularJitter;
-							float vecY = yi - y + vec.y * m_cellularJitter;
-							float vecZ = zi - z + vec.z * m_cellularJitter;
+							float vecX = xi - x + vec.x * m_cellularJitterX;
+							float vecY = yi - y + vec.y * m_cellularJitterY;
+							float vecZ = zi - z + vec.z * m_cellularJitterZ;
 
 							float newDistance = (Math.abs(vecX) + Math.abs(vecY) + Math.abs(vecZ)) + (vecX * vecX + vecY * vecY + vecZ * vecZ);
 
@@ -2005,7 +2024,7 @@ public class FastNoise {
 			case NoiseLookup:
 				Float3 vec = CELL_3D[Hash3D(m_seed, xc, yc, zc) & 255];
 				return m_cellularNoiseLookup
-					.GetNoise(xc + vec.x * m_cellularJitter, yc + vec.y * m_cellularJitter, zc + vec.z * m_cellularJitter);
+					.GetNoise(xc + vec.x * m_cellularJitterX, yc + vec.y * m_cellularJitterY, zc + vec.z * m_cellularJitterZ);
 
 			case Distance:
 				return distance - 1;
@@ -2029,9 +2048,9 @@ public class FastNoise {
 						for (int zi = zr - 1; zi <= zr + 1; zi++) {
 							Float3 vec = CELL_3D[Hash3D(m_seed, xi, yi, zi) & 255];
 
-							float vecX = xi - x + vec.x * m_cellularJitter;
-							float vecY = yi - y + vec.y * m_cellularJitter;
-							float vecZ = zi - z + vec.z * m_cellularJitter;
+							float vecX = xi - x + vec.x * m_cellularJitterX;
+							float vecY = yi - y + vec.y * m_cellularJitterY;
+							float vecZ = zi - z + vec.z * m_cellularJitterZ;
 
 							float newDistance = vecX * vecX + vecY * vecY + vecZ * vecZ;
 
@@ -2047,9 +2066,9 @@ public class FastNoise {
 						for (int zi = zr - 1; zi <= zr + 1; zi++) {
 							Float3 vec = CELL_3D[Hash3D(m_seed, xi, yi, zi) & 255];
 
-							float vecX = xi - x + vec.x * m_cellularJitter;
-							float vecY = yi - y + vec.y * m_cellularJitter;
-							float vecZ = zi - z + vec.z * m_cellularJitter;
+							float vecX = xi - x + vec.x * m_cellularJitterX;
+							float vecY = yi - y + vec.y * m_cellularJitterY;
+							float vecZ = zi - z + vec.z * m_cellularJitterZ;
 
 							float newDistance = Math.abs(vecX) + Math.abs(vecY) + Math.abs(vecZ);
 
@@ -2065,9 +2084,9 @@ public class FastNoise {
 						for (int zi = zr - 1; zi <= zr + 1; zi++) {
 							Float3 vec = CELL_3D[Hash3D(m_seed, xi, yi, zi) & 255];
 
-							float vecX = xi - x + vec.x * m_cellularJitter;
-							float vecY = yi - y + vec.y * m_cellularJitter;
-							float vecZ = zi - z + vec.z * m_cellularJitter;
+							float vecX = xi - x + vec.x * m_cellularJitterX;
+							float vecY = yi - y + vec.y * m_cellularJitterY;
+							float vecZ = zi - z + vec.z * m_cellularJitterZ;
 
 							float newDistance = (Math.abs(vecX) + Math.abs(vecY) + Math.abs(vecZ)) + (vecX * vecX + vecY * vecY + vecZ * vecZ);
 
@@ -2113,9 +2132,9 @@ public class FastNoise {
 						for (int zi = zr - 1; zi <= zr + 1; zi++) {
 							Float3 vec = CELL_3D[Hash3D(m_seed, xi, yi, zi) & 255];
 
-							float vecX = xi - x + vec.x * m_cellularJitter;
-							float vecY = yi - y + vec.y * m_cellularJitter;
-							float vecZ = zi - z + vec.z * m_cellularJitter;
+							float vecX = xi - x + vec.x * m_cellularJitterX;
+							float vecY = yi - y + vec.y * m_cellularJitterY;
+							float vecZ = zi - z + vec.z * m_cellularJitterZ;
 
 							float newDistance = vecX * vecX + vecY * vecY + vecZ * vecZ;
 
@@ -2132,9 +2151,9 @@ public class FastNoise {
 						for (int zi = zr - 1; zi <= zr + 1; zi++) {
 							Float3 vec = CELL_3D[Hash3D(m_seed, xi, yi, zi) & 255];
 
-							float vecX = xi - x + vec.x * m_cellularJitter;
-							float vecY = yi - y + vec.y * m_cellularJitter;
-							float vecZ = zi - z + vec.z * m_cellularJitter;
+							float vecX = xi - x + vec.x * m_cellularJitterX;
+							float vecY = yi - y + vec.y * m_cellularJitterY;
+							float vecZ = zi - z + vec.z * m_cellularJitterZ;
 
 							float newDistance = Math.abs(vecX) + Math.abs(vecY) + Math.abs(vecZ);
 
@@ -2151,9 +2170,9 @@ public class FastNoise {
 						for (int zi = zr - 1; zi <= zr + 1; zi++) {
 							Float3 vec = CELL_3D[Hash3D(m_seed, xi, yi, zi) & 255];
 
-							float vecX = xi - x + vec.x * m_cellularJitter;
-							float vecY = yi - y + vec.y * m_cellularJitter;
-							float vecZ = zi - z + vec.z * m_cellularJitter;
+							float vecX = xi - x + vec.x * m_cellularJitterX;
+							float vecY = yi - y + vec.y * m_cellularJitterY;
+							float vecZ = zi - z + vec.z * m_cellularJitterZ;
 
 							float newDistance = (Math.abs(vecX) + Math.abs(vecY) + Math.abs(vecZ)) + (vecX * vecX + vecY * vecY + vecZ * vecZ);
 
@@ -2212,8 +2231,8 @@ public class FastNoise {
 					for (int yi = yr - 1; yi <= yr + 1; yi++) {
 						Float2 vec = CELL_2D[Hash2D(m_seed, xi, yi) & 255];
 
-						float vecX = xi - x + vec.x * m_cellularJitter;
-						float vecY = yi - y + vec.y * m_cellularJitter;
+						float vecX = xi - x + vec.x * m_cellularJitterX;
+						float vecY = yi - y + vec.y * m_cellularJitterY;
 
 						float newDistance = vecX * vecX + vecY * vecY;
 
@@ -2230,8 +2249,8 @@ public class FastNoise {
 					for (int yi = yr - 1; yi <= yr + 1; yi++) {
 						Float2 vec = CELL_2D[Hash2D(m_seed, xi, yi) & 255];
 
-						float vecX = xi - x + vec.x * m_cellularJitter;
-						float vecY = yi - y + vec.y * m_cellularJitter;
+						float vecX = xi - x + vec.x * m_cellularJitterX;
+						float vecY = yi - y + vec.y * m_cellularJitterY;
 
 						float newDistance = (Math.abs(vecX) + Math.abs(vecY));
 
@@ -2248,8 +2267,8 @@ public class FastNoise {
 					for (int yi = yr - 1; yi <= yr + 1; yi++) {
 						Float2 vec = CELL_2D[Hash2D(m_seed, xi, yi) & 255];
 
-						float vecX = xi - x + vec.x * m_cellularJitter;
-						float vecY = yi - y + vec.y * m_cellularJitter;
+						float vecX = xi - x + vec.x * m_cellularJitterX;
+						float vecY = yi - y + vec.y * m_cellularJitterY;
 
 						float newDistance = (Math.abs(vecX) + Math.abs(vecY)) + (vecX * vecX + vecY * vecY);
 
@@ -2269,7 +2288,7 @@ public class FastNoise {
 
 			case NoiseLookup:
 				Float2 vec = CELL_2D[Hash2D(m_seed, xc, yc) & 255];
-				return m_cellularNoiseLookup.GetNoise(xc + vec.x * m_cellularJitter, yc + vec.y * m_cellularJitter);
+				return m_cellularNoiseLookup.GetNoise(xc + vec.x * m_cellularJitterX, yc + vec.y * m_cellularJitterY);
 
 			case Distance:
 				return distance - 1;
@@ -2292,8 +2311,8 @@ public class FastNoise {
 					for (int yi = yr - 1; yi <= yr + 1; yi++) {
 						Float2 vec = CELL_2D[Hash2D(m_seed, xi, yi) & 255];
 
-						float vecX = xi - x + vec.x * m_cellularJitter;
-						float vecY = yi - y + vec.y * m_cellularJitter;
+						float vecX = xi - x + vec.x * m_cellularJitterX;
+						float vecY = yi - y + vec.y * m_cellularJitterY;
 
 						float newDistance = vecX * vecX + vecY * vecY;
 
@@ -2307,8 +2326,8 @@ public class FastNoise {
 					for (int yi = yr - 1; yi <= yr + 1; yi++) {
 						Float2 vec = CELL_2D[Hash2D(m_seed, xi, yi) & 255];
 
-						float vecX = xi - x + vec.x * m_cellularJitter;
-						float vecY = yi - y + vec.y * m_cellularJitter;
+						float vecX = xi - x + vec.x * m_cellularJitterX;
+						float vecY = yi - y + vec.y * m_cellularJitterY;
 
 						float newDistance = Math.abs(vecX) + Math.abs(vecY);
 
@@ -2322,8 +2341,8 @@ public class FastNoise {
 					for (int yi = yr - 1; yi <= yr + 1; yi++) {
 						Float2 vec = CELL_2D[Hash2D(m_seed, xi, yi) & 255];
 
-						float vecX = xi - x + vec.x * m_cellularJitter;
-						float vecY = yi - y + vec.y * m_cellularJitter;
+						float vecX = xi - x + vec.x * m_cellularJitterX;
+						float vecY = yi - y + vec.y * m_cellularJitterY;
 
 						float newDistance = (Math.abs(vecX) + Math.abs(vecY)) + (vecX * vecX + vecY * vecY);
 

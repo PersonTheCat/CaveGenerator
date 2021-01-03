@@ -62,10 +62,11 @@ public class CaveFeatureGenerator implements IWorldGenerator {
                 final int x = ((info.rand.nextInt(6) * 2) + 2) + (info.chunkX * 16); // 2 to 14
                 final int z = ((info.rand.nextInt(6) * 2) + 1) + (info.chunkZ * 16); // 1 to 13
                 final int y = numBetween(info.rand, pillar.getMinHeight(), pillar.getMaxHeight());
-
-                final int opening = findCeiling(info.world, x, y, z, pillar.getMaxHeight());
-                if (opening != NONE_FOUND) {
-                    pillar.generate(info.world, info.rand, new BlockPos(x, opening, z));
+                if (info.gen.canGenerate(info.world.getBiome(new BlockPos(x, y, z)))) {
+                    final int opening = findCeiling(info.world, x, y, z, pillar.getMaxHeight());
+                    if (opening != NONE_FOUND) {
+                        pillar.generate(info.world, info.rand, new BlockPos(x, opening, z));
+                    }
                 }
             }
         }

@@ -10,7 +10,6 @@ import com.personthecat.cavegenerator.world.feature.CaveFeatureGenerator;
 import com.personthecat.cavegenerator.world.feature.StructureSpawner;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
 import net.minecraft.world.World;
-import net.minecraft.world.gen.MapGenBase;
 import net.minecraft.world.gen.structure.template.Template;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.fml.common.Mod;
@@ -26,14 +25,13 @@ import org.apache.logging.log4j.Logger;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.HashMap;
-import java.util.Optional;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
 @Mod(
     modid = "cavegenerator",
     name = "Cave Generator",
-    version = "0.17",
+    version = "0.18",
     dependencies = "after:worleycaves;",
     acceptableRemoteVersions = "*"
 )
@@ -48,12 +46,6 @@ public class Main {
     public final Map<String, GeneratorSettings> presets = new HashMap<>();
     /** A non-null map of ID -> Structure to be filled at runtime. */
     public final Map<String, Template> structures = new HashMap<>();
-    /** A non-null instance of the most recent, non-vanilla cave generator. */
-    public Optional<MapGenBase> priorCaves = empty();
-    /** A non-null instance of the most recent, non-vanilla ravine generator. */
-    public Optional<MapGenBase> priorRavines = empty();
-    /** A non-null instance of the most recent, non-vanilla nether cave generator. */
-    public Optional<MapGenBase> priorNetherCaves = empty();
 
     @EventHandler
     @SuppressWarnings("unused")
@@ -61,7 +53,7 @@ public class Main {
         JarFiles.copyPresetFiles();
         JarFiles.copyExampleStructures();
         StructureSpawner.loadAllStructures(instance.structures);
-        CaveInit.forceInitPresets(instance.presets);
+        CaveInit.initPresets(instance.presets);
         MinecraftForge.EVENT_BUS.register(CaveInit.class);
         MinecraftForge.TERRAIN_GEN_BUS.register(ReplaceVanillaCaveGen.class);
         MinecraftForge.ORE_GEN_BUS.register(DisableVanillaStoneGen.class);

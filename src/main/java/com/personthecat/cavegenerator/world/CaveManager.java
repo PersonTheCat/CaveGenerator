@@ -14,16 +14,19 @@ import java.util.Optional;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
 public class CaveManager extends MapGenBase {
+
+    private final Optional<MapGenBase> priorCaves;
+
+    public CaveManager(Optional<MapGenBase> priorCaves) {
+        this.priorCaves = priorCaves;
+    }
+
     @Override
     public void generate(World world, int x, int z, ChunkPrimer primer) {
         // Again, these must be retrieved statically. Can't
         // Change this method's signature.
         final Map<String, CaveGenerator> generators = Main.instance.loadGenerators(world);
         final int dimension = world.provider.getDimension();
-
-        final Optional<MapGenBase> priorCaves = dimension == -1
-            ? Main.instance.priorNetherCaves
-            : Main.instance.priorCaves;
 
         if (ConfigFile.otherGeneratorEnabled) {
             // Generate simultaneously with one other generator.
@@ -50,10 +53,13 @@ public class CaveManager extends MapGenBase {
         final int[][] heightMap = CaveInit.anyCavernsEnabled(Main.instance.generators.get(dim), dim) ?
             HeightMapLocator.getHeightFromPrimer(primer) :
             HeightMapLocator.FAUX_MAP;
-        for (CaveGenerator generator : gens.values()) {
-            // Don't allow caverns to be biome-specific, for now.
-            if (generator.canGenerate(dim)) {
-                generator.generateCaverns(heightMap, rand, primer, x, z);
+
+        if (!ConfigFile.debugOrder) {
+            for (CaveGenerator generator : gens.values()) {
+                // Don't allow caverns to be biome-specific, for now.
+                if (generator.canGenerate(dim)) {
+                    generator.generateCaverns(heightMap, rand, primer, x, z);
+                }
             }
         }
         for (CaveGenerator generator : gens.values()) {
@@ -61,6 +67,14 @@ public class CaveManager extends MapGenBase {
             if (generator.canGenerate(dim, centerBiome)) {
                 generator.generateClusters(rand, primer, x, z);
                 generator.generateLayers(primer, x, z);
+            }
+        }
+        if (ConfigFile.debugOrder) {
+            for (CaveGenerator generator : gens.values()) {
+                // Don't allow caverns to be biome-specific, for now.
+                if (generator.canGenerate(dim)) {
+                    generator.generateCaverns(heightMap, rand, primer, x, z);
+                }
             }
         }
     }

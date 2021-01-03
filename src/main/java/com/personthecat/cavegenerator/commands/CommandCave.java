@@ -155,16 +155,11 @@ public class CommandCave extends CommandBase {
 
     /** Reloads all presets from the disk. */
     private static void reload(ICommandSender sender) {
-        CaveInit.initPresets(Main.instance.presets)
-            .handleIfPresent((e) -> { // That didn't work. Forward the error to the user.
-                sendMessage(sender, e.getMessage());
-            })
-            .andThen(() -> { // Load generators and inform the user.
-                Main.instance.generators.clear();
-                Main.instance.loadGenerators(sender.getEntityWorld());
-                Main.instance.loadGenerators(sender.getServer().getWorld(0));
-                sendMessage(sender, "Successfully reloaded caves. View the log for diagnostics.");
-            });
+        CaveInit.initPresets(Main.instance.presets);
+        Main.instance.generators.clear();
+        Main.instance.loadGenerators(sender.getEntityWorld());
+        Main.instance.loadGenerators(sender.getServer().getWorld(0));
+        sendMessage(sender, "Successfully reloaded caves. View the log for diagnostics.");
     }
 
     /** Applies Night Vision and gamemode 3 to @param sender. */
@@ -220,7 +215,7 @@ public class CommandCave extends CommandBase {
         ITextComponent msg = tcs("") // Parent has no formatting.
             .appendSibling(VIEW_BUTTON.createCopy());
 
-        safeListFiles(CaveInit.DIR).ifPresent(files -> {
+        safeListFiles(CaveInit.PRESET_DIR).ifPresent(files -> {
             msg.appendSibling(tcs("\n"));
             for (File file : files) {
                 if (CaveInit.validExtension(file)) {
@@ -236,7 +231,7 @@ public class CommandCave extends CommandBase {
     private static void newPreset(ICommandSender sender, String[] args) {
         requireArgs(args, 1);
         final String presetName = noExtension(args[0]) + ".cave";
-        final File presetFile = new File(CaveInit.DIR, presetName);
+        final File presetFile = new File(CaveInit.PRESET_DIR, presetName);
         if (safeFileExists(presetFile, "Unable to read from the preset directory.")) {
             sendMessage(sender, "This preset already exists.");
             return;
@@ -294,7 +289,7 @@ public class CommandCave extends CommandBase {
             return;
         }
         final String extension = toJson ? ".json" : ".cave";
-        File newPreset = new File(CaveInit.DIR, noExtension(presetFile) + extension);
+        File newPreset = new File(CaveInit.PRESET_DIR, noExtension(presetFile) + extension);
         // The output file's extension determines the format.
         writeJson(json.get(), newPreset);
         backup(presetFile);

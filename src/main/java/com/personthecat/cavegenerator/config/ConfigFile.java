@@ -26,4 +26,7 @@ public class ConfigFile {
         "presets should consider enabling this field to make sure that",
         "nothing slips by."})
     public static boolean strictPresets = false;
+
+    @Comment("Temporary method used to alter the cavern / stone generation order.")
+    public static boolean debugOrder = true;
 }

@@ -14,6 +14,7 @@ import static com.personthecat.cavegenerator.util.HjsonTools.*;
 
 /** Contains all of the data needed for spawning alternative blocks in caves. */
 public class CaveBlock {
+
     /** 0-1 spawn chance. */
     private final double chance;
     /** The block to place instead of air. */

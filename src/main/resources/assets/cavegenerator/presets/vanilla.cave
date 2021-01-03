@@ -82,6 +82,12 @@
  #      # its grid position when using cellular types.         #
  #      # default: 0.45                                        #
  #     jitter: floating-point value                            #
+ #      # Overrides jitter on the x-axis.                      #
+ #     jitterX: floating-point value                           #
+ #      # Overrides jitter on the y-axis.                      #
+ #     jitterY: floating-point value                           #
+ #      # Overrides jitter on the z-axis.                      #
+ #     jitterZ: floating-point value                           #
  #      # The number of generation passes. This effectively    #
  #      # increases the resolution of clusters (makes them     #
  #      # *less* smooth) at the cost of performance.           #

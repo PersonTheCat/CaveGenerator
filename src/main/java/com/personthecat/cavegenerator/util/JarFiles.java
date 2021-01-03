@@ -39,14 +39,14 @@ public class JarFiles {
         }
 
         // Checks whether the preset folder exists.
-        if (!safeFileExists(CaveInit.DIR, "Error: Unable to read from preset directory.")) {
+        if (!safeFileExists(CaveInit.PRESET_DIR, "Error: Unable to read from preset directory.")) {
             // The directory doesn't exist. Create it.
-            safeMkdirs(CaveInit.DIR)
+            safeMkdirs(CaveInit.PRESET_DIR)
                 .expect("Error: Unable to create preset directory.");
             // Copy only the vanilla preset. The others should be modifiable.
             // To-do: There was talk about changing this.
             String fromLocation = "assets/cavegenerator/presets/vanilla.cave";
-            String toLocation = CaveInit.DIR.getPath() + "/vanilla.cave";
+            String toLocation = CaveInit.PRESET_DIR.getPath() + "/vanilla.cave";
             copyFile(fromLocation, toLocation);
         }
     }

@@ -8,12 +8,14 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
+import org.hjson.ParseException;
 
 import java.io.*;
 import java.util.*;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
+import static com.personthecat.cavegenerator.util.SafeFileIO.*;
 
 /**
  *   This class contains all of the tools and processes used for parsing
@@ -67,15 +69,46 @@ import static com.personthecat.cavegenerator.util.HjsonTools.*;
  * issue or pull request on GitHub. -PersonTheCat
  */
 public class PresetReader {
+
     /**
-     * The basic function used for retrieving a GeneratorSettings object from
-     * the input File. Will throw a ParseException if the file cannot be
-     * parsed.
+     * Reads a series of {@link GeneratorSettings} objects from a directory.
+     *
+     * @throws ParseException if the preset contains a syntax error.
+     * @param dir The directory to read presets from.
+     * @return A map of filename -> GeneratorSettings.
      */
-    public static GeneratorSettings getPreset(File file) {
-        JsonObject json = loadJson(file).asObject();
-        PresetCompat.update(json, file)
-            .expectF("Error fixing {}", file.getName());
+    public static Map<String, GeneratorSettings> getPresets(File dir, File imports) {
+        final Map<File, JsonObject> jsons = loadJsons(dir);
+        final Map<File, JsonObject> definitions = loadJsons(imports);
+
+        // Update all of the raw json objects.
+        jsons.forEach((file, json) -> PresetCompat.update(json, file));
+        // Expand all of the variable definitions and imports.
+        PresetExpander.expandAll(jsons, definitions);
+        // Return the jsons as a map of filename -> POJO.
+        return toSettings(jsons);
+    }
+
+    /** Loads and updates every JSON file in a directory. */
+    private static Map<File, JsonObject> loadJsons(File dir) {
+        final Map<File, JsonObject> jsons = new HashMap<>();
+        for (File file : safeListFiles(dir).orElse(new File[0])) {
+            jsons.put(file, loadJson(file).asObject());
+        }
+        return jsons;
+    }
+
+    /** Converts a map of (file -> json) to (filename -> POJO)  */
+    private static Map<String, GeneratorSettings> toSettings(Map<File, JsonObject> jsons) {
+        final Map<String, GeneratorSettings> settings = new HashMap<>();
+        for (Map.Entry<File, JsonObject> entry : jsons.entrySet()) {
+            settings.put(entry.getKey().getName(), getSettings(entry.getValue()));
+        }
+        return settings;
+    }
+
+    /** Reads all of the settings from a json object. */
+    private static GeneratorSettings getSettings(JsonObject json) {
         final boolean b = blankSlateMode(json);
         return new GeneratorSettings(
             getSpawnSettings(json),

@@ -11,8 +11,16 @@ import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.MapGenBase;
 
 import java.util.Map;
+import java.util.Optional;
 
 public class RavineManager extends MapGenBase {
+
+    private final Optional<MapGenBase> priorRavines;
+
+    public RavineManager(Optional<MapGenBase> priorRavines) {
+        this.priorRavines = priorRavines;
+    }
+
     @Override
     public void generate(World world, int x, int z, ChunkPrimer primer) {
         // Again, these must be retrieved statically. Can't
@@ -23,14 +31,14 @@ public class RavineManager extends MapGenBase {
 
         if (ConfigFile.otherGeneratorEnabled) {
             // Generate simultaneously with one other generator.
-            Main.instance.priorRavines.ifPresent((gen) ->
+            priorRavines.ifPresent((gen) ->
                 gen.generate(world, x, z, primer)
             );
         } else if (!CaveInit.anyGeneratorEnabled(generators, dimension)) {
             // No generators are enabled for this dimension.
             // Allow the most recent mod in the queue to
             // generate and then move on.
-            Main.instance.priorRavines.ifPresent((gen) ->
+            priorRavines.ifPresent((gen) ->
                 gen.generate(world, x, z, primer)
             );
             return;

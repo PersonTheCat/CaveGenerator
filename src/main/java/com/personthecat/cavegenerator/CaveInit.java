@@ -1,10 +1,6 @@
 package com.personthecat.cavegenerator;
 
-import com.personthecat.cavegenerator.config.ConfigFile;
-import com.personthecat.cavegenerator.config.PresetCompat;
 import com.personthecat.cavegenerator.config.PresetReader;
-import com.personthecat.cavegenerator.config.PresetTester;
-import com.personthecat.cavegenerator.util.Result;
 import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.GeneratorSettings;
 import net.minecraftforge.fml.common.Loader;
@@ -21,44 +17,37 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.SafeFileIO.*;
 
 public class CaveInit {
+
     /** A setting indicating the location where presets will be kept. */
-    private static final String FOLDER = "cavegenerator/presets";
-    public static final File DIR = new File(Loader.instance().getConfigDir(), FOLDER);
-    private static final List<String> EXTENSIONS = Arrays.asList("hjson", "json", "cave");
+    private static final String PRESETS = "cavegenerator/presets";
+
+    /** A setting indicating the location where variable imports will be kept. */
+    private static final String IMPORTS = "cavegenerator/imports";
+
     /** A message to display when the preset directory is somehow unavailable. */
     private static final String NO_ACCESS = "Currently unable to access preset directory.";
 
+    /** A message to display when failing to run mkdirs. */
+    private static final String CANT_CREATE = "Unable to create directory";
+
+    /** A list of valid extensions to compare against presets. */
+    private static final List<String> EXTENSIONS = Arrays.asList("hjson", "json", "cave");
+
+    private static final File CONFIG_DIR = Loader.instance().getConfigDir();
+    public static final File PRESET_DIR = new File(CONFIG_DIR, PRESETS);
+    private static final File IMPORT_DIR = new File(CONFIG_DIR, IMPORTS);
+
     /** Initializes the supplied map with presets from the directory. */
-    public static Result<RuntimeException> initPresets(final Map<String, GeneratorSettings> presets) {
-        // Verify the folder's integrity before proceeding.
-        ensureDirExists(DIR)
-            .expect("Error: Unable to create the preset directory. It is most likely in use.");
+    public static void initPresets(final Map<String, GeneratorSettings> presets) {
+        // Verify the folders' integrity before proceeding.
+        ensureDirExists(PRESET_DIR).expect(CANT_CREATE);
+        ensureDirExists(IMPORT_DIR).expect(CANT_CREATE);
         // Go ahead and clear this to allow presets to be reloaded.
         presets.clear();
         // Handle all files in the preset directory.
-        final Optional<File[]> list = safeListFiles(DIR);
-        list.ifPresent(files -> { // Files found.
-            for (File file : files) {
-                if (validExtension(file)) {
-                    String filename = file.getName();
-                    // PresetCompat occurs here. Need to use internal functions in PresetReader.
-                    GeneratorSettings preset = PresetReader.getPreset(file);
-                    PresetTester tester = new PresetTester(preset, filename, ConfigFile.strictPresets);
-                    tester.run();
-                    presets.put(filename, preset);
-                }
-            }
-        });
+        presets.putAll(PresetReader.getPresets(PRESET_DIR, IMPORT_DIR));
         // Inform the user of which presets were loaded.
         printLoadedPresets(presets);
-        return list.isPresent() ? Result.ok() : Result.of(runExF("Error reading {}", DIR));
-    }
-
-    /** Loads all presets, crashing if an error is present. */
-    static void forceInitPresets(final Map<String, GeneratorSettings> presets) {
-        initPresets(presets).handleIfPresent((err) -> {
-            throw runExF("Error loading presets: %s", err.getMessage());
-        });
     }
 
     /** Attempts to locate a preset using each of the possible extensions. */
@@ -74,7 +63,7 @@ public class CaveInit {
 
     /** Attempts to locate a preset using a specific extension. */
     private static Optional<File> tryExtension(String preset, String extension) {
-        File presetFile = new File(CaveInit.DIR, preset + "." + extension);
+        File presetFile = new File(PRESET_DIR, preset + "." + extension);
         if (safeFileExists(presetFile, NO_ACCESS)) {
             return full(presetFile);
         }
