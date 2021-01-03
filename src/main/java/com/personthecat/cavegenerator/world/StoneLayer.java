@@ -35,8 +35,8 @@ public class StoneLayer {
 
     /** The default noise values used by this object. */
     public static final NoiseSettings2D DEFAULT_NOISE = NoiseSettings2D.builder()
-        .scale(0.015f)
-        .frequency(0.5f)
+        .frequency(0.015f)
+        .scale(0.5f)
         .min(-7)
         .max(7)
         .build();

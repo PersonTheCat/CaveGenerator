@@ -56,8 +56,8 @@ public class LargeStalactite extends WorldGenerator {
 
     /** The default noise settings to be optionally used for stalactites. */
     public static final NoiseSettings2D DEFAULT_NOISE = NoiseSettings2D.builder()
-        .scale(0.025f)
-        .frequency(0.7125f)
+        .frequency(0.025f)
+        .scale(0.7125f)
         .min(-1)
         .max(1)
         .build();

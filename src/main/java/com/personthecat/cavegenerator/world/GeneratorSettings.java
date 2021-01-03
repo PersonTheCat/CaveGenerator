@@ -459,7 +459,7 @@ public class GeneratorSettings {
         public final boolean enabled;
         public final int minHeight;
         public final int maxHeight;
-        public final NoiseSettings3D noise[];
+        public final NoiseSettings3D[] noise;
         public final NoiseSettings2D ceilNoise, floorNoise;
 
         /** Default values used for the noise settings here. */
@@ -472,15 +472,15 @@ public class GeneratorSettings {
             .build();
 
         public static final NoiseSettings2D DEFAULT_CEIL_NOISE = NoiseSettings2D.builder()
-            .scale(0.02f)
-            .frequency(0.5f)
+            .frequency(0.02f)
+            .scale(0.5f)
             .min(-17)
             .max(-3)
             .build();
 
         public static final NoiseSettings2D DEFAULT_FLOOR_NOISE = NoiseSettings2D.builder()
-            .scale(0.02f)
-            .frequency(0.5f)
+            .frequency(0.02f)
+            .scale(0.5f)
             .min(0)
             .max(8)
             .build();

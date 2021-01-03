@@ -285,14 +285,6 @@ public class HjsonTools {
     }
 
     /**
-     * Retrieves a Preference object from the input json, substituting
-     * `orElse` if no object can be found.
-     */
-    public static WallDecorator.Preference getPreferenceOr(JsonObject json, String field, WallDecorator.Preference orElse) {
-        return getPreference(json, field).orElse(orElse);
-    }
-
-    /**
      * Retrieves a BlockPos from the input json, returning `orElse`
      * if no object can be found.
      */
