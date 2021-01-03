@@ -12,7 +12,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 
-import com.personthecat.cavegenerator.world.StoneCluster.ClusterInfo;
+import com.personthecat.cavegenerator.world.Cluster.ClusterInfo;
 import com.personthecat.cavegenerator.world.GeneratorSettings.*;
 import net.minecraft.world.gen.NoiseGeneratorSimplex;
 import org.apache.commons.lang3.ArrayUtils;
@@ -24,7 +24,9 @@ import java.util.Random;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
+// Todo: remove this class. Each feature it generates should have its own class.
 public class CaveGenerator {
+
     /** A few convenient values. */
     private static final float PI_OVER_2 = (float) (Math.PI / 2);
     private static final IBlockState BLK_AIR = Blocks.AIR.getDefaultState();
@@ -478,7 +480,7 @@ public class CaveGenerator {
 
     /** Generates any possible giant cluster sections in the current chunk. */
     public void generateClusters(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
-        if (settings.decorators.stoneClusters.length == 0) return;
+        if (settings.decorators.clusters.length == 0) return;
         // The seed shouldn't change from when it was first provided
         rand.setSeed(seed); // rand must be reset.
         List<ClusterInfo> info = locateFinalClusters(rand, chunkX, chunkZ);
@@ -502,7 +504,7 @@ public class CaveGenerator {
     /** Locates any StoneClusters that may intersect with the current chunk. */
     private List<ClusterInfo> locateFinalClusters(Random rand, int chunkX, int chunkZ) {
         List<ClusterInfo> info = new ArrayList<>();
-        for (StoneCluster cluster : settings.decorators.stoneClusters) {
+        for (Cluster cluster : settings.decorators.clusters) {
             // Basic info
             final int ID = cluster.getID();
             final int radiusVariance = cluster.getRadiusVariance();

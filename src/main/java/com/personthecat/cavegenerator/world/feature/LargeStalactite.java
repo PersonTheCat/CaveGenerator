@@ -1,6 +1,11 @@
 package com.personthecat.cavegenerator.world.feature;
 
 import fastnoise.FastNoise;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -15,55 +20,72 @@ import java.util.Random;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
+@Value
+@Builder
+@AllArgsConstructor()
+@EqualsAndHashCode(callSuper = false)
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class LargeStalactite extends WorldGenerator {
+
+    /** The required state to make the body of this structure. */
+    IBlockState state;
+
+    /** Whether this structure should spawn upward or downward, i.e. stalagmite or stalactite. */
+    Type type;
+
     /** Required fields. Must be supplied by the constructor. */
-    private final boolean wide;
-    private final double chance;
-    private final IBlockState state;
-    private final int maxLength, minHeight, maxHeight;
-    private final Type type;
-    private final IBlockState[] matchers;
-    private final Optional<NoiseSettings2D> settings;
+    @Default boolean wide = true;
+
+    /** The 0-1 chance that this spawner should run in any given chunk. */
+    @Default double chance = 0.167f;
+
+    /** The maximum length to generate. */
+    @Default int maxLength = 3;
+
+    /** The minimum height bound. */
+    @Default int minHeight = 11;
+
+    /** The maximum height bound. */
+    @Default int maxHeight = 55;
+
+    /** Source blocks to check for before spawning. */
+    @Default IBlockState[] matchers = {};
+
+    /** Noise used to determine placement of this structure. */
+    @Default Optional<NoiseSettings2D> settings = empty();
 
     /** The default noise settings to be optionally used for stalactites. */
-    public static final NoiseSettings2D DEFAULT_NOISE =
-        new NoiseSettings2D(0.025f, 0.7125f, -1, 1);
+    public static final NoiseSettings2D DEFAULT_NOISE = NoiseSettings2D.builder()
+        .scale(0.025f)
+        .frequency(0.7125f)
+        .min(-1)
+        .max(1)
+        .build();
 
     /** From Json. */
-    public LargeStalactite(Type type, JsonObject stalactite) {
-        this(
-            getGuranteedState(stalactite, "LargeStalactite"),
-            type,
-            getBoolOr(stalactite, "wide", true),
-            getFloatOr(stalactite, "chance", 0.167f),
-            getIntOr(stalactite, "maxLength", 3),
-            getIntOr(stalactite, "minHeight", 11),
-            getIntOr(stalactite, "maxHeight", 55),
-            getBlocksOr(stalactite, "matchers" /* No defaults */),
-            getObject(stalactite, "noise2D").map(o -> toNoiseSettings(o, DEFAULT_NOISE))
-        );
+    public static LargeStalactite from(Type type, JsonObject stalactite) {
+        final Optional<NoiseSettings2D> noise = getObject(stalactite, "noise2D")
+            .map(o -> toNoiseSettings(o, DEFAULT_NOISE));
+        final LargeStalactiteBuilder builder = LargeStalactite.builder()
+            .state(getGuaranteedState(stalactite, "LargeStalactite"))
+            .type(type)
+            .settings(noise);
+
+        getBool(stalactite, "wide").ifPresent(builder::wide);
+        getFloat(stalactite, "chance").ifPresent(builder::chance);
+        getInt(stalactite, "maxLength").ifPresent(builder::maxLength);
+        getInt(stalactite, "minHeight").ifPresent(builder::minHeight);
+        getInt(stalactite, "maxHeight").ifPresent(builder::maxHeight);
+        getBlocks(stalactite, "matchers").ifPresent(builder::matchers);
+        return builder.build();
     }
 
-    public LargeStalactite(
-        IBlockState state,
-        Type type,
-        boolean wide,
-        double chance,
-        int maxLength,
-        int minHeight,
-        int maxHeight,
-        IBlockState[] matchers,
-        Optional<NoiseSettings2D> settings
-    ) {
-        this.state = state;
-        this.type = type;
-        this.wide = wide;
-        this.chance = chance;
-        this.maxLength = maxLength;
-        this.minHeight = minHeight;
-        this.maxHeight = maxHeight;
-        this.matchers = matchers;
-        this.settings = settings;
+    boolean spawnInPatches() {
+        return settings.isPresent();
+    }
+
+    FastNoise getNoise(int seed) {
+        return settings.orElse(DEFAULT_NOISE).getGenerator(seed);
     }
 
     @Override
@@ -133,52 +155,6 @@ public class LargeStalactite extends WorldGenerator {
             new BlockPos(x - 1, y, z + 1), // Southwest
             new BlockPos(x - 1, y, z - 1)  // Northwest
         };
-    }
-
-    public Optional<NoiseSettings2D> getSettings() {
-        return settings;
-    }
-
-    public boolean spawnInPatches() {
-        return settings.isPresent();
-    }
-
-    public FastNoise getNoise(int seed) {
-        return settings
-            .orElse(DEFAULT_NOISE)
-            .getGenerator(seed);
-    }
-
-    public IBlockState getState() {
-        return state;
-    }
-
-    /**
-     * The percent chance that this spawner should
-     * run in any given chunk.
-     */
-    public double getChance() {
-        return chance;
-    }
-
-    public int getMinHeight() {
-        return minHeight;
-    }
-
-    public int getMaxHeight() {
-        return maxHeight;
-    }
-
-    public IBlockState[] getMatchers() {
-        return matchers;
-    }
-
-    /**
-     * Whether this structure should spawn upward or
-     * downward, i.e. stalagmite or stalactite.
-     */
-    public Type getType() {
-        return type;
     }
 
     public enum Type {

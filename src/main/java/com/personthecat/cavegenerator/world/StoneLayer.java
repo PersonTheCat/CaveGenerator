@@ -2,65 +2,62 @@ package com.personthecat.cavegenerator.world;
 
 import com.personthecat.cavegenerator.util.NoiseSettings2D;
 import fastnoise.FastNoise;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Value;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import org.hjson.JsonObject;
+
+import java.util.Objects;
 
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
 /** Data used for spawning giant layers of stone through ChunkPrimer. */
+@Value
+@AllArgsConstructor
+@Builder(toBuilder = true)
 public class StoneLayer {
+
     /** Mandatory fields to be initialized by the constructor. */
-    private final IBlockState state;
-    private final int maxHeight;
-    private final NoiseSettings2D settings;
-    private final FastNoise noise;
+    IBlockState state;
+
+    /** The y-coordinate to build this layer around. */
+    int maxHeight;
+
+    /** The generator used to create this layer. */
+    FastNoise noise;
+
+    /** The raw settings containing noise parameters. */
+    @Default NoiseSettings2D settings = DEFAULT_NOISE;
 
     /** The default noise values used by this object. */
-    public static final NoiseSettings2D DEFAULT_NOISE =
-        new NoiseSettings2D(0.015f, 0.5f, -7, 7);
-
-    /** Primary constructor. */
-    public StoneLayer(IBlockState state, int maxHeight, NoiseSettings2D settings) {
-        this.state = state;
-        this.maxHeight = maxHeight;
-        this.settings = settings;
-        this.noise = setupNoise(settings);
-    }
-
-    /** An overloaded constructor which applies the default noise values. */
-    public StoneLayer(IBlockState state, int maxHeight) {
-        this(state, maxHeight, DEFAULT_NOISE);
-    }
+    public static final NoiseSettings2D DEFAULT_NOISE = NoiseSettings2D.builder()
+        .scale(0.015f)
+        .frequency(0.5f)
+        .min(-7)
+        .max(7)
+        .build();
 
     /** From Json. */
-    public StoneLayer(JsonObject layer) {
-        this(
-            getGuranteedState(layer, "StoneLayer"),
-            getInt(layer, "maxHeight")
-                .orElseThrow(() -> runEx("At least one StoneLayer does not contain a maxHeight.")),
-            getNoiseSettingsOr(layer, "noise2D", DEFAULT_NOISE)
-        );
+    public static StoneLayer from(JsonObject layer) {
+        return StoneLayer.builder()
+            .state(getGuaranteedState(layer, "StoneLayer"))
+            .maxHeight(getInt(layer, "maxHeight")
+                .orElseThrow(() -> runEx("At least one StoneLayer does not define maxHeight.")))
+            .noiseSettings(getNoiseSettingsOr(layer, "noise2D", DEFAULT_NOISE))
+            .build();
     }
 
-    private FastNoise setupNoise(NoiseSettings2D settings) {
-        return settings.getGenerator(Block.getStateId(state));
-    }
-
-    public IBlockState getState() {
-        return state;
-    }
-
-    public int getMaxHeight() {
-        return maxHeight;
-    }
-
-    public NoiseSettings2D getSettings() {
-        return settings;
-    }
-
-    public FastNoise getNoise() {
-        return noise;
+    @SuppressWarnings("unused") // Used by #builder
+    public static class StoneLayerBuilder {
+        StoneLayerBuilder noiseSettings(NoiseSettings2D settings) {
+            Objects.requireNonNull(state, "You must define state before noise.");
+            this.noise = settings.getGenerator(Block.getStateId(state));
+            this.settings$value = settings;
+            return this;
+        }
     }
 }

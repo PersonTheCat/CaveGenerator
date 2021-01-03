@@ -32,7 +32,7 @@ public class GiantPillar extends WorldGenerator {
     /** From Json */
     public GiantPillar(JsonObject pillar) {
         this(
-            getGuranteedState(pillar, "GiantPillar"),
+            getGuaranteedState(pillar, "GiantPillar"),
             getIntOr(pillar, "frequency", 15),
             getIntOr(pillar, "minHeight", 10),
             getIntOr(pillar, "maxHeight", 50),

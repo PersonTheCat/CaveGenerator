@@ -348,8 +348,12 @@ public class GeneratorSettings {
             new ScalableFloat(0.0f, 0.25f, 1.0f, 0.0f, 1.0f);
 
         /** The default noise values to be used for ravine walls. */
-        public static final NoiseSettings2D DEFAULT_WALL_NOISE =
-            new NoiseSettings2D(0.1f, 0.5f, 0, 4);
+        public static final NoiseSettings2D DEFAULT_WALL_NOISE = NoiseSettings2D.builder()
+            .scale(0.1f)
+            .frequency(0.5f)
+            .min(0)
+            .max(4)
+            .build();
 
         /** Primary constructor. */
         public RavineSettings(
@@ -460,11 +464,26 @@ public class GeneratorSettings {
 
         /** Default values used for the noise settings here. */
         public static final NoiseSettings3D DEFAULT_NOISE =
-            new NoiseSettings3D( 0.0143f,0.2f, 0.50f, 1);
-        public static final NoiseSettings2D DEFAULT_CEIL_NOISE =
-            new NoiseSettings2D( 0.02f, 0.5f, -17, -3);
-        public static final NoiseSettings2D DEFAULT_FLOOR_NOISE =
-            new NoiseSettings2D(0.02f, 0.5f, 0, 8);
+            NoiseSettings3D.builder()
+            .frequency(0.0143f)
+            .scale(0.2f)
+            .scaleY(0.5f)
+            .octaves(1)
+            .build();
+
+        public static final NoiseSettings2D DEFAULT_CEIL_NOISE = NoiseSettings2D.builder()
+            .scale(0.02f)
+            .frequency(0.5f)
+            .min(-17)
+            .max(-3)
+            .build();
+
+        public static final NoiseSettings2D DEFAULT_FLOOR_NOISE = NoiseSettings2D.builder()
+            .scale(0.02f)
+            .frequency(0.5f)
+            .min(0)
+            .max(8)
+            .build();
 
         /** Primary constructor. */
         public CavernSettings(
@@ -619,7 +638,7 @@ public class GeneratorSettings {
      * miscellaneous decorators should be shaped.
      */
     public static class DecoratorSettings {
-        public final StoneCluster[] stoneClusters;
+        public final Cluster[] clusters;
         public final StoneLayer[] stoneLayers;
         public final CaveBlock[] caveBlocks;
         public final WallDecorator[] ceilingDecorators;
@@ -636,7 +655,7 @@ public class GeneratorSettings {
          */
         @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
         public DecoratorSettings(
-            StoneCluster[] stoneClusters,
+            Cluster[] clusters,
             StoneLayer[] stoneLayers,
             Optional<CaveBlock[]> caveBlocks,
             WallDecorator[] decorators,
@@ -650,7 +669,7 @@ public class GeneratorSettings {
             this.ceilingDecorators = sorted[0];
             this.floorDecorators = sorted[1];
             this.wallDecorators = sorted[2];
-            this.stoneClusters = stoneClusters;
+            this.clusters = clusters;
             this.stoneLayers = stoneLayers;
             this.stalactites = stalactites;
             this.pillars = pillars;
@@ -688,7 +707,7 @@ public class GeneratorSettings {
         /** Retrieves an array of all blocks used blocks each decorator. */
         public IBlockState[] getDecoratorBlocks() {
             List<IBlockState> blocks = new ArrayList<>();
-            for (StoneCluster cluster : stoneClusters) {
+            for (Cluster cluster : clusters) {
                 blocks.add(cluster.getState());
             }
             for (StoneLayer layer : stoneLayers) {

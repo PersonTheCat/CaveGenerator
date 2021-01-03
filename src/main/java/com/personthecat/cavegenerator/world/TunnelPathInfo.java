@@ -8,17 +8,19 @@ import net.minecraft.util.math.MathHelper;
 import java.util.Random;
 
 /**
- * Holds all of the information related to the tunnel generator's
- * current position along the path of a tunnel. Used for generating
- * a series of center coordinates around which to generate spheres.
- * Based on Mojang's original algorithm.
+ * Holds all of the information related to the tunnel generator's current position along
+ * the path of a tunnel. Used for generating a series of center coordinates around which
+ * to generate spheres. Based on Mojang's original algorithm.
  */
 public class TunnelPathInfo {
+
     /** The angles in radians for this tunnel. */
     private float yaw, pitch;
+
     /** The amount to alter angle(XZ/Y) per-segment. */
     private float dYaw, dPitch;
     private float scale, scaleY;
+
     /** Coordinates of this tunnel's current destination. */
     private float x, y, z;
     private final ScalableFloat sfYaw, sfPitch;
@@ -28,12 +30,12 @@ public class TunnelPathInfo {
     private static final float PI_TIMES_2 = (float) (Math.PI * 2);
 
     /** Neatly constructs a new object based on values from tunnel settings. */
-    public TunnelPathInfo(TunnelSettings cfg, Random rand, int destChunkX, int destChunkZ) {
+    TunnelPathInfo(TunnelSettings cfg, Random rand, int destChunkX, int destChunkZ) {
         this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.minHeight, cfg.maxHeight);
     }
 
     /** Neatly constructs a new object based on values from ravine settings. */
-    public TunnelPathInfo(RavineSettings cfg, Random rand, int destChunkX, int destChunkZ) {
+    TunnelPathInfo(RavineSettings cfg, Random rand, int destChunkX, int destChunkZ) {
         this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.minHeight, cfg.maxHeight);
     }
 
@@ -101,7 +103,7 @@ public class TunnelPathInfo {
     }
 
     /** Returns a new instance, resetting all primary fields to the input values. */
-    public TunnelPathInfo reset(float angleXZ, float angleY, float scale, float scaleY) {
+    TunnelPathInfo reset(float angleXZ, float angleY, float scale, float scaleY) {
         return new TunnelPathInfo(this, angleXZ, angleY, sfdYaw.startVal, sfdPitch.startVal, scale, scaleY, x, y, z);
     }
 
@@ -137,7 +139,7 @@ public class TunnelPathInfo {
         return z;
     }
 
-    public void update(Random rand, boolean noiseYReduction, float angleYFactor, float twistPotential) {
+    void update(Random rand, boolean noiseYReduction, float angleYFactor, float twistPotential) {
         // Find the next position on a curvilinear path.
         nextPos();
         // Vertical noise control.
@@ -148,7 +150,7 @@ public class TunnelPathInfo {
         updateVals(rand, twistPotential);
     }
 
-    public void nextPos() {
+    void nextPos() {
         final float cos = MathHelper.cos(pitch);
         final float sin = MathHelper.sin(pitch);
         x += MathHelper.cos(yaw) * cos;
@@ -156,7 +158,7 @@ public class TunnelPathInfo {
         z += MathHelper.sin(yaw) * cos;
     }
 
-    public void updateVals(Random rand, float twistPotential) {
+    void updateVals(Random rand, float twistPotential) {
         // Adjust the angle based on current twist(XZ/Y). twist
         // will have been recalculated on subsequent iterations.
         // The potency of twist is reduced immediately.
@@ -187,7 +189,7 @@ public class TunnelPathInfo {
         return original;
     }
 
-    public boolean travelledTooFar(PrimerData data, int currentPos, int distance) {
+    boolean travelledTooFar(PrimerData data, int currentPos, int distance) {
         final double fromCenterX = x - data.centerX;
         final double fromCenterZ = z - data.centerZ;
         // Name? Is this related to Y?
@@ -202,7 +204,7 @@ public class TunnelPathInfo {
         return (fromCenterX2 + fromCenterZ2 - distanceRemaining2) > adjustedScale2;
     }
 
-    public boolean touchesChunk(PrimerData data, double diameterXZ) {
+    boolean touchesChunk(PrimerData data, double diameterXZ) {
         return x >= data.centerX - 16.0 - diameterXZ &&
             z >= data.centerZ - 16.0 - diameterXZ &&
             x <= data.centerX + 16.0 + diameterXZ &&

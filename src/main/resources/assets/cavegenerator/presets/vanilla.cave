@@ -511,8 +511,8 @@
      }
      */
   ]
-   # See stone_clusters.cave for an example of stoneClusters.
-  stoneClusters: [
+   # See stone_clusters.cave for an example of clusters.
+  clusters: [
      /*
      { Default values; these don't spawn by default.
         # A list of blocks to spawn under these conditions.

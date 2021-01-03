@@ -18,7 +18,7 @@ public class PresetCompat {
     static Result<IOException> update(JsonObject json, File file) {
         getObject(json, "tunnels").ifPresent(PresetCompat::renameAngles);
         getObject(json, "ravines").ifPresent(PresetCompat::renameAngles);
-        rename(json, "stoneClusters", "clusters");
+        rename(json, "clusters", "clusters");
         return writeJson(json, file);
     }
 

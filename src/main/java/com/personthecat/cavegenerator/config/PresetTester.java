@@ -78,7 +78,7 @@ public class PresetTester {
         testRavines(preset.ravines);
         testCaverns(preset.caverns);
         testStructures(preset.structures);
-        testClusters(preset.decorators.stoneClusters);
+        testClusters(preset.decorators.clusters);
         testLayers(preset.decorators.stoneLayers);
         testCaveBlocks(preset.decorators.caveBlocks);
         testWallDecorators(preset.decorators.wallDecorators);
@@ -169,9 +169,9 @@ public class PresetTester {
         }
     }
 
-    private void testClusters(StoneCluster[] clusters) {
-        for (StoneCluster c : clusters) {
-            final String path = "stoneClusters[state=" + c.getState() + "]";
+    private void testClusters(Cluster[] clusters) {
+        for (Cluster c : clusters) {
+            final String path = "clusters[state=" + c.getState() + "]";
             testChance(c.getChance(), path);
         }
     }

@@ -2,6 +2,10 @@ package com.personthecat.cavegenerator.util;
 
 import fastnoise.FastNoise;
 import fastnoise.FastNoise.*;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.experimental.FieldDefaults;
 
 import java.util.Optional;
 import java.util.Random;
@@ -9,83 +13,76 @@ import java.util.Random;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
 /**
- * Variant of NoiseSettings2D.
- * May be deleted as soon as some additional parameters are
- * merged directly into FastNoise.
+ * This is a variant of {@link NoiseSettings2D} which contains additional fields
+ * specifically relevant to 3-dimensional noise generation. I am looking into how
+ * I can remove one or both of them, as they are both almost completely redundant.
  */
+@Builder(toBuilder = true)
+@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class NoiseSettings3D {
-    public final Optional<Integer> seed;
-    public final float scale; // Calculated from scale.
-    public final float frequency;
-    public final float scaleY;
-    public final float lacunarity;
-    public final float gain;
-    public final float perturbAmp;
-    public final float perturbFreq;
-    public final float jitterX;
-    public final float jitterY;
-    public final float jitterZ;
-    public final int octaves;
-    public final boolean perturb;
-    public final boolean invert;
-    public final NoiseType noiseType;
-    public final Interp interp;
-    public final FractalType fractalType;
-    public final CellularDistanceFunction distanceFunction;
-    public final CellularReturnType returnType;
-    public final NoiseType cellularLookup;
 
-    /** Where @param scale is a value between 0.0 and 1.0. */
-    public NoiseSettings3D(
-        Optional<Integer> seed,
-        float frequency,
-        float scale,
-        float scaleY,
-        float lacunarity,
-        float gain,
-        float perturbAmp,
-        float perturbFreq,
-        float jitterX,
-        float jitterY,
-        float jitterZ,
-        int octaves,
-        boolean perturb,
-        boolean invert,
-        Interp interp,
-        NoiseType noiseType,
-        FractalType fractalType,
-        CellularDistanceFunction distanceFunction,
-        CellularReturnType returnType,
-        NoiseType cellularLookup
-    ) {
-        this.seed = seed;
-        this.scale = scale;
-        this.frequency = frequency;
-        this.scaleY = scaleY;
-        this.lacunarity = lacunarity;
-        this.gain = gain;
-        this.perturbAmp = perturbAmp;
-        this.perturbFreq = perturbFreq;
-        this.jitterX = jitterX;
-        this.jitterY = jitterY;
-        this.jitterZ = jitterZ;
-        this.octaves = octaves;
-        this.perturb = perturb;
-        this.invert = invert;
-        this.interp = interp;
-        this.noiseType = noiseType;
-        this.fractalType = fractalType;
-        this.distanceFunction = distanceFunction;
-        this.returnType = returnType;
-        this.cellularLookup = cellularLookup;
-    }
+    /** A seed used for <b>producing</b> new seeds from a given value. */
+    @Default Optional<Integer> seed = empty();
 
-    /** Variant of the primary constructor with a default value for noiseType, etc. */
-    public NoiseSettings3D(float frequency, float scale, float scaleY, int octaves) {
-        this(empty(), frequency, scale, scaleY, 1.0f, 0.5f, 1.0f, 0.1f, 0.45f, 0.45f, 0.45f, octaves, false, false, Interp.Hermite, NoiseType.SimplexFractal,
-            FractalType.FBM, CellularDistanceFunction.Euclidean, CellularReturnType.Distance2, NoiseType.Simplex);
-    }
+    /** The target waveform frequency produced by the generator. */
+    @Default float frequency = 1.0f;
 
+    /** Converts a range of 0-1 into a threshold for accepting output values. */
+    @Default float scale = 0.5f;
+
+    /** Scales the noise produced * x. */
+    @Default float scaleY = 1.0f;
+
+    /** The scale of gaps produced in fractal patterns. */
+    @Default float lacunarity = 1.0f;
+
+    /** The octave gain for fractal noise types. */
+    @Default float gain = 0.5f;
+
+    /** The maximum amount to warp coordinates when perturb is enabled. */
+    @Default float perturbAmp = 1.0f;
+
+    /** The frequency used in warping input coordinates. */
+    @Default float perturbFreq = 1.0f;
+
+    /** The maximum amount a cellular point can move off grid. (x-axis) */
+    @Default float jitterX = 0.45f;
+
+    /** The maximum amount a cellular point can move off grid. (y-axis) */
+    @Default float jitterY = 0.45f;
+
+    /** The maximum amount a cellular point can move off grid. (z-axis) */
+    @Default float jitterZ = 0.45f;
+
+    /** The number of generation passes, i.e. the resolution. */
+    @Default int octaves = 3;
+
+    /** Whether to apply a gradient perturb function. */
+    @Default boolean perturb = false;
+
+    /** Whether to invert the acceptable values generated. */
+    @Default boolean invert = false;
+
+    /** The type of interpolation to use. */
+    @Default Interp interp = Interp.Hermite;
+
+    /** The type of noise generator to run. */
+    @Default NoiseType noiseType = NoiseType.SimplexFractal;
+
+    /** Determines how the noise will be fractalized, if applicable. */
+    @Default FractalType fractalType = FractalType.FBM;
+
+    /** The type of distance function used with cellular noise types. */
+    @Default CellularDistanceFunction distanceFunction = CellularDistanceFunction.Euclidean;
+
+    /** The return type from cellular noise types. */
+    @Default CellularReturnType returnType = CellularReturnType.Distance2;
+
+    /** The noise type used when returnType is set to {@code NoiseLookup}. */
+    @Default NoiseType cellularLookup = NoiseType.Simplex;
+
+    /** Converts these settings into a regular {@link FastNoise} object. */
     public FastNoise getGenerator(long seed) {
         return new FastNoise(getSeed(seed))
             .SetNoiseType(noiseType)

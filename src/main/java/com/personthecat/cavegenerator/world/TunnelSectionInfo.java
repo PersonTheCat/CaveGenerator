@@ -11,12 +11,12 @@ import java.util.function.Predicate;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
 /**
- * For neatly interacting with tunnel sections. Each tunnel
- * section is essentially a sphere that is constrained by
- * the boundaries of the current chunk @ original(X/Z).
+ * For neatly interacting with tunnel sections. Each tunnel section is essentially
+ * a sphere that is constrained by the boundaries of the current chunk @ original(X/Z).
  */
 @Immutable
 public class TunnelSectionInfo {
+
     /** The exact purpose of some of these values is still unclear. */
     private final double centerX, centerY, centerZ;
     private final double radiusXZ, radiusY;
@@ -28,11 +28,11 @@ public class TunnelSectionInfo {
     /** Stores all valid positions to avoid redundant calculations. */
     private BlockPos[] positions;
 
-    public TunnelSectionInfo(PrimerData data, TunnelPathInfo path, double radiusXZ, double radiusY) {
+    TunnelSectionInfo(PrimerData data, TunnelPathInfo path, double radiusXZ, double radiusY) {
         this(data, path.getX(), path.getY(), path.getZ(), radiusXZ, radiusY);
     }
 
-    public TunnelSectionInfo(PrimerData data, double x, double y, double z, double radiusXZ, double radiusY) {
+    TunnelSectionInfo(PrimerData data, double x, double y, double z, double radiusXZ, double radiusY) {
         this.centerX = x;
         this.centerY = y;
         this.centerZ = z;
@@ -52,7 +52,7 @@ public class TunnelSectionInfo {
     }
 
     /** Pre-calculates positions and stores them into an array. */
-    public TunnelSectionInfo calculate() {
+    TunnelSectionInfo calculate() {
         // Monitor the index for pushing values to the array;
         int index = 0;
         for (int x = startX; x < endX; x++) {
@@ -81,7 +81,7 @@ public class TunnelSectionInfo {
     }
 
     /** Variant of calculate() that uses the random values from MapGenRavine. */
-    public TunnelSectionInfo calculateMutated(float[] mut) {
+    TunnelSectionInfo calculateMutated(float[] mut) {
         int index = 0;
         for (int x = startX; x < endX; x++) {
             final double distX = ((x + chunkX * 16) + 0.5 - centerX) / radiusXZ;
@@ -112,52 +112,21 @@ public class TunnelSectionInfo {
         positions = new BlockPos[maxPossibleSize];
     }
 
-    /** Creates a slice? of the array `positions`, from 0 to @param size. */
+    /** Creates a slice of the array `positions`, from 0 to @param size. */
     private void shrinkPositionsToSize(int size) {
         positions = ArrayUtils.subarray(positions, 0, size);
     }
 
-    /** Finds the end of the array and shrinks it to that size. */
-    private void shrinkPositionsToSize() {
-        int firstNullIndex = firstNull(positions, 0, positions.length - 1);
-        positions = ArrayUtils.subarray(positions, 0, firstNullIndex);
-    }
-
-    /** A modified binary search algorithm that finds a boundary between null / not. */
-    // No longer needed.
-    private int firstNull(BlockPos[] values, int start, int end) {
-        if (end > start + 1 && values[0] != null) {
-            // The index at the middle of this range.
-            final int middle = (start + end) / 2;
-            // Whether the current and previous values are null.
-            final boolean nullAt = values[middle] == null;
-            final boolean nullBefore = values[middle - 1] == null;
-            // Found it.
-            if (nullAt && !nullBefore) {
-                return middle;
-            }
-            // If we're currently null, then the last
-            // non-null value is to the left.
-            if (nullAt) {
-                return firstNull(values, start, middle - 1);
-            }
-            // Otherwise, the last non-null value is
-            // to the right.
-            return firstNull(values, middle + 1, end);
-        }
-        return 0;
-    }
-
-    public int getLowestY() {
+    int getLowestY() {
         return startY;
     }
 
-    public int getHighestY() {
+    int getHighestY() {
         return endY;
     }
 
     /** Tests each valid position in the section for one single `true`. */
-    public boolean test(Predicate<BlockPos> func) {
+    boolean test(Predicate<BlockPos> func) {
         // Verify that the positions are correctly
         // initialized before proceeding.
         nullCheck();
@@ -179,39 +148,6 @@ public class TunnelSectionInfo {
         for (int i = 0; i < positions.length; i++) {
             func.accept(positions[i]);
         }
-    }
-
-    /** Determines whether the input coordinates would exist in this section. */
-    public boolean testCoords(int x, int y, int z) {
-        final double distX = ((x + chunkX * 16) + 0.5 - centerX) / radiusXZ;
-        final double distX2 = distX * distX;
-        final double distZ = ((z + chunkZ * 16) + 0.5 - centerZ) / radiusXZ;
-        final double distZ2 = distZ * distZ;
-
-        if ((distX2 + distZ2) >= 1.0) {
-            return false;
-        }
-
-        final double distY = ((y - 1) + 0.5 - centerY) / radiusY;
-        final double distY2 = distY * distY;
-
-        return (distY > -0.7) && ((distX2 + distY2 + distZ2) < 1.0);
-    }
-
-    public boolean testCoords(int x, int y, int z, float[] mut) {
-        final double distX = ((x + chunkX * 16) + 0.5 - centerX) / radiusXZ;
-        final double distX2 = distX * distX;
-        final double distZ = ((z + chunkZ * 16) + 0.5 - centerZ) / radiusXZ;
-        final double distZ2 = distZ * distZ;
-
-        if ((distX2 + distZ2) >= 1.0) {
-            return false;
-        }
-
-        final double distY = ((y - 1) + 0.5 - centerY) / radiusY;
-        final double distY2 = distY * distY;
-
-        return (distX2 + distZ2) * (double) mut[y - 1] + distY2 / 6.0 < 1.0;
     }
 
     private void nullCheck() {

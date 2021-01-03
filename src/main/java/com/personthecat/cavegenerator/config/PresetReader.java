@@ -234,26 +234,26 @@ public class PresetReader {
         );
     }
 
-    /** Parses the field "stoneClusters" from this json into an array of StoneCluster objects. */
-    private static StoneCluster[] getStoneClusters(JsonObject json) {
-        List<StoneCluster> stoneClusters = new ArrayList<>();
-        for (JsonObject cluster : getObjectArray(json, "stoneClusters")) {
+    /** Parses the field "clusters" from this json into an array of Cluster objects. */
+    private static Cluster[] getStoneClusters(JsonObject json) {
+        List<Cluster> clusters = new ArrayList<>();
+        for (JsonObject cluster : getObjectArray(json, "clusters")) {
             // Start with the states. This value must exist.
-            IBlockState[] states = getGuranteedStates(cluster, "StoneCluster");
+            IBlockState[] states = getGuaranteedStates(cluster, "Cluster");
 
             // Create a stone cluster for each state in the array.
             for (IBlockState state : states) {
-                stoneClusters.add(new StoneCluster(state, cluster));
+                clusters.add(Cluster.from(state, cluster));
             }
         }
-        return toArray(stoneClusters, StoneCluster.class);
+        return toArray(clusters, Cluster.class);
     }
 
     /** Parses the field "stoneLayers" from this json into an array of StoneLayer objects. */
     private static StoneLayer[] getStoneLayers(JsonObject json) {
         List<StoneLayer> stoneLayers = new ArrayList<>();
         for (JsonObject layer : getObjectArray(json, "stoneLayers")) {
-            stoneLayers.add(new StoneLayer(layer));
+            stoneLayers.add(StoneLayer.from(layer));
         }
         return toArray(stoneLayers, StoneLayer.class);
     }
@@ -269,12 +269,12 @@ public class PresetReader {
         List<CaveBlock> caveBlocks = new ArrayList<>();
         for (JsonObject caveBlock : getObjectArray(json, "caveBlocks")) {
             // Start with the states. This field must exist.
-            IBlockState[] states = getGuranteedStates(caveBlock, "CaveBlock");
+            IBlockState[] states = getGuaranteedStates(caveBlock, "CaveBlock");
 
             // Create a CaveBlock object for each state in the array.
             for (IBlockState state : states) {
                 // Create and push the CaveBlock object into the array.
-                caveBlocks.add(new CaveBlock(state, caveBlock));
+                caveBlocks.add(CaveBlock.from(state, caveBlock));
             }
         }
         return full(toArray(caveBlocks, CaveBlock.class));
@@ -285,11 +285,11 @@ public class PresetReader {
         List<WallDecorator> decorators = new ArrayList<>();
         for (JsonObject decorator : getObjectArray(json, "wallDecorators")) {
             // Start with the states. This field must exist.
-            IBlockState[] states = getGuranteedStates(decorator, "WallDecorator");
+            IBlockState[] states = getGuaranteedStates(decorator, "WallDecorator");
 
             // Construct an object for each state in the list.
             for (IBlockState state : states) {
-                decorators.add(new WallDecorator(state, decorator));
+                decorators.add(WallDecorator.from(state, decorator));
             }
         }
         return toArray(decorators, WallDecorator.class);
@@ -309,7 +309,7 @@ public class PresetReader {
 
     /** Gets a single LargeStalactite of type @param type. */
     private static LargeStalactite getStalactite(JsonObject json, LargeStalactite.Type type) {
-        return new LargeStalactite(type, json);
+        return LargeStalactite.from(type, json);
     }
 
     private static GiantPillar[] getGiantPillars(JsonObject json) {

@@ -50,7 +50,7 @@
     }
   ]
    # Some variety in terms of the stone that spawns underground.
-  stoneClusters: [
+  clusters: [
      # Giant andesite veins.
     {
       states: "stone:5" # andesite

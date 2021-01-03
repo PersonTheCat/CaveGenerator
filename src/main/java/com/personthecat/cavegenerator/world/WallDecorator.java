@@ -1,8 +1,13 @@
 package com.personthecat.cavegenerator.world;
 
 import com.personthecat.cavegenerator.util.Direction;
+import com.personthecat.cavegenerator.util.HjsonTools;
 import com.personthecat.cavegenerator.util.NoiseSettings3D;
 import fastnoise.FastNoise;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.Value;
 import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -16,93 +21,75 @@ import java.util.Random;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
 
+@Value
+@AllArgsConstructor
+@Builder(toBuilder = true)
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class WallDecorator {
-    /** Mandatory fields to be filled by the constructor. */
-    private final double chance;
-    private final IBlockState fillBlock;
-    private final int minHeight, maxHeight;
-    private final Direction[] directions;
-    private final IBlockState[] matchers;
-    private final Preference preference;
 
-    /** Null-safe, optional noise settings. I'm not dealing with NPEs. */
-    private final Optional<FastNoise> noise;
-    private final Optional<NoiseSettings3D> settings;
+    /** The block to use for decorating walls. */
+    IBlockState fillBlock;
+
+    /** The 0-1 chance that any block will be placed. */
+    @Default double chance = 1.0;
+
+    /** Minimum height bounds. */
+    @Default int minHeight = 10;
+
+    /** Maximum height bounds. */
+    @Default int maxHeight = 50;
+
+    /** A list of directions to place blocks. */
+    @Default Direction[] directions = { Direction.ALL };
+
+    /** A list of blocks to check for. */
+    @Default IBlockState[] matchers = { Blocks.STONE.getDefaultState() };
+
+    /** Whether to place <b>on</b> the wall or <b>in</b> the wall. */
+    @Default Preference preference = Preference.REPLACE_MATCH;
+
+    /** Optional noise generator used determine valid placements. */
+    @Default Optional<FastNoise> noise = empty();
+
+    /** Optional noise generation settings used for placement. */
+    @Default Optional<NoiseSettings3D> settings = empty();
 
     /** The default noise values for WallDecorators with noise. */
-    public static final NoiseSettings3D DEFAULT_NOISE =
-        new NoiseSettings3D(0.02f, 0.50f, 1.00f, 1);
+    public static final NoiseSettings3D DEFAULT_NOISE = NoiseSettings3D.builder()
+        .frequency(0.02f)
+        .scale(0.5f)
+        .scaleY(1.0f)
+        .octaves(1)
+        .build();
 
     /** From Json. */
-    public WallDecorator(IBlockState fillBlock, JsonObject wall) {
-        this(
-            fillBlock,
-            getFloatOr(wall, "chance", 1.0f),
-            getIntOr(wall, "minHeight", 10),
-            getIntOr(wall, "maxHeight", 50),
-            getDirectionsOr(wall, "directions", Direction.ALL),
-            getBlocksOr(wall, "matchers", Blocks.STONE.getDefaultState()),
-            getPreferenceOr(wall, "preference", Preference.REPLACE_MATCH),
-            getObject(wall, "noise3D").map(o -> toNoiseSettings(o, DEFAULT_NOISE))
-        );
-    }
+    public static WallDecorator from(IBlockState fillBlock, JsonObject wall) {
+        final WallDecoratorBuilder builder = WallDecorator.builder()
+            .fillBlock(fillBlock);
 
-    public WallDecorator(
-        IBlockState fillBlock,
-        double chance,
-        int minHeight,
-        int maxHeight,
-        Direction[] directions,
-        IBlockState[] matchers,
-        Preference preference,
-        Optional<NoiseSettings3D> settings
-    ) {
-        this.fillBlock = fillBlock;
-        this.chance = chance;
-        this.minHeight = minHeight;
-        this.maxHeight = maxHeight;
-        this.directions = directions;
-        this.matchers = matchers;
-        this.preference = preference;
-        this.settings = settings;
-        this.noise = settings.map(s ->
-            s.getGenerator(Block.getStateId(fillBlock)));
+        getObject(wall, "noise3D").map(o -> toNoiseSettings(o, DEFAULT_NOISE)).ifPresent(s -> {
+            builder.settings(full(s));
+            builder.noise(full(s.getGenerator(Block.getStateId(fillBlock))));
+        });
+        getFloat(wall, "chance").ifPresent(builder::chance);
+        getInt(wall, "minHeight").ifPresent(builder::minHeight);
+        getInt(wall, "maxHeight").ifPresent(builder::maxHeight);
+        getBlocks(wall, "matchers").ifPresent(builder::matchers);
+        HjsonTools.getDirections(wall, "directions").ifPresent(builder::directions);
+        HjsonTools.getPreference(wall, "preference").ifPresent(builder::preference);
+        return builder.build();
     }
 
     public boolean spawnInPatches() {
         return noise.isPresent();
     }
 
-    public Optional<NoiseSettings3D> getSettings() {
-        return settings;
-    }
-
-    public Direction[] getDirections() {
-        return directions;
-    }
-
-    public double getChance() {
-        return chance;
-    }
-
-    public int getMinHeight() {
-        return minHeight;
-    }
-
-    public int getMaxHeight() {
-        return maxHeight;
-    }
-
-    public IBlockState getFillBlock() {
-        return fillBlock;
-    }
-
-    public boolean canGenerate(Random rand, IBlockState state, int x, int y, int z, int chunkX, int chunkZ) {
+    boolean canGenerate(Random rand, IBlockState state, int x, int y, int z, int chunkX, int chunkZ) {
         return canGenerate(rand, x, y, z, chunkX, chunkZ) &&
             matchesBlock(state);
     }
 
-    public boolean canGenerate(Random rand, int x, int y, int z, int chunkX, int chunkZ) {
+    boolean canGenerate(Random rand, int x, int y, int z, int chunkX, int chunkZ) {
         return y >= minHeight && y <= maxHeight && // Height bounds
             rand.nextDouble() <= chance && // Probability
             testNoise(x, y, z, chunkX, chunkZ); // Noise
@@ -125,7 +112,7 @@ public class WallDecorator {
             .orElse(true);
     }
 
-    public boolean matchesBlock(IBlockState state) {
+    boolean matchesBlock(IBlockState state) {
         for (IBlockState matcher : matchers) {
             if (matcher.equals(state)){
                 return true;
@@ -134,7 +121,7 @@ public class WallDecorator {
         return false;
     }
 
-    public boolean decidePlace(ChunkPrimer primer, int xO, int yO, int zO, int xD, int yD, int zD) {
+    boolean decidePlace(ChunkPrimer primer, int xO, int yO, int zO, int xD, int yD, int zD) {
         if (preference.equals(Preference.REPLACE_ORIGINAL)) {
             primer.setBlockState(xO, yO, zO, fillBlock);
             return true;
@@ -144,6 +131,10 @@ public class WallDecorator {
         }
     }
 
+    /**
+     * Indicates whether to place blocks inside of or on top of a wall. As much as I
+     * would love to rename these, I do think it's a little too late.
+     */
     public enum Preference {
         REPLACE_ORIGINAL,
         REPLACE_MATCH;

@@ -11,7 +11,7 @@
 {
   enabled: false
   blankSlate: false # Default tunnels, ravines, etc.
-  stoneClusters: [
+  clusters: [
     {
       states: "stone:5" # anesite
       chance: 0.15
