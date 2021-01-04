@@ -317,7 +317,7 @@ public class PresetReader {
         List<GiantPillar> pillars = new ArrayList<>();
         for (JsonObject pillar : getObjectArray(json, "giantPillars")) {
             // Start with the state. This value must exist.
-            pillars.add(new GiantPillar(pillar));
+            pillars.add(GiantPillar.from(pillar));
         }
         return toArray(pillars, GiantPillar.class);
     }

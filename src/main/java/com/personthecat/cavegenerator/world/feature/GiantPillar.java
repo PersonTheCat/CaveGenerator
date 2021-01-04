@@ -56,9 +56,11 @@ public class GiantPillar extends WorldGenerator {
 
     /** From Json */
     public static GiantPillar from(JsonObject pillar) {
+        final Optional<Block> stairBlock = getBlock(pillar, "stairBlock")
+            .map(IBlockState::getBlock);
         final GiantPillarBuilder builder = GiantPillar.builder()
             .pillarBlock(getGuaranteedState(pillar, "GiantPillar"))
-            .stairBlock(getBlock(pillar, "stairBlock").map(IBlockState::getBlock));
+            .stairBlock(toStairBlock(stairBlock));
 
         getInt(pillar, "frequency").ifPresent(builder::frequency);
         getInt(pillar, "minHeight").ifPresent(builder::minHeight);
@@ -66,6 +68,17 @@ public class GiantPillar extends WorldGenerator {
         getInt(pillar, "minLength").ifPresent(builder::minLength);
         getInt(pillar, "maxLength").ifPresent(builder::maxLength);
         return builder.build();
+    }
+
+    private static Optional<BlockStairs> toStairBlock(Optional<Block> block) {
+        return block.map(b -> {
+            // Validate the input stair block.
+            if (b instanceof BlockStairs) {
+                return (BlockStairs) b;
+            } else {
+                throw runExF("Error: the input block, %s, is not a valid stair block.", b.toString());
+            }
+        });
     }
 
     /** @param pos is the top block in the pillar. */
@@ -181,25 +194,5 @@ public class GiantPillar extends WorldGenerator {
             .withProperty(BlockStairs.FACING, facing)
             .withProperty(BlockStairs.HALF, topOrBottom)
             .withProperty(BlockStairs.SHAPE, EnumShape.STRAIGHT);
-    }
-
-    public static class GiantPillarBuilder {
-
-        /** Lombok override to use a regular block. */
-        GiantPillarBuilder stairBlock(Optional<Block> block) {
-            this.stairBlock$value = getStairBlock(block);
-            return this;
-        }
-
-        private Optional<BlockStairs> getStairBlock(Optional<Block> block) {
-            return block.map(b -> {
-                // Validate the input stair block.
-                if (b instanceof BlockStairs) {
-                    return (BlockStairs) b;
-                } else {
-                    throw runExF("Error: the input block, %s, is not a valid stair block.", b.toString());
-                }
-            });
-        }
     }
 }
