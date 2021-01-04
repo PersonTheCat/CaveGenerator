@@ -34,9 +34,6 @@ import static com.personthecat.cavegenerator.io.SafeFileIO.*;
  */
 public class CommonMethods {
 
-    /** The directory where all file backups will be stored. */
-    private static final File BACKUP_DIR = new File(Loader.instance().getConfigDir(), "cavegenerator/backup");
-
     /*
      * ////////////////////////////////////////////////////////////////////////
      *         Shorthand methods to be used throughout the program.
@@ -140,18 +137,6 @@ public class CommonMethods {
     public static String extension(final File file) {
         String[] split = file.getName().split(Pattern.quote("."));
         return split[split.length - 1];
-    }
-
-    /** Copies a file to the backup directory. */
-    public static void backup(File file) {
-        final File backup = new File(BACKUP_DIR, file.getName());
-        if (!safeFileExists(BACKUP_DIR, "Unable to handle backup directory.")) {
-            safeMkdirs(BACKUP_DIR);
-        }
-        if (safeFileExists(backup, "Unable to handle existing backup file.")) {
-            backup.delete();
-        }
-        safeCopy(file, BACKUP_DIR).throwIfPresent();
     }
 
     /** Shorthand for calling Optional#empty. */

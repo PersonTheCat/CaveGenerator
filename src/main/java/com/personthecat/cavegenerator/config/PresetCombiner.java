@@ -9,6 +9,7 @@ import java.io.File;
 import java.util.regex.Pattern;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
+import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
 
 /** Used for merging JsonObject paths between json files. */

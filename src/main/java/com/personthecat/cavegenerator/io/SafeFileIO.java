@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.io;
 
 import com.personthecat.cavegenerator.util.Result;
+import net.minecraftforge.fml.common.Loader;
 
 import java.io.*;
 import java.nio.file.Files;
@@ -10,6 +11,10 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
 /** A few potentially controversial ways for handling errors in file io. */
 public class SafeFileIO {
+
+    /** The directory where all file backups will be stored. */
+    private static final File BACKUP_DIR = new File(Loader.instance().getConfigDir(), "cavegenerator/backup");
+
     /**
      * Ensures that the input @param file refers to a directory,
      * creating one if nothing is found.
@@ -56,6 +61,18 @@ public class SafeFileIO {
             return Result.of(e);
         }
         return Result.ok();
+    }
+
+    /** Copies a file to the backup directory. */
+    public static void backup(File file) {
+        final File backup = new File(BACKUP_DIR, file.getName());
+        if (!safeFileExists(BACKUP_DIR, "Unable to handle backup directory.")) {
+            safeMkdirs(BACKUP_DIR);
+        }
+        if (safeFileExists(backup, "Unable to handle existing backup file.")) {
+            backup.delete();
+        }
+        safeCopy(file, BACKUP_DIR).throwIfPresent();
     }
 
     /** Equivalent of calling File#listFiles. Does not return null. */
