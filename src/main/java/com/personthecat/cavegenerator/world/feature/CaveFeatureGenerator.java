@@ -24,10 +24,13 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import com.personthecat.cavegenerator.world.GeneratorSettings.StructureSettings;
 
 public class CaveFeatureGenerator implements IWorldGenerator {
+
     /** The number of times to try locating vertical surfaces for structures. */
     private static final int VERTICAL_RETRIES = 3;
+
     /** The number of times to try locating horizontal surfaces for structures. */
     private static final int HORIZONTAL_RETRIES = 20;
+
     /** The value returned by any surface locator when no surface is found. */
     private static final int NONE_FOUND = Integer.MIN_VALUE;
 

@@ -23,6 +23,7 @@ public class ReplaceVanillaCaveGen {
     @SuppressWarnings("unused")
     @SubscribeEvent(priority = EventPriority.LOWEST)
     public static void onInitMapGen(InitMapGenEvent event) {
+        // Todo: remove RavineManager and use CaveManager for all three.
         switch (event.getType()) {
             case CAVE :
                 final Optional<MapGenBase> priorCaves = event.getNewGen().equals(event.getOriginalGen())

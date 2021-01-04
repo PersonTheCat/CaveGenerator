@@ -424,13 +424,12 @@ public class HjsonTools {
     }
 
     public static ScalableFloat toScalableFloat(JsonObject json, ScalableFloat defaults) {
-        return ScalableFloat.fromDefaults(
-            defaults,
-            getFloat(json, "startVal"),
-            getFloat(json, "startValRandFactor"),
-            getFloat(json, "factor"),
-            getFloat(json, "randFactor"),
-            getFloat(json, "exponent")
+        return new ScalableFloat(
+            getFloatOr(json, "startVal", defaults.startVal),
+            getFloatOr(json, "startValRandFactor", defaults.startValRandFactor),
+            getFloatOr(json, "factor", defaults.factor),
+            getFloatOr(json, "randFactor", defaults.randFactor),
+            getFloatOr(json, "exponent", defaults.exponent)
         );
     }
 

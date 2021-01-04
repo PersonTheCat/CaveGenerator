@@ -37,14 +37,19 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
     acceptableRemoteVersions = "*"
 )
 public class Main {
+
     /** The main instance of this mod, as required by Forge. */
     @Instance public static Main instance;
+
     /** A non-null log4j logger, matching Forge's formatting conventions. */
     public final Logger logger = LogManager.getLogger("cavegenerator");
+
     /** A non-null map of ID -> CaveGenerator to be filled on WorldEvent.Load. */
     public final Int2ObjectOpenHashMap<Map<String, CaveGenerator>> generators = new Int2ObjectOpenHashMap<>();
+
     /** A non-null map of ID -> GeneratorSettings to be filled at runtime. */
     public final Map<String, GeneratorSettings> presets = new LinkedHashMap<>();
+
     /** A non-null map of ID -> Structure to be filled at runtime. */
     public final Map<String, Template> structures = new HashMap<>();
 

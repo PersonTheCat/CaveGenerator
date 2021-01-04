@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.util;
 
 public class RandomChunkSelector {
+
     /** The hasher to be used for selecting chunks. */
     private final HashGenerator noise;
 

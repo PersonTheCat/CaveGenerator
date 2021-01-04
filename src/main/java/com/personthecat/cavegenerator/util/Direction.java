@@ -1,5 +1,8 @@
 package com.personthecat.cavegenerator.util;
 
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
+import lombok.experimental.FieldDefaults;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Arrays;
@@ -20,37 +23,13 @@ public enum Direction {
         });
     }
 
-    /** Returns whether the input direction corresponds with `this`. */
-    public boolean matches(Direction dir) {
-        return this.equals(dir) || dir.equals(ALL) || this.equals(ALL);
-    }
-
-    public boolean matches(Direction[] dirs) {
-        for (Direction d : dirs) {
-            if (!this.matches(d)) {
-                return false;
-            }
-        }
-        return true;
-    }
-
-    public static boolean matchesVertical(Direction[] dirs) {
-        return (ArrayUtils.contains(dirs, UP) && ArrayUtils.contains(dirs, DOWN)) ||
-            ArrayUtils.contains(dirs, ALL);
-    }
-
     /**
      * A DTO counterpart to using Direction arrays.
      */
+    @AllArgsConstructor
+    @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
     public static class Container {
-        public final boolean up, down, side;
-
-        /** Primary constructor */
-        public Container(boolean up, boolean down, boolean side) {
-            this.up = up;
-            this.down = down;
-            this.side = side;
-        }
+        boolean up, down, side;
 
         /** Converts a direction array into a Direction.Container */
         public static Container from(Direction[] directions) {

@@ -1,5 +1,10 @@
 package com.personthecat.cavegenerator.world.feature;
 
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.EqualsAndHashCode;
+import lombok.Value;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockStairs;
 import net.minecraft.block.state.IBlockState;
@@ -18,82 +23,49 @@ import static net.minecraft.block.BlockStairs.EnumShape;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
 
+@Value
+@AllArgsConstructor
+@Builder(toBuilder = true)
+@EqualsAndHashCode(callSuper = false)
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class GiantPillar extends WorldGenerator {
+
+    /** The block making up the body of this pillar. */
+    IBlockState pillarBlock;
+
+    /** A number of pillars to attempt spawning per chunk. */
+    @Default int frequency = 15;
+
+    /** The minimum height bounds for this structure. */
+    @Default int minHeight = 10;
+
+    /** The maximum height bounds for this structure. */
+    @Default int maxHeight = 50;
+
+    /** The minimum vertical space required to spawn this structure. */
+    @Default int minLength = 5;
+
+    /** The maximum vertical space required to spawn this structure. */
+    @Default int maxLength = 12;
+
+    /** An optional Block to place and upper and lower corners of this pillar. */
+    @Default Optional<BlockStairs> stairBlock = empty();
+
     /** A convenient reference to Air. */
     private static final IBlockState BLK_AIR = Blocks.AIR.getDefaultState();
 
-    /** Mandatory fields that must be setup by the constructor. */
-    private final IBlockState pillarBlock;
-    private final int frequency, minHeight, maxHeight, minLength, maxLength;
-
-    /** A null-safe, optional stair block to surround each pillar. */
-    private Optional<BlockStairs> stairBlock = Optional.empty();
-
     /** From Json */
-    public GiantPillar(JsonObject pillar) {
-        this(
-            getGuaranteedState(pillar, "GiantPillar"),
-            getIntOr(pillar, "frequency", 15),
-            getIntOr(pillar, "minHeight", 10),
-            getIntOr(pillar, "maxHeight", 50),
-            getIntOr(pillar, "minLength", 5),
-            getIntOr(pillar, "maxLength", 12),
-            getBlock(pillar, "stairBlock").map(IBlockState::getBlock)
-        );
-    }
+    public static GiantPillar from(JsonObject pillar) {
+        final GiantPillarBuilder builder = GiantPillar.builder()
+            .pillarBlock(getGuaranteedState(pillar, "GiantPillar"))
+            .stairBlock(getBlock(pillar, "stairBlock").map(IBlockState::getBlock));
 
-    public GiantPillar(
-        IBlockState pillarBlock,
-        int frequency,
-        int minHeight,
-        int maxHeight,
-        int minLength,
-        int maxLength,
-        Optional<Block> stairBlock
-    ) {
-        this.pillarBlock = pillarBlock;
-        this.frequency = frequency;
-        this.minHeight = minHeight;
-        this.maxHeight = maxHeight;
-        this.minLength = minLength;
-        this.maxLength = maxLength;
-        this.stairBlock = getStairBlock(stairBlock);
-    }
-
-    public GiantPillar(IBlockState pillarBlock, int frequency, int minHeight, int maxHeight, int minLength, int maxLength) {
-        this.pillarBlock = pillarBlock;
-        this.frequency = frequency;
-        this.minHeight = minHeight;
-        this.maxHeight = maxHeight;
-        this.minLength = minLength;
-        this.maxLength = maxLength;
-    }
-
-    private Optional<BlockStairs> getStairBlock(Optional<Block> block) {
-        return block.map(b -> {
-            // Validate the input stair block.
-            if (b instanceof BlockStairs) {
-                return (BlockStairs) b;
-            } else {
-                throw runExF("Error: the input block, %s, is not a valid stair block.", b.toString());
-            }
-        });
-    }
-
-    public IBlockState getPillarBlock() {
-        return pillarBlock;
-    }
-
-    public int getFrequency() {
-        return frequency;
-    }
-
-    public int getMinHeight() {
-        return minHeight;
-    }
-
-    public int getMaxHeight() {
-        return maxHeight;
+        getInt(pillar, "frequency").ifPresent(builder::frequency);
+        getInt(pillar, "minHeight").ifPresent(builder::minHeight);
+        getInt(pillar, "maxHeight").ifPresent(builder::maxHeight);
+        getInt(pillar, "minLength").ifPresent(builder::minLength);
+        getInt(pillar, "maxLength").ifPresent(builder::maxLength);
+        return builder.build();
     }
 
     /** @param pos is the top block in the pillar. */
@@ -209,5 +181,25 @@ public class GiantPillar extends WorldGenerator {
             .withProperty(BlockStairs.FACING, facing)
             .withProperty(BlockStairs.HALF, topOrBottom)
             .withProperty(BlockStairs.SHAPE, EnumShape.STRAIGHT);
+    }
+
+    public static class GiantPillarBuilder {
+
+        /** Lombok override to use a regular block. */
+        GiantPillarBuilder stairBlock(Optional<Block> block) {
+            this.stairBlock$value = getStairBlock(block);
+            return this;
+        }
+
+        private Optional<BlockStairs> getStairBlock(Optional<Block> block) {
+            return block.map(b -> {
+                // Validate the input stair block.
+                if (b instanceof BlockStairs) {
+                    return (BlockStairs) b;
+                } else {
+                    throw runExF("Error: the input block, %s, is not a valid stair block.", b.toString());
+                }
+            });
+        }
     }
 }
