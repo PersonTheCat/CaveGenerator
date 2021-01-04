@@ -20,9 +20,7 @@ import net.minecraft.world.gen.NoiseGeneratorSimplex;
 import org.apache.commons.lang3.ArrayUtils;
 
 import java.lang.ref.WeakReference;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
@@ -557,14 +555,13 @@ public class CaveGenerator {
     }
 
     private static Biome getPredictBiome(World world, int x, int z) {
-        final BlockPos pos = new BlockPos(x, 0, z);
+        final BlockPos pos = new BlockPos(x + 2, 0, z + 2);
         final BiomeProvider provider = world.getBiomeProvider();
         // Unlike the original, this does not contain a try-catch.
         // May have to add that...
         if (world.isBlockLoaded(pos)) {
             return world.getChunk(pos).getBiome(pos, provider);
         }
-        // Reminder: to subtract 2 from each coordinate if this ever breaks.
         return provider.getBiomesForGeneration(null, x / 4, z / 4, 1, 1)[0];
     }
 
@@ -582,6 +579,7 @@ public class CaveGenerator {
             // Ensure that we're within the sphere.
             if (distX2 / cluster.getRadiusX2() + distY2 / cluster.getRadiusY2() + distZ2 / cluster.getRadiusZ2() <= 1) {
                 primer.setBlockState(x, y, z, cluster.getCluster().getState());
+                return; // Already placed. Don't continue.
             }
         }
     }
