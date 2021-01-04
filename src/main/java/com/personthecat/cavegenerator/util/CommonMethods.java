@@ -26,7 +26,7 @@ import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.logging.log4j.Level;
 
-import static com.personthecat.cavegenerator.util.SafeFileIO.*;
+import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 
 /**
  * A collection of methods and functions to be imported into
@@ -43,11 +43,6 @@ public class CommonMethods {
      *         Should improve readability by reducing boilerplate.
      * ////////////////////////////////////////////////////////////////////////
      */
-
-    /** Standard System.out.println() call, but less ugly. */
-    public static void println(String x) {
-        System.out.println(x);
-    }
 
     /** Accesses the mod's main instance to send a message using its logger. */
     public static void info(String x, Object... args) {
@@ -248,6 +243,7 @@ public class CommonMethods {
      * return air. This ensures that a valid block has always been determined,
      * except of course in cases where that block is air.
      */
+    @SuppressWarnings("deprecation") // No good alternative in 1.12. Just ignoring this.
     private static Optional<IBlockState> _getBlock(String registryName, int meta) {
         final ResourceLocation location = new ResourceLocation(registryName);
         final IBlockState ret;
@@ -261,33 +257,6 @@ public class CommonMethods {
             return empty();
         }
         return full(ret);
-    }
-
-    /**
-     * Tests each corner and then center for any biome on the list.
-     * Faster than testing all 256 coordinates, more accurate than
-     * testing the center.
-     */
-    public static boolean isAnyBiomeInChunk(Biome[] biomes, World world, int chunkX, int chunkZ) {
-        final int blockX = chunkX * 16;
-        final int blockZ = chunkZ * 16;
-        final BlockPos[] tryPos = new BlockPos[] {
-            new BlockPos(blockX, 0, blockZ),
-            new BlockPos(blockX, 0, blockZ + 15),
-            new BlockPos(blockX + 15, 0, blockZ),
-            new BlockPos(blockX + 15, 0, blockZ + 15),
-            new BlockPos(blockX + 8, 0, blockZ + 8)
-        };
-
-        for (BlockPos pos : tryPos) {
-            Biome current = world.getBiome(pos);
-            for (Biome biome : biomes) {
-                if (biome.equals(current)) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     /** Shorthand for retrieving state variants directly from a block. */

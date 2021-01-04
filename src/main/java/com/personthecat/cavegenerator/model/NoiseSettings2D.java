@@ -1,4 +1,4 @@
-package com.personthecat.cavegenerator.util;
+package com.personthecat.cavegenerator.model;
 
 import fastnoise.FastNoise;
 import lombok.AccessLevel;

@@ -1,8 +1,8 @@
-package com.personthecat.cavegenerator.world;
+package com.personthecat.cavegenerator.model.generator;
 
-import com.personthecat.cavegenerator.util.Direction;
+import com.personthecat.cavegenerator.model.Direction;
 import com.personthecat.cavegenerator.util.HjsonTools;
-import com.personthecat.cavegenerator.util.NoiseSettings3D;
+import com.personthecat.cavegenerator.model.NoiseSettings3D;
 import fastnoise.FastNoise;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -84,12 +84,12 @@ public class WallDecorator {
         return noise.isPresent();
     }
 
-    boolean canGenerate(Random rand, IBlockState state, int x, int y, int z, int chunkX, int chunkZ) {
+    public boolean canGenerate(Random rand, IBlockState state, int x, int y, int z, int chunkX, int chunkZ) {
         return canGenerate(rand, x, y, z, chunkX, chunkZ) &&
             matchesBlock(state);
     }
 
-    boolean canGenerate(Random rand, int x, int y, int z, int chunkX, int chunkZ) {
+    public boolean canGenerate(Random rand, int x, int y, int z, int chunkX, int chunkZ) {
         return y >= minHeight && y <= maxHeight && // Height bounds
             rand.nextDouble() <= chance && // Probability
             testNoise(x, y, z, chunkX, chunkZ); // Noise
@@ -112,7 +112,7 @@ public class WallDecorator {
             .orElse(true);
     }
 
-    boolean matchesBlock(IBlockState state) {
+    public boolean matchesBlock(IBlockState state) {
         for (IBlockState matcher : matchers) {
             if (matcher.equals(state)){
                 return true;
@@ -121,7 +121,7 @@ public class WallDecorator {
         return false;
     }
 
-    boolean decidePlace(ChunkPrimer primer, int xO, int yO, int zO, int xD, int yD, int zD) {
+    public boolean decidePlace(ChunkPrimer primer, int xO, int yO, int zO, int xD, int yD, int zD) {
         if (preference.equals(Preference.REPLACE_ORIGINAL)) {
             primer.setBlockState(xO, yO, zO, fillBlock);
             return true;

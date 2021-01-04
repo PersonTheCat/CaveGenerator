@@ -2,6 +2,8 @@ package com.personthecat.cavegenerator.world.feature;
 
 import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.Main;
+import com.personthecat.cavegenerator.model.generator.GiantPillar;
+import com.personthecat.cavegenerator.model.generator.LargeStalactite;
 import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.HeightMapLocator;
 import fastnoise.FastNoise;

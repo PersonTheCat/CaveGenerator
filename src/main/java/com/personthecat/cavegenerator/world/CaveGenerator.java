@@ -1,6 +1,6 @@
 package com.personthecat.cavegenerator.world;
 
-import com.personthecat.cavegenerator.util.RandomChunkSelector;
+import com.personthecat.cavegenerator.model.generator.*;
 import fastnoise.FastNoise;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
@@ -11,10 +11,9 @@ import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
-import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkPrimer;
 
-import com.personthecat.cavegenerator.world.Cluster.ClusterInfo;
+import com.personthecat.cavegenerator.model.generator.Cluster.ClusterInfo;
 import com.personthecat.cavegenerator.world.GeneratorSettings.*;
 import net.minecraft.world.gen.NoiseGeneratorSimplex;
 import org.apache.commons.lang3.ArrayUtils;

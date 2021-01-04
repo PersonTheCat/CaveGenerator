@@ -5,7 +5,6 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
-import java.util.stream.Stream;
 
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.CompressedStreamTools;
@@ -20,7 +19,7 @@ import net.minecraft.world.gen.structure.template.TemplateManager;
 import net.minecraftforge.fml.common.Loader;
 import com.personthecat.cavegenerator.util.Result;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
-import static com.personthecat.cavegenerator.util.SafeFileIO.*;
+import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 
 public class StructureSpawner {
     /** A setting indicating the location where structures will be kept. */

@@ -14,7 +14,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
-import static com.personthecat.cavegenerator.util.SafeFileIO.*;
+import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 
 public class CaveInit {
 

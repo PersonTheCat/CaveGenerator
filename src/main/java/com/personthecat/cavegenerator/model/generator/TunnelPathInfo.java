@@ -1,8 +1,9 @@
-package com.personthecat.cavegenerator.world;
+package com.personthecat.cavegenerator.model.generator;
 
-import com.personthecat.cavegenerator.util.ScalableFloat;
+import com.personthecat.cavegenerator.model.ScalableFloat;
 import com.personthecat.cavegenerator.world.GeneratorSettings.TunnelSettings;
 import com.personthecat.cavegenerator.world.GeneratorSettings.RavineSettings;
+import com.personthecat.cavegenerator.world.PrimerData;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.Random;
@@ -30,12 +31,12 @@ public class TunnelPathInfo {
     private static final float PI_TIMES_2 = (float) (Math.PI * 2);
 
     /** Neatly constructs a new object based on values from tunnel settings. */
-    TunnelPathInfo(TunnelSettings cfg, Random rand, int destChunkX, int destChunkZ) {
+    public TunnelPathInfo(TunnelSettings cfg, Random rand, int destChunkX, int destChunkZ) {
         this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.minHeight, cfg.maxHeight);
     }
 
     /** Neatly constructs a new object based on values from ravine settings. */
-    TunnelPathInfo(RavineSettings cfg, Random rand, int destChunkX, int destChunkZ) {
+    public TunnelPathInfo(RavineSettings cfg, Random rand, int destChunkX, int destChunkZ) {
         this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.minHeight, cfg.maxHeight);
     }
 
@@ -103,7 +104,7 @@ public class TunnelPathInfo {
     }
 
     /** Returns a new instance, resetting all primary fields to the input values. */
-    TunnelPathInfo reset(float angleXZ, float angleY, float scale, float scaleY) {
+    public TunnelPathInfo reset(float angleXZ, float angleY, float scale, float scaleY) {
         return new TunnelPathInfo(this, angleXZ, angleY, sfdYaw.startVal, sfdPitch.startVal, scale, scaleY, x, y, z);
     }
 
@@ -139,7 +140,7 @@ public class TunnelPathInfo {
         return z;
     }
 
-    void update(Random rand, boolean noiseYReduction, float angleYFactor, float twistPotential) {
+    public void update(Random rand, boolean noiseYReduction, float angleYFactor, float twistPotential) {
         // Find the next position on a curvilinear path.
         nextPos();
         // Vertical noise control.
@@ -189,7 +190,7 @@ public class TunnelPathInfo {
         return original;
     }
 
-    boolean travelledTooFar(PrimerData data, int currentPos, int distance) {
+    public boolean travelledTooFar(PrimerData data, int currentPos, int distance) {
         final double fromCenterX = x - data.centerX;
         final double fromCenterZ = z - data.centerZ;
         // Name? Is this related to Y?
@@ -204,7 +205,7 @@ public class TunnelPathInfo {
         return (fromCenterX2 + fromCenterZ2 - distanceRemaining2) > adjustedScale2;
     }
 
-    boolean touchesChunk(PrimerData data, double diameterXZ) {
+    public boolean touchesChunk(PrimerData data, double diameterXZ) {
         return x >= data.centerX - 16.0 - diameterXZ &&
             z >= data.centerZ - 16.0 - diameterXZ &&
             x <= data.centerX + 16.0 + diameterXZ &&

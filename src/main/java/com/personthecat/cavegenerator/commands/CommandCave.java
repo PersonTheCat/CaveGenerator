@@ -28,7 +28,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import static com.personthecat.cavegenerator.util.SafeFileIO.*;
+import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
 

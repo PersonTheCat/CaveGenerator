@@ -1,7 +1,7 @@
 package com.personthecat.cavegenerator;
 
 import com.personthecat.cavegenerator.commands.CommandCave;
-import com.personthecat.cavegenerator.util.JarFiles;
+import com.personthecat.cavegenerator.io.JarFiles;
 import com.personthecat.cavegenerator.world.CaveGenerator;
 import com.personthecat.cavegenerator.world.DisableVanillaStoneGen;
 import com.personthecat.cavegenerator.world.GeneratorSettings;

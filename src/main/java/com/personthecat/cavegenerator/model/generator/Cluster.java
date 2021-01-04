@@ -1,4 +1,4 @@
-package com.personthecat.cavegenerator.world;
+package com.personthecat.cavegenerator.model.generator;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -69,7 +69,7 @@ public class Cluster {
     /** Generated info related to how the current cluster will be spawned in the world. */
     @Value
     @AllArgsConstructor
-    static class ClusterInfo {
+    public static class ClusterInfo {
 
         /** A reference to the original cluster to be spawned. */
         Cluster cluster;

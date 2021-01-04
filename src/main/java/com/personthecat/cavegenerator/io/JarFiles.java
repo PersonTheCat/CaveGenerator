@@ -1,4 +1,4 @@
-package com.personthecat.cavegenerator.util;
+package com.personthecat.cavegenerator.io;
 
 import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.Main;
@@ -7,7 +7,7 @@ import net.minecraftforge.fml.common.Loader;
 
 import java.io.*;
 
-import static com.personthecat.cavegenerator.util.SafeFileIO.*;
+import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 
 public class JarFiles {
     /** A setting indicating the location where example presets will be kept. */

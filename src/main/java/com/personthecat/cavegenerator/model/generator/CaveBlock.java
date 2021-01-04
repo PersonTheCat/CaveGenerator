@@ -1,6 +1,6 @@
-package com.personthecat.cavegenerator.world;
+package com.personthecat.cavegenerator.model.generator;
 
-import com.personthecat.cavegenerator.util.NoiseSettings3D;
+import com.personthecat.cavegenerator.model.NoiseSettings3D;
 import fastnoise.FastNoise;
 import lombok.Builder;
 import lombok.Builder.Default;

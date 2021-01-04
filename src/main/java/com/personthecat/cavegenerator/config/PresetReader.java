@@ -1,9 +1,8 @@
 package com.personthecat.cavegenerator.config;
 
+import com.personthecat.cavegenerator.model.generator.*;
 import com.personthecat.cavegenerator.world.*;
 import com.personthecat.cavegenerator.world.GeneratorSettings.*;
-import com.personthecat.cavegenerator.world.feature.GiantPillar;
-import com.personthecat.cavegenerator.world.feature.LargeStalactite;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import org.hjson.JsonObject;
@@ -15,7 +14,7 @@ import java.util.*;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
-import static com.personthecat.cavegenerator.util.SafeFileIO.*;
+import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 
 /**
  *   This class contains all of the tools and processes used for parsing

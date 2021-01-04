@@ -1,5 +1,6 @@
-package com.personthecat.cavegenerator.world;
+package com.personthecat.cavegenerator.model.generator;
 
+import com.personthecat.cavegenerator.world.PrimerData;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.ArrayUtils;
@@ -28,11 +29,11 @@ public class TunnelSectionInfo {
     /** Stores all valid positions to avoid redundant calculations. */
     private BlockPos[] positions;
 
-    TunnelSectionInfo(PrimerData data, TunnelPathInfo path, double radiusXZ, double radiusY) {
+    public TunnelSectionInfo(PrimerData data, TunnelPathInfo path, double radiusXZ, double radiusY) {
         this(data, path.getX(), path.getY(), path.getZ(), radiusXZ, radiusY);
     }
 
-    TunnelSectionInfo(PrimerData data, double x, double y, double z, double radiusXZ, double radiusY) {
+    public TunnelSectionInfo(PrimerData data, double x, double y, double z, double radiusXZ, double radiusY) {
         this.centerX = x;
         this.centerY = y;
         this.centerZ = z;
@@ -52,7 +53,7 @@ public class TunnelSectionInfo {
     }
 
     /** Pre-calculates positions and stores them into an array. */
-    TunnelSectionInfo calculate() {
+    public TunnelSectionInfo calculate() {
         // Monitor the index for pushing values to the array;
         int index = 0;
         for (int x = startX; x < endX; x++) {
@@ -81,7 +82,7 @@ public class TunnelSectionInfo {
     }
 
     /** Variant of calculate() that uses the random values from MapGenRavine. */
-    TunnelSectionInfo calculateMutated(float[] mut) {
+    public TunnelSectionInfo calculateMutated(float[] mut) {
         int index = 0;
         for (int x = startX; x < endX; x++) {
             final double distX = ((x + chunkX * 16) + 0.5 - centerX) / radiusXZ;
@@ -117,16 +118,16 @@ public class TunnelSectionInfo {
         positions = ArrayUtils.subarray(positions, 0, size);
     }
 
-    int getLowestY() {
+    public int getLowestY() {
         return startY;
     }
 
-    int getHighestY() {
+    public int getHighestY() {
         return endY;
     }
 
     /** Tests each valid position in the section for one single `true`. */
-    boolean test(Predicate<BlockPos> func) {
+    public boolean test(Predicate<BlockPos> func) {
         // Verify that the positions are correctly
         // initialized before proceeding.
         nullCheck();

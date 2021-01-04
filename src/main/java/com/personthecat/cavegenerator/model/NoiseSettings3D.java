@@ -1,5 +1,6 @@
-package com.personthecat.cavegenerator.util;
+package com.personthecat.cavegenerator.model;
 
+import com.personthecat.cavegenerator.model.NoiseSettings2D;
 import fastnoise.FastNoise;
 import fastnoise.FastNoise.*;
 import lombok.AccessLevel;

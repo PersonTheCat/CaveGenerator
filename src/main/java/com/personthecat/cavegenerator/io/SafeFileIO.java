@@ -1,4 +1,6 @@
-package com.personthecat.cavegenerator.util;
+package com.personthecat.cavegenerator.io;
+
+import com.personthecat.cavegenerator.util.Result;
 
 import java.io.*;
 import java.nio.file.Files;
