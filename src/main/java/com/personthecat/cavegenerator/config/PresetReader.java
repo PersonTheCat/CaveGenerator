@@ -1,8 +1,10 @@
 package com.personthecat.cavegenerator.config;
 
-import com.personthecat.cavegenerator.model.generator.*;
+import com.personthecat.cavegenerator.world.generator.*;
 import com.personthecat.cavegenerator.world.*;
 import com.personthecat.cavegenerator.world.GeneratorSettings.*;
+import com.personthecat.cavegenerator.world.feature.GiantPillar;
+import com.personthecat.cavegenerator.world.feature.LargeStalactite;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import org.hjson.JsonObject;

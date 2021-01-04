@@ -1,4 +1,4 @@
-package com.personthecat.cavegenerator.model.generator;
+package com.personthecat.cavegenerator.world.generator;
 
 import com.personthecat.cavegenerator.model.Direction;
 import com.personthecat.cavegenerator.util.HjsonTools;

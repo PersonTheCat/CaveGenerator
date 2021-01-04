@@ -1,4 +1,4 @@
-package com.personthecat.cavegenerator.model.generator;
+package com.personthecat.cavegenerator.world.generator;
 
 import com.personthecat.cavegenerator.model.ScalableFloat;
 import com.personthecat.cavegenerator.world.GeneratorSettings.TunnelSettings;

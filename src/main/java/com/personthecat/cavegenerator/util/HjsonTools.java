@@ -4,7 +4,7 @@ import com.personthecat.cavegenerator.model.Direction;
 import com.personthecat.cavegenerator.model.NoiseSettings2D;
 import com.personthecat.cavegenerator.model.NoiseSettings3D;
 import com.personthecat.cavegenerator.model.ScalableFloat;
-import com.personthecat.cavegenerator.model.generator.WallDecorator;
+import com.personthecat.cavegenerator.world.generator.WallDecorator;
 import fastnoise.FastNoise.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;

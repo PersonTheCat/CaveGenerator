@@ -1,4 +1,4 @@
-package com.personthecat.cavegenerator.model.generator;
+package com.personthecat.cavegenerator.world.feature;
 
 import fastnoise.FastNoise;
 import lombok.AllArgsConstructor;

@@ -1,4 +1,4 @@
-package com.personthecat.cavegenerator.model.generator;
+package com.personthecat.cavegenerator.world.generator;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;
