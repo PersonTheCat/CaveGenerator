@@ -1,6 +1,6 @@
 package com.personthecat.cavegenerator.world.generator;
 
-import com.personthecat.cavegenerator.world.PrimerData;
+import com.personthecat.cavegenerator.model.PrimerData;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.ArrayUtils;

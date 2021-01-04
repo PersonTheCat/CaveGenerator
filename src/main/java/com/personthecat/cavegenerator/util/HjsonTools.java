@@ -467,6 +467,7 @@ public class HjsonTools {
         getFloat(json, "jitterY").ifPresent(builder::jitterY);
         getFloat(json, "jitterZ").ifPresent(builder::jitterZ);
         getInt(json, "octaves").ifPresent(builder::octaves);
+        getInt(json, "offset").ifPresent(builder::offset);
         getBool(json, "perturb").ifPresent(builder::perturb);
         getBool(json, "invert").ifPresent(builder::invert);
         getString(json, "interp").map(HjsonTools::interp).ifPresent(builder::interp);

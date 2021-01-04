@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.world;
 
+import com.personthecat.cavegenerator.model.PrimerData;
 import com.personthecat.cavegenerator.world.generator.*;
 import fastnoise.FastNoise;
 import net.minecraft.block.material.Material;

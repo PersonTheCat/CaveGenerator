@@ -1,4 +1,4 @@
-package com.personthecat.cavegenerator.world;
+package com.personthecat.cavegenerator.model;
 
 import net.minecraft.world.chunk.ChunkPrimer;
 

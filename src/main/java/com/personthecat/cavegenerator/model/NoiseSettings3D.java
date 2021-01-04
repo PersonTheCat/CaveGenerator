@@ -1,6 +1,5 @@
 package com.personthecat.cavegenerator.model;
 
-import com.personthecat.cavegenerator.model.NoiseSettings2D;
 import fastnoise.FastNoise;
 import fastnoise.FastNoise.*;
 import lombok.AccessLevel;
@@ -59,6 +58,9 @@ public class NoiseSettings3D {
     /** The number of generation passes, i.e. the resolution. */
     @Default int octaves = 3;
 
+    /** The vertical offset applied to the noise generator. */
+    @Default int offset = 0;
+
     /** Whether to apply a gradient perturb function. */
     @Default boolean perturb = false;
 
@@ -104,7 +106,8 @@ public class NoiseSettings3D {
             .SetCellularJitterY(jitterY)
             .SetCellularJitterZ(jitterZ)
             .SetScale(scale)
-            .SetScaleY(scaleY);
+            .SetScaleY(scaleY)
+            .SetOffset(offset);
     }
 
     /** Generates a new seed from the input `base` value. */

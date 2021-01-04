@@ -70,6 +70,8 @@ public class FastNoise {
 	private float m_addend = 0.0f;
 	private float m_scaleY = 1.0f;
 
+	private int m_offset = 0;
+
 	private boolean m_invert = false;
 
 	private float m_booleanThreshold = 0.0f;
@@ -267,6 +269,14 @@ public class FastNoise {
 
 	public FastNoise SetScaleY(float scale) {
 		m_scaleY = scale;
+		return this;
+	}
+
+	// Sets the vertical offset to be used with 3-dimensional noise. Useful for
+	// cellular noise types that generate on a grid.
+	// Default: 0
+	public FastNoise SetOffset(int offset) {
+		m_offset = offset;
 		return this;
 	}
 
@@ -564,6 +574,7 @@ public class FastNoise {
 		x *= m_frequency;
 		y *= m_frequency;
 		z *= m_frequency;
+		y += m_offset;
 
 		switch (m_noiseType) {
 			case Value:

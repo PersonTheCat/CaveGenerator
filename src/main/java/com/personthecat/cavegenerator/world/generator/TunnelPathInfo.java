@@ -3,7 +3,7 @@ package com.personthecat.cavegenerator.world.generator;
 import com.personthecat.cavegenerator.model.ScalableFloat;
 import com.personthecat.cavegenerator.world.GeneratorSettings.TunnelSettings;
 import com.personthecat.cavegenerator.world.GeneratorSettings.RavineSettings;
-import com.personthecat.cavegenerator.world.PrimerData;
+import com.personthecat.cavegenerator.model.PrimerData;
 import net.minecraft.util.math.MathHelper;
 
 import java.util.Random;
