@@ -458,7 +458,7 @@ public class HjsonTools {
         getFloat(json, "scaleY").ifPresent(builder::scaleY);
         getFloat(json, "lacunarity").ifPresent(builder::lacunarity);
         getFloat(json, "gain").ifPresent(builder::gain);
-        getFloat(json, "perturbAmb").ifPresent(builder::perturbAmp);
+        getFloat(json, "perturbAmp").ifPresent(builder::perturbAmp);
         getFloat(json, "perturbFreq").ifPresent(builder::perturbFreq);
         getFloat(json, "jitterX").ifPresent(builder::jitterX);
         getFloat(json, "jitterY").ifPresent(builder::jitterY);

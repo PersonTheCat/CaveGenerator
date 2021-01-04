@@ -82,7 +82,8 @@ public class PresetReader {
         final Map<File, JsonObject> definitions = loadJsons(imports);
 
         // Update all of the raw json objects.
-        jsons.forEach((file, json) -> PresetCompat.update(json, file));
+        jsons.forEach((file, json) -> PresetCompat.update(json, file)
+            .expectF("Error updating {}", file));
         // Expand all of the variable definitions and imports.
         PresetExpander.expandAll(jsons, definitions);
         // Return the jsons as a map of filename -> POJO.

@@ -22,6 +22,7 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.HashMap;
@@ -43,7 +44,7 @@ public class Main {
     /** A non-null map of ID -> CaveGenerator to be filled on WorldEvent.Load. */
     public final Int2ObjectOpenHashMap<Map<String, CaveGenerator>> generators = new Int2ObjectOpenHashMap<>();
     /** A non-null map of ID -> GeneratorSettings to be filled at runtime. */
-    public final Map<String, GeneratorSettings> presets = new HashMap<>();
+    public final Map<String, GeneratorSettings> presets = new LinkedHashMap<>();
     /** A non-null map of ID -> Structure to be filled at runtime. */
     public final Map<String, Template> structures = new HashMap<>();
 

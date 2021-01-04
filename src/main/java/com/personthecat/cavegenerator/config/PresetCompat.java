@@ -14,7 +14,7 @@ import static com.personthecat.cavegenerator.util.HjsonTools.*;
  * fields and notations until they can safely be phased out. It will handle
  * updating these fields to their new format until the next major update.
  */
-public class PresetCompat {
+class PresetCompat {
     static Result<IOException> update(JsonObject json, File file) {
         getObject(json, "tunnels").ifPresent(PresetCompat::renameAngles);
         getObject(json, "ravines").ifPresent(PresetCompat::renameAngles);

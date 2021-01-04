@@ -10,6 +10,8 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeProvider;
+import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import com.personthecat.cavegenerator.world.Cluster.ClusterInfo;
@@ -480,6 +482,7 @@ public class CaveGenerator {
 
     /** Generates any possible giant cluster sections in the current chunk. */
     public void generateClusters(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+        // Todo: bad placement
         if (settings.decorators.clusters.length == 0) return;
         // The seed shouldn't change from when it was first provided
         rand.setSeed(seed); // rand must be reset.
@@ -513,18 +516,17 @@ public class CaveGenerator {
             final int heightVariance = cluster.getHeightVariance();
             final double threshold = cluster.getSelectionThreshold();
             final int clusterSeed = rand.nextInt();
+            final boolean ignoreBiomes = settings.conditions.biomes.length == 0 || world.get() == null;
 
             // Locate any possible origins for this cluster based on its radii.
-            for (int cX = chunkX - cRadiusX; cX < chunkX + cRadiusX; cX++) {
-                for (int cZ = chunkZ - cRadiusZ; cZ < chunkZ + cRadiusZ; cZ++) {
+            for (int cX = chunkX - cRadiusX; cX <= chunkX + cRadiusX; cX++) {
+                for (int cZ = chunkZ - cRadiusZ; cZ <= chunkZ + cRadiusZ; cZ++) {
                     if (selector.getBooleanForCoordinates(ID, cX, cZ, threshold)) {
                         // Get absolute coordinates, generate in the center.
                         final int x = (cX * 16) + 8, z = (cZ * 16) + 8;
                         // Origins can only spawn in valid biomes, but can extend as far as needed.
                         // Only actually fetch the biome from the weak reference if it's needed.
-                        if (settings.conditions.biomes.length == 0 ||
-                            (world.get() != null && canGenerate(world.get().getBiome(new BlockPos(x, 0, z))))
-                        ) {
+                        if (ignoreBiomes || canGenerate(getPredictBiome(world.get(), x, z))) {
                             // Get an RNG unique to this chunk.
                             final Random localRand = new Random(cX ^ cZ ^ clusterSeed);
                             // Randomly alter spawn height.
@@ -554,6 +556,18 @@ public class CaveGenerator {
         return info;
     }
 
+    private static Biome getPredictBiome(World world, int x, int z) {
+        final BlockPos pos = new BlockPos(x, 0, z);
+        final BiomeProvider provider = world.getBiomeProvider();
+        // Unlike the original, this does not contain a try-catch.
+        // May have to add that...
+        if (world.isBlockLoaded(pos)) {
+            return world.getChunk(pos).getBiome(pos, provider);
+        }
+        // Reminder: to subtract 2 from each coordinate if this ever breaks.
+        return provider.getBiomesForGeneration(null, x / 4, z / 4, 1, 1)[0];
+    }
+
     /** Applies all applicable clusters to the current coordinates. */
     private void applyClusters(ChunkPrimer primer, List<ClusterInfo> info, int x, int y, int z, double actualX, double actualZ) {
         for (ClusterInfo cluster : info) {
@@ -574,7 +588,9 @@ public class CaveGenerator {
 
     /** Generates all possible stone layers in the current chunk. */
     public void generateLayers(ChunkPrimer primer, int chunkX, int chunkZ) {
+        // Todo: bad placement
         if (settings.decorators.stoneLayers.length == 0) return;
+
         for (int x = 0; x < 16; x++) {
             final float actualX = x + (chunkX * 16);
             for (int z = 0; z < 16; z++) {

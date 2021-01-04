@@ -63,9 +63,11 @@ public class CaveManager extends MapGenBase {
             }
         }
         for (CaveGenerator generator : gens.values()) {
+            // These have their own internal checks.
+            generator.generateClusters(rand, primer, x, z);
+
             Biome centerBiome = world.getBiome(centerCoords(x, z));
             if (generator.canGenerate(dim, centerBiome)) {
-                generator.generateClusters(rand, primer, x, z);
                 generator.generateLayers(primer, x, z);
             }
         }
