@@ -56,10 +56,24 @@ public class PresetExpander {
 
     /**
      * Gets a JSON from the map by filename. A variable name may optionally be appended
-     * to the filename to indicate a specific variable to include from this json.
+     * to the filename to indicate a specific variable to include from this JSON.
      *
+     * <p>
      * For example, you can write <code>defaults.cave::VANILLA</code> to import only
      * the variable <code>VANILLA</code> from <code>defaults.cave</code>.
+     *
+     * In addition, users may append an <code>as</code> operator to rename whichever variable
+     * they are importing.
+     *
+     * For example, you can write <code>forest.cave::BIOME as FOREST_BIOME</code> to import
+     * <code>BIOME</code> from <code>forest.cave</code> renamed to <code>FOREST_BIOME</code>.
+     *
+     * If they are not importing a specific variable, they can instead use
+     * the <code>as</code> operator to import the entire file into a single variable.
+     *
+     * For example, you can write <code>forest.cave as FOREST</code> to import the entire
+     * object inside of <code>forest.cave</code> into a variable called <code>FOREST</code>.
+     * </p>
      *
      * Todo: Make it to where you can use a path instead.
      *
@@ -73,20 +87,22 @@ public class PresetExpander {
      */
     private static JsonObject getRequiredImport(Map<File, JsonObject> definitions, String filename) {
         Objects.requireNonNull(filename, "Imports may not be null.");
-        final String[] split = filename.split("::");
-        final String name = split[0];
-
-        final JsonObject json = find(definitions.entrySet(), e -> name.equals(e.getKey().getName()))
+        final ImportHelper helper = new ImportHelper(filename);
+        // Get the JSON object by filename.
+        final JsonObject json = find(definitions.entrySet(), e -> helper.filename.equals(e.getKey().getName()))
             .map(Map.Entry::getValue)
-            .orElseThrow(() -> runExF("Use of undeclared import: {}", name));
-
-        // The user wants to import a specific variable.
-        if (split.length > 1) {
-            final String key = split[1];
-            if (!json.has(key)) {
-                throw runExF("Import refers to unknown key: {}", key);
-            }
-            return new JsonObject().add(key, json.get(key));
+            .orElseThrow(() -> runExF("Use of undeclared import: {}", filename));
+        // No specific variable && AS statement -> name the object itself.
+        if (helper.as.isPresent() && !helper.variable.isPresent()) {
+            return new JsonObject().add(helper.as.get(), json);
+        } else if (helper.variable.isPresent()) {
+            final String key = helper.variable.get();
+            // Make sure the variable exists, then copy it only.
+           if (!json.has(key)) {
+               throw runExF("Import refers to unknown key: {}", key);
+           }
+           final String name = helper.as.orElse(key);
+           return new JsonObject().add(name, json.get(key));
         }
         // The user wants to include the entire file.
         return json;
@@ -245,17 +261,47 @@ public class PresetExpander {
             // Clone the data so it can be updated.
             clone.add(name, value);
             // Merge recursively.
-            if (value.isObject()) {
-                mergeObject(from, value.asObject());
-            } else {
-                tryMerge(from, clone, name, value);
+            if (!tryMerge(from, clone, name, value)) {
+                if (value.isObject()) {
+                    mergeObject(from, value.asObject());
+                } else if (value.isArray()) {
+                    mergeArray(from, value.asArray());
+                }
             }
         }
         replaceContents(clone, to);
     }
 
-    private static void tryMerge(JsonObject from, JsonObject to, String key, JsonValue value) {
-        trySubstitute(from, key).ifPresent(ref -> {
+    /**
+     *  Applies the merge operation to every JSON object nested in an array.
+     *
+     * @param from The source where variables are defined.
+     * @param to the array which may contain objects requiring merges.
+     */
+    private static void mergeArray(JsonObject from, JsonArray to) {
+        // No clone needed. We won't merge into the array itself.
+        for (JsonValue value : to) {
+            if (value.isObject()) {
+                mergeObject(from, value.asObject());
+            } else if (value.isArray()) {
+                mergeArray(from, value.asArray());
+            }
+        }
+    }
+
+    /**
+     * If required, merges all of the fields from <code>key</code>--if it is a reference
+     * to an object--into <code>to</code>.
+     *
+     * @param from The source of the object to be merged.
+     * @param to The JSON object to be written into.
+     * @param key The object key which may or may not be a reference.
+     * @param value The value which may or may not be an array of field names.
+     * @return Whether a merge took place.
+     */
+    private static boolean tryMerge(JsonObject from, JsonObject to, String key, JsonValue value) {
+        final Optional<JsonValue> r = trySubstitute(from, key);
+        r.ifPresent(ref -> {
             if (!ref.isObject()) {
                 throw runExF("Only objects can be merged: {}", key);
             }
@@ -263,16 +309,28 @@ public class PresetExpander {
             if (arr.contains(JsonValue.valueOf("ALL"))) {
                 to.addAll(ref.asObject());
             } else {
-                for (JsonValue v : arr) {
-                    if (!v.isString()) {
-                        throw runExF("Not a field: {}", v);
-                    }
-                    to.add(v.asString(), substitute(ref.asObject(), v.asString()));
-                }
+                addAllReferences(ref.asObject(), to, arr);
             }
             // Remove the original key which has now been expanded.
             to.remove(key);
         });
+        return r.isPresent();
+    }
+
+    /**
+     * Substitutes a series of references at the current level.
+     *
+     * @param from The source where variables are defined.
+     * @param to The object to write these variables inside of.
+     * @param array The array of keys to look up.
+     */
+    private static void addAllReferences(JsonObject from, JsonObject to, JsonArray array) {
+        for (JsonValue v : array) {
+            if (!v.isString()) {
+                throw runExF("Not a field: {}", v);
+            }
+            to.add(v.asString(), substitute(from, v.asString()));
+        }
     }
 
     /**
@@ -305,5 +363,21 @@ public class PresetExpander {
     private static void deleteUnused(JsonObject json) {
         json.remove("imports");
         json.remove("variables");
+    }
+
+    /** Splits an import statement into its tokens. */
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    private static class ImportHelper {
+        final String filename;
+        final Optional<String> variable;
+        final Optional<String> as;
+
+        ImportHelper(String statement) {
+            final String[] splitAs = statement.split("\\s*(as|AS|As)\\s*");
+            final String[] splitVar = splitAs[0].split("\\s*::\\s*");
+            filename = splitVar[0];
+            variable = splitVar.length > 1 ? full(splitVar[1]) : empty();
+            as = splitAs.length > 1 ? full(splitAs[1]) : empty();
+        }
     }
 }
