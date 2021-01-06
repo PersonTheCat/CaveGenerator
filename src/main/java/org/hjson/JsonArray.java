@@ -650,6 +650,31 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
+   * Clears every element from this array.
+   *
+   * @throws UnsupportedOperationException if this object is unmodifiable.
+   * @return the array itself, to enable method chaining
+   */
+  public JsonArray clear() {
+    values.clear();
+    return this;
+  }
+
+  /**
+   * Adds every value from another array.
+   *
+   * @throws UnsupportedOperationException if this object is unmodifiable.
+   * @param array The array to copy values from.
+   * @return the array itself, to enable method chaining
+   */
+  public JsonArray addAll(JsonArray array) {
+    for (JsonValue value : array) {
+      add(value);
+    }
+    return this;
+  }
+
+  /**
    * Returns the value of the element at the specified position in this array.
    *
    * @param index
@@ -661,6 +686,16 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    */
   public JsonValue get(int index) {
     return values.get(index).setAccessed(true);
+  }
+
+  /**
+   * Returns whether this array contains a value.
+   *
+   * @param value The value to search for.
+   * @return <code>true</code> if this array contains the value.
+   */
+  public boolean contains(JsonValue value) {
+    return values.contains(value);
   }
 
   /**

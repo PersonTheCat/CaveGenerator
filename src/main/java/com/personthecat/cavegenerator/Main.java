@@ -22,10 +22,10 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
-import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.HashMap;
+import java.util.TreeMap;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
@@ -48,7 +48,7 @@ public class Main {
     public final Int2ObjectOpenHashMap<Map<String, CaveGenerator>> generators = new Int2ObjectOpenHashMap<>();
 
     /** A non-null map of ID -> GeneratorSettings to be filled at runtime. */
-    public final Map<String, GeneratorSettings> presets = new LinkedHashMap<>();
+    public final Map<String, GeneratorSettings> presets = new TreeMap<>();
 
     /** A non-null map of ID -> Structure to be filled at runtime. */
     public final Map<String, Template> structures = new HashMap<>();
@@ -87,7 +87,7 @@ public class Main {
         if (generators.containsKey(dim)) {
             return this.generators.get(dim);
         }
-        final Map<String, CaveGenerator> generators = new HashMap<>();
+        final Map<String, CaveGenerator> generators = new TreeMap<>();
         for (Entry<String, GeneratorSettings> entry : presets.entrySet()) {
             final GeneratorSettings cfg = entry.getValue();
             if (CaveInit.validPreset(cfg, dim)) {

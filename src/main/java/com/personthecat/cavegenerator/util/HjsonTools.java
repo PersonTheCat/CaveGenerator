@@ -133,7 +133,7 @@ public class HjsonTools {
     }
 
     /** Casts or converts a JsonValue to a JsonArray.*/
-    private static JsonArray asOrToArray(JsonValue value) {
+    public static JsonArray asOrToArray(JsonValue value) {
         return value.isArray() ? value.asArray() : new JsonArray().add(value);
     }
 
@@ -141,6 +141,14 @@ public class HjsonTools {
     public static Optional<JsonObject> getObject(JsonObject json, String field) {
         return Optional.ofNullable(json.get(field))
             .map(JsonValue::asObject);
+    }
+
+    /** Retrieves an object from the input object. Returns an empty object, if nothing is found. */
+    public static JsonObject getObjectOrNew(JsonObject json, String field) {
+        if (!json.has(field)) {
+            json.set(field, new JsonObject());
+        }
+        return getObject(json, field).orElseThrow(() -> runEx("Unreachable."));
     }
 
     /** Safely retrieves a JsonValue from the input object. */

@@ -19,7 +19,9 @@ import static com.personthecat.cavegenerator.util.HjsonTools.*;
 import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 
 /**
- *   This class contains all of the tools and processes used for parsing
+ * Todo: I'm bad
+ *
+ *  This class contains all of the tools and processes used for parsing
  * .json, .hjson, and .cave files into GeneratorSettings objects. The basic
  * design philosophy is that all fields should be optional and have default
  * values, unless completely necessary. I've tried to reduce the syntax for
@@ -81,20 +83,24 @@ public class PresetReader {
     public static Map<String, GeneratorSettings> getPresets(File dir, File imports) {
         final Map<File, JsonObject> jsons = loadJsons(dir);
         final Map<File, JsonObject> definitions = loadJsons(imports);
-
         // Update all of the raw json objects.
         jsons.forEach((file, json) -> PresetCompat.update(json, file)
             .expectF("Error updating {}", file));
         // Expand all of the variable definitions and imports.
         PresetExpander.expandAll(jsons, definitions);
-        // Return the jsons as a map of filename -> POJO.
-        return toSettings(jsons);
+        // Convert to a map of filename -> POJO;
+        final Map<String, GeneratorSettings> settings = toSettings(jsons);
+        // Check each preset and inform the user of potential mistakes.
+        settings.forEach((name, cfg) ->
+            new PresetTester(cfg, name, ConfigFile.strictPresets).run());
+        return settings;
     }
 
     /** Loads and updates every JSON file in a directory. */
     private static Map<File, JsonObject> loadJsons(File dir) {
         final Map<File, JsonObject> jsons = new HashMap<>();
         for (File file : safeListFiles(dir).orElse(new File[0])) {
+            info("Parsing preset file: {}", file.getName());
             jsons.put(file, loadJson(file).asObject());
         }
         return jsons;

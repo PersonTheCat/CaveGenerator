@@ -897,6 +897,37 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   }
 
   /**
+   * Clears every element from this object.
+   *
+   * @throws UnsupportedOperationException if this object is unmodifiable.
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject clear() {
+    names.clear();
+    values.clear();
+    table.clear();
+    return this;
+  }
+
+  /**
+   * Adds every member (key/value pair) from another object.
+   *
+   * @throws UnsupportedOperationException if this object is unmodifiable.
+   * @param object The object to copy values from.
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject addAll(JsonObject object) {
+    for (Member m : object) {
+      if (has(m.getName())) {
+        set(m.getName(), m.getValue());
+      } else {
+        add(m.getName(), m.getValue());
+      }
+    }
+    return this;
+  }
+
+  /**
    * Returns a list of the names in this object in document order. The returned list is backed by
    * this object and will reflect subsequent changes. It cannot be used to modify this object.
    * Attempts to modify the returned list will result in an exception.
@@ -1179,6 +1210,10 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
 
     private int hashSlotfor (Object element) {
       return element.hashCode() & hashTable.length-1;
+    }
+
+    private void clear() {
+      Arrays.fill(hashTable, (byte) 0);
     }
   }
 
