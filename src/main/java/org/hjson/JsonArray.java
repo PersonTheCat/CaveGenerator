@@ -617,6 +617,25 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
+   * Marks every value in this array as being accessed or not accessed.
+   *
+   * @param b
+   *         whether to mark each field as accessed.
+   * @return the array itself, to enable chaining.
+   */
+  public JsonArray setAllAccessed(boolean b) {
+    for (JsonValue value : this) {
+      value.setAccessed(b);
+      if (value.isObject()) {
+        value.asObject().setAllAccessed(b);
+      } else if (value.isArray()) {
+        value.asArray().setAllAccessed(b);
+      }
+    }
+    return this;
+  }
+
+  /**
    * Removes the element at the specified index from this array.
    *
    * @param index

@@ -318,7 +318,7 @@ public class CommandCave extends CommandBase {
     private static boolean isPresetEnabled(File file) {
         return PresetReader.getPresetJson(file)
             .flatMap(preset -> getBool(preset, "enabled"))
-            .orElse(false);
+            .orElse(true);
     }
 
     /** Generates the help message, displaying usage for each sub-command. */

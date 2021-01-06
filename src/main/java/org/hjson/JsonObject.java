@@ -757,7 +757,7 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    *          the name of the member to be altered.
    * @param comment
    *          the value to set as this member's comment.
-   * @return the object itself to enable chaining.
+   * @return the object itself, to enable chaining.
    */
   public JsonObject setComment(String name, String comment) {
     get(name).setComment(comment);
@@ -776,10 +776,30 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    *          The style to use, i.e. <code>#</code>, <code>//</code>, etc.
    * @param comment
    *          the value to set as this member's comment.
-   * @return the object itself to enable chaining.
+   * @return the object itself, to enable chaining.
    */
   public JsonObject setComment(String name, CommentType type, CommentStyle style, String comment) {
     get(name).setComment(type, style, comment);
+    return this;
+  }
+
+  /**
+   * Marks every value in this object as being accessed or not accessed.
+   *
+   * @param b
+   *         whether to mark each field as accessed.
+   * @return the object itself, to enable chaining.
+   */
+  public JsonObject setAllAccessed(boolean b) {
+    for (Member m : this) {
+      final JsonValue value=m.value;
+      value.setAccessed(b);
+      if (value.isObject()) {
+        value.asObject().setAllAccessed(b);
+      } else if (value.isArray()) {
+        value.asArray().setAllAccessed(b);
+      }
+    }
     return this;
   }
 

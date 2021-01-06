@@ -91,6 +91,8 @@ public class PresetReader {
             .expectF("Error updating {}", file));
         // Expand all of the variable definitions and imports.
         PresetExpander.expandAll(jsons, definitions);
+        // Mark all values as unused so we can track them.
+        jsons.forEach((file, json) -> json.setAllAccessed(false));
         // Convert to a map of filename -> POJO;
         final Map<String, GeneratorSettings> settings = toSettings(jsons);
         // Check each preset and inform the user of potential mistakes.
