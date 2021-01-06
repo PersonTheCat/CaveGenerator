@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.config;
 
 import com.personthecat.cavegenerator.util.Result;
+import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
@@ -19,6 +20,7 @@ class PresetCompat {
         getObject(json, "tunnels").ifPresent(PresetCompat::renameAngles);
         getObject(json, "ravines").ifPresent(PresetCompat::renameAngles);
         rename(json, "stoneClusters", "clusters");
+        removeBlankSlate(json);
         return writeJson(json, file);
     }
 
@@ -34,6 +36,22 @@ class PresetCompat {
         if (get != null) {
             json.set(to, get);
             json.remove(from);
+        }
+    }
+
+    private static void removeBlankSlate(JsonObject json) {
+        if (json.has("blankSlate")) {
+            // User did *not* want a blank slate.
+            if (!json.get("blankSlate").asBoolean()) {
+                // Todo: Maybe remove these inserts and just enforce
+                // that imports always be at the top of the file.
+                // Todo: Check for and add to prior imports if they exist.
+                json.insert(0, "$VANILLA", JsonValue.valueOf("ALL"), "Default ravines and lava settings.");
+                json.insert(0,"imports", new JsonArray()
+                    .add("defaults.cave::VANILLA")
+                    .setCondensed(false));
+            }
+            json.remove("blankSlate");
         }
     }
 }

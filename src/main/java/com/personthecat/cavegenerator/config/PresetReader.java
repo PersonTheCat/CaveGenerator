@@ -120,15 +120,14 @@ public class PresetReader {
 
     /** Reads all of the settings from a json object. */
     private static GeneratorSettings getSettings(JsonObject json) {
-        final boolean b = blankSlateMode(json);
         return new GeneratorSettings(
             getSpawnSettings(json),
-            getTunnelSettings(json, b),
-            getRavineSettings(json, b),
-            getRoomSettings(json, b),
+            getTunnelSettings(json),
+            getRavineSettings(json),
+            getRoomSettings(json),
             getCavernSettings(json),
             getStructureSettings(json),
-            getDecoratorSettings(json, b),
+            getDecoratorSettings(json),
             getReplaceableBlocks(json),
             getReplaceDecorators(json),
             json
@@ -162,11 +161,6 @@ public class PresetReader {
         }
     }
 
-    /** Determines whether the input object is in blank slate mode. */
-    private static boolean blankSlateMode(JsonObject json) {
-        return getBoolOr(json, "blankSlate", true);
-    }
-
     /** Parses various fields in the root of the input json related to spawn conditions. */
     private static SpawnSettings getSpawnSettings(JsonObject json) {
         return new SpawnSettings(json);
@@ -186,33 +180,29 @@ public class PresetReader {
     }
 
     /** Parses the field "tunnels" from this json into a TunnelSettings object. */
-    private static TunnelSettings[] getTunnelSettings(JsonObject json, boolean blankSlate) {
+    private static TunnelSettings[] getTunnelSettings(JsonObject json) {
         final TunnelSettings[] cfg = getObjectArray(json, "tunnels").stream()
             .map(TunnelSettings::new)
             .toArray(TunnelSettings[]::new);
-        return cfg.length == 0 ? // The user did not define a field.
-            new TunnelSettings[] { new TunnelSettings(blankSlate) } :
-            cfg; // The user defined a field.
+        return cfg.length == 0 ? new TunnelSettings[0] : cfg;
     }
 
     /**
      * This seems fairly redundant, but isn't. The fields belong
      * to a separate object with mostly similar properties.
      */
-    private static RavineSettings[] getRavineSettings(JsonObject json, boolean blankSlate) {
+    private static RavineSettings[] getRavineSettings(JsonObject json) {
         final RavineSettings[] cfg = getObjectArray(json, "ravines").stream()
             .map(RavineSettings::new)
             .toArray(RavineSettings[]::new);
-        return cfg.length == 0 ? //  The user did not define a field.
-            new RavineSettings[] { new RavineSettings(blankSlate) } :
-            cfg; // The user defined a field.
+        return cfg.length == 0 ? new RavineSettings[0] : cfg;
     }
 
     /** Parses the field "rooms" from this json into a RoomSettings object. */
-    private static RoomSettings getRoomSettings(JsonObject json, boolean blankSlate) {
+    private static RoomSettings getRoomSettings(JsonObject json) {
         return getObject(json, "rooms")
             .map(RoomSettings::new)
-            .orElse(new RoomSettings(blankSlate));
+            .orElse(RoomSettings.empty());
     }
 
     /** Parses the field "caverns" from this json into a CavernSettings object. */
@@ -233,15 +223,14 @@ public class PresetReader {
     }
 
     /** Parses various decorator objects from this json.. */
-    private static DecoratorSettings getDecoratorSettings(JsonObject json, boolean blankSlate) {
+    private static DecoratorSettings getDecoratorSettings(JsonObject json) {
         return new DecoratorSettings(
             getStoneClusters(json),
             getStoneLayers(json),
             getCaveBlocks(json),
             getWallDecorators(json),
             getLargeStalactites(json),
-            getGiantPillars(json),
-            blankSlate
+            getGiantPillars(json)
         );
     }
 
@@ -270,11 +259,11 @@ public class PresetReader {
     }
 
     /** Parses the field "caveblocks" from this json into an array of CaveBlock objects. */
-    private static Optional<CaveBlock[]> getCaveBlocks(JsonObject json) {
+    private static CaveBlock[] getCaveBlocks(JsonObject json) {
         // Manually verify whether the field exists.
         // To-do: switch to Optional, instead.
         if (json.get("caveBlocks") == null) {
-            return empty();
+            return new CaveBlock[0];
         }
         // Create an empty list.
         List<CaveBlock> caveBlocks = new ArrayList<>();
@@ -288,7 +277,7 @@ public class PresetReader {
                 caveBlocks.add(CaveBlock.from(state, caveBlock));
             }
         }
-        return full(toArray(caveBlocks, CaveBlock.class));
+        return toArray(caveBlocks, CaveBlock.class);
     }
 
     /** Parses the field "wallDecorators" from this json into an array of WallDecorator objects. */

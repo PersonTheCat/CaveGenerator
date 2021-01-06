@@ -35,7 +35,7 @@ public class CaveInit {
 
     private static final File CONFIG_DIR = Loader.instance().getConfigDir();
     public static final File PRESET_DIR = new File(CONFIG_DIR, PRESETS);
-    private static final File IMPORT_DIR = new File(CONFIG_DIR, IMPORTS);
+    public static final File IMPORT_DIR = new File(CONFIG_DIR, IMPORTS);
 
     /** Initializes the supplied map with presets from the directory. */
     public static void initPresets(final Map<String, GeneratorSettings> presets) {

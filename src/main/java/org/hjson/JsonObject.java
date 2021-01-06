@@ -410,11 +410,66 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the object itself, to enable method chaining
    */
   public JsonObject add(String name, JsonValue value, String comment) {
-    if (value==null) {
-      throw new NullPointerException("value is null");
+    if (comment==null) {
+      throw new NullPointerException("comment is null");
     }
     value.setComment(comment);
     return add(name, value);
+  }
+
+  /**
+   * Variant of {@link #add(String, JsonValue)} which will insert a value at a particular position.
+   *
+   * @param index
+   *         the index where this value will be placed
+   * @param name
+   *         the name of the member to add
+   * @param value
+   *         the value of the member to add
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject insert(int index, String name, JsonValue value) {
+    if (name==null) {
+      throw new NullPointerException("name is null");
+    }
+    if (value==null) {
+      throw new NullPointerException("value is null");
+    }
+    // Collect all current members into an array;
+    final List<Member> members=new ArrayList<>();
+    for (Member m : this) {
+      members.add(m);
+    }
+    members.add(index, new Member(name, value));
+    // Reset everything.
+    clear();
+    // Re-add the values, now in the correct order.
+    for (Member m : members) {
+      add(m.name, m.value);
+    }
+    return this;
+  }
+
+  /**
+   * Variant of {@link #insert(int, String, JsonValue)} which includes a comment.
+   *
+   * @param index
+   *         the index where this value will be placed
+   * @param name
+   *         the name of the member to add
+   * @param value
+   *         the value of the member to add
+   * @param comment
+   *         the comment to set on the value.
+   * @return the object itself, to enable method chaining
+   */
+  public JsonObject insert(int index, String name, JsonValue value, String comment) {
+    if (comment==null) {
+      throw new NullPointerException("comment is null");
+    }
+    value.setComment(comment);
+    insert(index, name, value);
+    return this;
   }
 
   /**
@@ -1004,19 +1059,18 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    */
   public JsonObject sort() {
     // Collect all members into an array.
-    List<Member> members=new ArrayList<Member>();
+    List<Member> members=new ArrayList<>();
     for (Member m : this) {
       members.add(m);
     }
     // Get the underlying array so it can be sorted.
-    Member[] membersArray=members.toArray(new Member[members.size()]);
+    Member[] membersArray=members.toArray(new Member[0]);
 
     // Sort the new array.
     Arrays.sort(membersArray, new MemberComparator());
 
     // Clear the original values.
-    names.clear();
-    values.clear();
+    clear();
 
     // Re-add the values, now in order.
     for (Member m : membersArray) {

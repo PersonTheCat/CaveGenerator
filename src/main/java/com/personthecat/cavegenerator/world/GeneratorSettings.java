@@ -287,19 +287,6 @@ public class GeneratorSettings {
                 getIntOr(tun, "frequency", 15)
             );
         }
-
-        /**
-         * Constructs a new instance of this object using the default values only.
-         * Using Optional#empty instead of raw values so that all default values
-         * can remain within the first constructor above.
-         */
-        public TunnelSettings(boolean blankSlate) {
-            this(
-                blankSlate ?
-                new JsonObject().add("frequency", 0) :
-                new JsonObject()
-            );
-        }
     }
 
     /**
@@ -411,15 +398,6 @@ public class GeneratorSettings {
                     .orElse(DEFAULT_WALL_NOISE) // To-do: noise blocks at optional levels.
             );
         }
-
-        /** Default values. */
-        public RavineSettings(boolean blankSlate) {
-            this(
-                blankSlate ?
-                new JsonObject().add("chance", 0) :
-                new JsonObject()
-            );
-        }
     }
 
     /**
@@ -446,13 +424,8 @@ public class GeneratorSettings {
             );
         }
 
-        /** Default values. */
-        public RoomSettings(boolean blankSlate) {
-            this(
-                blankSlate ?
-                new JsonObject().add("scale", 0) :
-                new JsonObject()
-            );
+        public static RoomSettings empty() {
+            return new RoomSettings(new JsonObject().add("scale", 0));
         }
     }
 
@@ -662,15 +635,13 @@ public class GeneratorSettings {
         public DecoratorSettings(
             Cluster[] clusters,
             StoneLayer[] stoneLayers,
-            Optional<CaveBlock[]> caveBlocks,
+            CaveBlock[] caveBlocks,
             WallDecorator[] decorators,
             LargeStalactite[] stalactites,
-            GiantPillar[] pillars,
-            boolean blankSlate
+            GiantPillar[] pillars
         ) {
             WallDecorator[][] sorted = sortWallDecorators(decorators);
-            this.caveBlocks = caveBlocks.orElse(blankSlate ?
-                new CaveBlock[0] : new CaveBlock[] { CaveBlock.VANILLA_LAVA });
+            this.caveBlocks = caveBlocks;
             this.ceilingDecorators = sorted[0];
             this.floorDecorators = sorted[1];
             this.wallDecorators = sorted[2];
