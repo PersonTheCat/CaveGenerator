@@ -132,6 +132,14 @@ public class HjsonTools {
             .map(HjsonTools::asOrToArray);
     }
 
+    /**  Retrieves an array or creates a new one, if absent. */
+    public static JsonArray getArrayOrNew(JsonObject json, String field) {
+        if (!json.has(field)) {
+            json.set(field, new JsonArray());
+        }
+        return getArray(json, field).orElseThrow(() -> runEx("Unreachable."));
+    }
+
     /** Casts or converts a JsonValue to a JsonArray.*/
     public static JsonArray asOrToArray(JsonValue value) {
         return value.isArray() ? value.asArray() : new JsonArray().add(value);

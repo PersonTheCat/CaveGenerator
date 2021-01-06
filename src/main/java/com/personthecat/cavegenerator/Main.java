@@ -56,8 +56,7 @@ public class Main {
     @EventHandler
     @SuppressWarnings("unused")
     public static void init(FMLInitializationEvent event) {
-        JarFiles.copyPresetFiles();
-        JarFiles.copyExampleStructures();
+        JarFiles.copyFiles();
         StructureSpawner.loadAllStructures(instance.structures);
         CaveInit.initPresets(instance.presets);
         MinecraftForge.EVENT_BUS.register(CaveInit.class);

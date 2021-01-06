@@ -306,7 +306,7 @@ public class PresetExpander {
                 throw runExF("Only objects can be merged: {}", key);
             }
             final JsonArray arr = asOrToArray(value);
-            if (arr.contains(JsonValue.valueOf("ALL"))) {
+            if (arr.contains("ALL")) {
                 to.addAll(ref.asObject());
             } else {
                 addAllReferences(ref.asObject(), to, arr);
@@ -329,7 +329,10 @@ public class PresetExpander {
             if (!v.isString()) {
                 throw runExF("Not a field: {}", v);
             }
-            to.add(v.asString(), substitute(from, v.asString()));
+            final String key = v.asString();
+            if (!to.has(key)) { // Allow overrides.
+                to.add(key, substitute(from, key));
+            }
         }
     }
 

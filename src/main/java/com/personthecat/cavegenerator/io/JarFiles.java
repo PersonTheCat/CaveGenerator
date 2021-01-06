@@ -35,19 +35,29 @@ public class JarFiles {
     };
 
     /** Copies the example presets from the jar to the disk. */
-    public static void copyPresetFiles() {
-        // Verify the folder's integrity before proceeding.
+    public static void copyFiles() {
+        // Verify the folders' integrity before proceeding.
         ensureDirExists(EXAMPLE_DIR)
             .expect("Error: Unable to create the example preset directory.");
         ensureDirExists(CaveInit.IMPORT_DIR)
             .expect("Error: Unable to create the import directory.");
 
+        copyExamples();
+        copyVanilla();
+        copyImports();
+        copyStructures();
+    }
+
+    private static void copyExamples() {
         for (String fileName : PRESETS) {
             String fromLocation = "assets/cavegenerator/presets/" + fileName + ".cave";
             String toLocation = EXAMPLE_DIR.getPath() + "/" + fileName + ".cave";
             copyFile(fromLocation, toLocation);
         }
-        // Checks whether the preset folder exists.
+    }
+
+    // Todo: Replace this when we get TUTORIAL.cave in place.
+    private static void copyVanilla() {
         if (!safeFileExists(CaveInit.PRESET_DIR, "Error: Unable to read from preset directory.")) {
             // The directory doesn't exist. Create it.
             safeMkdirs(CaveInit.PRESET_DIR)
@@ -58,7 +68,9 @@ public class JarFiles {
             String toLocation = CaveInit.PRESET_DIR.getPath() + "/vanilla.cave";
             copyFile(fromLocation, toLocation);
         }
-        // Also copy any import presets.
+    }
+
+    private static void copyImports() {
         for (String i : IMPORTS) {
             String fromLocation = "assets/cavegenerator/imports/" + i + ".cave";
             String toLocation = CaveInit.IMPORT_DIR.getPath() + "/" + i + ".cave";
@@ -70,7 +82,7 @@ public class JarFiles {
     }
 
     /** Copies the example structures from the jar to the disk. */
-    public static void copyExampleStructures() {
+    public static void copyStructures() {
         if (!safeFileExists(StructureSpawner.DIR, "Error: Unable to read from structure directory.")) {
             // The directory doesn't exist. Create it.
             safeMkdirs(StructureSpawner.DIR)

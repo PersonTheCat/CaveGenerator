@@ -699,6 +699,18 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
   }
 
   /**
+   * Returns whether this array contains a value of unknown type.
+   *
+   * Todo: implement concrete functions for other known types.
+   *
+   * @param value The value to search for.
+   * @return <code>true</code> if this array contains the value.
+   */
+  public boolean contains(Object value) {
+    return contains(JsonValue.valueOf(value));
+  }
+
+  /**
    * Returns a list of the values in this array in document order. The returned list is backed by
    * this array and will reflect subsequent changes. It cannot be used to modify this array.
    * Attempts to modify the returned list will result in an exception.

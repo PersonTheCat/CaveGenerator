@@ -420,6 +420,8 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   /**
    * Variant of {@link #add(String, JsonValue)} which will insert a value at a particular position.
    *
+   * Todo: decide whether to keep this before merging with hjson-java.
+   *
    * @param index
    *         the index where this value will be placed
    * @param name
