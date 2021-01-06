@@ -83,6 +83,9 @@ public class PresetReader {
     public static Map<String, GeneratorSettings> getPresets(File dir, File imports) {
         final Map<File, JsonObject> jsons = loadJsons(dir);
         final Map<File, JsonObject> definitions = loadJsons(imports);
+        // Detect a few common syntax errors.
+        jsons.forEach(SyntaxHelper::check);
+        definitions.forEach(SyntaxHelper::check);
         // Update all of the raw json objects.
         jsons.forEach((file, json) -> PresetCompat.update(json, file)
             .expectF("Error updating {}", file));
