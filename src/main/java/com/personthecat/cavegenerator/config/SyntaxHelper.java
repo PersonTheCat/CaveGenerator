@@ -18,7 +18,7 @@ public class SyntaxHelper {
 
     /** A message informing the user that their comment is inside of a string. */
     private static final String COMMENT_MESSAGE = "Found comment (# or //) in string. "
-        + "Put your comment above this value or use double quotes. e.g. <\"\" # comment>\n"
+        + "Put your comment above this value or use double quotes. e.g. <\"value\" # comment>\n"
         + "Source: {}";
 
     /** A message reminding users not to use semicolons. */
@@ -27,7 +27,7 @@ public class SyntaxHelper {
         + "Source: {}";
 
     /** Detects comments at the ends of strings.  */
-    private static final Pattern COMMENT_PATTERN = Pattern.compile("(#|//|/\\*)\\S*$");
+    private static final Pattern COMMENT_PATTERN = Pattern.compile("#|//|/\\*");
 
     /**
      * Recursively checks for a series of common syntax errors in presets.
@@ -82,7 +82,7 @@ public class SyntaxHelper {
             throw runExF(COMMA_MESSAGE, file.getName());
         } else if (string.endsWith(";")) {
             throw runExF(SEMICOLON_MESSAGE, file.getName());
-        } else if (COMMENT_PATTERN.matcher(string).matches()) {
+        } else if (COMMENT_PATTERN.matcher(string).find()) {
             throw runExF(COMMENT_MESSAGE, file.getName());
         }
     }

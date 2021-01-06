@@ -76,7 +76,25 @@ public class CommonMethods {
 
     /** Shorthand for a RuntimeException using String#format. */
     public static RuntimeException runExF(String x, Object... args) {
-        return new RuntimeException(String.format(x, args));
+        return new RuntimeException(f(x, args));
+    }
+
+    /** A neater way to interpolate strings. */
+    public static String f(String s, Object... args) {
+        int begin = 0, si = 0, oi = 0;
+        StringBuilder sb = new StringBuilder();
+        while (true) {
+            si = s.indexOf("{}", si);
+            if (si >= 0) {
+                sb.append(s.substring(begin, si));
+                sb.append(args[oi++]);
+                begin = si = si + 2;
+            } else {
+                break;
+            }
+        }
+        sb.append(s.substring(begin));
+        return sb.toString();
     }
 
     /*
