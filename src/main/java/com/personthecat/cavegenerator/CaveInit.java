@@ -78,7 +78,7 @@ public class CaveInit {
     private static void printLoadedPresets(final Map<String, GeneratorSettings> presets) {
         for (Entry<String, GeneratorSettings> entry : presets.entrySet()) {
             final String enabled = entry.getValue().conditions.enabled ? "enabled" : "disabled";
-            info("Successfully loaded {}. It is {}.", entry.getKey(), enabled);
+            info("{} is {}.", entry.getKey(), enabled);
         }
     }
 

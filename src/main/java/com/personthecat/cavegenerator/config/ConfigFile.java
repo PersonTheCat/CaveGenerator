@@ -15,7 +15,7 @@ public class ConfigFile {
     @Comment({
         "Whether this mod will attempt to run simultaneously",
         "with one other cave generation mod, such as Worley's",
-        "Caves."})
+        "Caves or Yung's Better Caves."})
     @RequiresMcRestart()
     public static boolean otherGeneratorEnabled = false;
 
@@ -27,6 +27,9 @@ public class ConfigFile {
         "nothing slips by."})
     public static boolean strictPresets = false;
 
-    @Comment("Temporary method used to alter the cavern / stone generation order.")
-    public static boolean debugOrder = true;
+    @Comment({
+        "Enables the experimental feature of restricting caverns",
+        "objects by biome. This will produce flat walls in your",
+        "world and is not the preferred solution."})
+    public static boolean forceEnableCavernBiomes = false;
 }

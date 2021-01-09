@@ -56,7 +56,6 @@ public class CaveGenerator {
         this.seed = world.getSeed();
         this.selector = new RandomChunkSelector(seed);
         this.miscNoise = new NoiseGeneratorSimplex(new Random(seed));
-        // To-do: ensure that this is more unique (integer overflow).
         this.cavernNoise = getCavernNoise(seed, settings.caverns);
         this.ceilNoise = settings.caverns.ceilNoise.getGenerator((int) seed >> 2);
         this.floorNoise = settings.caverns.floorNoise.getGenerator((int) seed >> 4);
@@ -424,7 +423,7 @@ public class CaveGenerator {
 
     /** Generates giant air pockets in this chunk using a 3D noise generator. */
     public void generateCaverns(int[][] heightMap, Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
-        // Bad placement
+        // Todo: Bad placement
         if (!settings.caverns.enabled) return;
         // Using an array to store calculations instead of redoing all of the
         // noise generation below when decorating caverns. Some calculations

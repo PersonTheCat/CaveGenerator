@@ -13,6 +13,7 @@ import java.util.Optional;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class CaveManager extends MapGenBase {
 
     private final Optional<MapGenBase> priorCaves;
@@ -54,26 +55,18 @@ public class CaveManager extends MapGenBase {
             HeightMapLocator.getHeightFromPrimer(primer) :
             HeightMapLocator.FAUX_MAP;
 
-        if (!ConfigFile.debugOrder) {
-            for (CaveGenerator generator : gens.values()) {
-                // Don't allow caverns to be biome-specific, for now.
-                if (generator.canGenerate(dim)) {
-                    generator.generateCaverns(heightMap, rand, primer, x, z);
-                }
-            }
-        }
+        Biome centerBiome = world.getBiome(centerCoords(x, z));
+
         for (CaveGenerator generator : gens.values()) {
             // These have their own internal checks.
             generator.generateClusters(rand, primer, x, z);
-
-            Biome centerBiome = world.getBiome(centerCoords(x, z));
             if (generator.canGenerate(dim, centerBiome)) {
                 generator.generateLayers(primer, x, z);
             }
         }
-        if (ConfigFile.debugOrder) {
-            for (CaveGenerator generator : gens.values()) {
-                // Don't allow caverns to be biome-specific, for now.
+        for (CaveGenerator generator : gens.values()) {
+            // Don't allow caverns to be biome-specific, for now.
+            if (!ConfigFile.forceEnableCavernBiomes || generator.canGenerate(centerBiome)) {
                 if (generator.canGenerate(dim)) {
                     generator.generateCaverns(heightMap, rand, primer, x, z);
                 }
