@@ -115,7 +115,7 @@ public class PresetReader {
     private static Map<String, GeneratorSettings> toSettings(Map<File, JsonObject> jsons) {
         final Map<String, GeneratorSettings> settings = new HashMap<>();
         for (Map.Entry<File, JsonObject> entry : jsons.entrySet()) {
-            settings.put(entry.getKey().getName(), getSettings(entry.getValue()));
+            settings.put(noExtension(entry.getKey()), getSettings(entry.getValue()));
         }
         return settings;
     }

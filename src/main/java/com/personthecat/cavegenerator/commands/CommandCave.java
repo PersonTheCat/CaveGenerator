@@ -4,6 +4,7 @@ import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.config.PresetCombiner;
 import com.personthecat.cavegenerator.config.PresetReader;
+import com.personthecat.cavegenerator.world.GeneratorSettings;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -23,36 +24,44 @@ import org.apache.commons.lang3.ArrayUtils;
 import org.hjson.JsonObject;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.regex.Pattern;
 
 import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
 
 public class CommandCave extends CommandBase {
+
     /** A tooltip for the enable button. */
     private static final HoverEvent ENABLE_BUTTON_HOVER =
         new HoverEvent(HoverEvent.Action.SHOW_TEXT, tcs("Enable this preset."));
+
     /** A tooltip for the disable button. */
     private static final HoverEvent DISABLE_BUTTON_HOVER =
         new HoverEvent(HoverEvent.Action.SHOW_TEXT, tcs("Disable this preset."));
+
     /** A tooltip for the view button. */
     private static final HoverEvent VIEW_BUTTON_HOVER =
         new HoverEvent(HoverEvent.Action.SHOW_TEXT, tcs("Open preset directory."));
+
     /** The action to be performed by the view button when clicked. */
     private static final ClickEvent VIEW_BUTTON_CLICK =
         clickToOpen(Loader.instance().getConfigDir() + "/cavegenerator/presets");
+
     /** The text formatting to be used for the enable button. */
     private static final Style ENABLE_BUTTON_STYLE = new Style()
         .setColor(TextFormatting.GREEN)
         .setHoverEvent(ENABLE_BUTTON_HOVER);
+
     /** The text formatting to be used for this disable button. */
     private static final Style DISABLE_BUTTON_STYLE = new Style()
         .setColor(TextFormatting.RED)
         .setHoverEvent(DISABLE_BUTTON_HOVER);
+
     /** The text formatting to be used for the view button. */
     private static final Style VIEW_BUTTON_STYLE = new Style()
         .setColor(TextFormatting.GRAY)
@@ -60,16 +69,20 @@ public class CommandCave extends CommandBase {
         .setBold(true)
         .setHoverEvent(VIEW_BUTTON_HOVER)
         .setClickEvent(VIEW_BUTTON_CLICK);
+
     /** The text formatting to be used for the command usage header. */
     private static final Style USAGE_HEADER_STYLE = new Style()
         .setColor(TextFormatting.GREEN)
         .setBold(true);
+
     /** The text formatting to be used for displaying command usage. */
     private static final Style USAGE_STYLE = new Style()
         .setColor(TextFormatting.GRAY);
+
     /** The button used for opening the preset directory. */
     private static final ITextComponent VIEW_BUTTON = tcs("\n --- [OPEN PRESET DIRECTORY] ---")
         .setStyle(VIEW_BUTTON_STYLE);
+
     /** The actual text to be used by the help messages. */
     private static final String[][] USAGE_TEXT = {
         { "reload", "Reloads the current presets from the the", "disk." },
@@ -79,16 +92,21 @@ public class CommandCave extends CommandBase {
         { "enable <name>", "Enables the preset with name <name>." },
         { "disable <name>", "Disables the preset with name <name>." },
         { "new <name>", "Generates a new preset file with name", "<name>" },
-        { "fixindent <name>", "Replaces all tabs inside of the", "preset <name> with spaces." },
+        { "expand <name> [<as>]", "Writes the expanded copy of this preset", "under /generated" },
+        { "compress <name> [<as>]", "Writes a compressed version of this", "preset under /generated" },
         { "tojson <name>", "Backs up and converts the specified", "file from hjson to standard JSON." },
         { "tohjson <name>", "Backs up and converts the specified", "file from standard JSON to hjson." },
     };
+
     /** The number of lines to occupy each page of the help message. */
     private static final int USAGE_LENGTH = 5;
+
     /** The header to be used by the help message / usage text. */
     private static final String USAGE_HEADER = " --- Cave Command Usage (X / Y) ---";
+
     /** The help message / usage text. */
     private static final ITextComponent[] USAGE_MSG = createHelpMessage();
+
     /** New line character */
     private static final String NEW_LINE = System.getProperty("line.separator");
 
@@ -135,7 +153,8 @@ public class CommandCave extends CommandBase {
             case "disable" : setCaveEnabled(sender, args, false); break;
             case "list" : list(sender); break;
             case "new" : newPreset(sender, args); break;
-            case "fixindent" : fixIndent(sender, args); break;
+            case "expand" : writeExpanded(sender, args); break;
+            case "compress" : writeCompressed(sender, args); break;
             case "tojson" : convert(sender, args, true); break;
             case "tohjson" : convert(sender, args, false); break;
             case "page" :
@@ -169,7 +188,7 @@ public class CommandCave extends CommandBase {
         // Verify that this was sent by a player.
         if (ent instanceof EntityPlayer) {
             EntityPlayer player = (EntityPlayer) ent;
-            // Update gamemode.
+            // Update game mode.
             player.setGameType(GameType.SPECTATOR);
             // Apply night vision.
             Optional<PotionEffect> nightVision = getNightVision();
@@ -202,10 +221,10 @@ public class CommandCave extends CommandBase {
                     "Whether the preset is enabled globally.");
                 // Try to write the updated preset to the disk.
                 writeJson(cave, preset)
-                    .expectF("Error writing to %s", preset.getName());
+                    .expectF("Error writing to {}", preset.getName());
             });
         } else {
-            throw runExF("No preset was found named %s", args[0]);
+            throw runExF("No preset was found named {}", args[0]);
         }
         sendMessage(sender, "Preset " + (enabled ? "enabled" : "disabled") + " successfully.");
     }
@@ -242,35 +261,47 @@ public class CommandCave extends CommandBase {
         sendMessage(sender, "Finished writing a new preset file.");
     }
 
-    /** Replaces all tabs inside of the specified preset with spaces. */
-    private static void fixIndent(ICommandSender sender, String[] args) {
+    /** Writes the expanded version of this preset (removing variables) under /generated. */
+    private static void writeExpanded(ICommandSender sender, String[] args) {
         requireArgs(args, 1);
-        File presetFile = CaveInit.locatePreset(args[0])
-            .orElseThrow(() -> runExF("No preset named %s found.", args[0]));
-        List<String> lines = safeContents(presetFile)
-            .orElseThrow(() -> runExF("Unable to read contents of %s.", presetFile.getName()));
+        final String presetName = noExtension(args[0]);
+        // No need to reparse this file. It's in memory.
+        final GeneratorSettings settings = nullable(Main.instance.presets.get(presetName))
+            .orElseThrow(() -> runExF("Unable to find preset: {}", args[0]));
+        final String newName = args.length > 1
+            ? noExtension(args[1])
+            : presetName;
+        ensureDirExists(CaveInit.GENERATED_DIR)
+            .expect("Error creating /generated directory.");
+        final File expanded = new File(CaveInit.GENERATED_DIR, newName + ".cave");
+        writeJson(settings.preset, expanded);
+        sendMessage(sender, "Finished writing expanded preset file.");
+    }
 
-        StringBuilder updated = new StringBuilder();
-        int numCorrections = 0;
-        for (String line : lines) {
-            if (line.contains("\t")) {
-                line = line.replace("\t", "  ");
-                numCorrections++;
-            }
-            updated.append(line);
-            updated.append(NEW_LINE);
-        }
-
-        if (numCorrections > 0) {
-            safeWrite(presetFile, updated.toString())
-                .throwIfPresent();
-            sendMessage(sender, "Successfully updated " + numCorrections + " lines.");
-        } else {
-            sendMessage(sender, "There were no lines to update.");
+    /** Writes a compressed, regular JSON version of this preset. */
+    private static void writeCompressed(ICommandSender sender, String[] args) {
+        requireArgs(args,1);
+        final String presetName = noExtension(args[0]);
+        // Read the actual preset so that it may be expanded or not.
+        final File preset = CaveInit.locatePreset(presetName)
+            .orElseThrow(() -> runExF("Unable to find preset: {}", args[0]));
+        final String newName = args.length > 1
+            ? noExtension(args[1])
+            : presetName;
+        final JsonObject original = PresetReader.getPresetJson(preset)
+            .orElseThrow(() -> runExF("Error reading {}", presetName));
+        ensureDirExists(CaveInit.GENERATED_DIR)
+            .expect("Error creating /generated directory.");
+        final File compressed = new File(CaveInit.GENERATED_DIR, newName + ".json");
+        // Manually write JSON
+        try (FileWriter writer = new FileWriter(compressed)) {
+            original.writeTo(writer); // Plain JSON string.
+        } catch (IOException e) {
+            sendMessage(sender, "Error writing new preset.");
         }
     }
 
-    /** Converts the specified file to between JSON and hjson. */
+    /** Converts the specified file to and from JSON or Hjson. */
     private static void convert(ICommandSender sender, String[] args, boolean toJson) {
         requireArgs(args, 1);
         final Optional<File> preset = CaveInit.locatePreset(args[0]);
@@ -329,16 +360,15 @@ public class CommandCave extends CommandBase {
         // The actual pages..
         for (int i = 0; i < USAGE_TEXT.length; i += USAGE_LENGTH) {
             final TextComponentString header = getUsageHeader((i / USAGE_LENGTH) + 1, numPages);
-            // The elements on each pages.
-            for (int j = i; j < i + USAGE_LENGTH; j++) {
+            // The elements on each page.
+            for (int j = i; j < i + USAGE_LENGTH && j < USAGE_TEXT.length; j++) {
                 final String[] full = USAGE_TEXT[j];
                 // Append the required elements.
                 header.appendText("\n");
                 appendUsageText(header, full[0], full[1]);
                 // Append any extra lines below.
                 for (int k  = 2; k < full.length; k++) {
-                    header.appendText("\n");
-                    header.appendText((full[k]));
+                    header.appendSibling(tcs("\n " + full[k]).setStyle(USAGE_STYLE));
                 }
             }
             msgs.add(header);
@@ -416,16 +446,6 @@ public class CommandCave extends CommandBase {
     /** Shorthand method for creating TextComponentStrings. */
     private static TextComponentString tcs(String s) {
         return new TextComponentString(s);
-    }
-
-    /** Gets the file name, minus the extension. */
-    private static String noExtension(File file) {
-        return noExtension(file.getName());
-    }
-
-    /** Removes any extensions from the input filename. */
-    private static String noExtension(String name) {
-        return name.split(Pattern.quote("."))[0];
     }
 
     private static Optional<PotionEffect> getNightVision() {

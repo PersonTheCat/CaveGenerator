@@ -24,6 +24,9 @@ public class CaveInit {
     /** A setting indicating the location where variable imports will be kept. */
     private static final String IMPORTS = "cavegenerator/imports";
 
+    /** A setting indicating the location where generated presets will be kept. */
+    private static final String GENERATED = "cavegenerator/generated";
+
     /** A message to display when the preset directory is somehow unavailable. */
     private static final String NO_ACCESS = "Currently unable to access preset directory.";
 
@@ -34,8 +37,10 @@ public class CaveInit {
     private static final List<String> EXTENSIONS = Arrays.asList("hjson", "json", "cave");
 
     private static final File CONFIG_DIR = Loader.instance().getConfigDir();
+
     public static final File PRESET_DIR = new File(CONFIG_DIR, PRESETS);
     public static final File IMPORT_DIR = new File(CONFIG_DIR, IMPORTS);
+    public static final File GENERATED_DIR = new File(CONFIG_DIR, GENERATED);
 
     /** Initializes the supplied map with presets from the directory. */
     public static void initPresets(final Map<String, GeneratorSettings> presets) {
@@ -52,6 +57,10 @@ public class CaveInit {
 
     /** Attempts to locate a preset using each of the possible extensions. */
     public static Optional<File> locatePreset(String preset) {
+        final File presetFile = new File(PRESET_DIR,  preset);
+        if (safeFileExists(presetFile, "Error checking file: " + presetFile)) {
+            return full(presetFile);
+        }
         for (String ext : EXTENSIONS) {
             Optional<File> found = tryExtension(preset, ext);
             if (found.isPresent()) {

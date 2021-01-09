@@ -157,6 +157,16 @@ public class CommonMethods {
         return split[split.length - 1];
     }
 
+    /** Gets the file name, minus the extension. */
+    public static String noExtension(File file) {
+        return noExtension(file.getName());
+    }
+
+    /** Removes any extensions from the input filename. */
+    public static String noExtension(String name) {
+        return name.split(Pattern.quote("."))[0];
+    }
+
     /** Shorthand for calling Optional#empty. */
     public static <T> Optional<T> empty() {
         return Optional.empty();
@@ -168,6 +178,10 @@ public class CommonMethods {
      */
     public static <T> Optional<T> full(T val) {
         return Optional.of(val);
+    }
+
+    public static <T> Optional<T> nullable(T val) {
+        return Optional.ofNullable(val);
     }
 
     public static int getMin(int a, int b) {
