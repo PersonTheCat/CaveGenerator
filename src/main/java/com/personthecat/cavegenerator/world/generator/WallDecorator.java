@@ -143,7 +143,7 @@ public class WallDecorator {
             Optional<Preference> pref = find(values(), (v) -> v.toString().equalsIgnoreCase(s));
             return pref.orElseThrow(() -> {
                 final String o = Arrays.toString(values());
-                return runExF("Error: Preference \"%s\" does not exist. The following are valid options:\n\n", s, o);
+                return runExF("Error: Preference \"{}\" does not exist. The following are valid options:\n\n{}", s, o);
             });
         }
     }

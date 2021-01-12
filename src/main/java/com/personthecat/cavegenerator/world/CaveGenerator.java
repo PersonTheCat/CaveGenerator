@@ -59,6 +59,7 @@ public class CaveGenerator {
         this.cavernNoise = getCavernNoise(seed, settings.caverns);
         this.ceilNoise = settings.caverns.ceilNoise.getGenerator((int) seed >> 2);
         this.floorNoise = settings.caverns.floorNoise.getGenerator((int) seed >> 4);
+        initClusters(seed);
     }
 
     /** Returns whether the generator is enabled globally. */
@@ -114,6 +115,7 @@ public class CaveGenerator {
             settings.structures.length > 0;
     }
 
+    /** Load a noise generator for each of the caverns. */
     private FastNoise[] getCavernNoise(long seed, CavernSettings cfg) {
         final FastNoise[] noise = new FastNoise[cfg.noise.length];
         final Random rand = new Random(seed);
@@ -121,6 +123,13 @@ public class CaveGenerator {
             noise[i] = cfg.noise[i].getGenerator(rand.nextLong());
         }
         return noise;
+    }
+
+    /** Load a noise generator for each of the clusters. */
+    private void initClusters(long seed) {
+        for (Cluster cluster : settings.decorators.clusters) {
+            cluster.initNoise(seed);
+        }
     }
 
     /** Handles spawning all tunnels for this preset. */
@@ -577,8 +586,10 @@ public class CaveGenerator {
 
             // Ensure that we're within the sphere.
             if (distX2 / cluster.getRadiusX2() + distY2 / cluster.getRadiusY2() + distZ2 / cluster.getRadiusZ2() <= 1) {
-                primer.setBlockState(x, y, z, cluster.getCluster().getState());
-                return; // Already placed. Don't continue.
+                if (cluster.getCluster().canSpawn((float) actualX, (float) y, (float) actualZ)) {
+                    primer.setBlockState(x, y, z, cluster.getCluster().getState());
+                    return; // Already placed. Don't continue.
+                }
             }
         }
     }

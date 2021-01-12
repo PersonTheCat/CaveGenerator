@@ -239,7 +239,7 @@ public class CommonMethods {
 
         // Ensure the number of segments to be valid.
         if (!(split.length > 0 && split.length < 4)) {
-            throw runExF("Syntax error: could not determine blockstate from %s", registryName);
+            throw runExF("Syntax error: could not determine blockstate from {}", registryName);
         }
 
         // Use the end section to determine the format.

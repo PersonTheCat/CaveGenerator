@@ -34,7 +34,8 @@ public class HjsonTools {
         .setCommentSpace(0)
         .setSpace(2)
         .setBracesSameLine(true)
-        .setOutputComments(true);
+        .setOutputComments(true)
+        .setOutputEmptyLines(true);
 
     /** Writes the JsonObject to the disk. */
     public static Result<IOException> writeJson(JsonObject json, File file) {
@@ -226,7 +227,7 @@ public class HjsonTools {
      */
     public static IBlockState getGuaranteedState(JsonObject json, String requiredFor) {
         String stateName = getString(json, "state")
-            .orElseThrow(() -> runExF("Each %s object must contain the field \"state.\"", requiredFor));
+            .orElseThrow(() -> runExF("Each {} object must contain the field \"state.\"", requiredFor));
         return getBlockState(stateName)
             .orElseThrow(() -> noBlockNamed(stateName));
     }
@@ -237,7 +238,7 @@ public class HjsonTools {
      */
     public static IBlockState[] getGuaranteedStates(JsonObject json, String requiredFor) {
         JsonArray stateNames = getArray(json, "states")
-            .orElseThrow(() -> runExF("Each %s object must contain the field \"states.\"", requiredFor));
+            .orElseThrow(() -> runExF("Each {} object must contain the field \"states.\"", requiredFor));
         // Handles crashing when no block is found.
         return toBlocks(stateNames);
     }
@@ -525,7 +526,7 @@ public class HjsonTools {
         Optional<Interp> dir = find(Interp.values(), (v) -> v.toString().equalsIgnoreCase(s));
         return dir.orElseThrow(() -> {
             final String o = Arrays.toString(Interp.values());
-            return runExF("Error: Interp \"%s\" does not exist. The following are valid options:\n\n", s, o);
+            return runExF("Error: Interp \"{}\" does not exist. The following are valid options:\n\n", s, o);
         });
     }
 
@@ -533,7 +534,7 @@ public class HjsonTools {
         Optional<NoiseType> dir = find(NoiseType.values(), (v) -> v.toString().equalsIgnoreCase(s));
         return dir.orElseThrow(() -> {
             final String o = Arrays.toString(NoiseType.values());
-            return runExF("Error: NoiseType \"%s\" does not exist. The following are valid options:\n\n", s, o);
+            return runExF("Error: NoiseType \"{}\" does not exist. The following are valid options:\n\n", s, o);
         });
     }
 
@@ -541,7 +542,7 @@ public class HjsonTools {
         Optional<FractalType> dir = find(FractalType.values(), (v) -> v.toString().equalsIgnoreCase(s));
         return dir.orElseThrow(() -> {
             final String o = Arrays.toString(FractalType.values());
-            return runExF("Error: FractalType \"%s\" does not exist. The following are valid options:\n\n", s, o);
+            return runExF("Error: FractalType \"{}\" does not exist. The following are valid options:\n\n", s, o);
         });
     }
 
@@ -549,7 +550,7 @@ public class HjsonTools {
         Optional<CellularDistanceFunction> dir = find(CellularDistanceFunction.values(), (v) -> v.toString().equalsIgnoreCase(s));
         return dir.orElseThrow(() -> {
             final String o = Arrays.toString(CellularDistanceFunction.values());
-            return runExF("Error: CellularDistanceFunction \"%s\" does not exist. The following are valid options:\n\n", s, o);
+            return runExF("Error: CellularDistanceFunction \"{}\" does not exist. The following are valid options:\n\n", s, o);
         });
     }
 
@@ -557,13 +558,13 @@ public class HjsonTools {
         Optional<CellularReturnType> dir = find(CellularReturnType.values(), (v) -> v.toString().equalsIgnoreCase(s));
         return dir.orElseThrow(() -> {
             final String o = Arrays.toString(CellularReturnType.values());
-            return runExF("Error: CellularReturnType \"%s\" does not exist. The following are valid options:\n\n", s, o);
+            return runExF("Error: CellularReturnType \"{}\" does not exist. The following are valid options:\n\n", s, o);
         });
     }
 
     /** Informs the user that they have entered an invalid biome name. */
     public static RuntimeException noBiomeNamed(String name) {
-        return runExF("There is no biome named \"%s.\"", name);
+        return runExF("There is no biome named \"{}.\"", name);
     }
 
     /** Informs the user that they have entered an invalid biome ID. */
@@ -573,6 +574,6 @@ public class HjsonTools {
 
     /** Informs the user that they have entered an invalid block name. */
     public static RuntimeException noBlockNamed(String name) {
-        return runExF("There is no block named \"%s.\"", name);
+        return runExF("There is no block named \"{}.\"", name);
     }
 }

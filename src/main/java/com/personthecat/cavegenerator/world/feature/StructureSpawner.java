@@ -47,7 +47,7 @@ public class StructureSpawner {
                 String name = file.getName();
                 // Read into the template, handling exceptions.
                 read(template, file)
-                    .expectF("Error: unable to read structure file %s", name);
+                    .expectF("Error: unable to read structure file {}", name);
                 // Warn users if the structure is too large.
                 warnSizeLimitations(template, name);
                 // Finally, place the structure into the map.
@@ -105,7 +105,7 @@ public class StructureSpawner {
 
     /** Indicates that no template was found by the above search. */
     private static RuntimeException templateNotFound(String name) {
-        return runExF("Error: No template named \"%s\" was found. Please verify that this refers to a valid file or registry name.", name);
+        return runExF("Error: No template named \"{}\" was found. Please verify that this refers to a valid file or registry name.", name);
     }
 
     /** Does not account for offsets. Must be calculated beforehand. */

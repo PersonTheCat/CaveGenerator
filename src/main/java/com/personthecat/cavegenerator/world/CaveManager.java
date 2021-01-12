@@ -55,7 +55,7 @@ public class CaveManager extends MapGenBase {
             HeightMapLocator.getHeightFromPrimer(primer) :
             HeightMapLocator.FAUX_MAP;
 
-        Biome centerBiome = world.getBiome(centerCoords(x, z));
+        final Biome centerBiome = world.getBiome(centerCoords(x, z));
 
         for (CaveGenerator generator : gens.values()) {
             // These have their own internal checks.

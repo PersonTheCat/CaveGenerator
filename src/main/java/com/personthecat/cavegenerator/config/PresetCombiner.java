@@ -19,17 +19,23 @@ public class PresetCombiner {
     public static void combine(String from, String to) {
         // Load all data.
         final String[] path = from.split(Pattern.quote("."));
-        final File fileFrom = CaveInit.locatePreset(path[0])
-            .orElseThrow(() -> runExF("Unable to locate a preset named \"%s\"", path[0]));
-        final File fileTo = CaveInit.locatePreset(to)
-            .orElseThrow(() -> runExF("Unable to locate a preset named \"%s\"", to));
-        final JsonObject objFrom = PresetReader.getPresetJson(fileFrom)
-            .orElseThrow(() -> runExF("The file named \"%s\" does not contain a valid json or hjson object.", fileFrom.getName()));
-        final JsonObject objTo = PresetReader.getPresetJson(fileTo)
-            .orElseThrow(() -> runExF("The file named \"%s\" does not contain a valid json or hjson object.", fileTo.getName()));
+        final File fileFrom = getRequiredPreset(path[0]);
+        final File fileTo = getRequiredPreset(to);
+        final JsonObject objFrom = getRequiredJson(fileFrom);
+        final JsonObject objTo = getRequiredJson(fileTo);
         // Create a backup and use the data.
         backup(fileTo);
         run(path, objFrom, objTo, fileTo);
+    }
+
+    private static File getRequiredPreset(String path) {
+        return CaveInit.locatePreset(path)
+            .orElseThrow(() -> runExF("Unable to locate a preset named \"{}\"", path));
+    }
+
+    private static JsonObject getRequiredJson(File file) {
+        return PresetReader.getPresetJson(file)
+            .orElseThrow(() -> runExF("{} does not contain a valid json or hjson object.", file.getName()));
     }
 
     /** Primary method for merging objects. */
@@ -38,6 +44,7 @@ public class PresetCombiner {
         JsonObject fromCurrent = from;
         JsonObject toCurrent = to;
 
+        // Todo: Array access
         for (String key : ArrayUtils.subarray(path, 1, path.length)) {
             final JsonValue fromValue = fromCurrent.get(key);
             final JsonValue toValue = toCurrent.get(key);

@@ -72,7 +72,12 @@ public abstract class JsonValue implements Serializable {
   /**
    * A flag indicating whether this value has been specifically called for.
    */
-  protected boolean accessed;
+  protected boolean accessed=false;
+
+  /**
+   * Indicates the number of empty lines above this value.
+   */
+  protected int numLines=0;
 
   /**
    * Gets the newline charater(s).
@@ -393,6 +398,20 @@ public abstract class JsonValue implements Serializable {
    */
   public JsonValue setAccessed(boolean b) {
     accessed=b;
+    return this;
+  }
+
+  /**
+   * Detects the number of empty lines before this value.
+   *
+   * @return the number of empty lines
+   */
+  public int getNumLines() {
+    return numLines;
+  }
+
+  public JsonValue setNumLines(int num) {
+    numLines=num;
     return this;
   }
 

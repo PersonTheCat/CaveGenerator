@@ -159,7 +159,7 @@ public class PresetReader {
                 return JsonObject.readHjson(reader);
             }
         } catch (IOException ignored) {
-            throw runExF("Unable to load preset file %s.", file.getName());
+            throw runExF("Unable to load preset file {}.", file.getName());
         }
     }
 

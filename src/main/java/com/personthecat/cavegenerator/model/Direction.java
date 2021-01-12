@@ -18,7 +18,7 @@ public enum Direction {
         Optional<Direction> dir = find(values(), (v) -> v.toString().equalsIgnoreCase(s));
         return dir.orElseThrow(() -> {
             final String o = Arrays.toString(values());
-            return runExF("Error: Direction \"%s\" does not exist. The following are valid options:\n\n", s, o);
+            return runExF("Error: Direction \"{}\" does not exist. The following are valid options:\n\n{}", s, o);
         });
     }
 

@@ -29,8 +29,8 @@ class PresetCompat {
      * @return Whether an exception took place when writing the file.
      */
     static Result<IOException> update(JsonObject json, File file) {
-        getObject(json, "tunnels").ifPresent(PresetCompat::renameAngles);
-        getObject(json, "ravines").ifPresent(PresetCompat::renameAngles);
+        getValue(json, "tunnels").ifPresent(PresetCompat::renameAngles);
+        getValue(json, "ravines").ifPresent(PresetCompat::renameAngles);
         rename(json, "stoneClusters", "clusters");
         removeBlankSlate(json);
         enforceValueOrder(json);
@@ -39,6 +39,24 @@ class PresetCompat {
 
     /**
      * This is a reusable function for renaming angles in tunnels and ravines.
+     * The value may be an object or an array.
+     *
+     * @param value The JSON value to be updated.
+     */
+    private static void renameAngles(JsonValue value) {
+        if (value.isObject()) {
+            renameAngles(value.asObject());
+        } else if (value.isArray()) {
+            for (JsonValue e : value.asArray()) {
+                if (e.isObject()) {
+                    renameAngles(e.asObject());
+                }
+            }
+        }
+    }
+
+    /**
+     * For renaming tunnels and ravines when the value is a known object.
      *
      * @param json The JSON object to be updated.
      */

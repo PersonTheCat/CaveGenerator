@@ -76,7 +76,7 @@ public class GiantPillar extends WorldGenerator {
             if (b instanceof BlockStairs) {
                 return (BlockStairs) b;
             } else {
-                throw runExF("Error: the input block, %s, is not a valid stair block.", b.toString());
+                throw runExF("Error: the input block, {}, is not a valid stair block.", b.toString());
             }
         });
     }
