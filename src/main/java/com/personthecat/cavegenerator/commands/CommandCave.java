@@ -3,6 +3,7 @@ package com.personthecat.cavegenerator.commands;
 import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.config.PresetCombiner;
+import com.personthecat.cavegenerator.config.PresetCompressor;
 import com.personthecat.cavegenerator.config.PresetReader;
 import com.personthecat.cavegenerator.world.GeneratorSettings;
 import net.minecraft.command.CommandBase;
@@ -176,8 +177,10 @@ public class CommandCave extends CommandBase {
     private static void reload(ICommandSender sender) {
         CaveInit.initPresets(Main.instance.presets);
         Main.instance.generators.clear();
+        if (sender.getEntityWorld().provider.getDimension() != 0) {
+            Main.instance.loadGenerators(sender.getServer().getWorld(0));
+        }
         Main.instance.loadGenerators(sender.getEntityWorld());
-        Main.instance.loadGenerators(sender.getServer().getWorld(0));
         sendMessage(sender, "Successfully reloaded caves. View the log for diagnostics.");
     }
 
@@ -295,7 +298,9 @@ public class CommandCave extends CommandBase {
         final File compressed = new File(CaveInit.GENERATED_DIR, newName + ".json");
         // Manually write JSON
         try (FileWriter writer = new FileWriter(compressed)) {
+            PresetCompressor.compress(original);
             original.writeTo(writer); // Plain JSON string.
+            sendMessage(sender, "Finished writing expanded preset file.");
         } catch (IOException e) {
             sendMessage(sender, "Error writing new preset.");
         }

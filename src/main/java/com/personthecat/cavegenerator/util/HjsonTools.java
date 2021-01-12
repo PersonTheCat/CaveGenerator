@@ -80,6 +80,53 @@ public class HjsonTools {
         }
     }
 
+    /** Updates a single value in a json based on a full, dotted path.  */
+    public static void setValueFromPath(JsonObject json, List<PathComponent> path, JsonValue value) {
+        if (path.isEmpty()) {
+            return;
+        }
+        final PathComponent lastVal = path.get(path.size() - 1);
+        setEither(getLastContainer(json, path), lastVal, value);
+    }
+
+    /** Retrieves the last JsonObject or JsonArray represented by the path. */
+    public static JsonValue getLastContainer(JsonObject json, List<PathComponent> path) {
+        if (path.isEmpty()) {
+            return json;
+        }
+        JsonValue current = json;
+        for (int i = 0; i < path.size() - 1; i++) {
+            final PathComponent val = path.get(i);
+            final PathComponent peek = path.get(i + 1);
+
+            if (val.index.isPresent()) { // Index
+                current = getOrTryNew(current.asArray(), val.index.get(), peek);
+            } else if (peek.key.isPresent()) { // Key -> key -> object
+                current = getObjectOrNew(current.asObject(), val.key
+                    .orElseThrow(() -> runEx("Unreachable.")));
+            } else { // Key -> index -> array
+                current = getArrayOrNew(current.asObject(), val.key
+                    .orElseThrow(() -> runEx("Unreachable.")));
+            }
+        }
+        return current;
+    }
+
+    /** Attempts to retrieve an object or an array. Creates a new one, if absent. */
+    private static JsonValue getOrTryNew(JsonArray array, int index, PathComponent type) {
+        if (index == array.size()) { // The value must be added.
+            type.key.ifPresent(s -> array.add(new JsonObject()));
+            type.index.ifPresent(i -> array.add(new JsonArray()));
+        } // if index >= newSize -> index out of bounds
+        return array.get(index);
+    }
+
+    /** Attempts to set a value in a container which may either be an object or an array. */
+    private static void setEither(JsonValue container, PathComponent either, JsonValue value) {
+        either.key.ifPresent(key -> container.asObject().set(key, value));
+        either.index.ifPresent(index -> container.asArray().set(index, value));
+    }
+
     /** Safely retrieves a boolean from the input object. */
     public static Optional<Boolean> getBool(JsonObject json, String field) {
         return Optional.ofNullable(json.get(field))

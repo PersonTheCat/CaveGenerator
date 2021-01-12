@@ -59,7 +59,7 @@ public class CaveGenerator {
         this.cavernNoise = getCavernNoise(seed, settings.caverns);
         this.ceilNoise = settings.caverns.ceilNoise.getGenerator((int) seed >> 2);
         this.floorNoise = settings.caverns.floorNoise.getGenerator((int) seed >> 4);
-        initClusters(seed);
+        initClusters(seed); // Todo: store the noise generators in this class.
     }
 
     /** Returns whether the generator is enabled globally. */
@@ -254,9 +254,7 @@ public class CaveGenerator {
         // Construct a local Random object for use within this function,
         // also matching the vanilla setup.
         final Random rand = new Random(seed);
-        // To-do: Verify whether this can just be 0.
         final int distance = getTunnelDistance(rand, 0);
-        // To-do: Verify why this is necessary.
         final int position = distance / 2;
         // Determine the radius by `scale`.
         final double radiusXZ = 1.5D + (MathHelper.sin(position * (float) Math.PI / distance) * scale);
@@ -342,7 +340,6 @@ public class CaveGenerator {
         // Retrieve the baseline from the settings.
         final int chance = cfg.isolatedInverseChance;
         // Maintain seed integrity, where possible.
-        // To-do: verify this logic with the original.
         if (chance != 0 && rand.nextInt(chance) != 0) {
             // Usually set frequency to 0, causing the systems to be
             // isolated from one another.

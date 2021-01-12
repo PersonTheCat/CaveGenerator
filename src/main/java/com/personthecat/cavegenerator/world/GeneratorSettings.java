@@ -19,7 +19,6 @@ import org.hjson.JsonObject;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
@@ -443,25 +442,27 @@ public class GeneratorSettings {
         /** Default values used for the noise settings here. */
         public static final NoiseSettings3D DEFAULT_NOISE =
             NoiseSettings3D.builder()
-            .frequency(0.0143f)
-            .scale(0.2f)
-            .scaleY(0.5f)
-            .octaves(1)
-            .build();
+                .frequency(0.0143f)
+                .scale(0.2f)
+                .scaleY(0.5f)
+                .octaves(1)
+                .build();
 
-        public static final NoiseSettings2D DEFAULT_CEIL_NOISE = NoiseSettings2D.builder()
-            .frequency(0.02f)
-            .scale(0.5f)
-            .min(-17)
-            .max(-3)
-            .build();
+        public static final NoiseSettings2D DEFAULT_CEIL_NOISE =
+            NoiseSettings2D.builder()
+                .frequency(0.02f)
+                .scale(0.5f)
+                .min(-17)
+                .max(-3)
+                .build();
 
-        public static final NoiseSettings2D DEFAULT_FLOOR_NOISE = NoiseSettings2D.builder()
-            .frequency(0.02f)
-            .scale(0.5f)
-            .min(0)
-            .max(8)
-            .build();
+        public static final NoiseSettings2D DEFAULT_FLOOR_NOISE =
+            NoiseSettings2D.builder()
+                .frequency(0.02f)
+                .scale(0.5f)
+                .min(0)
+                .max(8)
+                .build();
 
         /** Primary constructor. */
         public CavernSettings(

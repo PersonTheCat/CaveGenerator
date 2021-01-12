@@ -9,14 +9,14 @@ public class ConfigFile {
     @Comment({
         "Whether vanilla stone clusters--including andesite,",
         "diorite, and granite--should spawn in the world."})
-    @RequiresMcRestart()
+    @RequiresMcRestart
     public static boolean enableVanillaStoneClusters = true;
 
     @Comment({
         "Whether this mod will attempt to run simultaneously",
         "with one other cave generation mod, such as Worley's",
         "Caves or Yung's Better Caves."})
-    @RequiresMcRestart()
+    @RequiresMcRestart
     public static boolean otherGeneratorEnabled = false;
 
     @Comment({
