@@ -188,6 +188,15 @@ public class HjsonTools {
         return getArray(json, field).orElseThrow(() -> runEx("Unreachable."));
     }
 
+    /** Retrieves an array, casts or converts if not an array, creates if absent. */
+    public static JsonArray getForceArray(JsonObject json, String field) {
+        if (!json.has(field)) {
+            json.set(field, new JsonArray());
+        }
+        return getValue(json, field).map(HjsonTools::asOrToArray)
+            .orElseThrow(() -> runEx("Unreachable."));
+    }
+
     /** Casts or converts a JsonValue to a JsonArray.*/
     public static JsonArray asOrToArray(JsonValue value) {
         return value.isArray() ? value.asArray() : new JsonArray().add(value);
@@ -256,7 +265,7 @@ public class HjsonTools {
     /** Safely retrieves a List of Strings from the input json. */
     public static Optional<List<String>> getStringArray(JsonObject json, String field) {
         return Optional.ofNullable(json.get(field))
-            .map((v) -> toStringArray(asOrToArray(v)));
+            .map(v -> toStringArray(asOrToArray(v)));
     }
 
     /** Converts a JsonArray into a List of Strings. */
@@ -397,25 +406,17 @@ public class HjsonTools {
     public static Biome[] getAllBiomes(JsonObject json) {
         List<Biome> biomes = new ArrayList<>();
         // Get biomes by registry name.
-        getStringArray(json, "names").ifPresent((a) -> {
-            for (String s : a) {
-                Biome biome = getBiome(s).orElseThrow(() -> noBiomeNamed(s));
-                biomes.add(biome);
-            }
-        });
+        for (String s : toStringArray(getForceArray(json, "names"))) {
+            biomes.add(getBiome(s).orElseThrow(() -> noBiomeNamed(s)));
+        }
         // Get biomes by ID.
-        getIntArray(json, "IDs").ifPresent((a) -> {
-            for (int i : a) {
-                Biome biome = getBiome(i).orElseThrow(() -> noBiomeID(i));
-                biomes.add(biome);
-            }
-        });
+        for (int i : toIntArray(getForceArray(json, "IDs"))) {
+            biomes.add(getBiome(i).orElseThrow(() -> noBiomeID(i)));
+        }
         // Get biomes by type.
-        getBiomeTypes(json, "types").ifPresent((a) -> {
-            for (BiomeDictionary.Type t : a) {
-                Collections.addAll(biomes, getBiomes(t));
-            }
-        });
+        for (BiomeDictionary.Type t : toBiomeTypes(getForceArray(json, "types"))) {
+            Collections.addAll(biomes, getBiomes(t));
+        }
         return toArray(biomes, Biome.class);
     }
 

@@ -87,9 +87,10 @@ public class CommandCave extends CommandBase {
     /** The actual text to be used by the help messages. */
     private static final String[][] USAGE_TEXT = {
         { "reload", "Reloads the current presets from the the", "disk." },
-        { "test", "Applies night vision and gamemode 3 for easy", "cave viewing." },
-        { "combine <preset.path> <preset>", "Copies the first", "path into the second preset." },
         { "list", "Displays a list of all presets, with buttons", "for enabling / disabling." },
+        { "test", "Applies night vision and gamemode 3 for easy", "cave viewing." },
+        { "jump", "Teleports the player 1,000 blocks in each", "direction."},
+        { "combine <preset.path> <preset>", "Copies the first", "path into the second preset." },
         { "enable <name>", "Enables the preset with name <name>." },
         { "disable <name>", "Disables the preset with name <name>." },
         { "new <name>", "Generates a new preset file with name", "<name>" },
@@ -107,9 +108,6 @@ public class CommandCave extends CommandBase {
 
     /** The help message / usage text. */
     private static final ITextComponent[] USAGE_MSG = createHelpMessage();
-
-    /** New line character */
-    private static final String NEW_LINE = System.getProperty("line.separator");
 
     @Override
     public String getName() {
@@ -148,11 +146,12 @@ public class CommandCave extends CommandBase {
     private static void handle(MinecraftServer server, ICommandSender sender, String command, String[] args) {
         switch (command) {
             case "reload" : reload(sender); break;
+            case "list" : list(sender); break;
             case "test" : test(sender); break;
+            case "jump" : jump(sender); break;
             case "combine" : combine(sender, args); break;
             case "enable" : setCaveEnabled(sender, args, true); break;
             case "disable" : setCaveEnabled(sender, args, false); break;
-            case "list" : list(sender); break;
             case "new" : newPreset(sender, args); break;
             case "expand" : writeExpanded(sender, args); break;
             case "compress" : writeCompressed(sender, args); break;
@@ -184,7 +183,7 @@ public class CommandCave extends CommandBase {
         sendMessage(sender, "Successfully reloaded caves. View the log for diagnostics.");
     }
 
-    /** Applies Night Vision and gamemode 3 to @param sender. */
+    /** Applies night vision and gamemode 3 to the sender. */
     private static void test(ICommandSender sender) {
         // Get the entity from the sender.
         Entity ent = sender.getCommandSenderEntity();
@@ -203,6 +202,11 @@ public class CommandCave extends CommandBase {
                 );
             }
         }
+    }
+
+    /** Teleports the player 1,000 blocks in each direction. */
+    private static void jump(ICommandSender sender) {
+        sender.getServer().getCommandManager().executeCommand(sender, "/tp ~1000 ~ ~1000");
     }
 
     /** Combines two jsons using PresetCombiner */
