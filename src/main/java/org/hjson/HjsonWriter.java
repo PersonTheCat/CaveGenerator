@@ -244,7 +244,7 @@ class HjsonWriter {
   private void handleContainerLines(Writer tw, boolean compact, int index, int level, int lineLength) throws IOException {
     if (!allowMultiVal) {
       nl(tw, level+1);
-    } else if (index%lineLength==0) {
+    } else if (lineLength==0 || index%lineLength==0) {
       // NL every (lineLength) # lines.
       if (!(compact && allowCondense)) {
         nl(tw, level+1);

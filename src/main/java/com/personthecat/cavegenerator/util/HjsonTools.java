@@ -34,8 +34,7 @@ public class HjsonTools {
         .setCommentSpace(0)
         .setSpace(2)
         .setBracesSameLine(true)
-        .setOutputComments(true)
-        .setOutputEmptyLines(true);
+        .setOutputComments(true);
 
     /** Writes the JsonObject to the disk. */
     public static Result<IOException> writeJson(JsonObject json, File file) {
@@ -186,15 +185,6 @@ public class HjsonTools {
             json.set(field, new JsonArray());
         }
         return getArray(json, field).orElseThrow(() -> runEx("Unreachable."));
-    }
-
-    /** Retrieves an array, casts or converts if not an array, creates if absent. */
-    public static JsonArray getForceArray(JsonObject json, String field) {
-        if (!json.has(field)) {
-            json.set(field, new JsonArray());
-        }
-        return getValue(json, field).map(HjsonTools::asOrToArray)
-            .orElseThrow(() -> runEx("Unreachable."));
     }
 
     /** Casts or converts a JsonValue to a JsonArray.*/
@@ -406,17 +396,24 @@ public class HjsonTools {
     public static Biome[] getAllBiomes(JsonObject json) {
         List<Biome> biomes = new ArrayList<>();
         // Get biomes by registry name.
-        for (String s : toStringArray(getForceArray(json, "names"))) {
-            biomes.add(getBiome(s).orElseThrow(() -> noBiomeNamed(s)));
-        }
+        getArray(json, "names").map(HjsonTools::toStringArray).ifPresent(a -> {
+            for (String s : a) {
+                biomes.add(getBiome(s).orElseThrow(() -> noBiomeNamed(s)));
+            }
+        });
         // Get biomes by ID.
-        for (int i : toIntArray(getForceArray(json, "IDs"))) {
-            biomes.add(getBiome(i).orElseThrow(() -> noBiomeID(i)));
-        }
+        getArray(json, "IDs").map(HjsonTools::toIntArray).ifPresent(a -> {
+            for (int i : a) {
+                biomes.add(getBiome(i).orElseThrow(() -> noBiomeID(i)));
+            }
+        });
         // Get biomes by type.
-        for (BiomeDictionary.Type t : toBiomeTypes(getForceArray(json, "types"))) {
-            Collections.addAll(biomes, getBiomes(t));
-        }
+        getArray(json, "types").map(HjsonTools::toBiomeTypes).ifPresent(a -> {
+            for (BiomeDictionary.Type t : a) {
+                Collections.addAll(biomes, getBiomes(t));
+            }
+        });
+
         return toArray(biomes, Biome.class);
     }
 
