@@ -7,9 +7,6 @@
  # from bottom to top.                                         #
  # ----------------------------------------------------------- #
 {
-  imports: [
-    defaults.cave::VANILLA
-  ]
   $VANILLA: "ALL" # Default tunnels, ravines, etc.
   enabled: false
   stoneLayers: [

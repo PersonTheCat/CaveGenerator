@@ -1,7 +1,6 @@
 package com.personthecat.cavegenerator.config;
 
 import com.personthecat.cavegenerator.util.Result;
-import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
@@ -85,9 +84,6 @@ class PresetCompat {
     /**
      * Replaces any instance of <code>blankSlate: false</code> with the following
      * values: <code>
-     *   imports: [
-     *     defaults.cave::VANILLA
-     *   ]
      *   $VANILLA: ALL
      * </code>
      * <p>
@@ -101,15 +97,8 @@ class PresetCompat {
         if (json.has("blankSlate")) {
             // User did *not* want a blank slate.
             if (!json.get("blankSlate").asBoolean()) {
-                final JsonArray imports = getArrayOrNew(json, "imports")
-                    .setCondensed(false);
                 final JsonValue all = JsonValue.valueOf("ALL")
                     .setEOLComment("Default ravines and lava settings.");
-                final JsonValue imp = JsonValue.valueOf("defaults.cave::VANILLA");
-                // Don't duplicate this value if it's already there.
-                if (!imports.contains(imp)) {
-                    imports.add(imp);
-                }
                 setOrAdd(json, "$VANILLA", all);
             }
             json.remove("blankSlate");
@@ -125,10 +114,9 @@ class PresetCompat {
     private static void enforceValueOrder(JsonObject json) {
         final JsonObject top = new JsonObject();
         final JsonObject bottom = new JsonObject();
-        if (json.has("imports")) {
-            top.add("imports", json.get("imports"));
-            json.remove("imports");
-        }
+
+        moveValue("imports", json, top);
+        moveValue("variables", json, top);
         for (JsonObject.Member member : json) {
             if (member.getName().startsWith("$")) {
                 top.add(member.getName(), member.getValue());
@@ -139,5 +127,19 @@ class PresetCompat {
         json.clear();
         json.addAll(top);
         json.addAll(bottom);
+    }
+
+    /**
+     * Moves a JSON member from one object to another.
+     *
+     * @param field The field key being moved.
+     * @param from The JSON source being copied from.
+     * @param to The JSON target being copied into.
+     */
+    private static void moveValue(String field, JsonObject from, JsonObject to) {
+        if (from.has(field)) {
+            to.add(field, from.get(field));
+            from.remove(field);
+        }
     }
 }

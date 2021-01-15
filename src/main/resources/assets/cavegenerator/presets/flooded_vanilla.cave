@@ -8,9 +8,6 @@
 # on the floor.                                               #
 # ----------------------------------------------------------- #
 {
-  imports: [
-    defaults.cave::VANILLA
-  ]
   $VANILLA: "ALL" # Default tunnels, ravines, and rooms.
   enabled: false
   caveBlocks: [

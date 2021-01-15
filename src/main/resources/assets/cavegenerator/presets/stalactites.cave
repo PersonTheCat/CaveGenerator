@@ -9,9 +9,6 @@
 # can do, in addition to just replacing cave walls.           #
 # ----------------------------------------------------------- #
 {
-  imports: [
-    defaults.cave::VANILLA
-  ]
   $VANILLA: "ALL" # Default tunnels, ravines, etc.
   enabled: false
   blankSlate: false 

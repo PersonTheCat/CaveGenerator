@@ -7,9 +7,6 @@
 # vanilla.cave.                                               #
 # ----------------------------------------------------------- #
 {
-  imports: [
-    defaults.cave::VANILLA
-  ]
   $VANILLA: "ALL" # Default ravines and lava settings.
   enabled: false
   caverns: {

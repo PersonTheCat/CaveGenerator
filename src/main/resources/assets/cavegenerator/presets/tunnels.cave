@@ -7,9 +7,6 @@
  # long, straight tunnels with some decorations.               #
  # ----------------------------------------------------------- #
 {
-  imports: [
-    defaults.cave::VANILLA
-  ]
   $VANILLA: "ALL" # Default ravines and lava settings.
   enabled: false
   wallDecorators: [

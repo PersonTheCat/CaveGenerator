@@ -23,10 +23,56 @@ public class PresetExpander {
         definitions.forEach((f, json) -> expand(json));
         // Copy all of the imports directly into each json.
         presets.forEach((f, json) -> copyImports(definitions, json));
+        // Copy defaults.cave::VANILLA implicitly, if absent.
+        copyVanilla(presets, definitions);
         // Expand the variables now inside of each json.
         presets.forEach((f, json) -> expandVariables(json));
         // Delete all of the now unneeded imports and variables.
         presets.forEach((f, json) -> deleteUnused(json));
+    }
+
+    /**
+     * Copies the value <code>defaults.cave::VANILLA</code> implicitly. This will
+     * improve concision and hopefully give new users less to learn. My concern is
+     * that it will obscure the purpose of the <code>imports</code> array, as every
+     * other variable still needs to be imported manually. I may quickly remove this
+     * implicit variable if that turns out to be the case.
+     *
+     * @param presets All of the main preset files mapped to their parent files.
+     * @param definitions A map of all JSON objects in the imports folder.
+     */
+    private static void copyVanilla(Map<File, JsonObject> presets, Map<File, JsonObject> definitions) {
+        // This should not be possible anyway.
+        final JsonObject defaults = getDefaults(definitions)
+            .orElseThrow(() -> runEx("defaults.cave may not be renamed or deleted."));
+        // We could quietly add this value back in if missing.
+        // Not sure if that's the right thing to do.
+        final JsonObject vanilla = getObject(defaults, "VANILLA")
+            .orElseThrow(() -> runEx("defaults.cave::VANILLA is implicit and may not be removed."));
+        // Add this value implicitly in every preset.
+        // It will be removed if unused.
+        for (JsonObject json : presets.values()) {
+            final JsonObject variables = getObjectOrNew(json, "variables");
+            // Users can declare their own variables called VANILLA.
+            if (!variables.has("VANILLA")) {
+                variables.add("VANILLA", vanilla);
+            }
+        }
+    }
+
+    /**
+     * Retrieves the default values preset from this map, if present.
+     *
+     * @param definitions A map of all JSON objects in the imports folder.
+     * @return defaults.cave, if present.
+     */
+    private static Optional<JsonObject> getDefaults(Map<File, JsonObject> definitions) {
+        for (Map.Entry<File, JsonObject> entry : definitions.entrySet()) {
+            if (entry.getKey().getName().equals("defaults.cave")) {
+                return full(entry.getValue());
+            }
+        }
+        return empty();
     }
 
     /**
