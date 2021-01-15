@@ -51,9 +51,9 @@ public class CaveManager extends MapGenBase {
     /** Handle all noise-based generation for this generator. */
     private void noiseGenerate(Map<String, CaveGenerator> gens, World world, int dim, int x, int z, ChunkPrimer primer) {
         // Only generate this map once per chunk.
-        final int[][] heightMap = CaveInit.anyCavernsEnabled(Main.instance.generators.get(dim), dim) ?
-            HeightMapLocator.getHeightFromPrimer(primer) :
-            HeightMapLocator.FAUX_MAP;
+        final int[][] heightMap = checkHeightMap(dim)
+            ? HeightMapLocator.getHeightFromPrimer(primer)
+            : HeightMapLocator.FAUX_MAP;
 
         final Biome centerBiome = world.getBiome(centerCoords(x, z));
 
@@ -72,6 +72,12 @@ public class CaveManager extends MapGenBase {
                 }
             }
         }
+    }
+
+    /** Determines whether to check the heightmap in this dimension. */
+    private static boolean checkHeightMap(int dim) {
+        return ConfigFile.heightMapDims.contains(dim)
+            && CaveInit.anyCavernsEnabled(Main.instance.generators.get(dim), dim);
     }
 
     @Override

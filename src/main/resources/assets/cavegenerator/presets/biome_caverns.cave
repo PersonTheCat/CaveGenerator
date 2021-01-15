@@ -16,10 +16,10 @@
     states: air
     chance: 0.75
     radiusX: 30
-    radiusY: 28
+    radiusY: 23
     radiusZ: 30
     radiusVariance: 5
-    startHeight: 30
+    startHeight: 36
     heightVariance: 6
     noise3D: {
       frequency: 0.02

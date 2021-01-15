@@ -3,9 +3,14 @@ package com.personthecat.cavegenerator.config;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Config.Comment;
 import net.minecraftforge.common.config.Config.RequiresMcRestart;
+import net.minecraftforge.common.config.Config.RequiresWorldRestart;
+
+import java.util.Collections;
+import java.util.List;
 
 @Config(modid = "cavegenerator")
 public class ConfigFile {
+
     @Comment({
         "Whether vanilla stone clusters--including andesite,",
         "diorite, and granite--should spawn in the world."})
@@ -32,4 +37,11 @@ public class ConfigFile {
         "objects by biome. This will produce flat walls in your",
         "world and is not the preferred solution."})
     public static boolean forceEnableCavernBiomes = false;
+
+    @Comment({
+        "A list of dimensions where HeightMapLocator will check for the",
+        "surface to avoid spawning caverns in water."
+    })
+    @RequiresWorldRestart
+    public static List<Integer> heightMapDims = Collections.singletonList(0);
 }
