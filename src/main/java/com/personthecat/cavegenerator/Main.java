@@ -30,7 +30,7 @@ import java.util.TreeMap;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
 @Mod(
-    modid = "cavegenerator",
+    modid = Main.MODID,
     name = "Cave Generator",
     version = "0.18",
     dependencies = "after:worleycaves;",
@@ -41,8 +41,11 @@ public class Main {
     /** The main instance of this mod, as required by Forge. */
     @Instance public static Main instance;
 
+    /** This mod's ID and namespace. */
+    public static final String MODID = "cavegenerator";
+
     /** A non-null log4j logger, matching Forge's formatting conventions. */
-    public final Logger logger = LogManager.getLogger("cavegenerator");
+    public final Logger logger = LogManager.getLogger(MODID);
 
     /** A non-null map of ID -> CaveGenerator to be filled on WorldEvent.Load. */
     public final Int2ObjectOpenHashMap<Map<String, CaveGenerator>> generators = new Int2ObjectOpenHashMap<>();

@@ -5,9 +5,6 @@ import net.minecraftforge.common.config.Config.Comment;
 import net.minecraftforge.common.config.Config.RequiresMcRestart;
 import net.minecraftforge.common.config.Config.RequiresWorldRestart;
 
-import java.util.Collections;
-import java.util.List;
-
 @Config(modid = "cavegenerator")
 public class ConfigFile {
 
@@ -40,8 +37,9 @@ public class ConfigFile {
 
     @Comment({
         "A list of dimensions where HeightMapLocator will check for the",
-        "surface to avoid spawning caverns in water."
+        "surface to avoid spawning caverns in water. Disable this in your",
+        "dimension if you don't have regular oceans spawning."
     })
     @RequiresWorldRestart
-    public static List<Integer> heightMapDims = Collections.singletonList(0);
+    public static int[] heightMapDims = { 0 };
 }

@@ -27,11 +27,13 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
  *  in that context may justify its existence.
  */
 public class HeightMapLocator {
+
     /**
      * The relative distance to be checked around each previous y coordinate.
      * Used when searching ChunkPrimers only. Should always be greater than 1.
      */
     private static final int RELATIVE_DISTANCE = 5;
+
     /**
      * The number of coordinates to skip when searching for land below water.
      * Higher numbers may slightly increase performance, but decrease accuracy.
@@ -44,7 +46,7 @@ public class HeightMapLocator {
     private static final IBlockState BLK_WATER = Blocks.WATER.getDefaultState();
 
     /** The height to be used when filling the substitute height map below. */
-    public static final int FAUX_MAP_HEIGHT = 63;
+    public static final int FAUX_MAP_HEIGHT = 255;
 
     /** A substitute height map with all values at the level specified above. */
     public static final int[][] FAUX_MAP = getFauxMap();

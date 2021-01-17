@@ -19,13 +19,13 @@ import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 public class CaveInit {
 
     /** A setting indicating the location where presets will be kept. */
-    private static final String PRESETS = "cavegenerator/presets";
+    private static final String PRESETS = Main.MODID + "/presets";
 
     /** A setting indicating the location where variable imports will be kept. */
-    private static final String IMPORTS = "cavegenerator/imports";
+    private static final String IMPORTS = Main.MODID + "/imports";
 
     /** A setting indicating the location where generated presets will be kept. */
-    private static final String GENERATED = "cavegenerator/generated";
+    private static final String GENERATED = Main.MODID + "/generated";
 
     /** A message to display when the preset directory is somehow unavailable. */
     private static final String NO_ACCESS = "Currently unable to access preset directory.";

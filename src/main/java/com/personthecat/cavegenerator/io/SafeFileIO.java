@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.io;
 
+import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.util.Result;
 import net.minecraftforge.fml.common.Loader;
 
@@ -13,7 +14,7 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 public class SafeFileIO {
 
     /** The directory where all file backups will be stored. */
-    private static final File BACKUP_DIR = new File(Loader.instance().getConfigDir(), "cavegenerator/backup");
+    private static final File BACKUP_DIR = new File(Loader.instance().getConfigDir(), Main.MODID + "/backup");
 
     /**
      * Ensures that the input @param file refers to a directory,
@@ -112,5 +113,19 @@ public class SafeFileIO {
             return Result.of(e);
         }
         return Result.ok();
+    }
+
+    /** Retrieves an asset from the jar file. */
+    public static Optional<InputStream> getResource(String path) {
+        if (!path.startsWith("/")) {
+            path = "/" + path;
+        }
+        return nullable(SafeFileIO.class.getResourceAsStream(path));
+    }
+
+    /** Retrieves an asset from the jar file */
+    public static InputStream getRequiredResource(String path) {
+        return getResource(path)
+            .orElseThrow(() -> runExF("The required file \"{}\" was not present in the jar.", path));
     }
 }

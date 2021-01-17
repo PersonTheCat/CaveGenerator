@@ -11,9 +11,26 @@ import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 
 public class JarFiles {
 
+    /** A setting indicating the parent folder of all presets. */
+    private static final File ROOT_DIR = new File(Loader.instance().getConfigDir(), Main.MODID);
+
     /** A setting indicating the location where example presets will be kept. */
-    private static final String FOLDER = "cavegenerator/example_presets";
-    private static final File EXAMPLE_DIR = new File(Loader.instance().getConfigDir(), FOLDER);
+    private static final String EXAMPLE_PATH = ROOT_DIR + "/example_presets";
+
+    /** The actual folder containing the example presets. */
+    private static final File EXAMPLE_DIR = new File(EXAMPLE_PATH);
+
+    /** The path where all of this mod's assets are stored. */
+    private static final String ASSETS_PATH = "assets/" + Main.MODID;
+
+    /** The name of the vanilla preset file. */
+    private static final String VANILLA_NAME = "vanilla.cave";
+
+    /** The name of the tutorial file. */
+    private static final String TUTORIAL_NAME = "TUTORIAL.cave";
+
+    /** The name of the stripped tutorial file. */
+    private static final String TUTORIAL_STRIPPED_NAME = "TUTORIAL_STRIPPED.cave";
 
     /** All of the <b>example</b> presets to be copied from the jar. */
     private static final String[] PRESETS = {
@@ -46,17 +63,17 @@ public class JarFiles {
         copyVanilla();
         copyImports();
         copyStructures();
+        copyTutorial();
     }
 
     private static void copyExamples() {
         for (String fileName : PRESETS) {
-            String fromLocation = "assets/cavegenerator/presets/" + fileName + ".cave";
-            String toLocation = EXAMPLE_DIR.getPath() + "/" + fileName + ".cave";
+            final String fromLocation = ASSETS_PATH + "/presets/" + fileName + ".cave";
+            final String toLocation = EXAMPLE_DIR + "/" + fileName + ".cave";
             copyFile(fromLocation, toLocation);
         }
     }
 
-    // Todo: Replace this when we get TUTORIAL.cave in place.
     private static void copyVanilla() {
         if (!safeFileExists(CaveInit.PRESET_DIR, "Error: Unable to read from preset directory.")) {
             // The directory doesn't exist. Create it.
@@ -64,16 +81,16 @@ public class JarFiles {
                 .expect("Error: Unable to create preset directory.");
             // Copy only the vanilla preset. The others should be modifiable.
             // To-do: There was talk about changing this.
-            String fromLocation = "assets/cavegenerator/presets/vanilla.cave";
-            String toLocation = CaveInit.PRESET_DIR.getPath() + "/vanilla.cave";
+            final String fromLocation = ASSETS_PATH + "/presets/" + VANILLA_NAME;
+            final String toLocation = CaveInit.PRESET_DIR + "/" + VANILLA_NAME;
             copyFile(fromLocation, toLocation);
         }
     }
 
     private static void copyImports() {
         for (String i : IMPORTS) {
-            String fromLocation = "assets/cavegenerator/imports/" + i + ".cave";
-            String toLocation = CaveInit.IMPORT_DIR.getPath() + "/" + i + ".cave";
+            final String fromLocation = ASSETS_PATH + "/imports/" + i + ".cave";
+            final String toLocation = CaveInit.IMPORT_DIR + "/" + i + ".cave";
             // Only copy each file if it doesn't already exist.
             if (!safeFileExists(new File(toLocation), "Unable to check " + toLocation)) {
                 copyFile(fromLocation, toLocation);
@@ -82,18 +99,32 @@ public class JarFiles {
     }
 
     /** Copies the example structures from the jar to the disk. */
-    public static void copyStructures() {
+    private static void copyStructures() {
         if (!safeFileExists(StructureSpawner.DIR, "Error: Unable to read from structure directory.")) {
             // The directory doesn't exist. Create it.
             safeMkdirs(StructureSpawner.DIR)
                 .expect("Error: Unable to create structure directory.");
 
             for (String structure : STRUCTURES) {
-                String fromLocation = "assets/cavegenerator/structures/" + structure + ".nbt";
-                String toLocation = StructureSpawner.DIR.getPath() + "/" + structure + ".nbt";
+                final String fromLocation = ASSETS_PATH + "/structures/" + structure + ".nbt";
+                final String toLocation = StructureSpawner.DIR + "/" + structure + ".nbt";
                 copyFile(fromLocation, toLocation);
             }
         }
+    }
+
+    /** Copies the tutorial file into this mod's root directory. */
+    private static void copyTutorial() {
+        // Copy the regular tutorial file.
+        final String fromLocation = ASSETS_PATH + "/" + TUTORIAL_NAME;
+        final String toLocation = ROOT_DIR + "/" + TUTORIAL_NAME;
+        copyFile(fromLocation, toLocation);
+
+        // Copy the condensed version.
+        // Todo: Generate this file.
+        final String fromLocation2 = ASSETS_PATH + "/" + TUTORIAL_STRIPPED_NAME;
+        final String toLocation2 = ROOT_DIR + "/" + TUTORIAL_STRIPPED_NAME;
+        copyFile(fromLocation2, toLocation2);
     }
 
     /**
@@ -102,8 +133,8 @@ public class JarFiles {
      */
     private static void copyFile(String fromLocation, String toLocation) {
         try {
-            InputStream toCopy = Main.class.getClassLoader().getResourceAsStream(fromLocation);
-            FileOutputStream output = new FileOutputStream(toLocation);
+            final InputStream toCopy = getRequiredResource(fromLocation);
+            final FileOutputStream output = new FileOutputStream(toLocation);
             copyStream(toCopy, output, 1024) // This error should be handled now.
                 .expect("Error copying file data. Perhaps the jar is corrupt.");
             output.close();

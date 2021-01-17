@@ -7,6 +7,7 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.MapGenBase;
+import org.apache.commons.lang3.ArrayUtils;
 
 import java.util.Map;
 import java.util.Optional;
@@ -51,7 +52,7 @@ public class CaveManager extends MapGenBase {
     /** Handle all noise-based generation for this generator. */
     private void noiseGenerate(Map<String, CaveGenerator> gens, World world, int dim, int x, int z, ChunkPrimer primer) {
         // Only generate this map once per chunk.
-        final int[][] heightMap = checkHeightMap(dim)
+        final int[][] heightMap = shouldCheckHeightMap(dim)
             ? HeightMapLocator.getHeightFromPrimer(primer)
             : HeightMapLocator.FAUX_MAP;
 
@@ -75,8 +76,8 @@ public class CaveManager extends MapGenBase {
     }
 
     /** Determines whether to check the heightmap in this dimension. */
-    private static boolean checkHeightMap(int dim) {
-        return ConfigFile.heightMapDims.contains(dim)
+    private static boolean shouldCheckHeightMap(int dim) {
+        return ArrayUtils.contains(ConfigFile.heightMapDims, dim)
             && CaveInit.anyCavernsEnabled(Main.instance.generators.get(dim), dim);
     }
 
