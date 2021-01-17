@@ -50,98 +50,102 @@
     scale: 6
     scaleY: 0.5
   }
-  tunnels: {
-    frequency: 15
-    minHeight: 8
-    maxHeight: 128
-    systemChance: 0.25
-    isolatedChance: 0.142
-    systemDensity: 4
-    noiseYReduction: true
-    distance: 0
-    resizeBranches: true
-    scale: {
-      startVal: 0
-      startValRandFactor: 1
-      factor: 1
-      randFactor: 0
-      exponent: 1
-    }
-    scaleY: {
-      startVal: 1
-      factor: 1
-      randFactor: 0
-      exponent: 1
-    }
-    yaw: {
-      startVal: 0
-      startValRandFactor: 1
-    }
-    pitch: {
-      startVal: 0
-      startValRandFactor: 0.25
-    }
-    dYaw: {
-      startVal: 0
-      factor: 0.75
-      randFactor: 4
-      exponent: 1
-    }
-    dPitch: {
-      startVal: 0
-      factor: 0.9
-      randFactor: 2
-      exponent: 1
-    }
-  }
-  ravines: {
-    chance: 0.02
-    minHeight: 20
-    maxHeight: 66
-    distance: 0
-    dYaw: {
-      startVal: 0
-      factor: 0.5
-      randFactor: 4
-      exponent: 1
-    }
-    dPitch: {
-      startVal: 0
-      factor: 0.8
-      randFactor: 2
-      exponent: 1
-    }
-    scale: {
-      startVal: 0
-      startValRandFactor: 2
-      factor: 1
-      randFactor: 0
-      exponent: 1
-    }
-    scaleY: {
-      startVal: 3
-      factor: 1
-      randFactor: 0
-      exponent: 1
-    }
-    yaw: {
-      startVal: 0
-      startValRandFactor: 1
-    }
-    pitch: {
-      startVal: 0
-      startValRandFactor: 0.25
-    }
-    noiseYFactor: 0.7
-    # ABSENT BY DEFAULT
-    wallNoise: {
-      noise2D: {
-        frequency: 0.1
-        minVal: 0
-        maxVal: 4
+  tunnels: [
+    {
+      frequency: 15
+      minHeight: 8
+      maxHeight: 128
+      systemChance: 0.25
+      isolatedChance: 0.142
+      systemDensity: 4
+      noiseYReduction: true
+      distance: 0
+      resizeBranches: true
+      scale: {
+        startVal: 0
+        startValRandFactor: 1
+        factor: 1
+        randFactor: 0
+        exponent: 1
+      }
+      scaleY: {
+        startVal: 1
+        factor: 1
+        randFactor: 0
+        exponent: 1
+      }
+      yaw: {
+        startVal: 0
+        startValRandFactor: 1
+      }
+      pitch: {
+        startVal: 0
+        startValRandFactor: 0.25
+      }
+      dYaw: {
+        startVal: 0
+        factor: 0.75
+        randFactor: 4
+        exponent: 1
+      }
+      dPitch: {
+        startVal: 0
+        factor: 0.9
+        randFactor: 2
+        exponent: 1
       }
     }
-  }
+  ]
+  ravines: [
+    {
+      chance: 0.02
+      minHeight: 20
+      maxHeight: 66
+      distance: 0
+      dYaw: {
+        startVal: 0
+        factor: 0.5
+        randFactor: 4
+        exponent: 1
+      }
+      dPitch: {
+        startVal: 0
+        factor: 0.8
+        randFactor: 2
+        exponent: 1
+      }
+      scale: {
+        startVal: 0
+        startValRandFactor: 2
+        factor: 1
+        randFactor: 0
+        exponent: 1
+      }
+      scaleY: {
+        startVal: 3
+        factor: 1
+        randFactor: 0
+        exponent: 1
+      }
+      yaw: {
+        startVal: 0
+        startValRandFactor: 1
+      }
+      pitch: {
+        startVal: 0
+        startValRandFactor: 0.25
+      }
+      noiseYFactor: 0.7
+      # ABSENT BY DEFAULT
+      wallNoise: {
+        noise2D: {
+          frequency: 0.1
+          minVal: 0
+          maxVal: 4
+        }
+      }
+    }
+  ]
   caverns: {
     enabled: false
     minHeight: 10

@@ -359,69 +359,71 @@ rooms: {
 # * example_presets/spirals.cave
 # * example_presets/tunnels.cave
 # * example_presets/large_caves.cave
-tunnels: {
-  frequency: 15
-  minHeight: 8
-  maxHeight: 128
-  systemChance: 0.25
-  isolatedChance: 0.142
-  systemDensity: 4
-  noiseYReduction: true
+tunnels: [
+  {
+    frequency: 15
+    minHeight: 8
+    maxHeight: 128
+    systemChance: 0.25
+    isolatedChance: 0.142
+    systemDensity: 4
+    noiseYReduction: true
 
-  # The length in blocks of this tunnel. 0 is a wildcard (132-176).
-  distance: 0
+    # The length in blocks of this tunnel. 0 is a wildcard (132-176).
+    distance: 0
 
-  # When branches are created in vanilla, they shrink. You can disable that.
-  resizeBranches: true
+    # When branches are created in vanilla, they shrink. You can disable that.
+    resizeBranches: true
 
-  # Radius in blocks.
-  scale: {
-    startVal: 0
-    # startVal += (randomValue * x).
-    startValRandFactor: 1
-    factor: 1
-    randFactor: 0
-    exponent: 1
+    # Radius in blocks.
+    scale: {
+      startVal: 0
+      # startVal += (randomValue * x).
+      startValRandFactor: 1
+      factor: 1
+      randFactor: 0
+      exponent: 1
+    }
+
+    # Vertical ratio of `scale`.
+    scaleY: {
+      startVal: 1
+      factor: 1
+      randFactor: 0
+      exponent: 1
+    }
+
+    # The horizontal angle in radians.
+    yaw: {
+      startVal: 0
+
+      # The size of the random number added to startVal.
+      startValRandFactor: 1
+    }
+
+    # The vertical angle in radians.
+    pitch: {
+      startVal: 0
+      startValRandFactor: 0.25
+    }
+
+    # The change in yaw over distance.
+    dYaw: {
+      startVal: 0 # Added to current yaw
+      factor: 0.75
+      randFactor: 4
+      exponent: 1
+    }
+
+    # The change in pitch over distance
+    dPitch: {
+      startVal: 0
+      factor: 0.9
+      randFactor: 2
+      exponent: 1
+    }
   }
-
-  # Vertical ratio of `scale`.
-  scaleY: {
-    startVal: 1
-    factor: 1
-    randFactor: 0
-    exponent: 1
-  }
-
-  # The horizontal angle in radians.
-  yaw: {
-    startVal: 0
-
-    # The size of the random number added to startVal.
-    startValRandFactor: 1
-  }
-
-  # The vertical angle in radians.
-  pitch: {
-    startVal: 0
-    startValRandFactor: 0.25
-  }
-
-  # The change in yaw over distance.
-  dYaw: {
-    startVal: 0 # Added to current yaw
-    factor: 0.75
-    randFactor: 4
-    exponent: 1
-  }
-
-  # The change in pitch over distance
-  dPitch: {
-    startVal: 0
-    factor: 0.9
-    randFactor: 2
-    exponent: 1
-  }
-}
+]
 
 # This is a modified `tunnels` generator. There are two important differences:
 # * scaleY.startVal is three times as high
@@ -429,59 +431,61 @@ tunnels: {
 #
 # You can change this noise by adding a noise2D block, but be aware that you
 # **should not add one** if you are not going to use it.
-ravines: {
-  chance: 0.02
-  minHeight: 20
-  maxHeight: 66
-  distance: 0
-  dYaw: {
-    startVal: 0
-    factor: 0.5
-    randFactor: 4
-    exponent: 1
-  }
-  dPitch: {
-    startVal: 0
-    factor: 0.8
-    randFactor: 2
-    exponent: 1
-  }
-  scale: {
-    startVal: 0
-    startValRandFactor: 2
-    factor: 1
-    randFactor: 0
-    exponent: 1
-  }
-  scaleY: {
-    startVal: 3
-    factor: 1
-    randFactor: 0
-    exponent: 1
-  }
-  yaw: {
-    startVal: 0
-    startValRandFactor: 1
-  }
-  pitch: {
-    startVal: 0
-    startValRandFactor: 0.25
-  }
+ravines: [
+  {
+    chance: 0.02
+    minHeight: 20
+    maxHeight: 66
+    distance: 0
+    dYaw: {
+      startVal: 0
+      factor: 0.5
+      randFactor: 4
+      exponent: 1
+    }
+    dPitch: {
+      startVal: 0
+      factor: 0.8
+      randFactor: 2
+      exponent: 1
+    }
+    scale: {
+      startVal: 0
+      startValRandFactor: 2
+      factor: 1
+      randFactor: 0
+      exponent: 1
+    }
+    scaleY: {
+      startVal: 3
+      factor: 1
+      randFactor: 0
+      exponent: 1
+    }
+    yaw: {
+      startVal: 0
+      startValRandFactor: 1
+    }
+    pitch: {
+      startVal: 0
+      startValRandFactor: 0.25
+    }
 
-  # Similar to noiseYReduction, but not as random.
-  noiseYFactor: 0.7
+    # Similar to noiseYReduction, but not as random.
+    noiseYFactor: 0.7
 
-  # ABSENT BY DEFAULT
-  wallNoise: {
+    # ABSENT BY DEFAULT
+    wallNoise: {
 
-    # Don't use `scale` here. It doesn't matter.
-    noise2D: {
-      frequency: 0.1
-      minVal: 0
-      maxVal: 4
+      # Don't use `scale` here. It doesn't matter.
+      noise2D: {
+        frequency: 0.1
+        minVal: 0
+        maxVal: 4
+      }
     }
   }
-}
+]
 
 # This generator is essentially a wrapper for FastNoise. There is an **array**
 # of noise3D blocks to create the main caverns, and then two noise2D blocks which
