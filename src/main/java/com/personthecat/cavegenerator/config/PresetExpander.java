@@ -376,9 +376,8 @@ public class PresetExpander {
                 throw runExF("Not a field: {}", v);
             }
             final String key = v.asString();
-            if (!to.has(key)) { // Allow overrides.
-                to.add(key, substitute(from, key));
-            }
+            // If the value exists, override it.
+            setOrAdd(to, key, substitute(from, key));
         }
     }
 
