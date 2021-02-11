@@ -367,6 +367,7 @@ tunnels: [
     systemChance: 0.25
     isolatedChance: 0.142
     systemDensity: 4
+    roomChance: 0.1
     noiseYReduction: true
 
     # The length in blocks of this tunnel. 0 is a wildcard (132-176).

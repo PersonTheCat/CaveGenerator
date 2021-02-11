@@ -34,6 +34,7 @@ VANILLA_TUNNELS: {
   systemChance: 0.25
   isolatedChance: 0.142
   systemDensity: 4
+  roomChance: 0.1
   noiseYReduction: true
   resizeBranches: true
   dYaw: {
