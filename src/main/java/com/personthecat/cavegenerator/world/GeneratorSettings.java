@@ -203,6 +203,8 @@ public class GeneratorSettings {
         public final int isolatedInverseChance;
         /** The maximum possible number of branches at system origins. */
         public final int systemDensity;
+        /** The chance that a room will spawn at any tunnel origin. */
+        public final int roomInverseChance;
 
         /**
          * The expected distance of the first cave generated in this
@@ -244,6 +246,7 @@ public class GeneratorSettings {
             int systemInverseChance,
             int isolatedInverseChance,
             int systemDensity,
+            int roomInverseChance,
             int startingDistance,
             int minHeight,
             int maxHeight,
@@ -260,6 +263,7 @@ public class GeneratorSettings {
             this.systemInverseChance = systemInverseChance;
             this.isolatedInverseChance = isolatedInverseChance;
             this.systemDensity = systemDensity;
+            this.roomInverseChance = roomInverseChance;
             this.startDistance = startingDistance;
             this.minHeight = minHeight;
             this.maxHeight = maxHeight;
@@ -280,6 +284,7 @@ public class GeneratorSettings {
                 invert(getFloatOr(tun, "systemChance", 0.25f)),
                 invert(getFloatOr(tun, "isolatedChance", 0.14f)),
                 getIntOr(tun, "systemDensity", 4),
+                invert(getFloatOr(tun, "roomChance", 0.1f)),
                 getIntOr(tun, "distance", 0),
                 getIntOr(tun, "minHeight", 8),
                 getIntOr(tun, "maxHeight", 128),
@@ -408,22 +413,18 @@ public class GeneratorSettings {
         public final float scale;
         // Multiplies `scale` on the vertical axis.
         public final float scaleY;
-        // The chance for this room to get placed at any tunnel origin.
-        public final int inverseChance;
 
         /** Primary constructor. */
-        public RoomSettings(float scale, float scaleY, int inverseChance) {
+        public RoomSettings(float scale, float scaleY) {
             this.scale = scale;
             this.scaleY = scaleY;
-            this.inverseChance = inverseChance;
         }
 
         /** From Json */
         public RoomSettings(JsonObject rooms) {
             this(
                 getFloatOr(rooms, "scale", 6.0f),
-                getFloatOr(rooms, "scaleY", 0.5f),
-                invert(getFloatOr(rooms, "chance", 0.1f))
+                getFloatOr(rooms, "scaleY", 0.5f)
             );
         }
 

@@ -157,9 +157,9 @@ public class CaveGenerator {
                 TunnelPathInfo path = new TunnelPathInfo(cfg, rand, destX, destZ);
 
                 // Per-vanilla: this randomly increases the size.
-                if (rand.nextInt(10) == 0) {
+                if (rand.nextInt(cfg.roomInverseChance) == 0) {
                     addRoom(rand, data, path.getX(), path.getY(), path.getZ());
-                    // Randomly alter scale. Average difference depends on original value.
+                    // From vanilla: alters the scale each time a room spawns. Remove this?
                     path.multiplyScale(rand.nextFloat() * rand.nextFloat() * 3.00F + 1.00F);
                 }
                 addTunnel(cfg, rand.nextLong(), data, path,0, distance);
