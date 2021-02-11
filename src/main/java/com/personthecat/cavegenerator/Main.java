@@ -2,10 +2,7 @@ package com.personthecat.cavegenerator;
 
 import com.personthecat.cavegenerator.commands.CommandCave;
 import com.personthecat.cavegenerator.io.JarFiles;
-import com.personthecat.cavegenerator.world.CaveGenerator;
-import com.personthecat.cavegenerator.world.DisableVanillaStoneGen;
-import com.personthecat.cavegenerator.world.GeneratorSettings;
-import com.personthecat.cavegenerator.world.ReplaceVanillaCaveGen;
+import com.personthecat.cavegenerator.world.*;
 import com.personthecat.cavegenerator.world.feature.CaveFeatureGenerator;
 import com.personthecat.cavegenerator.world.feature.StructureSpawner;
 import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
@@ -65,6 +62,7 @@ public class Main {
         MinecraftForge.EVENT_BUS.register(CaveInit.class);
         MinecraftForge.TERRAIN_GEN_BUS.register(ReplaceVanillaCaveGen.class);
         MinecraftForge.ORE_GEN_BUS.register(DisableVanillaStoneGen.class);
+        MinecraftForge.TERRAIN_GEN_BUS.register(DisablePopulateChunkEvent.class);
         GameRegistry.registerWorldGenerator(new CaveFeatureGenerator(), 0);
         info("Cave Generator init phase complete.");
     }

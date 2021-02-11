@@ -14,6 +14,12 @@ public class ConfigFile {
     @RequiresMcRestart
     public static boolean enableVanillaStoneClusters = true;
 
+    @Comment("Whether to enable vanilla water lakes underground.")
+    public static boolean enableWaterLakes = true;
+
+    @Comment("Whether to enable vanilla lava lakes underground.")
+    public static boolean enableLavaLakes = true;
+
     @Comment({
         "Whether this mod will attempt to run simultaneously",
         "with one other cave generation mod, such as Worley's",

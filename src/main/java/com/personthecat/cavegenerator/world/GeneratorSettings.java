@@ -408,23 +408,27 @@ public class GeneratorSettings {
         public final float scale;
         // Multiplies `scale` on the vertical axis.
         public final float scaleY;
+        // The chance for this room to get placed at any tunnel origin.
+        public final int inverseChance;
 
         /** Primary constructor. */
-        public RoomSettings(float scale, float scaleY) {
+        public RoomSettings(float scale, float scaleY, int inverseChance) {
             this.scale = scale;
             this.scaleY = scaleY;
+            this.inverseChance = inverseChance;
         }
 
         /** From Json */
         public RoomSettings(JsonObject rooms) {
             this(
                 getFloatOr(rooms, "scale", 6.0f),
-                getFloatOr(rooms, "scaleY", 0.5f)
+                getFloatOr(rooms, "scaleY", 0.5f),
+                invert(getFloatOr(rooms, "chance", 0.1f))
             );
         }
 
         public static RoomSettings empty() {
-            return new RoomSettings(new JsonObject().add("scale", 0));
+            return new RoomSettings(new JsonObject().add("scaleY", 0));
         }
     }
 
