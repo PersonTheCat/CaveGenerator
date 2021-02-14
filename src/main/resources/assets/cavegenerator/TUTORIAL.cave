@@ -572,6 +572,10 @@ clusters: [
     radiusVariance: 6
     startHeight: 32
     heightVariance: 16
+
+    # Optional blocks to compare against. Leave this empty
+    # if you don't need it and all stone types will be matched.
+    matchers: []
   }
 ]
 

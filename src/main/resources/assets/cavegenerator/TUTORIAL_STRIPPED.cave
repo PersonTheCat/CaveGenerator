@@ -197,6 +197,7 @@
       radiusVariance: 6
       startHeight: 32
       heightVariance: 16
+      matchers: []
     }
   ]
   largeStalactites: [

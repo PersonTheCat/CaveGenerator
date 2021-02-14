@@ -60,10 +60,11 @@ public class CaveManager extends MapGenBase {
 
         for (CaveGenerator generator : gens.values()) {
             // These have their own internal checks.
-            generator.generateClusters(rand, primer, x, z);
+            generator.generateGlobalClusters(rand, primer, x, z);
             if (generator.canGenerate(dim, centerBiome)) {
                 generator.generateLayers(primer, x, z);
             }
+            generator.generateLayeredClusters(rand, primer, x, z);
         }
         for (CaveGenerator generator : gens.values()) {
             // Don't allow caverns to be biome-specific, for now.

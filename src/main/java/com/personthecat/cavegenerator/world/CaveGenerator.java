@@ -39,6 +39,8 @@ public class CaveGenerator {
     /** Mandatory fields that must be initialized by the constructor */
     private final WeakReference<World> world;
     public final GeneratorSettings settings;
+    private final List<Cluster> globalClusters = new ArrayList<>();
+    private final List<Cluster> layeredClusters = new ArrayList<>();
 
     /** Noise generators. */
     private final RandomChunkSelector selector;
@@ -59,7 +61,8 @@ public class CaveGenerator {
         this.cavernNoise = getCavernNoise(seed, settings.caverns);
         this.ceilNoise = settings.caverns.ceilNoise.getGenerator((int) seed >> 2);
         this.floorNoise = settings.caverns.floorNoise.getGenerator((int) seed >> 4);
-        initClusters(seed); // Todo: store the noise generators in this class.
+        // Todo: cleanup
+        initClusters(seed);
     }
 
     /** Returns whether the generator is enabled globally. */
@@ -129,6 +132,11 @@ public class CaveGenerator {
     private void initClusters(long seed) {
         for (Cluster cluster : settings.decorators.clusters) {
             cluster.initNoise(seed);
+            if (cluster.getMatchers().isEmpty()) {
+                this.globalClusters.add(cluster);
+            } else {
+                this.layeredClusters.add(cluster);
+            }
         }
     }
 
@@ -484,33 +492,40 @@ public class CaveGenerator {
     }
 
     /** Generates any possible giant cluster sections in the current chunk. */
-    public void generateClusters(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+    public void generateGlobalClusters(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+        generateClusters(this.globalClusters, rand, primer, chunkX, chunkZ);
+    }
+
+    /** Generates all of the giant clusters that require specific states before spawning. */
+    public void generateLayeredClusters(Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+        generateClusters(this.layeredClusters, rand, primer, chunkX, chunkZ);
+    }
+
+    /** Generates all of a specific kind of cluster (global or layered). */
+    private void generateClusters(List<Cluster> clusters, Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
         // Todo: bad placement
-        if (settings.decorators.clusters.length == 0) return;
-        // The seed shouldn't change from when it was first provided
+        if (clusters.isEmpty()) return;
+
         rand.setSeed(seed); // rand must be reset.
-        List<ClusterInfo> info = locateFinalClusters(rand, chunkX, chunkZ);
-        SpawnSettings cfg = settings.conditions;
+        final List<ClusterInfo> info = locateFinalClusters(clusters, rand, chunkX, chunkZ);
+        final SpawnSettings cfg = settings.conditions;
 
         for (int x = 0; x < 16; x++) {
             final int actualX = x + (chunkX * 16);
             for (int z = 0; z < 16; z++) {
                 final int actualZ = z + (chunkZ * 16);
                 for (int y = cfg.maxHeight; y >= cfg.minHeight; y--) {
-                    IBlockState original = primer.getBlockState(x, y, z);
-                    // Only decorate actual stone.
-                    if (original.equals(BLK_STONE)) {
-                        applyClusters(primer, info, x, y, z, actualX, actualZ);
-                    }
+                    final IBlockState original = primer.getBlockState(x, y, z);
+                    applyClusters(original, primer, info, x, y, z, actualX, actualZ);
                 }
             }
         }
     }
 
     /** Locates any StoneClusters that may intersect with the current chunk. */
-    private List<ClusterInfo> locateFinalClusters(Random rand, int chunkX, int chunkZ) {
-        List<ClusterInfo> info = new ArrayList<>();
-        for (Cluster cluster : settings.decorators.clusters) {
+    private List<ClusterInfo> locateFinalClusters(List<Cluster> clusters, Random rand, int chunkX, int chunkZ) {
+        final List<ClusterInfo> info = new ArrayList<>();
+        for (Cluster cluster : clusters) {
             // Basic info
             final int ID = cluster.getID();
             final int radiusVariance = cluster.getRadiusVariance();
@@ -571,7 +586,7 @@ public class CaveGenerator {
     }
 
     /** Applies all applicable clusters to the current coordinates. */
-    private void applyClusters(ChunkPrimer primer, List<ClusterInfo> info, int x, int y, int z, double actualX, double actualZ) {
+    private void applyClusters(IBlockState state, ChunkPrimer primer, List<ClusterInfo> info, int x, int y, int z, double actualX, double actualZ) {
         for (ClusterInfo cluster : info) {
             final BlockPos origin = cluster.getCenter();
             final double distX = actualX - origin.getX();
@@ -583,7 +598,7 @@ public class CaveGenerator {
 
             // Ensure that we're within the sphere.
             if (distX2 / cluster.getRadiusX2() + distY2 / cluster.getRadiusY2() + distZ2 / cluster.getRadiusZ2() <= 1) {
-                if (cluster.getCluster().canSpawn((float) actualX, (float) y, (float) actualZ)) {
+                if (cluster.getCluster().canSpawn(state, (float) actualX, (float) y, (float) actualZ)) {
                     primer.setBlockState(x, y, z, cluster.getCluster().getState());
                     return; // Already placed. Don't continue.
                 }

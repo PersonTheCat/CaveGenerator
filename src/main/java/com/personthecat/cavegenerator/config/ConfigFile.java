@@ -15,9 +15,11 @@ public class ConfigFile {
     public static boolean enableVanillaStoneClusters = true;
 
     @Comment("Whether to enable vanilla water lakes underground.")
+    @RequiresMcRestart
     public static boolean enableWaterLakes = true;
 
     @Comment("Whether to enable vanilla lava lakes underground.")
+    @RequiresMcRestart
     public static boolean enableLavaLakes = true;
 
     @Comment({

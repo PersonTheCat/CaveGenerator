@@ -8,12 +8,12 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.Value;
 import net.minecraft.block.Block;
+import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import org.hjson.JsonObject;
 
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
 
 import static com.personthecat.cavegenerator.util.HjsonTools.*;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
@@ -55,6 +55,9 @@ public class Cluster {
     /** A field indicating the seed for this cluster. */
     @Default int ID = 0;
 
+    /** An optional set of blocks which must be present (another cluster or layer). */
+    @Default List<IBlockState> matchers = Collections.emptyList();
+
     /** Noise settings to use in placement. */
     @Default Optional<NoiseSettings3D> noiseSettings = empty();
 
@@ -74,7 +77,8 @@ public class Cluster {
     public static Cluster from(IBlockState state, JsonObject cluster) {
         final ClusterBuilder builder = Cluster.builder()
             .state(state)
-            .ID(Block.getStateId(state));
+            .ID(Block.getStateId(state))
+            .matchers(Arrays.asList(getBlocksOr(cluster, "matchers")));
         final Optional<NoiseSettings3D> noise = getObject(cluster, "noise3D")
             .map(o -> toNoiseSettings(o, DEFAULT_NOISE));
         builder.noiseSettings(noise);
@@ -107,7 +111,15 @@ public class Cluster {
     }
 
     /** Returns whether this cluster is valid at these coordinates. */
-    public boolean canSpawn(float x, float y, float z) {
+    public boolean canSpawn(IBlockState state, float x, float y, float z) {
+        if (matchers.isEmpty()) {
+            // By default, only replace stone blocks.
+            if (!state.getMaterial().equals(Material.ROCK)) {
+                return false;
+            }
+        } else if (!matchers.contains(state)) {
+            return false;
+        }
         return noise.apply(null) // Already loaded.
             .map(noise -> noise.GetBoolean(x, y, z))
             .orElse(true);
