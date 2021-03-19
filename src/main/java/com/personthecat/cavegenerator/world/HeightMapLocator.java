@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.world;
 
+import lombok.extern.log4j.Log4j2;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
@@ -7,8 +8,6 @@ import net.minecraft.world.chunk.Chunk;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import java.util.Arrays;
-
-import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
 /**
  *   This class is used to quickly determine the maximum height at every
@@ -26,6 +25,7 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
  *  way blocks are stored and retrieved from regular Chunks, its usefulness
  *  in that context may justify its existence.
  */
+@Log4j2
 public class HeightMapLocator {
 
     /**
@@ -234,9 +234,9 @@ public class HeightMapLocator {
 
     /** A debug function used to display the heightMap found. */
     private static void printMap(int[][] map) {
-        for (int x = 0; x < map.length; x++) {
-            info(Arrays.toString(map[x]));
+        for (int[] row : map) {
+            log.info(Arrays.toString(row));
         }
-        info(""); // New line
+        log.info(""); // New line
     }
 }

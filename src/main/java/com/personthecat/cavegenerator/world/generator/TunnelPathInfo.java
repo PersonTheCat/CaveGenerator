@@ -1,8 +1,8 @@
 package com.personthecat.cavegenerator.world.generator;
 
+import com.personthecat.cavegenerator.data.RavineSettings;
+import com.personthecat.cavegenerator.data.TunnelSettings;
 import com.personthecat.cavegenerator.model.ScalableFloat;
-import com.personthecat.cavegenerator.world.GeneratorSettings.TunnelSettings;
-import com.personthecat.cavegenerator.world.GeneratorSettings.RavineSettings;
 import com.personthecat.cavegenerator.model.PrimerData;
 import net.minecraft.util.math.MathHelper;
 
@@ -32,12 +32,12 @@ public class TunnelPathInfo {
 
     /** Neatly constructs a new object based on values from tunnel settings. */
     public TunnelPathInfo(TunnelSettings cfg, Random rand, int destChunkX, int destChunkZ) {
-        this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.minHeight, cfg.maxHeight);
+        this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.conditions.height.min, cfg.conditions.height.max);
     }
 
     /** Neatly constructs a new object based on values from ravine settings. */
     public TunnelPathInfo(RavineSettings cfg, Random rand, int destChunkX, int destChunkZ) {
-        this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.minHeight, cfg.maxHeight);
+        this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.scaleY, rand, destChunkX, destChunkZ, cfg.conditions.height.min, cfg.conditions.height.max);
     }
 
     /** Used for handling initial encapsulation of inner values. */

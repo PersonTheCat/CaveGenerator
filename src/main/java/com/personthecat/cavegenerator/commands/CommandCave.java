@@ -2,10 +2,10 @@ package com.personthecat.cavegenerator.commands;
 
 import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.Main;
+import com.personthecat.cavegenerator.config.CavePreset;
 import com.personthecat.cavegenerator.config.PresetCombiner;
 import com.personthecat.cavegenerator.config.PresetCompressor;
 import com.personthecat.cavegenerator.config.PresetReader;
-import com.personthecat.cavegenerator.world.GeneratorSettings;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -273,7 +273,7 @@ public class CommandCave extends CommandBase {
         requireArgs(args, 1);
         final String presetName = noExtension(args[0]);
         // No need to reparse this file. It's in memory.
-        final GeneratorSettings settings = nullable(Main.instance.presets.get(presetName))
+        final CavePreset settings = nullable(Main.instance.presets.get(presetName))
             .orElseThrow(() -> runExF("Unable to find preset: {}", args[0]));
         final String newName = args.length > 1
             ? noExtension(args[1])
@@ -281,7 +281,7 @@ public class CommandCave extends CommandBase {
         ensureDirExists(CaveInit.GENERATED_DIR)
             .expect("Error creating /generated directory.");
         final File expanded = new File(CaveInit.GENERATED_DIR, newName + ".cave");
-        writeJson(settings.preset, expanded);
+        writeJson(settings.raw, expanded);
         sendMessage(sender, "Finished writing expanded preset file.");
     }
 

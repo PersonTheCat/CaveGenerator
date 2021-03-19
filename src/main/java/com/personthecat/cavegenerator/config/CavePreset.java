@@ -1,0 +1,92 @@
+package com.personthecat.cavegenerator.config;
+
+import com.personthecat.cavegenerator.data.*;
+import com.personthecat.cavegenerator.util.HjsonMapper;
+import lombok.AccessLevel;
+import lombok.Builder;
+import lombok.Builder.Default;
+import lombok.experimental.FieldDefaults;
+import lombok.experimental.FieldNameConstants;
+import net.minecraft.block.state.IBlockState;
+import org.apache.commons.lang3.tuple.Pair;
+import org.hjson.JsonObject;
+
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+import java.util.Optional;
+
+import static com.personthecat.cavegenerator.util.CommonMethods.empty;
+import static com.personthecat.cavegenerator.util.CommonMethods.full;
+
+@FieldNameConstants
+@Builder(toBuilder = true)
+@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+public class CavePreset {
+
+    /** Whether this preset is enabled at all. */
+    @Default boolean enabled = true;
+
+    /** A series of conditions, decorators, and miscellaneous features that override other default settings. */
+    @Default OverrideSettings overrides = OverrideSettings.builder().build();
+
+    /** Regular vanilla tunnels with various overrides. */
+    @Default List<TunnelSettings> tunnels = Collections.emptyList();
+
+    /** Regular vanilla ravines with various overrides. */
+    @Default List<RavineSettings> ravines = Collections.emptyList();
+
+    /** Various noise generators which can be configured in extensively. */
+    @Default Optional<CavernSettings> caverns = empty();
+
+    /** A series of layers designed to spawn upward throughout the world in sequence. */
+    @Default List<LayerSettings> layers = Collections.emptyList();
+
+    /** Giant spheres with various regular noise restrictions. */
+    @Default List<ClusterSettings> clusters = Collections.emptyList();
+
+    /** Large stalactites and stalagmites spawned by this preset. */
+    @Default List<StalactiteSettings> stalactites = Collections.emptyList();
+
+    /** Giant pillars with optional corner blocks made from stairs. */
+    @Default List<PillarSettings> pillars = Collections.emptyList();
+
+    /** Regular NBT structures which can be placed throughout the world. */
+    @Default List<StructureSettings> structures = Collections.emptyList();
+
+    List<IBlockState> decoratorBlocks;
+
+    JsonObject raw;
+
+    public static CavePreset from(JsonObject json) {
+        final OverrideSettings overrides = OverrideSettings.from(json);
+        final CavePresetBuilder builder = builder().overrides(overrides).raw(json);
+        return new HjsonMapper(json)
+            .mapBool(Fields.enabled, builder::enabled)
+            .mapArray(Fields.tunnels, o -> TunnelSettings.from(o, overrides), builder::tunnels)
+            .mapArray(Fields.ravines, o -> RavineSettings.from(o, overrides), builder::ravines)
+            .mapObject(Fields.caverns, o -> builder.caverns(full(CavernSettings.from(o, overrides))))
+            .mapArray(Fields.layers, o -> LayerSettings.from(o, overrides), builder::layers)
+            .mapArray(Fields.clusters, o -> ClusterSettings.from(o, overrides), builder::clusters)
+            .mapArray(Fields.stalactites, o -> StalactiteSettings.from(o, overrides), builder::stalactites)
+            .mapArray(Fields.pillars, o -> PillarSettings.from(o, overrides), builder::pillars)
+            .mapArray(Fields.structures, o -> StructureSettings.from(o, overrides), builder::structures)
+            .release(builder::build);
+    }
+
+    // Unused. Debating whether we need to tally *all blocks* for each `replaceableBlocks`
+    private static List<IBlockState> getAllDecorators(CavePresetBuilder builder) {
+        final List<IBlockState> decorators = new ArrayList<>();
+        for (LayerSettings layer : builder.layers$value) {
+            decorators.add(layer.state);
+        }
+        for (ClusterSettings cluster : builder.clusters$value) {
+            for (Pair<IBlockState, Integer> pair : cluster.states) {
+                decorators.add(pair.getLeft());
+            }
+        }
+        return decorators;
+    }
+
+}

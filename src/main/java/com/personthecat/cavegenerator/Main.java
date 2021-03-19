@@ -1,11 +1,12 @@
 package com.personthecat.cavegenerator;
 
 import com.personthecat.cavegenerator.commands.CommandCave;
+import com.personthecat.cavegenerator.config.CavePreset;
 import com.personthecat.cavegenerator.io.JarFiles;
 import com.personthecat.cavegenerator.world.*;
-import com.personthecat.cavegenerator.world.feature.CaveFeatureGenerator;
+import com.personthecat.cavegenerator.world.FeatureCaveHook;
 import com.personthecat.cavegenerator.world.feature.StructureSpawner;
-import it.unimi.dsi.fastutil.ints.Int2ObjectOpenHashMap;
+import lombok.extern.log4j.Log4j2;
 import net.minecraft.world.World;
 import net.minecraft.world.gen.structure.template.Template;
 import net.minecraftforge.common.MinecraftForge;
@@ -16,23 +17,19 @@ import net.minecraftforge.fml.common.event.FMLInitializationEvent;
 import net.minecraftforge.fml.common.event.FMLServerStartingEvent;
 import net.minecraftforge.fml.common.event.FMLServerStoppingEvent;
 import net.minecraftforge.fml.common.registry.GameRegistry;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.HashMap;
 import java.util.TreeMap;
-
-import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
 @Mod(
     modid = Main.MODID,
     name = "Cave Generator",
-    version = "0.18",
+    version = "0.19",
     dependencies = "after:worleycaves;",
     acceptableRemoteVersions = "*"
 )
+@Log4j2
 public class Main {
 
     /** The main instance of this mod, as required by Forge. */
@@ -41,14 +38,11 @@ public class Main {
     /** This mod's ID and namespace. */
     public static final String MODID = "cavegenerator";
 
-    /** A non-null log4j logger, matching Forge's formatting conventions. */
-    public final Logger logger = LogManager.getLogger(MODID);
-
     /** A non-null map of ID -> CaveGenerator to be filled on WorldEvent.Load. */
-    public final Int2ObjectOpenHashMap<Map<String, CaveGenerator>> generators = new Int2ObjectOpenHashMap<>();
+    public final Map<String, GeneratorController> generators = new TreeMap<>();
 
     /** A non-null map of ID -> GeneratorSettings to be filled at runtime. */
-    public final Map<String, GeneratorSettings> presets = new TreeMap<>();
+    public final Map<String, CavePreset> presets = new TreeMap<>();
 
     /** A non-null map of ID -> Structure to be filled at runtime. */
     public final Map<String, Template> structures = new HashMap<>();
@@ -63,38 +57,37 @@ public class Main {
         MinecraftForge.TERRAIN_GEN_BUS.register(ReplaceVanillaCaveGen.class);
         MinecraftForge.ORE_GEN_BUS.register(DisableVanillaStoneGen.class);
         MinecraftForge.TERRAIN_GEN_BUS.register(DisablePopulateChunkEvent.class);
-        GameRegistry.registerWorldGenerator(new CaveFeatureGenerator(), 0);
-        info("Cave Generator init phase complete.");
+        GameRegistry.registerWorldGenerator(new FeatureCaveHook(), 0);
+        log.info("Cave Generator init phase complete.");
     }
 
     @EventHandler
     @SuppressWarnings("unused")
     public static void onServerStartingEvent(FMLServerStartingEvent event) {
         event.registerServerCommand(new CommandCave());
-        info("Cave Generator commands registered.");
+        log.info("Cave Generator commands registered.");
     }
 
     @EventHandler
     @SuppressWarnings("unused")
     public static void onServerStoppingEvent(FMLServerStoppingEvent event) {
-        info("Unloading generators.");
+        log.info("Unloading generators.");
         Main.instance.generators.clear();
     }
 
     /** Loads a generator for the current dimension, if applicable. */
-    public Map<String, CaveGenerator> loadGenerators(World world) {
-        final int dim = world.provider.getDimension();
-        if (generators.containsKey(dim)) {
-            return this.generators.get(dim);
+    public Map<String, GeneratorController> loadGenerators(World world) {
+        if (presets.isEmpty()) {
+            return generators; // i.e. never load them.
         }
-        final Map<String, CaveGenerator> generators = new TreeMap<>();
-        for (Entry<String, GeneratorSettings> entry : presets.entrySet()) {
-            final GeneratorSettings cfg = entry.getValue();
-            if (CaveInit.validPreset(cfg, dim)) {
-                generators.put(entry.getKey(), new CaveGenerator(world, entry.getValue()));
+        if (generators.isEmpty()) {
+            for (Map.Entry<String, CavePreset> entry : presets.entrySet()) {
+                final CavePreset preset = entry.getValue();
+                if (preset.enabled) {
+                    generators.put(entry.getKey(), GeneratorController.from(preset, world));
+                }
             }
         }
-        this.generators.put(dim, generators);
         return generators;
     }
 }

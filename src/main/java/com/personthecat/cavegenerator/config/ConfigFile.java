@@ -38,16 +38,18 @@ public class ConfigFile {
     public static boolean strictPresets = false;
 
     @Comment({
-        "Enables the experimental feature of restricting caverns",
-        "objects by biome. This will produce flat walls in your",
-        "world and is not the preferred solution."})
-    public static boolean forceEnableCavernBiomes = false;
-
-    @Comment({
         "A list of dimensions where HeightMapLocator will check for the",
         "surface to avoid spawning caverns in water. Disable this in your",
         "dimension if you don't have regular oceans spawning."
     })
     @RequiresWorldRestart
     public static int[] heightMapDims = { 0 };
+
+    @Comment("The chunk search range for tunnel and ravine features.")
+    @RequiresMcRestart
+    public static int mapRange = 8;
+
+    @Comment("Whether to override and replace caverns in the nether.")
+    @RequiresMcRestart
+    public static boolean netherGenerate = false;
 }

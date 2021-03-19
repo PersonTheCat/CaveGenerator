@@ -1,11 +1,7 @@
 package com.personthecat.cavegenerator.util;
 
-import com.personthecat.cavegenerator.model.Direction;
-import com.personthecat.cavegenerator.model.NoiseSettings2D;
-import com.personthecat.cavegenerator.model.NoiseSettings3D;
-import com.personthecat.cavegenerator.model.ScalableFloat;
-import com.personthecat.cavegenerator.world.generator.WallDecorator;
-import fastnoise.FastNoise.*;
+import com.personthecat.cavegenerator.model.*;
+import com.personthecat.cavegenerator.data.WallDecoratorSettings;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -21,8 +17,16 @@ import java.io.IOException;
 import java.io.Writer;
 import java.util.*;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
-import static com.personthecat.cavegenerator.util.CommonMethods.*;
+import static com.personthecat.cavegenerator.util.CommonMethods.extension;
+import static com.personthecat.cavegenerator.util.CommonMethods.find;
+import static com.personthecat.cavegenerator.util.CommonMethods.getBiome;
+import static com.personthecat.cavegenerator.util.CommonMethods.getBiomes;
+import static com.personthecat.cavegenerator.util.CommonMethods.getBiomeType;
+import static com.personthecat.cavegenerator.util.CommonMethods.getBlockState;
+import static com.personthecat.cavegenerator.util.CommonMethods.runEx;
+import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
 
 @SuppressWarnings("WeakerAccess")
 public class HjsonTools {
@@ -128,30 +132,33 @@ public class HjsonTools {
 
     /** Safely retrieves a boolean from the input object. */
     public static Optional<Boolean> getBool(JsonObject json, String field) {
-        return Optional.ofNullable(json.get(field))
-            .map(JsonValue::asBoolean);
-    }
-
-    /** Retrieves a boolean from the input object. Returns `or` if nothing is found. */
-    public static boolean getBoolOr(JsonObject json, String field, boolean orElse) {
-        return getBool(json, field).orElse(orElse);
+        return getValue(json, field).map(JsonValue::asBoolean);
     }
 
     /** Safely retrieves an integer from the input json. */
     public static Optional<Integer> getInt(JsonObject json, String field) {
-        return Optional.ofNullable(json.get(field))
-            .map(JsonValue::asInt);
+        return getValue(json, field).map(JsonValue::asInt);
     }
 
-    /** Retrieves an integer from the input object. Returns `or` if nothing is found. */
-    public static int getIntOr(JsonObject json, String field, int orElse) {
-        return getInt(json, field).orElse(orElse);
+    /** Retrieves a range of integers from the input object. */
+    public static Optional<Range> getRange(JsonObject json, String field) {
+        return getValue(json, field)
+            .map(HjsonTools::asOrToArray)
+            .map(HjsonTools::toIntArray)
+            .map(CommonMethods::sort)
+            .map(HjsonTools::toRange);
+    }
+
+    private static Range toRange(int[] range) {
+        if (range.length == 0) {
+            return new Range(0);
+        }
+        return range.length == 1 ? new Range(range[0]) : new Range(range[0], range[range.length - 1]);
     }
 
     /** Safely retrieves a boolean from the input json. */
     public static Optional<Float> getFloat(JsonObject json, String field) {
-        return Optional.ofNullable(json.get(field))
-            .map(JsonValue::asFloat);
+        return getValue(json, field).map(JsonValue::asFloat);
     }
 
     /** Shorthand for getFloat(). */
@@ -169,14 +176,12 @@ public class HjsonTools {
 
     /** Safely retrieves a string from the input json. */
     public static Optional<String> getString(JsonObject json, String field) {
-        return Optional.ofNullable(json.get(field))
-            .map(JsonValue::asString);
+        return getValue(json, field).map(JsonValue::asString);
     }
 
     /** Safely retrieves a JsonArray from the input json. */
     public static Optional<JsonArray> getArray(JsonObject json, String field) {
-        return Optional.ofNullable(json.get(field))
-            .map(HjsonTools::asOrToArray);
+        return getValue(json, field).map(HjsonTools::asOrToArray);
     }
 
     /**  Retrieves an array or creates a new one, if absent. */
@@ -194,8 +199,7 @@ public class HjsonTools {
 
     /** Safely retrieves a boolean from the input json. */
     public static Optional<JsonObject> getObject(JsonObject json, String field) {
-        return Optional.ofNullable(json.get(field))
-            .map(JsonValue::asObject);
+        return getValue(json, field).map(JsonValue::asObject);
     }
 
     /** Retrieves an object from the input object. Returns an empty object, if nothing is found. */
@@ -226,15 +230,19 @@ public class HjsonTools {
         return array;
     }
 
-    /** Safely retrieves an int array from the input json. */
-    public static Optional<int[]> getIntArray(JsonObject json, String field) {
-        return Optional.ofNullable(json.get(field))
-            .map((v) -> toIntArray(v.asArray()));
+    public static Optional<List<Integer>> getIntList(JsonObject json, String field) {
+        return getArray(json, field).map(HjsonTools::toIntList);
     }
 
-    /** Retrieves an array of integers from the input object. Returns `or` if nothing is found. */
-    public static int[] getIntArrayOr(JsonObject json, String field, int[] orElse) {
-        return getIntArray(json, field).orElse(orElse);
+    private static List<Integer> toIntList(JsonArray array) {
+        final List<Integer> ints = new ArrayList<>();
+        for (JsonValue value : array) {
+            if (!value.isNumber()) {
+                throw runExF("Expected an numeric value: {}", value);
+            }
+            ints.add(value.asInt());
+        }
+        return ints;
     }
 
     /** Converts a JsonArray into an array of ints. */
@@ -254,8 +262,7 @@ public class HjsonTools {
 
     /** Safely retrieves a List of Strings from the input json. */
     public static Optional<List<String>> getStringArray(JsonObject json, String field) {
-        return Optional.ofNullable(json.get(field))
-            .map(v -> toStringArray(asOrToArray(v)));
+        return getValue(json, field).map(v -> toStringArray(asOrToArray(v)));
     }
 
     /** Converts a JsonArray into a List of Strings. */
@@ -267,78 +274,25 @@ public class HjsonTools {
         return strings;
     }
 
-    /**
-     * Gets the required "state" field which must exist in many objects.
-     * Throws an exception when no block is found with the input name.
-     */
-    public static IBlockState getGuaranteedState(JsonObject json, String requiredFor) {
-        String stateName = getString(json, "state")
-            .orElseThrow(() -> runExF("Each {} object must contain the field \"state.\"", requiredFor));
-        return getBlockState(stateName)
-            .orElseThrow(() -> noBlockNamed(stateName));
+    public static Optional<IBlockState> getState(JsonObject json, String field) {
+        return getString(json, field).map(id -> getBlockState(id).orElseThrow(() -> noBlockNamed(id)));
     }
 
-    /**
-     * Gets the required "states" field which must exist in many objects.
-     * Throws an exception when any block cannot be found.
-     */
-    public static IBlockState[] getGuaranteedStates(JsonObject json, String requiredFor) {
-        JsonArray stateNames = getArray(json, "states")
-            .orElseThrow(() -> runExF("Each {} object must contain the field \"states.\"", requiredFor));
-        // Handles crashing when no block is found.
-        return toBlocks(stateNames);
+    public static Optional<List<IBlockState>> getStateList(JsonObject json, String field) {
+        return getStringArray(json, field).map(HjsonTools::toStateList);
     }
 
-    /** Retrieves a single IBlockState from the input json. */
-    public static Optional<IBlockState> getBlock(JsonObject json, String field) {
-        return getString(json, field)
-            .map(s -> getBlockState(s)
-                .orElseThrow(() -> noBlockNamed(s)));
+    private static List<IBlockState> toStateList(List<String> ids) {
+        return ids.stream().map(id -> getBlockState(id).orElseThrow(() -> noBlockNamed(id)))
+            .collect(Collectors.toList());
     }
 
-    /** Safely retrieves an array of blocks from the input json. */
-    public static Optional<IBlockState[]> getBlocks(JsonObject json, String field) {
-        return getArray(json, field).map(HjsonTools::toBlocks);
+    public static Optional<List<Direction>> getDirectionList(JsonObject json, String field) {
+        return getStringArray(json, field).map(HjsonTools::toDirections);
     }
 
-    /** Converts each element in the array into an IBlockState. */
-    public static IBlockState[] toBlocks(JsonArray array) {
-        List<IBlockState> blocks = new ArrayList<>();
-        for (String s : toStringArray(array)) {
-            IBlockState state = getBlockState(s).orElseThrow(() -> noBlockNamed(s));
-            blocks.add(state);
-        }
-        return blocks.toArray(new IBlockState[0]);
-    }
-
-    /**
-     * Retrieves an array of IBlockStates from the input json, substituting
-     * `orElse` if no object is found.
-     */
-    public static IBlockState[] getBlocksOr(JsonObject json, String field, IBlockState... orElse) {
-        return getBlocks(json, field).orElse(orElse);
-    }
-
-    /** Safely retrieves an array of type Direction from the input json. */
-    public static Optional<Direction[]> getDirections(JsonObject json, String field) {
-        Optional<List<String>> array = getStringArray(json, field);
-        if (array.isPresent()) {
-            List<Direction> directions = new ArrayList<>();
-            for (String s : array.get()) {
-                Direction d = Direction.from(s);
-                directions.add(d);
-            }
-            return full(toArray(directions, Direction.class));
-        }
-        return empty();
-    }
-
-    /**
-     * Retrieves an array of type `Direction` from the input json.
-     * returns `orElse` if no object is found.
-     */
-    public static Direction[] getDirectionsOr(JsonObject json, String field, Direction... orElse) {
-        return getDirections(json, field).orElse(orElse);
+    private static List<Direction> toDirections(List<String> directions) {
+        return directions.stream().map(s -> toEnumValue(s, Direction.class)).collect(Collectors.toList());
     }
 
     /** Safely retrieves a BlockPos from the input object. */
@@ -346,37 +300,15 @@ public class HjsonTools {
         return getArray(json, field).map(HjsonTools::toPosition);
     }
 
+    public static Optional<List<BlockPos>> getPositionList(JsonObject json, String field) {
+        return getArray(json, field).map(HjsonTools::toPositionList);
+    }
+
     /** Safely retrieves a Preference object from the input json. */
-    public static Optional<WallDecorator.Preference> getPreference(JsonObject json, String field) {
-        return getString(json, field).map(WallDecorator.Preference::from);
+    public static Optional<WallDecoratorSettings.Preference> getPreference(JsonObject json, String field) {
+        return getString(json, field).map(WallDecoratorSettings.Preference::from);
     }
 
-    /**
-     * Retrieves a BlockPos from the input json, returning `orElse`
-     * if no object can be found.
-     */
-    public static BlockPos getPositionOr(JsonObject json, String field, BlockPos orElse) {
-        return getPosition(json, field).orElse(orElse);
-    }
-
-    /** Safely retrieves an array of type BlockPos from the input json. */
-    public static Optional<BlockPos[]> getPositions(JsonObject json, String field) {
-        return getArray(json, field).map(a -> {
-            List<BlockPos> positions = new ArrayList<>();
-            for (JsonValue v : a) {
-                positions.add(toPosition(v.asArray()));
-            }
-            return toArray(positions, BlockPos.class);
-        });
-    }
-
-    /**
-     * Retrieves an array of type `BlockPos` from the input object,
-     * returning `orElse` if no object is found.
-     */
-    public static BlockPos[] getPositionsOr(JsonObject json, String field, BlockPos... orElse) {
-        return getPositions(json, field).orElse(orElse);
-    }
 
     /** Converts the input JsonArray into a BlockPos object. */
     public static BlockPos toPosition(JsonArray coordinates) {
@@ -392,9 +324,25 @@ public class HjsonTools {
         );
     }
 
-    /** For the biome object at the top level. */
-    public static Biome[] getAllBiomes(JsonObject json) {
-        List<Biome> biomes = new ArrayList<>();
+    private static List<BlockPos> toPositionList(JsonArray positions) {
+        final List<BlockPos> list = new ArrayList<>();
+        for (JsonValue position : positions) {
+            if (position.isNumber()) {
+                return Collections.singletonList(toPosition(positions));
+            } else if (!position.isArray()) {
+                throw runEx("Expected a list of positions, e.g. [[0, 0, 0], [1, 1, 1]].");
+            }
+            list.add(toPosition(position.asArray()));
+        }
+        return list;
+    }
+
+    public static Optional<List<Biome>> getBiomeList(JsonObject json, String field) {
+        return getObject(json, field).map(HjsonTools::toBiomes);
+    }
+
+    private static List<Biome> toBiomes(JsonObject json) {
+        final List<Biome> biomes = new ArrayList<>();
         // Get biomes by registry name.
         getArray(json, "names").map(HjsonTools::toStringArray).ifPresent(a -> {
             for (String s : a) {
@@ -413,14 +361,7 @@ public class HjsonTools {
                 Collections.addAll(biomes, getBiomes(t));
             }
         });
-
-        return toArray(biomes, Biome.class);
-    }
-
-    /** Safely retrieves a List of BiomeTypes from the input json. */
-    public static Optional<List<BiomeDictionary.Type>> getBiomeTypes(JsonObject json, String field) {
-        return Optional.ofNullable(json.get(field))
-            .map(v -> toBiomeTypes(v.asArray()));
+        return biomes;
     }
 
     /** Converts a JsonArray in to a list of BiomeTypes. */
@@ -467,8 +408,12 @@ public class HjsonTools {
         // for users who only want to change the starting value of the
         // resultant float.
         return getValue(json, field).map(v -> {
-            if (v.isObject()) {
+            if (v.isNumber()) {
+                return toScalableFloat(v.asInt(), defaults);
+            } else if (v.isObject()) {
                 return toScalableFloat(v.asObject(), defaults);
+            } else if (!v.isArray()) {
+                throw runEx("Scalable float values must be a number, array, or object.");
             }
             return toScalableFloat(v.asArray(), defaults);
         });
@@ -477,6 +422,10 @@ public class HjsonTools {
     /** Retrieves a scalable float from the input json. Returns the default values when no object is found. */
     public static ScalableFloat getScalableFloatOr(JsonObject json, String field, ScalableFloat defaults) {
         return getScalableFloat(json, field, defaults).orElse(defaults);
+    }
+
+    public static ScalableFloat toScalableFloat(int startVal, ScalableFloat defaults) {
+        return new ScalableFloat(startVal, defaults.startValRandFactor, defaults.factor, defaults.randFactor, defaults.exponent);
     }
 
     public static ScalableFloat toScalableFloat(JsonArray array, ScalableFloat defaults) {
@@ -499,111 +448,16 @@ public class HjsonTools {
         );
     }
 
-    /** Safely retrieves a NoiseSettings2D object from the input json. */
-    public static NoiseSettings2D getNoiseSettingsOr(JsonObject json, String field, NoiseSettings2D defaults) {
-        return getObject(json, field)
-            .map(o -> toNoiseSettings(o, defaults))
-            .orElse(defaults);
+    public static <T extends Enum<T>> Optional<T> getEnumValue(JsonObject json, String field, Class<T> clazz) {
+        return getString(json, field).map(s -> toEnumValue(s, clazz));
     }
 
-    /** Converts the input json into a NoiseSettings3D object. */
-    public static NoiseSettings3D toNoiseSettings(JsonObject json, NoiseSettings3D defaults) {
-        final NoiseSettings3D.NoiseSettings3DBuilder builder = defaults.toBuilder()
-            .seed(getInt(json, "seed"));
-
-        // Initialize these with defaults, if applicable.
-        getFloat(json, "jitter").ifPresent(jitter -> {
-            builder.jitterX(jitter);
-            builder.jitterY(jitter);
-            builder.jitterZ(jitter);
-        });
-
-        getFloat(json, "frequency").ifPresent(builder::frequency);
-        getFloat(json, "scale").ifPresent(builder::scale);
-        getFloat(json, "scaleY").ifPresent(builder::scaleY);
-        getFloat(json, "lacunarity").ifPresent(builder::lacunarity);
-        getFloat(json, "gain").ifPresent(builder::gain);
-        getFloat(json, "perturbAmp").ifPresent(builder::perturbAmp);
-        getFloat(json, "perturbFreq").ifPresent(builder::perturbFreq);
-        getFloat(json, "jitterX").ifPresent(builder::jitterX);
-        getFloat(json, "jitterY").ifPresent(builder::jitterY);
-        getFloat(json, "jitterZ").ifPresent(builder::jitterZ);
-        getInt(json, "octaves").ifPresent(builder::octaves);
-        getInt(json, "offset").ifPresent(builder::offset);
-        getBool(json, "perturb").ifPresent(builder::perturb);
-        getBool(json, "invert").ifPresent(builder::invert);
-        getString(json, "interp").map(HjsonTools::interp).ifPresent(builder::interp);
-        getString(json, "type").map(HjsonTools::noiseType).ifPresent(builder::noiseType);
-        getString(json, "fractal").map(HjsonTools::fractalType).ifPresent(builder::fractalType);
-        getString(json, "distFunc").map(HjsonTools::distanceFunction).ifPresent(builder::distanceFunction);
-        getString(json, "returnType").map(HjsonTools::returnType).ifPresent(builder::returnType);
-        getString(json, "cellularLookup").map(HjsonTools::noiseType).ifPresent(builder::cellularLookup);
-
-        return builder.build();
-    }
-
-    /** Retrieves either an array of noise settings or a single value containing `defaults`. */
-    public static NoiseSettings3D[] getNoiseArray(JsonObject json, String field, NoiseSettings3D defaults) {
-        List<NoiseSettings3D> noise = new ArrayList<>();
-        JsonArray array = getValue(json, field)
-            .map(HjsonTools::asOrToArray)
-            .orElse(new JsonArray().add(new JsonObject()));
-        for (JsonValue value : array) {
-            noise.add(toNoiseSettings(value.asObject(), defaults));
-        }
-        return toArray(noise, NoiseSettings3D.class);
-    }
-
-    /** Converts the input json into a NoiseSettings2D object. */
-    public static NoiseSettings2D toNoiseSettings(JsonObject json, NoiseSettings2D defaults) {
-        final NoiseSettings2D.NoiseSettings2DBuilder builder = defaults.toBuilder()
-            .seed(getInt(json, "seed"));
-
-        getFloat(json, "frequency").ifPresent(builder::frequency);
-        getFloat(json, "scale").ifPresent(builder::scale);
-        getInt(json, "minVal").ifPresent(builder::min);
-        getInt(json, "maxVal").ifPresent(builder::max);
-
-        return builder.build();
-    }
-
-    public static Interp interp(String s) {
-        Optional<Interp> dir = find(Interp.values(), (v) -> v.toString().equalsIgnoreCase(s));
-        return dir.orElseThrow(() -> {
-            final String o = Arrays.toString(Interp.values());
-            return runExF("Error: Interp \"{}\" does not exist. The following are valid options:\n\n", s, o);
-        });
-    }
-
-    public static NoiseType noiseType(String s) {
-        Optional<NoiseType> dir = find(NoiseType.values(), (v) -> v.toString().equalsIgnoreCase(s));
-        return dir.orElseThrow(() -> {
-            final String o = Arrays.toString(NoiseType.values());
-            return runExF("Error: NoiseType \"{}\" does not exist. The following are valid options:\n\n", s, o);
-        });
-    }
-
-    public static FractalType fractalType(String s) {
-        Optional<FractalType> dir = find(FractalType.values(), (v) -> v.toString().equalsIgnoreCase(s));
-        return dir.orElseThrow(() -> {
-            final String o = Arrays.toString(FractalType.values());
-            return runExF("Error: FractalType \"{}\" does not exist. The following are valid options:\n\n", s, o);
-        });
-    }
-
-    public static CellularDistanceFunction distanceFunction(String s) {
-        Optional<CellularDistanceFunction> dir = find(CellularDistanceFunction.values(), (v) -> v.toString().equalsIgnoreCase(s));
-        return dir.orElseThrow(() -> {
-            final String o = Arrays.toString(CellularDistanceFunction.values());
-            return runExF("Error: CellularDistanceFunction \"{}\" does not exist. The following are valid options:\n\n", s, o);
-        });
-    }
-
-    public static CellularReturnType returnType(String s) {
-        Optional<CellularReturnType> dir = find(CellularReturnType.values(), (v) -> v.toString().equalsIgnoreCase(s));
-        return dir.orElseThrow(() -> {
-            final String o = Arrays.toString(CellularReturnType.values());
-            return runExF("Error: CellularReturnType \"{}\" does not exist. The following are valid options:\n\n", s, o);
+    private static <T extends Enum<T>> T toEnumValue(String s, Class<T> clazz) {
+        final T[] constants = clazz.getEnumConstants();
+        return find(constants, v -> v.toString().equalsIgnoreCase(s)).orElseThrow(() -> {
+            final String name = clazz.getSimpleName();
+            final String values = Arrays.toString(constants);
+            return runExF("{} \"{}\" does not exist. Valid options are: {}", name, s, values);
         });
     }
 

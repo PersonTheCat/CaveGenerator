@@ -1,13 +1,8 @@
 package com.personthecat.cavegenerator.util;
 
-import com.personthecat.cavegenerator.Main;
-
 import java.io.File;
 import java.lang.reflect.Array;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
 
@@ -17,57 +12,14 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
 import net.minecraft.util.math.BlockPos;
-import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
-import net.minecraftforge.fml.common.Loader;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.logging.log4j.Level;
 
-import static com.personthecat.cavegenerator.io.SafeFileIO.*;
-
-/**
- * A collection of methods and functions to be imported into
- * most classes throughout the mod for syntactic clarity
- */
+/** A collection of methods and functions to be imported into most classes. */
 public class CommonMethods {
-
-    /*
-     * ////////////////////////////////////////////////////////////////////////
-     *         Shorthand methods to be used throughout the program.
-     *         Should improve readability by reducing boilerplate.
-     * ////////////////////////////////////////////////////////////////////////
-     */
-
-    /** Accesses the mod's main instance to send a message using its logger. */
-    public static void info(String x, Object... args) {
-        Main.instance.logger.info(x, args);
-    }
-
-    /** Accesses the mod's main instance to debug using its logger. */
-    public static void debug(String x, Object... args) {
-        Main.instance.logger.debug(x, args);
-    }
-
-    /** Accesses the mod's main instance to send a warning using its logger. */
-    public static void warn(String x, Object... args) {
-        Main.instance.logger.warn(x, args);
-    }
-
-    /** Accesses the mod's main instance to send an error using its logger. */
-    public static void error(String x, Object... args) {
-        Main.instance.logger.error(x, args);
-    }
-
-    /** Accesses the mod's main instance to log information using its logger. */
-    public static void log(Level level, String x, Object... args) {
-        if (level.equals(Level.FATAL)) {
-            throw runExF(x, args);
-        }
-        Main.instance.logger.log(level, x, args);
-    }
 
     /** Returns a clean-looking, general-purpose RuntimeException. */
     public static RuntimeException runEx(String x) {
@@ -86,7 +38,7 @@ public class CommonMethods {
         while (true) {
             si = s.indexOf("{}", si);
             if (si >= 0) {
-                sb.append(s.substring(begin, si));
+                sb.append(s, begin, si);
                 sb.append(args[oi++]);
                 begin = si = si + 2;
             } else {
@@ -96,12 +48,6 @@ public class CommonMethods {
         sb.append(s.substring(begin));
         return sb.toString();
     }
-
-    /*
-     * ////////////////////////////////////////////////////////////////////////
-     *                  Common, general-purpose functions.
-     * ////////////////////////////////////////////////////////////////////////
-     */
 
     /**
      * Uses a linear search algorithm to locate a value in an array,
@@ -142,7 +88,7 @@ public class CommonMethods {
      * result, I may try to remove this sometime in the near future.
      */
     @SuppressWarnings("unchecked")
-    public static <T extends Object> T[] toArray(List<T> list, Class<T> clazz) {
+    public static <T> T[] toArray(List<T> list, Class<T> clazz) {
         return list.toArray((T[]) Array.newInstance(clazz, 0));
     }
 
@@ -184,24 +130,21 @@ public class CommonMethods {
         return Optional.ofNullable(val);
     }
 
-    public static int getMin(int a, int b) {
-        return a < b ? a : b;
+    /** Returns a random number between the input bounds, inclusive. */
+    public static int numBetween(Random rand, int min, int max) {
+        return min == max ? min : rand.nextInt(max - min + 1) + min;
     }
 
-    public static int getMax(int a, int b) {
-        return a > b ? a : b;
+    /** Variant of Arrays#sort which returns the array. */
+    public static int[] sort(int[] array) {
+        Arrays.sort(array);
+        return array;
     }
 
     /** Divides 1 / `value` without any divide by zero errors or unsightly casting. */
     public static int invert(double value) {
         return value == 0 ? Integer.MAX_VALUE : (int) (1 / value);
     }
-
-    /*
-     * ///////////////////////////////////////////////////////////////////////
-     *                   Functions related to Forge / MC
-     * ///////////////////////////////////////////////////////////////////////
-     */
 
     /**
      * Used for retrieving a Biome from either a registry name
@@ -263,17 +206,15 @@ public class CommonMethods {
     @SuppressWarnings("deprecation") // No good alternative in 1.12. Just ignoring this.
     private static Optional<IBlockState> _getBlock(String registryName, int meta) {
         final ResourceLocation location = new ResourceLocation(registryName);
-        final IBlockState ret;
-        try { // Block#getStateFromMeta may throw a NullPointerException. Extremely annoying.
-            ret = ForgeRegistries.BLOCKS.getValue(location).getStateFromMeta(meta);
-        } catch (NullPointerException e) {
-            return empty();
-        }
+        final Block block = ForgeRegistries.BLOCKS.getValue(location);
+
         // Ensure this value to be anything but air.
-        if (ret.equals(Blocks.AIR.getDefaultState())){
+        if (Blocks.AIR.equals(block)) {
             return empty();
+        } else if (block != null) {
+            return full(block.getStateFromMeta(meta));
         }
-        return full(ret);
+        return empty();
     }
 
     /** Shorthand for retrieving state variants directly from a block. */
@@ -284,10 +225,5 @@ public class CommonMethods {
     /** Returns the center block in the specified chunk */
     public static BlockPos centerCoords(int chunkX, int chunkZ) {
         return new BlockPos((chunkX * 16) + 8, 0, (chunkZ * 16) + 8);
-    }
-
-    /** Returns the absolute position in the specified chunk */
-    public static BlockPos absoluteCoords(int chunkX, int chunkZ) {
-        return new BlockPos(chunkX * 16, 0, chunkZ * 16);
     }
 }

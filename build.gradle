@@ -28,6 +28,8 @@ minecraft {
 }
 
 dependencies {
+    compile 'org.jetbrains:annotations:16.0.2'
+
     // We have a lot of large objects. This improves readability.
     compileOnly 'org.projectlombok:lombok:1.18.16'
     annotationProcessor 'org.projectlombok:lombok:1.18.16'

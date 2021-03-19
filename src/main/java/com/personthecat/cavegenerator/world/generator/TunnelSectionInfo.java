@@ -4,18 +4,15 @@ import com.personthecat.cavegenerator.model.PrimerData;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.logging.log4j.util.TriConsumer;
 
-import javax.annotation.concurrent.Immutable;
-import java.util.function.Consumer;
 import java.util.function.Predicate;
-
-import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
 /**
  * For neatly interacting with tunnel sections. Each tunnel section is essentially
  * a sphere that is constrained by the boundaries of the current chunk @ original(X/Z).
  */
-@Immutable
+// Todo: convert this into two objects, removing the need for #nullCheck.
 public class TunnelSectionInfo {
 
     /** The exact purpose of some of these values is still unclear. */
@@ -128,12 +125,8 @@ public class TunnelSectionInfo {
 
     /** Tests each valid position in the section for one single `true`. */
     public boolean test(Predicate<BlockPos> func) {
-        // Verify that the positions are correctly
-        // initialized before proceeding.
-        nullCheck();
-        // Test each value.
-        for (int i = 0; i < positions.length; i++) {
-            if (func.test(positions[i])) {
+        for (BlockPos pos : positions) {
+            if (func.test(pos)) {
                 return true;
             }
         }
@@ -141,19 +134,9 @@ public class TunnelSectionInfo {
     }
 
     /** Runs a function for every valid position in the section. */
-    public void run(Consumer<BlockPos> func) {
-        // Verify that the positions are correctly
-        // initialized before proceeding.
-        nullCheck();
-        // Accept each value.
-        for (int i = 0; i < positions.length; i++) {
-            func.accept(positions[i]);
-        }
-    }
-
-    private void nullCheck() {
-        if (positions.length > 0 && positions[0] == null) {
-            throw runEx("Error: Forgot to call calculate() on a tunnel section.");
+    public void run(TriConsumer<Integer, Integer, Integer> func) {
+        for (BlockPos pos : positions) {
+            func.accept(pos.getX(), pos.getY(), pos.getZ());
         }
     }
 

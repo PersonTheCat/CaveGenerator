@@ -6,6 +6,8 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Optional;
 
+import com.personthecat.cavegenerator.Main;
+import lombok.extern.log4j.Log4j2;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.nbt.CompressedStreamTools;
 import net.minecraft.server.MinecraftServer;
@@ -21,7 +23,9 @@ import com.personthecat.cavegenerator.util.Result;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 
+@Log4j2
 public class StructureSpawner {
+
     /** A setting indicating the location where structures will be kept. */
     private static final String FOLDER = "cavegenerator/structures";
     public static final File DIR = new File(Loader.instance().getConfigDir(), FOLDER);
@@ -29,9 +33,7 @@ public class StructureSpawner {
     /** Loads all structures into the container from the disk. */
     public static void loadAllStructures(final Map<String, Template> structures) {
         // Verify the folder's integrity before proceeding.
-        ensureDirExists(DIR)
-            .expect("Error: Unable to create the structure directory. It is most likely in use.");
-
+        ensureDirExists(DIR).expect("Error creating structure directory");
         // Clear the structures. Allows them to be reloaded.
         structures.clear();
 
@@ -70,7 +72,7 @@ public class StructureSpawner {
     /** Warns the user if their structure is too large. */
     private static void warnSizeLimitations(Template template, String name) {
         if (template.getSize().getX() > 15 || template.getSize().getZ() > 15) {
-            warn("Large structures are not yet fully supported. Expect cascading generation lag caused by {}.", name);
+            log.warn("Large structures are not yet fully supported. Expect cascading generation lag caused by {}.", name);
         }
     }
 
@@ -78,7 +80,8 @@ public class StructureSpawner {
      * Attempts to load a template from the map or TemplateManager.
      * throws a RuntimeException when no template is found.
      */
-    public static Template getTemplate(Map<String, Template> structures, String fileOrResource, World world) {
+    public static Template getTemplate(String fileOrResource, World world) {
+        final Map<String, Template> structures = Main.instance.structures;
         fileOrResource = removeNbt(fileOrResource);
         // Attempt to load the preset directly from the map.
         Optional<Template> fromMap = safeGet(structures, fileOrResource);

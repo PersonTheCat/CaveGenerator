@@ -1,26 +1,32 @@
-package com.personthecat.cavegenerator.model;
+package com.personthecat.cavegenerator.data;
 
+import com.personthecat.cavegenerator.util.HjsonMapper;
 import fastnoise.FastNoise;
 import fastnoise.FastNoise.*;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
+import lombok.experimental.FieldNameConstants;
+import net.minecraft.world.World;
+import org.hjson.JsonObject;
 
 import java.util.Optional;
 import java.util.Random;
 
-import static com.personthecat.cavegenerator.util.CommonMethods.*;
+import static com.personthecat.cavegenerator.util.CommonMethods.empty;
+import static com.personthecat.cavegenerator.util.CommonMethods.full;
 
 /**
- * This is a variant of {@link NoiseSettings2D} which contains additional fields
+ * This is a variant of {@link NoiseRegionSettings} which contains additional fields
  * specifically relevant to 3-dimensional noise generation. I am looking into how
  * I can remove one or both of them, as they are both almost completely redundant.
  */
+@FieldNameConstants
 @Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public class NoiseSettings3D {
+public class NoiseSettings {
 
     /** A seed used for <b>producing</b> new seeds from a given value. */
     @Default Optional<Integer> seed = empty();
@@ -71,13 +77,13 @@ public class NoiseSettings3D {
     @Default Interp interp = Interp.Hermite;
 
     /** The type of noise generator to run. */
-    @Default NoiseType noiseType = NoiseType.SimplexFractal;
+    @Default NoiseType type = NoiseType.SimplexFractal;
 
     /** Determines how the noise will be fractalized, if applicable. */
-    @Default FractalType fractalType = FractalType.FBM;
+    @Default FractalType fractal = FractalType.FBM;
 
     /** The type of distance function used with cellular noise types. */
-    @Default CellularDistanceFunction distanceFunction = CellularDistanceFunction.Euclidean;
+    @Default CellularDistanceFunction distFunc = CellularDistanceFunction.Euclidean;
 
     /** The return type from cellular noise types. */
     @Default CellularReturnType returnType = CellularReturnType.Distance2;
@@ -85,12 +91,47 @@ public class NoiseSettings3D {
     /** The noise type used when returnType is set to {@code NoiseLookup}. */
     @Default NoiseType cellularLookup = NoiseType.Simplex;
 
+    public static NoiseSettings from(JsonObject json, NoiseSettings defaults) {
+        return copyInto(json, defaults.toBuilder());
+    }
+
+    public static NoiseSettings from(JsonObject json) {
+        return copyInto(json, builder());
+    }
+
+    private static NoiseSettings copyInto(JsonObject json, NoiseSettingsBuilder builder) {
+        return new HjsonMapper(json)
+            .mapInt(Fields.seed, i -> builder.seed(full(i)))
+            .mapFloat(Fields.frequency, builder::frequency)
+            .mapFloat(Fields.scale, builder::scale)
+            .mapFloat(Fields.scaleY, builder::scaleY)
+            .mapFloat(Fields.lacunarity, builder::lacunarity)
+            .mapFloat(Fields.gain, builder::gain)
+            .mapFloat(Fields.perturbAmp, builder::perturbAmp)
+            .mapFloat(Fields.perturbFreq, builder::perturbFreq)
+            .mapFloat("jitter", i -> builder.jitterX(i).jitterY(i).jitterZ(i))
+            .mapFloat(Fields.jitterX, builder::jitterX)
+            .mapFloat(Fields.jitterY, builder::jitterY)
+            .mapFloat(Fields.jitterZ, builder::jitterZ)
+            .mapInt(Fields.octaves, builder::octaves)
+            .mapInt(Fields.offset, builder::offset)
+            .mapBool(Fields.perturb, builder::perturb)
+            .mapBool(Fields.invert, builder::invert)
+            .mapInterp(Fields.interp, builder::interp)
+            .mapNoiseType(Fields.type, builder::type)
+            .mapFractalType(Fields.fractal, builder::fractal)
+            .mapDistFunc(Fields.distFunc, builder::distFunc)
+            .mapReturnType(Fields.returnType, builder::returnType)
+            .mapNoiseType(Fields.cellularLookup, builder::cellularLookup)
+            .release(builder::build);
+    }
+
     /** Converts these settings into a regular {@link FastNoise} object. */
-    public FastNoise getGenerator(long seed) {
-        return new FastNoise(getSeed(seed))
-            .SetNoiseType(noiseType)
+    public FastNoise getGenerator(World world) {
+        return new FastNoise(getSeed(world))
+            .SetNoiseType(type)
             .SetFrequency(frequency)
-            .SetFractalType(fractalType)
+            .SetFractalType(fractal)
             .SetFractalOctaves(octaves)
             .SetInvert(invert)
             .SetFractalGain(gain)
@@ -100,7 +141,7 @@ public class NoiseSettings3D {
             .SetGradientPerturb(perturb)
             .SetFractalLacunarity(lacunarity)
             .SetCellularNoiseLookup(cellularLookup)
-            .SetCellularDistanceFunction(distanceFunction)
+            .SetCellularDistanceFunction(distFunc)
             .SetInterp(interp)
             .SetCellularJitterX(jitterX)
             .SetCellularJitterY(jitterY)
@@ -111,12 +152,11 @@ public class NoiseSettings3D {
     }
 
     /** Generates a new seed from the input `base` value. */
-    private int getSeed(long base) {
-        final Random rand = new Random(base);
-        final int next = rand.nextInt();
+    private int getSeed(World world) {
         return seed.map(num -> {
-            final FastNoise simple = new FastNoise(next);
+            final Random rand = new Random(world.getSeed());
+            final FastNoise simple = new FastNoise(rand.nextInt());
             return Float.floatToIntBits(simple.GetNoise(num));
-        }).orElse(next);
+        }).orElseGet(world.rand::nextInt);
     }
 }

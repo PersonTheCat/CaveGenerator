@@ -1,10 +1,9 @@
 package com.personthecat.cavegenerator;
 
+import com.personthecat.cavegenerator.config.CavePreset;
 import com.personthecat.cavegenerator.config.PresetReader;
-import com.personthecat.cavegenerator.world.CaveGenerator;
-import com.personthecat.cavegenerator.world.GeneratorSettings;
+import lombok.extern.log4j.Log4j2;
 import net.minecraftforge.fml.common.Loader;
-import org.apache.commons.lang3.ArrayUtils;
 
 import java.io.File;
 import java.util.Arrays;
@@ -16,6 +15,7 @@ import java.util.Optional;
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 
+@Log4j2
 public class CaveInit {
 
     /** A setting indicating the location where presets will be kept. */
@@ -43,7 +43,7 @@ public class CaveInit {
     public static final File GENERATED_DIR = new File(CONFIG_DIR, GENERATED);
 
     /** Initializes the supplied map with presets from the directory. */
-    public static void initPresets(final Map<String, GeneratorSettings> presets) {
+    public static void initPresets(final Map<String, CavePreset> presets) {
         // Verify the folders' integrity before proceeding.
         ensureDirExists(PRESET_DIR).expect(CANT_CREATE);
         ensureDirExists(IMPORT_DIR).expect(CANT_CREATE);
@@ -62,7 +62,7 @@ public class CaveInit {
             return full(presetFile);
         }
         for (String ext : EXTENSIONS) {
-            Optional<File> found = tryExtension(preset, ext);
+            final Optional<File> found = tryExtension(preset, ext);
             if (found.isPresent()) {
                 return found;
             }
@@ -72,7 +72,7 @@ public class CaveInit {
 
     /** Attempts to locate a preset using a specific extension. */
     private static Optional<File> tryExtension(String preset, String extension) {
-        File presetFile = new File(PRESET_DIR, preset + "." + extension);
+        final File presetFile = new File(PRESET_DIR, preset + "." + extension);
         if (safeFileExists(presetFile, NO_ACCESS)) {
             return full(presetFile);
         }
@@ -84,34 +84,10 @@ public class CaveInit {
     }
 
     /** Prints which presets are currently loaded and whether they are enabled. */
-    private static void printLoadedPresets(final Map<String, GeneratorSettings> presets) {
-        for (Entry<String, GeneratorSettings> entry : presets.entrySet()) {
-            final String enabled = entry.getValue().conditions.enabled ? "enabled" : "disabled";
-            info("{} is {}.", entry.getKey(), enabled);
+    private static void printLoadedPresets(final Map<String, CavePreset> presets) {
+        for (Entry<String, CavePreset> entry : presets.entrySet()) {
+            final String enabled = entry.getValue().enabled ? "enabled" : "disabled";
+            log.info("{} is {}.", entry.getKey(), enabled);
         }
-    }
-
-    /** Returns whether any generator is enabled for the current dimension. */
-    public static boolean anyGeneratorEnabled(final Map<String, CaveGenerator> generators, int dimension) {
-        return find(generators.values(), gen -> gen.canGenerate(dimension))
-            .isPresent();
-    }
-
-    /** Returns whether any generator in the current dimension has caverns enabled. */
-    public static boolean anyCavernsEnabled(final Map<String, CaveGenerator> generators, int dimension) {
-        return find(generators.values(), gen -> gen.canGenerate(dimension) && gen.settings.caverns.enabled)
-            .isPresent();
-    }
-
-    /** Returns whether the input settings are valid for the current dimension. */
-    static boolean validPreset(final GeneratorSettings cfg, int dimension) {
-        return cfg.conditions.enabled && (cfg.conditions.dimensions.length == 0 ||
-            (ArrayUtils.contains(cfg.conditions.dimensions, dimension) != cfg.conditions.dimensionBlacklist));
-    }
-
-    /** Returns whether any generator is enabled for the current dimension and has world decorators. */
-    public static boolean anyHasWorldDecorator(final Map<String, CaveGenerator> generators, int dimension) {
-        return find(generators.values(), gen -> gen.canGenerate(dimension) && gen.hasWorldDecorators())
-            .isPresent();
     }
 }
