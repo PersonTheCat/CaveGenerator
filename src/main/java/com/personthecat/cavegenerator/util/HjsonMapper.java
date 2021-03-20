@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.util;
 
 import com.personthecat.cavegenerator.model.Direction;
+import com.personthecat.cavegenerator.model.FloatRange;
 import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.model.ScalableFloat;
 import com.personthecat.cavegenerator.data.WallDecoratorSettings.Placement;
@@ -61,6 +62,11 @@ public class HjsonMapper {
 
     public HjsonMapper mapRange(String field, Consumer<Range> ifPresent) {
         HjsonTools.getRange(json, field).ifPresent(ifPresent);
+        return this;
+    }
+
+    public HjsonMapper mapFloatRange(String field, Consumer<FloatRange> ifPresent) {
+        HjsonTools.getFloatRange(json, field).ifPresent(ifPresent);
         return this;
     }
 

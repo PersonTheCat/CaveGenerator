@@ -47,7 +47,7 @@ public class RavineSettings {
     @Default ScalableFloat scale = new ScalableFloat(0.0F, 2.0F, 1.0F, 0.0F, 1.0F);
 
     /** Vertical scale ratio. */
-    @Default ScalableFloat skew = new ScalableFloat(3.0F, 1.0F, 1.0F, 0.0F, 1.0F);
+    @Default ScalableFloat stretch = new ScalableFloat(3.0F, 1.0F, 1.0F, 0.0F, 1.0F);
 
     /** Horizontal angle in radians. */
     @Default ScalableFloat yaw = new ScalableFloat(0.0F, 1.0F, 1.0F, 0.0F, 1.0F);
@@ -90,7 +90,7 @@ public class RavineSettings {
             .mapScalableFloat(Fields.dYaw, original.dYaw, builder::dYaw)
             .mapScalableFloat(Fields.dPitch, original.dPitch, builder::dPitch)
             .mapScalableFloat(Fields.scale, original.scale, builder::scale)
-            .mapScalableFloat(Fields.skew, original.skew, builder::skew)
+            .mapScalableFloat(Fields.stretch, original.stretch, builder::stretch)
             .mapScalableFloat(Fields.yaw, original.yaw, builder::yaw)
             .mapScalableFloat(Fields.pitch, original.pitch, builder::pitch)
             .mapInt(Fields.distance, builder::distance)

@@ -100,6 +100,9 @@
 #     # Alters the distance between peaks of values.                        #
 #     frequency: floating-point value                                       #
 #                                                                           #
+#     # Inverts the output of the generator                                 #
+#     invert: boolean                                                       #
+#                                                                           #
 #     # Used to produce a common output between multiple noise generators.  #
 #     seed: integer                                                         #
 #   }                                                                       #
@@ -638,7 +641,7 @@ caverns: {
 
 # See stone_layers.cave for an example of stoneLayers. These are just the
 # default values, so you only need to specify the state and maxHeight.
-stoneLayers: [
+layers: [
   {
     # **This value may not be null**.
     state: null
@@ -669,7 +672,7 @@ clusters: [
 
 # See stalagmites_large.cave for an example of stalactites. These 
 # are just the default values, so  you only need to specify the state.
-largeStalactites: [
+stalactites: [
   {
     # **This value may not be null**.
     state: null

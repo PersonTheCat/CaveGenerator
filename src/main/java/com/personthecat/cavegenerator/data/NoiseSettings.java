@@ -1,5 +1,7 @@
 package com.personthecat.cavegenerator.data;
 
+import com.personthecat.cavegenerator.model.FloatRange;
+import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.util.HjsonMapper;
 import fastnoise.FastNoise;
 import fastnoise.FastNoise.*;
@@ -32,37 +34,37 @@ public class NoiseSettings {
     @Default Optional<Integer> seed = empty();
 
     /** The target waveform frequency produced by the generator. */
-    @Default float frequency = 1.0f;
+    @Default float frequency = 1.0F;
 
-    /** Converts a range of 0-1 into a threshold for accepting output values. */
-    @Default float scale = 0.5f;
+    /** The threshold of acceptable values produced by the generator. */
+    @Default FloatRange threshold = Range.of(0.0F);
 
     /** Scales the noise produced * x. */
-    @Default float skew = 1.0f;
+    @Default float stretch = 1.0F;
 
     /** The scale of gaps produced in fractal patterns. */
-    @Default float lacunarity = 1.0f;
+    @Default float lacunarity = 1.0F;
 
     /** The octave gain for fractal noise types. */
-    @Default float gain = 0.5f;
+    @Default float gain = 0.5F;
 
     /** The maximum amount to warp coordinates when perturb is enabled. */
-    @Default float perturbAmp = 1.0f;
+    @Default float perturbAmp = 1.0F;
 
     /** The frequency used in warping input coordinates. */
-    @Default float perturbFreq = 1.0f;
+    @Default float perturbFreq = 1.0F;
 
     /** The maximum amount a cellular point can move off grid. (x-axis) */
-    @Default float jitterX = 0.45f;
+    @Default float jitterX = 0.45F;
 
     /** The maximum amount a cellular point can move off grid. (y-axis) */
-    @Default float jitterY = 0.45f;
+    @Default float jitterY = 0.45F;
 
     /** The maximum amount a cellular point can move off grid. (z-axis) */
-    @Default float jitterZ = 0.45f;
+    @Default float jitterZ = 0.45F;
 
     /** The number of generation passes, i.e. the resolution. */
-    @Default int octaves = 3;
+    @Default int octaves = 1;
 
     /** The vertical offset applied to the noise generator. */
     @Default int offset = 0;
@@ -103,8 +105,8 @@ public class NoiseSettings {
         return new HjsonMapper(json)
             .mapInt(Fields.seed, i -> builder.seed(full(i)))
             .mapFloat(Fields.frequency, builder::frequency)
-            .mapFloat(Fields.scale, builder::scale)
-            .mapFloat(Fields.skew, builder::skew)
+            .mapFloatRange(Fields.threshold, builder::threshold)
+            .mapFloat(Fields.stretch, builder::stretch)
             .mapFloat(Fields.lacunarity, builder::lacunarity)
             .mapFloat(Fields.gain, builder::gain)
             .mapFloat(Fields.perturbAmp, builder::perturbAmp)
@@ -146,8 +148,8 @@ public class NoiseSettings {
             .SetCellularJitterX(jitterX)
             .SetCellularJitterY(jitterY)
             .SetCellularJitterZ(jitterZ)
-            .SetScale(scale)
-            .SetScaleY(skew)
+            .SetThreshold(threshold.min, threshold.max)
+            .SetStretch(stretch)
             .SetOffset(offset);
     }
 

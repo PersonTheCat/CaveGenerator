@@ -2,6 +2,7 @@ package com.personthecat.cavegenerator.world;
 
 import com.personthecat.cavegenerator.config.ConfigFile;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
+import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;
 import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
@@ -30,6 +31,11 @@ public class ReplaceVanillaCaveGen {
                     } else {
                         event.setNewGen(new EarlyCaveHook(event.getNewGen()));
                     }
+                }
+                break;
+            case MINESHAFT:
+                if (!ConfigFile.enableMineshafts) {
+                    event.setResult(Event.Result.DENY);
                 }
         }
     }

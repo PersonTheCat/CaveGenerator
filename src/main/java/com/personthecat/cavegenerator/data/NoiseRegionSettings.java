@@ -1,5 +1,7 @@
 package com.personthecat.cavegenerator.data;
 
+import com.personthecat.cavegenerator.model.FloatRange;
+import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.util.HjsonMapper;
 import fastnoise.FastNoise;
 import fastnoise.FastNoise.NoiseType;
@@ -36,10 +38,13 @@ public class NoiseRegionSettings {
     @Default Optional<Integer> seed = empty();
 
     /** Converts a range of 0-1 into a threshold for accepting output values. */
-    @Default float scale = 0.5f;
+    @Default FloatRange threshold = Range.of(0.0F);
 
     /** The target waveform frequency produced by the generator. */
     @Default float frequency = 1.0f;
+
+    /** Whether to invert the output of the generator. */
+    @Default boolean invert = false;
 
     /** The type of noise generator to run. */
     @Default NoiseType type = NoiseType.SimplexFractal;
@@ -56,7 +61,7 @@ public class NoiseRegionSettings {
         return new HjsonMapper(json)
             .mapInt(Fields.seed, i -> builder.seed(full(i)))
             .mapFloat(Fields.frequency, builder::frequency)
-            .mapFloat(Fields.scale, builder::scale)
+            .mapFloatRange(Fields.threshold, builder::threshold)
             .mapNoiseType(Fields.type, builder::type)
             .release(builder::build);
     }
@@ -64,8 +69,9 @@ public class NoiseRegionSettings {
     public FastNoise getGenerator(World world) {
         return new FastNoise(getSeed(world))
             .SetNoiseType(type)
-            .SetScale(scale)
+            .SetThreshold(threshold.min, threshold.max)
             .SetFrequency(frequency)
+            .SetInvert(invert)
             .SetInterp(FastNoise.Interp.Hermite);
     }
 

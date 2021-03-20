@@ -1,7 +1,6 @@
 package com.personthecat.cavegenerator.util;
 
 import com.personthecat.cavegenerator.model.*;
-import com.personthecat.cavegenerator.data.WallDecoratorSettings;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
@@ -156,6 +155,21 @@ public class HjsonTools {
         return range.length == 1 ? new Range(range[0]) : new Range(range[0], range[range.length - 1]);
     }
 
+    public static Optional<FloatRange> getFloatRange(JsonObject json, String field) {
+        return getValue(json, field)
+            .map(HjsonTools::asOrToArray)
+            .map(HjsonTools::toFloatArray)
+            .map(CommonMethods::sort)
+            .map(HjsonTools::toFloatRange);
+    }
+
+    private static FloatRange toFloatRange(float[] range) {
+        if (range.length == 0) {
+            return new FloatRange(0F);
+        }
+        return range.length == 1 ? new FloatRange(range[0]) : new FloatRange(range[0], range[range.length -1]);
+    }
+
     /** Safely retrieves a boolean from the input json. */
     public static Optional<Float> getFloat(JsonObject json, String field) {
         return getValue(json, field).map(JsonValue::asFloat);
@@ -247,17 +261,19 @@ public class HjsonTools {
 
     /** Converts a JsonArray into an array of ints. */
     public static int[] toIntArray(JsonArray array) {
-        // Create a List of Integer objects.
-        List<Integer> ints = new ArrayList<>();
-        // Iterate through the array, adding to the list.
-        for (JsonValue value : array) {
-            ints.add(value.asInt());
+        final int[] ints = new  int[array.size()];
+        for (int i = 0; i < array.size(); i++) {
+            ints[i] = array.get(i).asInt();
         }
-        // Convert the Integer objects into
-        // their primitive counterparts.
-        return ints.stream()
-            .mapToInt((i) -> i)
-            .toArray();
+        return ints;
+    }
+
+    public static float[] toFloatArray(JsonArray array) {
+        final float[] floats = new float[array.size()];
+        for (int i = 0; i < array.size(); i++) {
+            floats[i] = array.get(i).asFloat();
+        }
+        return floats;
     }
 
     /** Safely retrieves a List of Strings from the input json. */
@@ -303,12 +319,6 @@ public class HjsonTools {
     public static Optional<List<BlockPos>> getPositionList(JsonObject json, String field) {
         return getArray(json, field).map(HjsonTools::toPositionList);
     }
-
-    /** Safely retrieves a Preference object from the input json. */
-    public static Optional<WallDecoratorSettings.Placement> getPreference(JsonObject json, String field) {
-        return getString(json, field).map(WallDecoratorSettings.Placement::from);
-    }
-
 
     /** Converts the input JsonArray into a BlockPos object. */
     public static BlockPos toPosition(JsonArray coordinates) {

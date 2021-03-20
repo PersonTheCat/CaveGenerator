@@ -26,7 +26,7 @@ public class RavineGenerator extends SphereGenerator {
 
     /** Spawns all of the ravines for this preset. */
     @Override
-    protected void doGenerate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+    protected void generateChecked(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
         if (rand.nextInt(cfg.chance) == 0) {
             startRavine(world, rand.nextLong(), destChunkX, destChunkZ, chunkX, chunkZ, primer);
         }

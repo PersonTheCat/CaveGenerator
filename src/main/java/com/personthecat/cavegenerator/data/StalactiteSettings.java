@@ -43,7 +43,7 @@ public class StalactiteSettings {
     @Default boolean wide = true;
 
     /** The 0-1 chance that this spawner should run in any given chunk. */
-    @Default double chance = 0.167f;
+    @Default double chance = 0.167F;
 
     /** The maximum length to generate. */
     @Default int maxLength = 3;
@@ -53,7 +53,7 @@ public class StalactiteSettings {
 
     /** The default noise settings to be optionally used for stalactites. */
     public static final NoiseRegionSettings DEFAULT_NOISE = NoiseRegionSettings.builder()
-        .frequency(0.025f).scale(0.7125f).build();
+        .frequency(0.025f).threshold(Range.of(-0.425F)).build();
 
     public static StalactiteSettings from(JsonObject json, OverrideSettings overrides) {
         final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();

@@ -10,6 +10,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.Function;
@@ -43,7 +44,7 @@ public class Decorators {
 
     // This would ideally be adapted to check for other *kinds* of block features.
     private static Predicate<IBlockState> compileCanReplace(DecoratorSettings settings, List<IBlockState> featureBlocks) {
-        final List<IBlockState> replaceable = settings.replaceableBlocks;
+        final List<IBlockState> replaceable = new ArrayList<>(settings.replaceableBlocks);
         if (replaceable.isEmpty()) {
             return s -> true;
         }

@@ -68,13 +68,14 @@ public class FastNoise {
 
 	private float m_multiple = 1.0f;
 	private float m_addend = 0.0f;
-	private float m_scaleY = 1.0f;
+	private float m_stretch = 1.0f;
 
 	private int m_offset = 0;
 
 	private boolean m_invert = false;
 
-	private float m_booleanThreshold = 0.0f;
+	private float m_booleanMinThreshold = 0.0f;
+	private float m_booleanMaxThreshold = 1.0f;
 
 	public FastNoise() {
 		this(1337);
@@ -83,23 +84,6 @@ public class FastNoise {
 	public FastNoise(int seed) {
 		m_seed = seed;
 		CalculateFractalBounding();
-	}
-
-	// Returns a 0 float/double
-	public static float GetDecimalType() {
-		return 0;
-	}
-
-	// Returns the seed used by this object
-	public int GetSeed() {
-		return m_seed;
-	}
-
-	// Sets seed used for all noise types
-	// Default: 1337
-	public FastNoise SetSeed(int seed) {
-		m_seed = seed;
-		return this;
 	}
 
 	// Sets frequency for all noise types
@@ -200,13 +184,6 @@ public class FastNoise {
 	// Sets the maximum distance a cellular point can move from its grid position
 	// Setting this high will make artifacts more common
 	// Default: 0.45
-	public FastNoise SetCellularJitter(float jitter) {
-		m_cellularJitterX = jitter;
-		m_cellularJitterY = jitter;
-		m_cellularJitterZ = jitter;
-		return this;
-	}
-
 	public FastNoise SetCellularJitterX(float jitter) {
 		m_cellularJitterX = jitter;
 		return this;
@@ -262,13 +239,15 @@ public class FastNoise {
 
 	// Generates and sets the boolean threshold based on a scale of 0 - 1.
 	// Default: 0.5 -> 0.0.
-	public FastNoise SetScale(float scale) {
-		m_booleanThreshold = (scale * 2.0f) - 1.0f;
+	public FastNoise SetThreshold(float min, float max) {
+		m_booleanMinThreshold = min;
+		// Treat a range of f1~f1 as a single threshold.
+		m_booleanMaxThreshold = max != min ? max : 1.0F;
 		return this;
 	}
 
-	public FastNoise SetScaleY(float scale) {
-		m_scaleY = scale;
+	public FastNoise SetStretch(float scale) {
+		m_stretch = scale;
 		return this;
 	}
 
@@ -426,7 +405,6 @@ public class FastNoise {
 	private final static int X_PRIME = 1619;
 	private final static int Y_PRIME = 31337;
 	private final static int Z_PRIME = 6971;
-	private final static int W_PRIME = 1013;
 
 	private static int Hash2D(int seed, int x, int y) {
 		int hash = seed;
@@ -451,19 +429,6 @@ public class FastNoise {
 		return hash;
 	}
 
-	private static int Hash4D(int seed, int x, int y, int z, int w) {
-		int hash = seed;
-		hash ^= X_PRIME * x;
-		hash ^= Y_PRIME * y;
-		hash ^= Z_PRIME * z;
-		hash ^= W_PRIME * w;
-
-		hash = hash * hash * hash * 60493;
-		hash = (hash >> 13) ^ hash;
-
-		return hash;
-	}
-
 	private static float ValCoord1D(int seed, float x) {
 		return (seed & 1) == 0 ? x : -x;
 	}
@@ -481,16 +446,6 @@ public class FastNoise {
 		n ^= X_PRIME * x;
 		n ^= Y_PRIME * y;
 		n ^= Z_PRIME * z;
-
-		return (n * n * n * 60493) / (float) 2147483648.0;
-	}
-
-	private static float ValCoord4D(int seed, int x, int y, int z, int w) {
-		int n = seed;
-		n ^= X_PRIME * x;
-		n ^= Y_PRIME * y;
-		n ^= Z_PRIME * z;
-		n ^= W_PRIME * w;
 
 		return (n * n * n * 60493) / (float) 2147483648.0;
 	}
@@ -522,40 +477,9 @@ public class FastNoise {
 		return xd * g.x + yd * g.y + zd * g.z;
 	}
 
-	private static float GradCoord4D(int seed, int x, int y, int z, int w, float xd, float yd, float zd, float wd) {
-		int hash = seed;
-		hash ^= X_PRIME * x;
-		hash ^= Y_PRIME * y;
-		hash ^= Z_PRIME * z;
-		hash ^= W_PRIME * w;
-
-		hash = hash * hash * hash * 60493;
-		hash = (hash >> 13) ^ hash;
-
-		hash &= 31;
-		float a = yd, b = zd, c = wd;            // X,Y,Z
-		switch (hash >> 3) {          // OR, DEPENDING ON HIGH ORDER 2 BITS:
-			case 1:
-				a = wd;
-				b = xd;
-				c = yd;
-				break;     // W,X,Y
-			case 2:
-				a = zd;
-				b = wd;
-				c = xd;
-				break;     // Z,W,X
-			case 3:
-				a = yd;
-				b = zd;
-				c = wd;
-				break;     // Y,Z,W
-		}
-		return ((hash & 4) == 0 ? -a : a) + ((hash & 2) == 0 ? -b : b) + ((hash & 1) == 0 ? -c : c);
-	}
-
 	public boolean GetBoolean(float x, float y, float z) {
-		return m_invert != (GetNoise(x, y, z) <= m_booleanThreshold);
+		final float noise = GetNoise(x, y, z);
+		return m_invert != (noise >= m_booleanMinThreshold && noise <= m_booleanMaxThreshold);
 	}
 
 	public float GetAdjustedNoise(float x, float y, float z) {
@@ -564,7 +488,7 @@ public class FastNoise {
 
 	public float GetNoise(float x, float y, float z) {
 		y += m_offset;
-		y /= m_scaleY;
+		y /= m_stretch;
 		if (m_gradientPerturb) {
 			Vector3f vec = new Vector3f(x, y, z);
 			GradientPerturb(vec);
@@ -647,7 +571,8 @@ public class FastNoise {
 	}
 
 	public boolean GetBoolean(float x, float y) {
-		return m_invert != (GetNoise(x, y) <= m_booleanThreshold);
+		final float noise = GetNoise(x, y);
+		return m_invert != (noise >= m_booleanMinThreshold && noise <= m_booleanMaxThreshold);
 	}
 
 	public float GetAdjustedNoise(float x, float y) {
@@ -655,7 +580,7 @@ public class FastNoise {
 	}
 
 	public float GetNoise(float x, float y) {
-		y /= m_scaleY;
+		y /= m_stretch;
 		x *= m_frequency;
 		y *= m_frequency;
 
@@ -735,10 +660,6 @@ public class FastNoise {
 		}
 	}
 
-	public float GetAdjustedNoise(float x) {
-		return GetNoise(x) * m_multiple + m_addend;
-	}
-
 	public float GetNoise(float x) {
 		x *= m_frequency;
 		// This is the only variant available.
@@ -751,15 +672,6 @@ public class FastNoise {
 		int i = Float.floatToRawIntBits(f);
 
 		return i ^ (i >> 16);
-	}
-
-	public float GetWhiteNoise(float x, float y, float z, float w) {
-		int xi = FloatCast2Int(x);
-		int yi = FloatCast2Int(y);
-		int zi = FloatCast2Int(z);
-		int wi = FloatCast2Int(w);
-
-		return ValCoord4D(m_seed, xi, yi, zi, wi);
 	}
 
 	public float GetWhiteNoise(float x, float y, float z) {
@@ -775,36 +687,6 @@ public class FastNoise {
 		int yi = FloatCast2Int(y);
 
 		return ValCoord2D(m_seed, xi, yi);
-	}
-
-	public float GetWhiteNoiseInt(int x, int y, int z, int w) {
-		return ValCoord4D(m_seed, x, y, z, w);
-	}
-
-	public float GetWhiteNoiseInt(int x, int y, int z) {
-		return ValCoord3D(m_seed, x, y, z);
-	}
-
-	public float GetWhiteNoiseInt(int x, int y) {
-		return ValCoord2D(m_seed, x, y);
-	}
-
-	// Value Noise
-	public float GetValueFractal(float x, float y, float z) {
-		x *= m_frequency;
-		y *= m_frequency;
-		z *= m_frequency;
-
-		switch (m_fractalType) {
-			case FBM:
-				return SingleValueFractalFBM(x, y, z);
-			case Billow:
-				return SingleValueFractalBillow(x, y, z);
-			case RigidMulti:
-				return SingleValueFractalRigidMulti(x, y, z);
-			default:
-				return 0;
-		}
 	}
 
 	private float SingleValueFractalFBM(float x, float y, float z) {
@@ -858,10 +740,6 @@ public class FastNoise {
 		return sum;
 	}
 
-	public float GetValue(float x, float y, float z) {
-		return SingleValue(m_seed, x * m_frequency, y * m_frequency, z * m_frequency);
-	}
-
 	private float SingleValue(int seed, float x, float y, float z) {
 		int x0 = FastFloor(x);
 		int y0 = FastFloor(y);
@@ -899,22 +777,6 @@ public class FastNoise {
 		float yf1 = Lerp(xf01, xf11, ys);
 
 		return Lerp(yf0, yf1, zs);
-	}
-
-	public float GetValueFractal(float x, float y) {
-		x *= m_frequency;
-		y *= m_frequency;
-
-		switch (m_fractalType) {
-			case FBM:
-				return SingleValueFractalFBM(x, y);
-			case Billow:
-				return SingleValueFractalBillow(x, y);
-			case RigidMulti:
-				return SingleValueFractalRigidMulti(x, y);
-			default:
-				return 0;
-		}
 	}
 
 	private float SingleValueFractalFBM(float x, float y) {
@@ -964,10 +826,6 @@ public class FastNoise {
 		return sum;
 	}
 
-	public float GetValue(float x, float y) {
-		return SingleValue(m_seed, x * m_frequency, y * m_frequency);
-	}
-
 	private float SingleValue(int seed, float x, float y) {
 		int x0 = FastFloor(x);
 		int y0 = FastFloor(y);
@@ -995,24 +853,6 @@ public class FastNoise {
 		float xf1 = Lerp(ValCoord2D(seed, x0, y1), ValCoord2D(seed, x1, y1), xs);
 
 		return Lerp(xf0, xf1, ys);
-	}
-
-	// Gradient Noise
-	public float GetPerlinFractal(float x, float y, float z) {
-		x *= m_frequency;
-		y *= m_frequency;
-		z *= m_frequency;
-
-		switch (m_fractalType) {
-			case FBM:
-				return SinglePerlinFractalFBM(x, y, z);
-			case Billow:
-				return SinglePerlinFractalBillow(x, y, z);
-			case RigidMulti:
-				return SinglePerlinFractalRigidMulti(x, y, z);
-			default:
-				return 0;
-		}
 	}
 
 	private float SinglePerlinFractalFBM(float x, float y, float z) {
@@ -1066,10 +906,6 @@ public class FastNoise {
 		return sum;
 	}
 
-	public float GetPerlin(float x, float y, float z) {
-		return SinglePerlin(m_seed, x * m_frequency, y * m_frequency, z * m_frequency);
-	}
-
 	private float SinglePerlin(int seed, float x, float y, float z) {
 		int x0 = FastFloor(x);
 		int y0 = FastFloor(y);
@@ -1114,22 +950,6 @@ public class FastNoise {
 		float yf1 = Lerp(xf01, xf11, ys);
 
 		return Lerp(yf0, yf1, zs);
-	}
-
-	public float GetPerlinFractal(float x, float y) {
-		x *= m_frequency;
-		y *= m_frequency;
-
-		switch (m_fractalType) {
-			case FBM:
-				return SinglePerlinFractalFBM(x, y);
-			case Billow:
-				return SinglePerlinFractalBillow(x, y);
-			case RigidMulti:
-				return SinglePerlinFractalRigidMulti(x, y);
-			default:
-				return 0;
-		}
 	}
 
 	private float SinglePerlinFractalFBM(float x, float y) {
@@ -1180,10 +1000,6 @@ public class FastNoise {
 		return sum;
 	}
 
-	public float GetPerlin(float x, float y) {
-		return SinglePerlin(m_seed, x * m_frequency, y * m_frequency);
-	}
-
 	private float SinglePerlin(int seed, float x, float y) {
 		int x0 = FastFloor(x);
 		int y0 = FastFloor(y);
@@ -1218,95 +1034,12 @@ public class FastNoise {
 		return Lerp(xf0, xf1, ys);
 	}
 
-	public float GetPerlinFractal(float x) {
-		x *= m_frequency;
-
-		switch (m_fractalType) {
-			case FBM:
-				return SinglePerlinFractalFBM(x);
-			case Billow:
-				return SinglePerlinFractalBillow(x);
-			case RigidMulti:
-				return SinglePerlinFractalRigidMulti(x);
-			default:
-				return 0;
-		}
-	}
-
-	private float SinglePerlinFractalFBM(float x) {
-		int seed = m_seed;
-		float sum = SinglePerlin(seed, x);
-		float amp = 1;
-
-		for (int i = 1; i < m_octaves; i++) {
-			x *= m_lacunarity;
-
-			amp *= m_gain;
-			sum += SinglePerlin(++seed, x) * amp;
-		}
-
-		return sum * m_fractalBounding;
-	}
-
-	private float SinglePerlinFractalBillow(float x) {
-		int seed = m_seed;
-		float sum = Math.abs(SinglePerlin(seed, x)) * 2 - 1;
-		float amp = 1;
-
-		for (int i = 1; i < m_octaves; i++) {
-			x *= m_lacunarity;
-
-			amp *= m_gain;
-			sum += (Math.abs(SinglePerlin(++seed, x)) * 2 - 1) * amp;
-		}
-
-		return sum * m_fractalBounding;
-	}
-
-	private float SinglePerlinFractalRigidMulti(float x) {
-		int seed = m_seed;
-		float sum = 1 - Math.abs(SinglePerlin(seed, x));
-		float amp = 1;
-
-		for (int i = 1; i < m_octaves; i++) {
-			x *= m_lacunarity;
-
-			amp *= m_gain;
-			sum -= (1 - Math.abs(SinglePerlin(++seed, x))) * amp;
-		}
-
-		return sum;
-	}
-
-	public float GetPerlin(float x) {
-		return SinglePerlin(m_seed, x * m_frequency);
-	}
-
 	private float SinglePerlin(int seed, float x) {
-		int before = (int) FastFloor(x) & 255;
 		x -= FastFloor(x);
 		float u = InterpQuinticFunc(x);
 		float gradA = ValCoord1D(seed, x);
 		float gradB = ValCoord1D(seed + 1, x - 1);
 		return Lerp(u, gradA, gradB);
-	}
-
-	// Simplex Noise
-	public float GetSimplexFractal(float x, float y, float z) {
-		x *= m_frequency;
-		y *= m_frequency;
-		z *= m_frequency;
-
-		switch (m_fractalType) {
-			case FBM:
-				return SingleSimplexFractalFBM(x, y, z);
-			case Billow:
-				return SingleSimplexFractalBillow(x, y, z);
-			case RigidMulti:
-				return SingleSimplexFractalRigidMulti(x, y, z);
-			default:
-				return 0;
-		}
 	}
 
 	private float SingleSimplexFractalFBM(float x, float y, float z) {
@@ -1358,10 +1091,6 @@ public class FastNoise {
 		}
 
 		return sum;
-	}
-
-	public float GetSimplex(float x, float y, float z) {
-		return SingleSimplex(m_seed, x * m_frequency, y * m_frequency, z * m_frequency);
 	}
 
 	private final static float F3 = (float) (1.0 / 3.0);
@@ -1476,22 +1205,6 @@ public class FastNoise {
 		return 32 * (n0 + n1 + n2 + n3);
 	}
 
-	public float GetSimplexFractal(float x, float y) {
-		x *= m_frequency;
-		y *= m_frequency;
-
-		switch (m_fractalType) {
-			case FBM:
-				return SingleSimplexFractalFBM(x, y);
-			case Billow:
-				return SingleSimplexFractalBillow(x, y);
-			case RigidMulti:
-				return SingleSimplexFractalRigidMulti(x, y);
-			default:
-				return 0;
-		}
-	}
-
 	private float SingleSimplexFractalFBM(float x, float y) {
 		int seed = m_seed;
 		float sum = SingleSimplex(seed, x, y);
@@ -1538,10 +1251,6 @@ public class FastNoise {
 		}
 
 		return sum;
-	}
-
-	public float GetSimplex(float x, float y) {
-		return SingleSimplex(m_seed, x * m_frequency, y * m_frequency);
 	}
 
 	private final static float F2 = (float) (1.0 / 2.0);
@@ -1599,131 +1308,6 @@ public class FastNoise {
 		return 50 * (n0 + n1 + n2);
 	}
 
-	public float GetSimplex(float x, float y, float z, float w) {
-		return SingleSimplex(m_seed, x * m_frequency, y * m_frequency, z * m_frequency, w * m_frequency);
-	}
-
-	private static final byte[] SIMPLEX_4D = {
-		0, 1, 2, 3, 0, 1, 3, 2, 0, 0, 0, 0, 0, 2, 3, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 2, 3, 0,
-		0, 2, 1, 3, 0, 0, 0, 0, 0, 3, 1, 2, 0, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 3, 2, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		1, 2, 0, 3, 0, 0, 0, 0, 1, 3, 0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 3, 0, 1, 2, 3, 1, 0,
-		1, 0, 2, 3, 1, 0, 3, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 2, 0, 3, 1, 0, 0, 0, 0, 2, 1, 3, 0,
-		0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-		2, 0, 1, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 0, 1, 2, 3, 0, 2, 1, 0, 0, 0, 0, 3, 1, 2, 0,
-		2, 1, 0, 3, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 3, 1, 0, 2, 0, 0, 0, 0, 3, 2, 0, 1, 3, 2, 1, 0
-	};
-
-	private final static float F4 = (float) ((2.23606797 - 1.0) / 4.0);
-	private final static float G4 = (float) ((5.0 - 2.23606797) / 20.0);
-
-	private float SingleSimplex(int seed, float x, float y, float z, float w) {
-		float n0, n1, n2, n3, n4;
-		float t = (x + y + z + w) * F4;
-		int i = FastFloor(x + t);
-		int j = FastFloor(y + t);
-		int k = FastFloor(z + t);
-		int l = FastFloor(w + t);
-		t = (i + j + k + l) * G4;
-		float X0 = i - t;
-		float Y0 = j - t;
-		float Z0 = k - t;
-		float W0 = l - t;
-		float x0 = x - X0;
-		float y0 = y - Y0;
-		float z0 = z - Z0;
-		float w0 = w - W0;
-
-		int c = (x0 > y0) ? 32 : 0;
-		c += (x0 > z0) ? 16 : 0;
-		c += (y0 > z0) ? 8 : 0;
-		c += (x0 > w0) ? 4 : 0;
-		c += (y0 > w0) ? 2 : 0;
-		c += (z0 > w0) ? 1 : 0;
-		c <<= 2;
-
-		int i1 = SIMPLEX_4D[c] >= 3 ? 1 : 0;
-		int i2 = SIMPLEX_4D[c] >= 2 ? 1 : 0;
-		int i3 = SIMPLEX_4D[c++] >= 1 ? 1 : 0;
-		int j1 = SIMPLEX_4D[c] >= 3 ? 1 : 0;
-		int j2 = SIMPLEX_4D[c] >= 2 ? 1 : 0;
-		int j3 = SIMPLEX_4D[c++] >= 1 ? 1 : 0;
-		int k1 = SIMPLEX_4D[c] >= 3 ? 1 : 0;
-		int k2 = SIMPLEX_4D[c] >= 2 ? 1 : 0;
-		int k3 = SIMPLEX_4D[c++] >= 1 ? 1 : 0;
-		int l1 = SIMPLEX_4D[c] >= 3 ? 1 : 0;
-		int l2 = SIMPLEX_4D[c] >= 2 ? 1 : 0;
-		int l3 = SIMPLEX_4D[c] >= 1 ? 1 : 0;
-
-		float x1 = x0 - i1 + G4;
-		float y1 = y0 - j1 + G4;
-		float z1 = z0 - k1 + G4;
-		float w1 = w0 - l1 + G4;
-		float x2 = x0 - i2 + 2 * G4;
-		float y2 = y0 - j2 + 2 * G4;
-		float z2 = z0 - k2 + 2 * G4;
-		float w2 = w0 - l2 + 2 * G4;
-		float x3 = x0 - i3 + 3 * G4;
-		float y3 = y0 - j3 + 3 * G4;
-		float z3 = z0 - k3 + 3 * G4;
-		float w3 = w0 - l3 + 3 * G4;
-		float x4 = x0 - 1 + 4 * G4;
-		float y4 = y0 - 1 + 4 * G4;
-		float z4 = z0 - 1 + 4 * G4;
-		float w4 = w0 - 1 + 4 * G4;
-
-		t = (float) 0.6 - x0 * x0 - y0 * y0 - z0 * z0 - w0 * w0;
-		if (t < 0) n0 = 0;
-		else {
-			t *= t;
-			n0 = t * t * GradCoord4D(seed, i, j, k, l, x0, y0, z0, w0);
-		}
-		t = (float) 0.6 - x1 * x1 - y1 * y1 - z1 * z1 - w1 * w1;
-		if (t < 0) n1 = 0;
-		else {
-			t *= t;
-			n1 = t * t * GradCoord4D(seed, i + i1, j + j1, k + k1, l + l1, x1, y1, z1, w1);
-		}
-		t = (float) 0.6 - x2 * x2 - y2 * y2 - z2 * z2 - w2 * w2;
-		if (t < 0) n2 = 0;
-		else {
-			t *= t;
-			n2 = t * t * GradCoord4D(seed, i + i2, j + j2, k + k2, l + l2, x2, y2, z2, w2);
-		}
-		t = (float) 0.6 - x3 * x3 - y3 * y3 - z3 * z3 - w3 * w3;
-		if (t < 0) n3 = 0;
-		else {
-			t *= t;
-			n3 = t * t * GradCoord4D(seed, i + i3, j + j3, k + k3, l + l3, x3, y3, z3, w3);
-		}
-		t = (float) 0.6 - x4 * x4 - y4 * y4 - z4 * z4 - w4 * w4;
-		if (t < 0) n4 = 0;
-		else {
-			t *= t;
-			n4 = t * t * GradCoord4D(seed, i + 1, j + 1, k + 1, l + 1, x4, y4, z4, w4);
-		}
-
-		return 27 * (n0 + n1 + n2 + n3 + n4);
-	}
-
-	// Cubic Noise
-	public float GetCubicFractal(float x, float y, float z) {
-		x *= m_frequency;
-		y *= m_frequency;
-		z *= m_frequency;
-
-		switch (m_fractalType) {
-			case FBM:
-				return SingleCubicFractalFBM(x, y, z);
-			case Billow:
-				return SingleCubicFractalBillow(x, y, z);
-			case RigidMulti:
-				return SingleCubicFractalRigidMulti(x, y, z);
-			default:
-				return 0;
-		}
-	}
-
 	private float SingleCubicFractalFBM(float x, float y, float z) {
 		int seed = m_seed;
 		float sum = SingleCubic(seed, x, y, z);
@@ -1778,10 +1362,6 @@ public class FastNoise {
 		return sum;
 	}
 
-	public float GetCubic(float x, float y, float z) {
-		return SingleCubic(m_seed, x * m_frequency, y * m_frequency, z * m_frequency);
-	}
-
 	private final static float CUBIC_3D_BOUNDING = 1 / (float) (1.5 * 1.5 * 1.5);
 
 	private float SingleCubic(int seed, float x, float y, float z) {
@@ -1829,23 +1409,6 @@ public class FastNoise {
 				CubicLerp(ValCoord3D(seed, x0, y3, z3), ValCoord3D(seed, x1, y3, z3), ValCoord3D(seed, x2, y3, z3), ValCoord3D(seed, x3, y3, z3), xs),
 				ys),
 				zs) * CUBIC_3D_BOUNDING;
-	}
-
-
-	public float GetCubicFractal(float x, float y) {
-		x *= m_frequency;
-		y *= m_frequency;
-
-		switch (m_fractalType) {
-			case FBM:
-				return SingleCubicFractalFBM(x, y);
-			case Billow:
-				return SingleCubicFractalBillow(x, y);
-			case RigidMulti:
-				return SingleCubicFractalRigidMulti(x, y);
-			default:
-				return 0;
-		}
 	}
 
 	private float SingleCubicFractalFBM(float x, float y) {
@@ -1899,13 +1462,6 @@ public class FastNoise {
 		return sum;
 	}
 
-	public float GetCubic(float x, float y) {
-		x *= m_frequency;
-		y *= m_frequency;
-
-		return SingleCubic(0, x, y);
-	}
-
 	private final static float CUBIC_2D_BOUNDING = 1 / (float) (1.5 * 1.5);
 
 	private float SingleCubic(int seed, float x, float y) {
@@ -1932,23 +1488,6 @@ public class FastNoise {
 				CubicLerp(ValCoord2D(seed, x0, y3), ValCoord2D(seed, x1, y3), ValCoord2D(seed, x2, y3), ValCoord2D(seed, x3, y3),
 						xs),
 				ys) * CUBIC_2D_BOUNDING;
-	}
-
-	// Cellular Noise
-	public float GetCellular(float x, float y, float z) {
-		x *= m_frequency;
-		y *= m_frequency;
-		z *= m_frequency;
-
-		switch (m_cellularReturnType) {
-			case CellValue:
-			case NoiseLookup:
-			case Distance:
-				return SingleCellular(x, y, z);
-			default:
-				if (m_cellular3Edge) return SingleCellular3Edge(x, y, z);
-				return SingleCellular2Edge(x, y, z);
-		}
 	}
 
 	private float SingleCellular(float x, float y, float z) {
@@ -2214,20 +1753,6 @@ public class FastNoise {
 		}
 	}
 
-	public float GetCellular(float x, float y) {
-		x *= m_frequency;
-		y *= m_frequency;
-
-		switch (m_cellularReturnType) {
-			case CellValue:
-			case NoiseLookup:
-			case Distance:
-				return SingleCellular(x, y);
-			default:
-				return SingleCellular2Edge(x, y);
-		}
-	}
-
 	private float SingleCellular(float x, float y) {
 		int xr = FastRound(x);
 		int yr = FastRound(y);
@@ -2384,20 +1909,6 @@ public class FastNoise {
 		SingleGradientPerturb(m_seed, m_gradientPerturbAmp, m_gradientPerturbFrequency, v3);
 	}
 
-	public void GradientPerturbFractal(Vector3f v3) {
-		int seed = m_seed;
-		float amp = m_gradientPerturbAmp * m_fractalBounding;
-		float freq = m_frequency;
-
-		SingleGradientPerturb(seed, amp, m_frequency, v3);
-
-		for (int i = 1; i < m_octaves; i++) {
-			freq *= m_lacunarity;
-			amp *= m_gain;
-			SingleGradientPerturb(++seed, amp, freq, v3);
-		}
-	}
-
 	private void SingleGradientPerturb(int seed, float perturbAmp, float frequency, Vector3f v3) {
 		float xf = v3.x * frequency;
 		float yf = v3.y * frequency;
@@ -2469,20 +1980,6 @@ public class FastNoise {
 
 	public void GradientPerturb(Vector2f v2) {
 		SingleGradientPerturb(m_seed, m_gradientPerturbAmp, m_gradientPerturbFrequency, v2);
-	}
-
-	public void GradientPerturbFractal(Vector2f v2) {
-		int seed = m_seed;
-		float amp = m_gradientPerturbAmp * m_fractalBounding;
-		float freq = m_frequency;
-
-		SingleGradientPerturb(seed, amp, m_frequency, v2);
-
-		for (int i = 1; i < m_octaves; i++) {
-			freq *= m_lacunarity;
-			amp *= m_gain;
-			SingleGradientPerturb(++seed, amp, freq, v2);
-		}
 	}
 
 	private void SingleGradientPerturb(int seed, float perturbAmp, float frequency, Vector2f v2) {

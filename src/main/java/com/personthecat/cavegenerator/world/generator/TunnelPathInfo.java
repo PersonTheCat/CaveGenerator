@@ -32,12 +32,12 @@ public class TunnelPathInfo {
 
     /** Neatly constructs a new object based on values from tunnel settings. */
     public TunnelPathInfo(TunnelSettings cfg, Random rand, int destChunkX, int destChunkZ) {
-        this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.skew, rand, destChunkX, destChunkZ, cfg.conditions.height.min, cfg.conditions.height.max);
+        this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.stretch, rand, destChunkX, destChunkZ, cfg.conditions.height.min, cfg.conditions.height.max);
     }
 
     /** Neatly constructs a new object based on values from ravine settings. */
     public TunnelPathInfo(RavineSettings cfg, Random rand, int destChunkX, int destChunkZ) {
-        this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.skew, rand, destChunkX, destChunkZ, cfg.conditions.height.min, cfg.conditions.height.max);
+        this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.stretch, rand, destChunkX, destChunkZ, cfg.conditions.height.min, cfg.conditions.height.max);
     }
 
     /** Used for handling initial encapsulation of inner values. */

@@ -4,7 +4,6 @@ import com.personthecat.cavegenerator.data.ClusterSettings;
 import com.personthecat.cavegenerator.model.Conditions;
 import com.personthecat.cavegenerator.util.IdentityMultiValueMap;
 import com.personthecat.cavegenerator.world.RandomChunkSelector;
-import lombok.AllArgsConstructor;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -28,14 +27,19 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
     }
 
     @Override
-    protected void doGenerate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+    public void generate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
         if (!features.isEmpty()) {
-            // Always reset the seed for clusters.
-            rand.setSeed(world.getSeed());
-            clusterMap.clear();
-            locateFinalClusters(world, rand, chunkX, chunkZ);
-            generateClusters(primer, chunkX, chunkZ);
+            generateChecked(world, rand, destChunkX, destChunkZ, chunkX, chunkZ, primer);
         }
+    }
+
+    @Override
+    protected void generateChecked(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+        // Always reset the seed for clusters.
+        rand.setSeed(world.getSeed());
+        clusterMap.clear();
+        locateFinalClusters(world, rand, chunkX, chunkZ);
+        generateClusters(primer, chunkX, chunkZ);
     }
 
     private void locateFinalClusters(World world, Random rand, int chunkX, int chunkZ) {
@@ -65,11 +69,8 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
                                 final int radX = cfg.radiusX.rand(localRand) - (cfg.radiusX.diff() / 2);
                                 final int radY = cfg.radiusY.rand(localRand) - (cfg.radiusY.diff() / 2);
                                 final int radZ = cfg.radiusZ.rand(localRand) - (cfg.radiusZ.diff() / 2);
-                                final int radiusX2 = radX * radX;
-                                final int radiusY2 = radY * radY;
-                                final int radiusZ2 = radZ * radZ;
                                 // Add the new information to be returned.
-                                clusterMap.add(conditions, new ClusterInfo(cfg, state, id, origin, radY, radiusX2, radiusY2, radiusZ2));
+                                clusterMap.add(conditions, new ClusterInfo(cfg, state, id, origin, radX, radY, radZ));
                             }
                         }
                     }
@@ -94,56 +95,72 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
             final int actualX = x + (chunkX * 16);
             for (int z = 0; z < 16; z++) {
                 final int actualZ = z + (chunkZ * 16);
-                spawnCluster(primer, x, z, actualX, actualZ);
+                spawnColumn(primer, x, z, actualX, actualZ);
             }
         }
     }
 
-    private void spawnCluster(ChunkPrimer primer, int x, int z, int actualX, int actualZ) {
+    private void spawnColumn(ChunkPrimer primer, int x, int z, int actualX, int actualZ) {
         for (Map.Entry<Conditions, List<ClusterInfo>> entry : clusterMap.entrySet()) {
             final Conditions conditions = entry.getKey();
-            for (int y : conditions.getColumn(actualX, actualZ)) {
-                if (conditions.noise.GetBoolean(actualX, actualZ)) {
-                    for (ClusterInfo info : entry.getValue()) {
-                        final BlockPos origin = info.center;
-                        final double distX = actualX - origin.getX();
-                        final double distY = y - origin.getY();
-                        final double distZ = actualZ - origin.getZ();
-                        final double distX2 = distX * distX;
-                        final double distY2 = distY * distY;
-                        final double distZ2 = distZ * distZ;
 
-                        // Ensure that we're within the sphere.
-                        if (distX2 / info.radiusX2 + distY2 / info.radiusY2 + distZ2 / info.radiusZ2 <= 1) {
-                            if (info.cluster.canSpawn(info.state)) {
-                                primer.setBlockState(x, y, z, info.state);
-                                return; // Already placed. Don't continue.
-                            }
-                        }
-                    }
+            for (int y : conditions.getColumn(actualX, actualZ)) {
+                if (conditions.noise.GetBoolean(actualX, y, actualZ)) {
+                    spawnCluster(entry.getValue(), primer, x, y, z, actualX, actualZ);
+                }
+            }
+        }
+    }
+
+    private static void spawnCluster(List<ClusterInfo> clusters, ChunkPrimer primer, int x, int y, int z, int actualX, int actualZ) {
+        final IBlockState state = primer.getBlockState(x, y, z);
+        for (ClusterInfo info : clusters) {
+            if (info.cluster.canSpawn(state)) {
+                final BlockPos origin = info.center;
+                final double distX = actualX - origin.getX();
+                final double distY = y - origin.getY();
+                final double distZ = actualZ - origin.getZ();
+                final double distX2 = distX * distX;
+                final double distY2 = distY * distY;
+                final double distZ2 = distZ * distZ;
+
+                // Ensure that we're within the sphere. Note: wall blocks could be && sum >= 0.9
+                if (distX2 / info.radX2 + distY2 / info.radY2 + distZ2 / info.radZ2 <= 1) {
+                    primer.setBlockState(x, y, z, info.state);
+                    return; // Already placed. Don't continue.
                 }
             }
         }
     }
 
     /** Generated info related to how the current cluster will be spawned in the world. */
-    @AllArgsConstructor
-    public static class ClusterInfo {
+    private static class ClusterInfo {
 
         /** A reference to the original cluster to be spawned. */
-        ClusterSettings cluster;
-        IBlockState state;
-        int id;
+        final ClusterSettings cluster;
+        final IBlockState state;
+        final int id;
 
         /** The generated center coordinates of this cluster. */
-        BlockPos center;
+        final BlockPos center;
 
         /** Storing the original vertical radius to avoid unnecessary calculations. */
-        int radiusY;
+        final int radY;
 
         /** Squared radii. */
-        int radiusX2;
-        int radiusY2;
-        int radiusZ2;
+        final int radX2;
+        final int radY2;
+        final int radZ2;
+
+        ClusterInfo(ClusterSettings cluster, IBlockState state, int id, BlockPos center, int radX, int radY, int radZ) {
+            this.cluster = cluster;
+            this.state = state;
+            this.id = id;
+            this.center = center;
+            this.radY = radY;
+            this.radY2 = radY * radY;
+            this.radX2 = radX * radX;
+            this.radZ2 = radZ * radZ;
+        }
     }
 }

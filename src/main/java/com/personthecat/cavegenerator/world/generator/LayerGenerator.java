@@ -17,7 +17,7 @@ public class LayerGenerator extends BasicGenerator {
     }
 
     @Override
-    protected void doGenerate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+    protected void generateChecked(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
         for (int x = 0; x < 16; x++) {
             final int actualX = x + (chunkX * 16);
             for (int z = 0; z < 16; z++) {

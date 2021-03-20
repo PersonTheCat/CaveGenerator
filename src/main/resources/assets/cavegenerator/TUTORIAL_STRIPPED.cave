@@ -223,7 +223,7 @@
     caveBlocks: []
     wallDecorators: []
   }
-  stoneLayers: [
+  layers: [
     {
       # **This value may not be null**.
       state: null
@@ -255,10 +255,10 @@
       matchers: []
       
       biomes: {}
-      height: [ 0, 255 ]
       blacklistBiomes: false
       dimensions: []
       blacklistDimensions: false
+      height: [ 0, 255 ]
       ceiling: {}
       floor: {}
       region: {}

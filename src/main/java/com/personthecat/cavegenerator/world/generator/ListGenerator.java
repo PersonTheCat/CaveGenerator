@@ -2,9 +2,7 @@ package com.personthecat.cavegenerator.world.generator;
 
 import com.personthecat.cavegenerator.data.ConditionSettings;
 import com.personthecat.cavegenerator.model.Conditions;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 import org.apache.commons.lang3.tuple.Pair;
 
@@ -33,12 +31,12 @@ public abstract class ListGenerator<T> {
         return Objects.requireNonNull(world.get(), "World reference has been culled.");
     }
 
-    public final void generate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+    public void generate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
         // Stubbed for other global conditions.
-        doGenerate(world, rand, destChunkX, destChunkZ, chunkX, chunkZ, primer);
+        generateChecked(world, rand, destChunkX, destChunkZ, chunkX, chunkZ, primer);
     }
 
-    protected abstract void doGenerate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer);
+    protected abstract void generateChecked(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer);
 
     protected void forEachFeature(BiConsumer<T, Conditions> fn) {
         for (Pair<T, Conditions> feature : features) {

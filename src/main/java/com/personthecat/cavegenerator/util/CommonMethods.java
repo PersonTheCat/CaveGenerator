@@ -11,7 +11,6 @@ import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraftforge.common.BiomeDictionary;
 import net.minecraftforge.common.BiomeDictionary.Type;
@@ -135,8 +134,18 @@ public class CommonMethods {
         return min == max ? min : rand.nextInt(max - min + 1) + min;
     }
 
+    /** Returns a random number between the input bounds, inclusive. */
+    public static float numBetween(Random rand, float min, float max) {
+        return min == max ? min : rand.nextFloat() * (max - min) + min;
+    }
+
     /** Variant of Arrays#sort which returns the array. */
     public static int[] sort(int[] array) {
+        Arrays.sort(array);
+        return array;
+    }
+
+    public static float[] sort(float[] array) {
         Arrays.sort(array);
         return array;
     }
@@ -220,10 +229,5 @@ public class CommonMethods {
     /** Shorthand for retrieving state variants directly from a block. */
     public static <T extends Comparable<T>, V extends T> IBlockState getVariant(Block block, IProperty<T> property, V value) {
         return block.getDefaultState().withProperty(property, value);
-    }
-
-    /** Returns the center block in the specified chunk */
-    public static BlockPos centerCoords(int chunkX, int chunkZ) {
-        return new BlockPos((chunkX * 16) + 8, 0, (chunkZ * 16) + 8);
     }
 }

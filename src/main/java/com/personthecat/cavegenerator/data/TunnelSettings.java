@@ -40,7 +40,7 @@ public class TunnelSettings {
     @Default DecoratorSettings decorators = DEFAULT_DECORATORS;
 
     /** Controls a vanilla function for reducing vertical noise. */
-    @Default boolean noiseYReduction = false;
+    @Default boolean noiseYReduction = true;
 
     /** Controls whether tunnels shrink when branching apart, as in vanilla. */
     @Default boolean resizeBranches = true;
@@ -61,7 +61,7 @@ public class TunnelSettings {
     @Default ScalableFloat scale = new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
 
     /** Vertical scale ratio. */
-    @Default ScalableFloat skew = new ScalableFloat(1.0f, 1.0f, 1.0f, 0.0f, 1.0f);
+    @Default ScalableFloat stretch = new ScalableFloat(1.0f, 1.0f, 1.0f, 0.0f, 1.0f);
 
     /** Horizontal angle in radians. */
     @Default ScalableFloat yaw = new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
@@ -109,7 +109,7 @@ public class TunnelSettings {
             .mapScalableFloat(Fields.dYaw, original.dYaw, builder::dYaw)
             .mapScalableFloat(Fields.dPitch, original.dPitch, builder::dPitch)
             .mapScalableFloat(Fields.scale, original.scale, builder::scale)
-            .mapScalableFloat(Fields.skew, original.skew, builder::skew)
+            .mapScalableFloat(Fields.stretch, original.stretch, builder::stretch)
             .mapScalableFloat(Fields.yaw, original.yaw, builder::yaw)
             .mapScalableFloat(Fields.pitch, original.pitch, builder::pitch)
             .mapFloat(Fields.systemChance, f -> builder.systemChance(invert(f)))
@@ -117,7 +117,7 @@ public class TunnelSettings {
             .mapInt(Fields.systemDensity, builder::systemDensity)
             .mapInt(Fields.distance, builder::distance)
             .mapInt(Fields.count, builder::count)
-            .mapFloat(Fields.resolution, f -> builder.resolution(invert(f)))
+            .mapInt(Fields.resolution, builder::resolution)
             .release(builder::build);
     }
 }

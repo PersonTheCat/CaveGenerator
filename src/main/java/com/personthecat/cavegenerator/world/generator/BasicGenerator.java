@@ -32,15 +32,15 @@ public abstract class BasicGenerator {
         return Objects.requireNonNull(world.get(), "World reference has been culled.");
     }
 
-    public final void generate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+    public void generate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
         final int dim = world.provider.getDimension();
         final Biome b = world.getBiome(new BlockPos(chunkX * 16, 0, chunkZ * 16));
 
         if (conditions.dimensions.test(dim) && conditions.biomes.test(b)) {
-            doGenerate(world, rand, destChunkX, destChunkZ, chunkX, chunkZ, primer);
+            generateChecked(world, rand, destChunkX, destChunkZ, chunkX, chunkZ, primer);
         }
     }
 
-    protected abstract void doGenerate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer);
+    protected abstract void generateChecked(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer);
 
 }

@@ -25,7 +25,7 @@ public class TunnelGenerator extends SphereGenerator {
     }
 
     @Override
-    protected void doGenerate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+    protected void generateChecked(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
         createSystem(world, rand.nextLong(), destChunkX, destChunkZ, chunkX, chunkZ, primer);
     }
 
@@ -59,9 +59,9 @@ public class TunnelGenerator extends SphereGenerator {
 
     /** Determines the number of cave systems to try and spawn. */
     private int getTunnelFrequency(Random rand) {
-        final int frequency = rand.nextInt(rand.nextInt(rand.nextInt(cfg.count + 1) + 1) + 1);
+        final int frequency = rand.nextInt(rand.nextInt(rand.nextInt(cfg.count) + 1) + 1);
         // The order is important for seeds
-        if (rand.nextInt(cfg.isolatedChance + 1) != 0) {
+        if (rand.nextInt(cfg.isolatedChance) != 0) {
             // Usually set frequency to 0, causing the systems to be
             // isolated from one another.
             return 0;

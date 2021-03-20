@@ -31,7 +31,14 @@ public class CavernGenerator extends WorldCarver {
     }
 
     @Override
-    protected void doGenerate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+    public void generate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+        if (conditions.dimensions.test(world.provider.getDimension())) {
+            generateChecked(world, rand, destChunkX, destChunkZ, chunkX, chunkZ, primer);
+        }
+    }
+
+    @Override
+    protected void generateChecked(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
         final int[][] heightmap = ArrayUtils.contains(ConfigFile.heightMapDims, world.provider.getDimension())
             ? HeightMapLocator.getHeightFromPrimer(primer)
             : HeightMapLocator.FAUX_MAP;
@@ -49,13 +56,15 @@ public class CavernGenerator extends WorldCarver {
                 if (!conditions.biomes.test(world.getBiome(new BlockPos(actualX, 0, actualZ)))) {
                     continue;
                 }
-
-                final Range height = conditions.getColumn(actualX, actualZ);
-                final int max = Math.min(height.max, heightmap[x][z]);
+                if (!conditions.region.GetBoolean(actualX, actualZ)) {
+                    continue;
+                }
+                final int min = conditions.height.min + (int) conditions.floor.GetAdjustedNoise(actualX, actualZ);
+                final int max = Math.min(conditions.height.max, heightmap [x][z]) + (int) conditions.ceiling.GetAdjustedNoise(actualX, actualZ);
 
                 // if min == max -> stop
-                for (int y = height.min; y < max; y++) {
-                    if (!conditions.noise.GetBoolean(x, y, z)) {
+                for (int y = min; y < max; y++) {
+                    if (!conditions.noise.GetBoolean(actualX, y, actualZ)) {
                         continue;
                     }
 

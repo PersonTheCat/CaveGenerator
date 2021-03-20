@@ -35,6 +35,14 @@ public class Range implements Iterable<Integer> {
         return new Range(max);
     }
 
+    public static FloatRange of(float a, float b) {
+        return new FloatRange(a, b);
+    }
+
+    public static FloatRange of(float a) {
+        return new FloatRange(a);
+    }
+
     public int rand(Random rand) {
         return numBetween(rand, min, max);
     }
