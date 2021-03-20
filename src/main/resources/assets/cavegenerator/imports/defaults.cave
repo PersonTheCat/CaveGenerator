@@ -14,22 +14,23 @@ VANILLA: {
   ]
 }
 
-REPLACE_DIRT_STONE: [ "stone", "dirt" ]
+REPLACE_DIRT_STONE: [ "stone", "dirt", "grass" ]
 
 VANILLA_ROOM: {
   scale: 6
-  scaleY: 0.5
+  skew: 0.5
+  chance: 0.1
 }
 
 LAVA_CAVE_BLOCK: {
   states: lava
-  maxHeight: 10
+  height: [ 0, 10 ]
 }
 
 VANILLA_TUNNELS: {
   frequency: 15
-  minHeight: 8
-  maxHeight: 128
+  height: [ 8, 128 ]
+  resolution: 4
   distance: 0
   systemChance: 0.25
   isolatedChance: 0.142
@@ -56,7 +57,7 @@ VANILLA_TUNNELS: {
     randFactor: 0
     exponent: 1
   }
-  scaleY: {
+  skew: {
     startVal: 1
     factor: 1
     randFactor: 0
@@ -74,8 +75,8 @@ VANILLA_TUNNELS: {
 
 VANILLA_RAVINES: {
   chance: 0.02
-  minHeight: 20
-  maxHeight: 66
+  height: [ 20, 66 ]
+  resolution: 4
   distance: 0
   dYaw: {
     startVal: 0
@@ -96,7 +97,7 @@ VANILLA_RAVINES: {
     randFactor: 0
     exponent: 1
   }
-  scaleY: {
+  skew: {
     startVal: 3
     factor: 1
     randFactor: 0

@@ -46,14 +46,14 @@ public class WallDecoratorSettings {
     @Default List<IBlockState> matchers = Collections.singletonList(Blocks.STONE.getDefaultState());
 
     /** Whether to place <b>on</b> the wall or <b>in</b> the wall. */
-    @Default Preference preference = Preference.REPLACE_MATCH;
+    @Default Placement placement = Placement.EMBED;
 
     /** Optional noise generator used determine valid placements. */
     @Default Optional<NoiseSettings> noise = empty();
 
     /** The default noise values for WallDecorators with noise. */
     public static final NoiseSettings DEFAULT_NOISE = NoiseSettings.builder()
-        .frequency(0.02f).scale(0.5f).scaleY(1.0f).build();
+        .frequency(0.02f).scale(0.5f).skew(1.0f).build();
 
     public static WallDecoratorSettings from(JsonObject json) {
         final WallDecoratorSettingsBuilder builder = builder();
@@ -64,7 +64,7 @@ public class WallDecoratorSettings {
             .mapRange(Fields.height, builder::height)
             .mapDirectionList(Fields.directions, builder::directions)
             .mapStateList(Fields.matchers, builder::matchers)
-            .mapPreference(Fields.preference, builder::preference)
+            .mapPlacementPreference(Fields.placement, builder::placement)
             .release(builder::build);
     }
 
@@ -72,16 +72,13 @@ public class WallDecoratorSettings {
         builder.noise(full(NoiseSettings.from(json, DEFAULT_NOISE)));
     }
 
-    /**
-     * Indicates whether to place blocks inside of or on top of a wall. As much as I
-     * would love to rename these, I do think it's a little too late.
-     */
-    public enum Preference {
-        REPLACE_ORIGINAL,
-        REPLACE_MATCH;
+    /** Indicates whether to place blocks inside of or on top of a wall. */
+    public enum Placement {
+        OVERLAY,
+        EMBED;
 
-        public static Preference from(final String s) {
-            final Optional<Preference> pref = find(values(), (v) -> v.toString().equalsIgnoreCase(s));
+        public static Placement from(final String s) {
+            final Optional<Placement> pref = find(values(), (v) -> v.toString().equalsIgnoreCase(s));
             return pref.orElseThrow(() -> {
                 final String o = Arrays.toString(values());
                 return runExF("Error: Preference \"{}\" does not exist. The following are valid options:\n\n{}", s, o);

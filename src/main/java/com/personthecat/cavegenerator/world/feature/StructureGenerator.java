@@ -28,7 +28,7 @@ public class StructureGenerator extends FeatureGenerator {
 
     @Override
     protected void doGenerate(FeatureInfo info) {
-        for (int i = 0; i < cfg.frequency; i++) {
+        for (int i = 0; i < cfg.count; i++) {
             if (info.rand.nextDouble() <= cfg.chance) {
                 generateSingle(info);
             }

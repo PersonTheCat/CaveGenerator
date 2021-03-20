@@ -61,7 +61,7 @@ public class TunnelSettings {
     @Default ScalableFloat scale = new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
 
     /** Vertical scale ratio. */
-    @Default ScalableFloat scaleY = new ScalableFloat(1.0f, 1.0f, 1.0f, 0.0f, 1.0f);
+    @Default ScalableFloat skew = new ScalableFloat(1.0f, 1.0f, 1.0f, 0.0f, 1.0f);
 
     /** Horizontal angle in radians. */
     @Default ScalableFloat yaw = new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
@@ -82,7 +82,7 @@ public class TunnelSettings {
     @Default int distance = 0;
 
     /** The number of tunnel origins per chunk. */
-    @Default int frequency = 15;
+    @Default int count = 15;
 
     /** The 1/x chance of tunnel segments being skipped. */
     @Default int resolution = 4;
@@ -109,14 +109,14 @@ public class TunnelSettings {
             .mapScalableFloat(Fields.dYaw, original.dYaw, builder::dYaw)
             .mapScalableFloat(Fields.dPitch, original.dPitch, builder::dPitch)
             .mapScalableFloat(Fields.scale, original.scale, builder::scale)
-            .mapScalableFloat(Fields.scaleY, original.scaleY, builder::scaleY)
+            .mapScalableFloat(Fields.skew, original.skew, builder::skew)
             .mapScalableFloat(Fields.yaw, original.yaw, builder::yaw)
             .mapScalableFloat(Fields.pitch, original.pitch, builder::pitch)
             .mapFloat(Fields.systemChance, f -> builder.systemChance(invert(f)))
             .mapFloat(Fields.isolatedChance, f -> builder.systemChance(invert(f)))
             .mapInt(Fields.systemDensity, builder::systemDensity)
             .mapInt(Fields.distance, builder::distance)
-            .mapInt(Fields.frequency, builder::frequency)
+            .mapInt(Fields.count, builder::count)
             .mapFloat(Fields.resolution, f -> builder.resolution(invert(f)))
             .release(builder::build);
     }

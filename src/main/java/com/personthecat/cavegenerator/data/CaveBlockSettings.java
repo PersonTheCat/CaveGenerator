@@ -39,18 +39,12 @@ public class CaveBlockSettings {
     /** Height bounds for this decorator. */
     @Default Range height = Range.of(0, 50);
 
-    /** Minimum height bound. */
-    @Default int minHeight = 0;
-
-    /** Maximum height bound. */
-    @Default int maxHeight = 50;
-
     /** Noise Generator corresponding to this block. */
     @Default Optional<NoiseSettings> noise = empty();
 
     /** The default noise values for CaveBlocks with noise. */
     public static final NoiseSettings DEFAULT_NOISE = NoiseSettings.builder()
-        .frequency(0.02f).scale(0.1f).scaleY(1.0f).octaves(1).build();
+        .frequency(0.02f).scale(0.1f).skew(1.0f).octaves(1).build();
 
     /** An instance of the vanilla lava CaveBlocks that exists by default in all presets. */
     public static final CaveBlockSettings VANILLA_LAVA = CaveBlockSettings.builder()

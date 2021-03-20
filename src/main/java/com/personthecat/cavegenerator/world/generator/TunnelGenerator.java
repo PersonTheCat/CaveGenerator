@@ -59,7 +59,7 @@ public class TunnelGenerator extends SphereGenerator {
 
     /** Determines the number of cave systems to try and spawn. */
     private int getTunnelFrequency(Random rand) {
-        final int frequency = rand.nextInt(rand.nextInt(rand.nextInt(cfg.frequency + 1) + 1) + 1);
+        final int frequency = rand.nextInt(rand.nextInt(rand.nextInt(cfg.count + 1) + 1) + 1);
         // The order is important for seeds
         if (rand.nextInt(cfg.isolatedChance + 1) != 0) {
             // Usually set frequency to 0, causing the systems to be
@@ -133,7 +133,7 @@ public class TunnelGenerator extends SphereGenerator {
         // with the vanilla setup.
         final long seed = main.nextLong();
         final float scale = main.nextFloat() * cfg.rooms.scale + 1;
-        final float scaleY = cfg.rooms.scaleY;
+        final float scaleY = cfg.rooms.skew;
         // Construct a local Random object for use within this function,
         // also matching the vanilla setup.
         final Random rand = new Random(seed);

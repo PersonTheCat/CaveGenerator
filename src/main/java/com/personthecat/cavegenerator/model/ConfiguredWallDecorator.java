@@ -55,7 +55,7 @@ public class ConfiguredWallDecorator {
     }
 
     public boolean decidePlace(IBlockState state, ChunkPrimer primer, int xO, int yO, int zO, int xD, int yD, int zD) {
-        if (WallDecoratorSettings.Preference.REPLACE_ORIGINAL.equals(cfg.preference)) {
+        if (WallDecoratorSettings.Placement.OVERLAY.equals(cfg.placement)) {
             primer.setBlockState(xO, yO, zO, state);
             return true;
         } else {

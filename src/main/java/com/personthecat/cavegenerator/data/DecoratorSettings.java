@@ -23,7 +23,8 @@ public class DecoratorSettings {
     public static final DecoratorSettings DEFAULTS = builder().build();
 
     /** All of the blocks which can be replaced by this decorator. */
-    @Default List<IBlockState> replaceableBlocks = Arrays.asList(Blocks.STONE.getDefaultState(), Blocks.DIRT.getDefaultState());
+    @Default List<IBlockState> replaceableBlocks =
+        Arrays.asList(Blocks.STONE.getDefaultState(), Blocks.DIRT.getDefaultState(), Blocks.GRASS.getDefaultState());
 
     /** Whether to include the blocks from various other features in this list. */
     @Default boolean replaceDecorators = true;

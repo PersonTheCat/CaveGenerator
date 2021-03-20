@@ -21,7 +21,7 @@ public class RavineGenerator extends SphereGenerator {
     public RavineGenerator(RavineSettings cfg, World world) {
         super(cfg.conditions, cfg.decorators, world);
         this.cfg = cfg;
-        this.wallNoise = cfg.wallNoise.getGenerator(world);
+        this.wallNoise = cfg.walls.getGenerator(world);
     }
 
     /** Spawns all of the ravines for this preset. */

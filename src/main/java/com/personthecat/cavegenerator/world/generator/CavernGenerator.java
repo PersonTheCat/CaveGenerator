@@ -17,13 +17,13 @@ import java.util.stream.Collectors;
 
 public class CavernGenerator extends WorldCarver {
 
-    private final CavernSettings cfg;
     private final List<FastNoise> generators;
+    private final int maxY;
 
     public CavernGenerator(CavernSettings cfg, World world) {
         super(cfg.conditions, cfg.decorators, world);
-        this.cfg = cfg;
         this.generators = createGenerators(cfg.generators, world);
+        this.maxY = conditions.height.max + cfg.conditions.ceiling.map(n -> n.range.max).orElse(0);
     }
 
     private static List<FastNoise> createGenerators(List<NoiseSettings> settings, World world) {
@@ -39,8 +39,9 @@ public class CavernGenerator extends WorldCarver {
         generateCaverns(world, heightmap, rand, primer, chunkX, chunkZ);
     }
 
-    /** Generates giant air pockets in this chunk using a 3D noise generator. */
+    /** Generates giant air pockets in this chunk using a series of 3D noise generators. */
     private void generateCaverns(World world, int[][] heightmap, Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+        final boolean[][][] caverns = new boolean[maxY][16][16];
         for (int x = 0; x < 16; x++) {
             final int actualX = x + (chunkX * 16);
             for (int z = 0; z < 16; z++) {
@@ -52,20 +53,37 @@ public class CavernGenerator extends WorldCarver {
                 final Range height = conditions.getColumn(actualX, actualZ);
                 final int max = Math.min(height.max, heightmap[x][z]);
 
-                for (int y = height.min; y <= max; y++) {
+                // if min == max -> stop
+                for (int y = height.min; y < max; y++) {
+                    if (!conditions.noise.GetBoolean(x, y, z)) {
+                        continue;
+                    }
+
                     for (FastNoise noise : generators) {
-                        // Todo: Refactor this to store the actual noise so we can continue doing calculations.
                         if (noise.GetBoolean(actualX, y, actualZ)) {
                             replaceBlock(rand, primer, x, y, z, chunkX, chunkZ);
-                            if (hasLocalDecorators()) {
-                                decorateBlock(rand, primer, x, y, z, chunkX, chunkZ);
-                            }
+                            caverns[y][z][x] = true;
                             break;
                         }
                     }
                 }
             }
         }
+        // Caverns must be completed generated before decorating.
+        if (hasLocalDecorators()) {
+            decorateCaverns(caverns, rand, primer, chunkX, chunkZ);
+        }
     }
 
+    private void decorateCaverns(boolean[][][] caverns, Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+        for (int x = 0; x < 16; x++) {
+            for (int z = 0; z < 16; z++) {
+                for (int y = 0; y < maxY; y++) {
+                    if (caverns[y][z][x]) {
+                        decorateBlock(rand, primer, x, y, z, chunkX, chunkZ);
+                    }
+                }
+            }
+        }
+    }
 }

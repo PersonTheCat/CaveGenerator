@@ -12,7 +12,6 @@ import java.util.function.Predicate;
  * For neatly interacting with tunnel sections. Each tunnel section is essentially
  * a sphere that is constrained by the boundaries of the current chunk @ original(X/Z).
  */
-// Todo: convert this into two objects, removing the need for #nullCheck.
 public class TunnelSectionInfo {
 
     /** The exact purpose of some of these values is still unclear. */

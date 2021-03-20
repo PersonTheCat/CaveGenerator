@@ -3,9 +3,16 @@
 #                   ### TUTORIAL_STRIPPED.cave Info ###                     #
 # ######################################################################### #
 #                                                                           #
-#   This file is intended for anyone who finds it easier to read presets    #
-# with **less** documentation. You may also want to copy this file and      #
-# simply remove any values you don't need when creating your own presets.   #
+#   This file is not intended as a demonstration of how to write presets,   #
+# but rather, as an example of every possible field that exists within a    #
+# a preset. Take careful note of which fields are marked as absent by       #
+# default, as these fields *do nothing* by default. Thus, using them will   #
+# produce a different behavior.                                             #
+#                                                                           #
+#   Also note that none of the noise-related objects have their fields      #
+# listed here. For more information on what can go in each one, see the     #
+# regular tutorial cave file. Any noise block may be left out for better    #
+# performance.                                                              #
 #                                                                           #
 #   For any questions not answered in this demo, see the official wiki at   #
 # https://github.com/PersonTheCat/CaveGenerator/wiki                        #
@@ -18,47 +25,57 @@
     IDs: []
     types: []
   }
-  useBiomeBlacklist: false
+  blacklistBiomes: false
   dimensions: []
-  useDimensionBlacklist: false
-  replaceableBlocks: [ "stone", "dirt" ]
+  blacklistDimensions: false
+  height: [ 0, 255 ]
+  ceiling: {}
+  floor: {}
+  region: {}
+  noise: {}
+  replaceableBlocks: [ "stone", "dirt", "grass" ]
   replaceDecorators: true
   caveBlocks: [
     {
       states: []
       chance: 1.0
-      minHeight: 0
-      maxHeight: 50
+      height: [ 0, 50 ]
       # ABSENT BY DEFAULT
-      noise3D: {}
+      noise: {}
     }
   ]
   wallDecorators: [
     {
       states: []
       chance: 1.0
-      minHeight: 10
-      maxHeight: 50
+      height: [ 0, 50 ]
       directions: []
       matchers: []
-      preference: replace_match
+      placement: embed
       # ABSENT BY DEFAULT
-      noise3D: {}
+      noise: {}
     }
   ]
   rooms: {
     scale: 6
-    scaleY: 0.5
+    chance: 0.1
+    skew: 0.5
+    
+    replaceableBlocks: [ "stone", "dirt", "grass" ]
+    replaceDecorators: true
+    caveBlocks: []
+    wallDecorators: []
   }
+  # The same as tunnels. Spawn as branches of a tunnel.
+  branches: {}
   tunnels: [
     {
       frequency: 15
-      minHeight: 8
-      maxHeight: 128
+      height: [ 8, 128 ]
+      resolution: 4
       systemChance: 0.25
       isolatedChance: 0.142
       systemDensity: 4
-      roomChance: 0.1
       noiseYReduction: true
       distance: 0
       resizeBranches: true
@@ -69,7 +86,7 @@
         randFactor: 0
         exponent: 1
       }
-      scaleY: {
+      skew: {
         startVal: 1
         factor: 1
         randFactor: 0
@@ -95,13 +112,31 @@
         randFactor: 2
         exponent: 1
       }
+      
+      rooms: {}
+      # Just another tunnel generator. Infintely deep.
+      branches: {}
+      
+      biomes: {}
+      blacklistBiomes: false
+      dimensions: []
+      blacklistDimensions: false
+      ceiling: {}
+      floor: {}
+      region: {}
+      noise: {}
+      
+      replaceableBlocks: [ "stone", "dirt", "grass" ]
+      replaceDecorators: true
+      caveBlocks: []
+      wallDecorators: []
     }
   ]
   ravines: [
     {
       chance: 0.02
-      minHeight: 20
-      maxHeight: 66
+      height: [ 20, 66 ]
+      resolution: 4
       distance: 0
       dYaw: {
         startVal: 0
@@ -122,7 +157,7 @@
         randFactor: 0
         exponent: 1
       }
-      scaleY: {
+      skew: {
         startVal: 3
         factor: 1
         randFactor: 0
@@ -138,98 +173,141 @@
       }
       noiseYFactor: 0.7
       # ABSENT BY DEFAULT
-      wallNoise: {
-        noise2D: {
-          frequency: 0.1
-          minVal: 0
-          maxVal: 4
-        }
+      walls: {
+        frequency: 0.1
+        range: [ 0, 4 ]
       }
+      
+      biomes: {}
+      blacklistBiomes: false
+      dimensions: []
+      blacklistDimensions: false
+      ceiling: {}
+      floor: {}
+      region: {}
+      noise: {}
+      
+      replaceableBlocks: [ "stone", "dirt", "grass" ]
+      replaceDecorators: true
+      caveBlocks: []
+      wallDecorators: []
     }
   ]
   caverns: {
-    enabled: false
-    minHeight: 10
-    maxHeight: 50
-    noise3D: [
+    height: [ 10, 50 ]
+    generators: [
       {
         frequency: 0.0143
         scale: 0.2
-        scaleY: 0.5
+        skew: 0.5
       }
     ]
     ceiling: {
-      noise2D: {
-        frequency: 0.02
-        minVal: -17
-        maxVal: -3
-      }
+      frequency: 0.02
+      range: [ -13, -3 ]
     }
     floor: {
-      noise2D: {
-        frequency: 0.02
-        minVal: 0
-        maxVal: 8
-      }
+      frequency: 0.02
+      range: [ 0, 8 ]
     }
+    region: {}
+    noise: {}
+    
+    biomes: {}
+    blacklistBiomes: false
+    dimensions: []
+    blacklistDimensions: false
+    
+    replaceableBlocks: [ "stone", "dirt", "grass" ]
+    replaceDecorators: true
+    caveBlocks: []
+    wallDecorators: []
   }
   stoneLayers: [
     {
       # **This value may not be null**.
       state: null
       # **This value may not be null**.
-      maxHeight: 0
-      noise2D: {
-        scale: 0.5
+      height: [ 0, 20 ]
+      ceiling: {
         frequency: 0.015
-        minVal: -7
-        maxVal: 7
+        range: [ -7, 7 ]
       }
+      
+      biomes: {}
+      blacklistBiomes: false
+      dimensions: []
+      blacklistDimensions: false
+      ceiling: {}
+      floor: {}
+      region: {}
+      noise: {}
     }
   ]
   clusters: [
     {
       states: []
       chance: 0.15
-      radiusX: 16
-      radiusY: 12
-      radiusZ: 16
-      radiusVariance: 6
-      startHeight: 32
-      heightVariance: 16
+      radiusX: [ 13, 19 ]
+      radiusY: [ 9, 15 ]
+      radiusZ: [ 13, 19 ]
+      centerHeight: [ 24, 40 ]
       matchers: []
+      
+      biomes: {}
+      height: [ 0, 255 ]
+      blacklistBiomes: false
+      dimensions: []
+      blacklistDimensions: false
+      ceiling: {}
+      floor: {}
+      region: {}
+      noise: {}
     }
   ]
-  largeStalactites: [
+  stalactites: [
     {
       # **This value may not be null**.
       state: null
+      type: stalactite
       wide: true
       maxLength: 3
       chance: 0.167
-      minHeight: 11
-      maxHeight: 55
+      height: [ 11, 55 ]
       matchers: []
-      # ABSENT BY DEFAULT
-      noise2D: {
+      region: {
         scale: 0.7125
         frequency: 0.025
       }
+      
+      biomes: {}
+      blacklistBiomes: false
+      dimensions: []
+      blacklistDimensions: false
+      ceiling: {}
+      floor: {}
+      noise: {}
     }
   ]
-  largeStalagmites: []
-  giantPillars: [
+  pillars: [
     {
       # **This value may not be null**
       state: null
       # ABSENT BY DEFAULT
       # This may be absent but not null.
       stairBlock: null
-      frequency: 15
-      minHeight: 10
-      maxHeight: 50
-      minLength: 4
-      maxLength: 12
+      count: 15
+      height: [ 10, 50 ]
+      length: [ 4, 12 ]
+      
+      biomes: {}
+      blacklistBiomes: false
+      dimensions: []
+      blacklistDimensions: false
+      ceiling: {}
+      floor: {}
+      region: {}
+      noise: {}
     }
   ]
   structures: [
@@ -239,17 +317,26 @@
       name: null
       integrity: 1.0
       offset: [0, 0, 0]
-      frequency: 1
+      count: 1
       chance: 0.05
       minHeight: 10
       maxHeight: 50
       matchers: []
-      airMatchers: []
-      solidMatchers: []
-      nonSolidMatchers: []
-      waterMatchers: []
+      airChecks: []
+      solidChecks: []
+      nonSolidChecks: []
+      waterChecks: []
       debugSpawns: false
       rotateRandomly: false
+      
+      biomes: {}
+      blacklistBiomes: false
+      dimensions: []
+      blacklistDimensions: false
+      ceiling: {}
+      floor: {}
+      region: {}
+      noise: {}
     }
   ]
 }

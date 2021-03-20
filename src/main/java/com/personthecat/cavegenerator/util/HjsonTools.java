@@ -305,8 +305,8 @@ public class HjsonTools {
     }
 
     /** Safely retrieves a Preference object from the input json. */
-    public static Optional<WallDecoratorSettings.Preference> getPreference(JsonObject json, String field) {
-        return getString(json, field).map(WallDecoratorSettings.Preference::from);
+    public static Optional<WallDecoratorSettings.Placement> getPreference(JsonObject json, String field) {
+        return getString(json, field).map(WallDecoratorSettings.Placement::from);
     }
 
 

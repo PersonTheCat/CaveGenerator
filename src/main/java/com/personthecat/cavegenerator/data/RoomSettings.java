@@ -25,7 +25,7 @@ public class RoomSettings {
     @Default float scale = 6.0F;
 
     /** A vertical ratio of scale. */
-    @Default float scaleY = 0.5F;
+    @Default float skew = 0.5F;
 
     /** The 1/x chance of this room spawning at any tunnel system origin. */
     @Default int chance = 10;
@@ -44,7 +44,7 @@ public class RoomSettings {
         return new HjsonMapper(json)
             .mapSelf(o -> builder.decorators(DecoratorSettings.from(o, original.decorators)))
             .mapFloat(Fields.scale, builder::scale)
-            .mapFloat(Fields.scaleY, builder::scaleY)
+            .mapFloat(Fields.skew, builder::skew)
             .mapFloat(Fields.chance, f -> builder.chance(invert(f)))
             .release(builder::build);
     }

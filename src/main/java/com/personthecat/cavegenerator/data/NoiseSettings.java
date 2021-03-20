@@ -38,7 +38,7 @@ public class NoiseSettings {
     @Default float scale = 0.5f;
 
     /** Scales the noise produced * x. */
-    @Default float scaleY = 1.0f;
+    @Default float skew = 1.0f;
 
     /** The scale of gaps produced in fractal patterns. */
     @Default float lacunarity = 1.0f;
@@ -104,7 +104,7 @@ public class NoiseSettings {
             .mapInt(Fields.seed, i -> builder.seed(full(i)))
             .mapFloat(Fields.frequency, builder::frequency)
             .mapFloat(Fields.scale, builder::scale)
-            .mapFloat(Fields.scaleY, builder::scaleY)
+            .mapFloat(Fields.skew, builder::skew)
             .mapFloat(Fields.lacunarity, builder::lacunarity)
             .mapFloat(Fields.gain, builder::gain)
             .mapFloat(Fields.perturbAmp, builder::perturbAmp)
@@ -147,7 +147,7 @@ public class NoiseSettings {
             .SetCellularJitterY(jitterY)
             .SetCellularJitterZ(jitterZ)
             .SetScale(scale)
-            .SetScaleY(scaleY)
+            .SetScaleY(skew)
             .SetOffset(offset);
     }
 

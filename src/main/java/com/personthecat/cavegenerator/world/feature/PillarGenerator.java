@@ -30,7 +30,7 @@ public class PillarGenerator extends FeatureGenerator {
 
     protected void doGenerate(FeatureInfo info) {
         final Random rand = info.rand;
-        for (int i = 0; i < rand.nextInt(cfg.frequency + 1); i++) {
+        for (int i = 0; i < rand.nextInt(cfg.count + 1); i++) {
             // Avoid pillars spawning right next to each other.
             final int x = ((rand.nextInt(6) * 2) + 2) + (info.chunkX * 16); // 2 to 14
             final int z = ((rand.nextInt(6) * 2) + 1) + (info.chunkZ * 16); // 1 to 13

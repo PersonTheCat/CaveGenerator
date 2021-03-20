@@ -39,7 +39,7 @@ public class PillarSettings {
     IBlockState state;
 
     /** A number of pillars to attempt spawning per chunk. */
-    @Default int frequency = 15;
+    @Default int count = 15;
 
     /** How much vertical space is required to spawn this structure. */
     @Default Range length = Range.of(5, 12);
@@ -61,7 +61,7 @@ public class PillarSettings {
         return new HjsonMapper(json)
             .mapRequiredState(Fields.state, FEATURE_NAME, builder::state)
             .mapSelf(o -> builder.conditions(ConditionSettings.from(o, original.conditions)))
-            .mapInt(Fields.frequency, builder::frequency)
+            .mapInt(Fields.count, builder::count)
             .mapRange(Fields.length, builder::length)
             .mapState(Fields.stairBlock, s -> builder.stairBlock(full(toStairBlock(s))))
             .release(builder::build);

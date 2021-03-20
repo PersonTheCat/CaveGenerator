@@ -11,7 +11,6 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 import org.hjson.JsonObject;
 
-import static com.personthecat.cavegenerator.util.CommonMethods.full;
 import static com.personthecat.cavegenerator.util.CommonMethods.invert;
 
 @FieldNameConstants
@@ -48,7 +47,7 @@ public class RavineSettings {
     @Default ScalableFloat scale = new ScalableFloat(0.0F, 2.0F, 1.0F, 0.0F, 1.0F);
 
     /** Vertical scale ratio. */
-    @Default ScalableFloat scaleY = new ScalableFloat(3.0F, 1.0F, 1.0F, 0.0F, 1.0F);
+    @Default ScalableFloat skew = new ScalableFloat(3.0F, 1.0F, 1.0F, 0.0F, 1.0F);
 
     /** Horizontal angle in radians. */
     @Default ScalableFloat yaw = new ScalableFloat(0.0F, 1.0F, 1.0F, 0.0F, 1.0F);
@@ -69,7 +68,7 @@ public class RavineSettings {
     @Default int resolution = 4;
 
     /** Settings for how to generate these walls, if applicable. */
-    @Default NoiseMapSettings wallNoise = NoiseMapSettings.builder()
+    @Default NoiseMapSettings walls = NoiseMapSettings.builder()
         .frequency(0.5F).range(Range.of(0, 4)).build();
 
     public static RavineSettings from(JsonObject json, OverrideSettings overrides) {
@@ -91,18 +90,18 @@ public class RavineSettings {
             .mapScalableFloat(Fields.dYaw, original.dYaw, builder::dYaw)
             .mapScalableFloat(Fields.dPitch, original.dPitch, builder::dPitch)
             .mapScalableFloat(Fields.scale, original.scale, builder::scale)
-            .mapScalableFloat(Fields.scaleY, original.scaleY, builder::scaleY)
+            .mapScalableFloat(Fields.skew, original.skew, builder::skew)
             .mapScalableFloat(Fields.yaw, original.yaw, builder::yaw)
             .mapScalableFloat(Fields.pitch, original.pitch, builder::pitch)
             .mapInt(Fields.distance, builder::distance)
             .mapFloat(Fields.chance, f -> builder.chance(invert(f)))
-            .mapObject(Fields.wallNoise, o -> copyWallNoise(o, builder))
+            .mapObject(Fields.walls, o -> copyWallNoise(o, original, builder))
             .mapInt(Fields.resolution, builder::resolution)
             .release(builder::build);
     }
 
-    private static void copyWallNoise(JsonObject json, RavineSettingsBuilder builder) {
-        builder.useWallNoise(true).wallNoise(NoiseMapSettings.from(json, builder.wallNoise$value));
+    private static void copyWallNoise(JsonObject json, RavineSettings original, RavineSettingsBuilder builder) {
+        builder.useWallNoise(true).walls(NoiseMapSettings.from(json, original.walls));
     }
 
 }

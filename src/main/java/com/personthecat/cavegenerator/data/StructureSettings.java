@@ -64,7 +64,7 @@ public class StructureSettings {
     @Default float chance = 1.0F;
 
     /** The number of spawn attempts per chunk. */
-    @Default int frequency = 1;
+    @Default int count = 1;
 
     /** Whether to display the spawn coordinates of this structure in the log. */
     @Default boolean debugSpawns = false;
@@ -95,7 +95,7 @@ public class StructureSettings {
             .mapBlockPosList(Fields.waterChecks, builder::waterChecks)
             .mapBlockPos(Fields.offset, builder::offset)
             .mapFloat(Fields.chance, builder::chance)
-            .mapInt(Fields.frequency, builder::frequency)
+            .mapInt(Fields.count, builder::count)
             .mapBool(Fields.debugSpawns, builder::debugSpawns)
             .mapBool(Fields.rotateRandomly, builder::rotateRandomly)
             .release(builder::build);

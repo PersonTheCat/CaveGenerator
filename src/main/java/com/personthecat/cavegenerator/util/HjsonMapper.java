@@ -3,7 +3,7 @@ package com.personthecat.cavegenerator.util;
 import com.personthecat.cavegenerator.model.Direction;
 import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.model.ScalableFloat;
-import com.personthecat.cavegenerator.data.WallDecoratorSettings.Preference;
+import com.personthecat.cavegenerator.data.WallDecoratorSettings.Placement;
 import fastnoise.FastNoise.CellularDistanceFunction;
 import fastnoise.FastNoise.CellularReturnType;
 import fastnoise.FastNoise.FractalType;
@@ -99,8 +99,8 @@ public class HjsonMapper {
         return this;
     }
 
-    public HjsonMapper mapPreference(String field, Consumer<Preference> ifPresent) {
-        HjsonTools.getEnumValue(json, field, Preference.class).ifPresent(ifPresent);
+    public HjsonMapper mapPlacementPreference(String field, Consumer<Placement> ifPresent) {
+        HjsonTools.getEnumValue(json, field, Placement.class).ifPresent(ifPresent);
         return this;
     }
 
