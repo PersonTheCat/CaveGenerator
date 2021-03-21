@@ -139,6 +139,10 @@ public class HjsonTools {
         return getValue(json, field).map(JsonValue::asInt);
     }
 
+    public static int getIntOr(JsonObject json, String field, int orElse) {
+        return getInt(json, field).orElse(orElse);
+    }
+
     /** Retrieves a range of integers from the input object. */
     public static Optional<Range> getRange(JsonObject json, String field) {
         return getValue(json, field)

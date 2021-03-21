@@ -96,6 +96,7 @@ public class RavineSettings {
             .mapInt(Fields.distance, builder::distance)
             .mapFloat(Fields.chance, f -> builder.chance(invert(f)))
             .mapObject(Fields.walls, o -> copyWallNoise(o, original, builder))
+            .mapBool(Fields.useWallNoise, builder::useWallNoise)
             .mapInt(Fields.resolution, builder::resolution)
             .release(builder::build);
     }

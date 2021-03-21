@@ -72,7 +72,7 @@ public class TunnelSettings {
     /** The chance that this tunnel will spawn as part of a system. */
     @Default int systemChance = 4;
 
-    /** The chance that any tunnel will be skipped, thus increasing distance between tunnels. */
+    /** The chance will spawn successfully. Lower value distance between tunnel systems. */
     @Default int chance = 7;
 
     /** The number of branches spawned when a tunnel system is created. */

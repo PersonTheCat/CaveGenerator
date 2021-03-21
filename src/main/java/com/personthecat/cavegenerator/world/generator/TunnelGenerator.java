@@ -133,7 +133,7 @@ public class TunnelGenerator extends SphereGenerator {
         // with the vanilla setup.
         final long seed = main.nextLong();
         final float scale = main.nextFloat() * cfg.rooms.scale + 1;
-        final float scaleY = cfg.rooms.skew;
+        final float scaleY = cfg.rooms.stretch;
         // Construct a local Random object for use within this function,
         // also matching the vanilla setup.
         final Random rand = new Random(seed);

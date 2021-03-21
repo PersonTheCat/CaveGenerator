@@ -1,25 +1,77 @@
 package com.personthecat.cavegenerator.config;
 
+import com.personthecat.cavegenerator.data.*;
 import com.personthecat.cavegenerator.util.Result;
+import lombok.extern.log4j.Log4j2;
+import org.apache.commons.lang3.tuple.Pair;
+import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
-import static com.personthecat.cavegenerator.util.HjsonTools.*;
+import static com.personthecat.cavegenerator.util.HjsonTools.getArrayOrNew;
+import static com.personthecat.cavegenerator.util.HjsonTools.getObjectArray;
+import static com.personthecat.cavegenerator.util.HjsonTools.getObject;
+import static com.personthecat.cavegenerator.util.HjsonTools.setOrAdd;
+import static com.personthecat.cavegenerator.util.HjsonTools.writeJson;
 
 /**
- * This is a temporary class designed to extend compatibility of deprecated
- * fields and notations until they can safely be phased out. It will handle
- * updating these fields to their new format until the next major update.
+ * This is a temporary class designed to extend compatibility of deprecated fields and notations
+ * until they can safely be phased out. It will handle updating these fields to their new format
+ * for the next few updates until sufficient time has passed to remove them safely.
  */
+@Log4j2
 class PresetCompat {
 
+    // Versions where fields were removed;
+    private static final String CG_1_0 = "1.0";
+
+    // A list of deprecated field names.
+    private static final String MIN_HEIGHT = "minHeight";
+    private static final String MAX_HEIGHT = "maxHeight";
+    private static final String MIN_LENGTH = "minLength";
+    private static final String MAX_LENGTH = "maxLength";
+    private static final String MIN_VAL = "minVal";
+    private static final String MAX_VAL = "maxVal";
+    private static final String NOISE_2D = "noise2D";
+    private static final String NOISE_3D = "noise3D";
+    private static final String WALL_NOISE = "wallNoise";
+    private static final String ISOLATED_CHANCE = "isolatedChance";
+    private static final String SCALE = "scale";
+    private static final String SCALE_Y = "scaleY";
+    private static final String USE_BIOME_BLACKLIST = "useBiomeBlacklist";
+    private static final String USE_DIMENSION_BLACKLIST = "useDimensionBlacklist";
+    private static final String ANGLE_XZ = "angleXZ";
+    private static final String ANGLE_Y = "angleY";
+    private static final String TWIST_XZ = "twistXZ";
+    private static final String TWIST_Y = "twistY";
+    private static final String LARGE_STALACTITES = "largeStalactites";
+    private static final String LARGE_STALAGMITES = "largeStalagmites";
+    private static final String STONE_CLUSTERS = "stoneClusters";
+    private static final String PREFERENCE = "preference";
+    private static final String REPLACE_MATCH = "replace_match";
+    private static final String REPLACE_ORIGINAL = "replace_original";
+    private static final String STONE_LAYERS = "stoneLayers";
+    private static final String GIANT_PILLARS = "giantPillars";
+    private static final String AIR_MATCHERS = "airMatchers";
+    private static final String SOLID_MATCHERS = "solidMatchers";
+    private static final String NON_SOLID_MATCHERS = "nonSolidMatchers";
+    private static final String WATER_MATCHERS = "waterMatchers";
+    private static final String ROOM_CHANCE = "roomChance";
+    private static final String FREQUENCY = "frequency";
+    private static final String ENABLED = "enabled";
+    private static final String BLANK_SLATE = "blankSlate";
+
+    // Other field names needed for performing updates.
+    private static final String IMPORTS = "imports";
+    private static final String VARIABLES = "variables";
+
     /**
-     * This function takes care of any operation related to renaming and
-     * updating old variables, as well as enforcing that imports be moved
-     * to the top of each file.
+     * This function takes care of any operation related to renaming and updating old variables,
+     * as well as enforcing that imports be moved to the top of each file.
      *
      * Todo: track whether changes occur before overwriting.
      *
@@ -28,57 +80,234 @@ class PresetCompat {
      * @return Whether an exception took place when writing the file.
      */
     static Result<IOException> update(JsonObject json, File file) {
-        getValue(json, "tunnels").ifPresent(PresetCompat::renameAngles);
-        getValue(json, "ravines").ifPresent(PresetCompat::renameAngles);
-        rename(json, "stoneClusters", "clusters");
+        final JsonObject updated = new JsonObject().addAll(json);
+        updateRoot(json);
+        updateCaveBlocks(json);
+        updateWallDecorators(json);
+        updateRooms(json);
+        updateTunnels(json);
+        updateRavines(json);
+        updateCaverns(json);
+        updateClusters(json);
+        updateLayers(json);
+        updateStalactites(json);
+        updatePillars(json);
+        updateStructures(json);
+        updateRecursive(json);
         removeBlankSlate(json);
         enforceValueOrder(json);
-        return writeJson(json, file);
+        // Only write to the file if it was changed.
+        return json != updated ? writeJson(updated, file) : Result.ok();
+    }
+
+    private static void updateRoot(JsonObject json) {
+        FieldHistory.withPath()
+            .toRange(MIN_HEIGHT, 0, MAX_HEIGHT, 255, ConditionSettings.Fields.height)
+            .history(USE_BIOME_BLACKLIST, OverrideSettings.Fields.blacklistBiomes)
+            .history(USE_DIMENSION_BLACKLIST, OverrideSettings.Fields.blacklistDimensions)
+            .history(STONE_CLUSTERS, CavePreset.Fields.clusters)
+            .history(STONE_LAYERS, CavePreset.Fields.layers)
+            .history(GIANT_PILLARS, CavePreset.Fields.pillars)
+            .updateAll(json);
+    }
+
+    private static void updateCaveBlocks(JsonObject json) {
+        FieldHistory.withPath(OverrideSettings.Fields.caveBlocks)
+            .toRange(MIN_HEIGHT, 10, MAX_HEIGHT, 50, CaveBlockSettings.Fields.height)
+            .history(NOISE_3D, CaveBlockSettings.Fields.noise)
+            .updateAll(json);
+
+    }
+
+    private static void updateWallDecorators(JsonObject json) {
+        FieldHistory.withPath(OverrideSettings.Fields.wallDecorators)
+            .toRange(MIN_HEIGHT, 10, MAX_HEIGHT, 50, WallDecoratorSettings.Fields.height)
+            .history(NOISE_3D, WallDecoratorSettings.Fields.noise)
+            .updateAll(json);
+    }
+
+    private static void updateRooms(JsonObject json) {
+        FieldHistory.withPath(OverrideSettings.Fields.rooms)
+            .history(SCALE_Y, RoomSettings.Fields.stretch)
+            .updateAll(json);
+        updateRoomChance(json);
+    }
+
+    private static void updateTunnels(JsonObject json) {
+        FieldHistory.withPath(CavePreset.Fields.tunnels)
+            .toRange(MIN_HEIGHT, 8, MAX_HEIGHT, 128, ConditionSettings.Fields.height)
+            .history(ISOLATED_CHANCE, TunnelSettings.Fields.chance)
+            .history(FREQUENCY, TunnelSettings.Fields.count)
+            .history(ANGLE_XZ, TunnelSettings.Fields.yaw)
+            .history(ANGLE_Y, TunnelSettings.Fields.pitch)
+            .history(TWIST_XZ, TunnelSettings.Fields.dYaw)
+            .history(TWIST_Y, TunnelSettings.Fields.dPitch)
+            .history(SCALE_Y, TunnelSettings.Fields.stretch)
+            .updateAll(json);
+    }
+
+    private static void updateRavines(JsonObject json) {
+        FieldHistory.withPath(CavePreset.Fields.ravines)
+            .toRange(MIN_HEIGHT, 20, MAX_HEIGHT, 66, ConditionSettings.Fields.height)
+            .history(ANGLE_XZ, RavineSettings.Fields.yaw)
+            .history(ANGLE_Y, RavineSettings.Fields.pitch)
+            .history(TWIST_XZ, RavineSettings.Fields.dYaw)
+            .history(TWIST_Y, RavineSettings.Fields.dPitch)
+            .history(SCALE_Y, TunnelSettings.Fields.stretch)
+            .history(WALL_NOISE, RavineSettings.Fields.walls)
+            .collapse(RavineSettings.Fields.walls, NOISE_2D)
+            .updateAll(json);
+        FieldHistory.withPath(CavePreset.Fields.ravines, RavineSettings.Fields.walls)
+            .toRange(MIN_VAL, 0.0, MAX_VAL, 4.0, NoiseMapSettings.Fields.range)
+            .markRemoved(SCALE, CG_1_0)
+            .updateAll(json);
+    }
+
+    private static void updateCaverns(JsonObject json) {
+        FieldHistory.withPath(CavePreset.Fields.caverns)
+            .history(NOISE_3D, CavernSettings.Fields.generators)
+            .collapse(ConditionSettings.Fields.ceiling, NOISE_2D)
+            .collapse(ConditionSettings.Fields.floor, NOISE_2D)
+            .markRemoved(ENABLED, CG_1_0)
+            .updateAll(json);
+        FieldHistory.withPath(CavePreset.Fields.caverns, ConditionSettings.Fields.ceiling)
+            .toRange(MIN_VAL, -17.0, MAX_VAL, -3.0, NoiseMapSettings.Fields.range)
+            .updateAll(json);
+        FieldHistory.withPath(CavePreset.Fields.caverns, ConditionSettings.Fields.floor)
+            .toRange(MIN_VAL, 0.0, MAX_VAL, 8.0, NoiseMapSettings.Fields.range)
+            .updateAll(json);
+        FieldHistory.withPath(CavePreset.Fields.caverns, CavernSettings.Fields.generators)
+            .markRemoved(SCALE, CG_1_0)
+            .updateAll(json);
+    }
+
+    private static void updateClusters(JsonObject json) {
+        FieldHistory.withPath(CavePreset.Fields.clusters)
+            .history(NOISE_3D, ConditionSettings.Fields.noise);
+    }
+
+    private static void updateLayers(JsonObject json) {
+        FieldHistory.withPath(CavePreset.Fields.layers)
+            .toRange(MIN_HEIGHT, 0, MAX_HEIGHT, 20, ConditionSettings.Fields.height)
+            .history(NOISE_2D, ConditionSettings.Fields.ceiling)
+            .updateAll(json);
+        FieldHistory.withPath(CavePreset.Fields.layers, ConditionSettings.Fields.ceiling)
+            .toRange(MIN_VAL, -7.0, MAX_VAL, 7.0, NoiseMapSettings.Fields.range)
+            .updateAll(json);
+    }
+
+    private static void updateStalactites(JsonObject json) {
+        condenseStalactites(json);
+    }
+
+    private static void updatePillars(JsonObject json) {
+        FieldHistory.withPath(CavePreset.Fields.pillars)
+            .history(FREQUENCY, PillarSettings.Fields.count)
+            .toRange(MIN_HEIGHT, 10, MAX_HEIGHT, 50, ConditionSettings.Fields.height)
+            .toRange(MIN_LENGTH, 4, MAX_LENGTH, 12, PillarSettings.Fields.length)
+            .updateAll(json);
+    }
+
+    private static void updateStructures(JsonObject json) {
+        FieldHistory.withPath(CavePreset.Fields.structures)
+            .toRange(MIN_HEIGHT, 10, MAX_HEIGHT, 50, ConditionSettings.Fields.height)
+            .history(FREQUENCY, StructureSettings.Fields.count)
+            .history(AIR_MATCHERS, StructureSettings.Fields.airChecks)
+            .history(SOLID_MATCHERS, StructureSettings.Fields.solidChecks)
+            .history(NON_SOLID_MATCHERS, StructureSettings.Fields.nonSolidChecks)
+            .history(WATER_MATCHERS, StructureSettings.Fields.waterChecks)
+            .updateAll(json);
+    }
+
+    private static void updateRecursive(JsonObject json) {
+        FieldHistory.recursive(ConditionSettings.Fields.ceiling)
+            .markRemoved(SCALE, CG_1_0)
+            .markRemoved(NoiseSettings.Fields.threshold, CG_1_0)
+            .updateAll(json);
+        FieldHistory.recursive(ConditionSettings.Fields.floor)
+            .markRemoved(SCALE, CG_1_0)
+            .markRemoved(NoiseSettings.Fields.threshold, CG_1_0)
+            .updateAll(json);
+        FieldHistory.recursive(ConditionSettings.Fields.noise)
+            .transform(SCALE, PresetCompat::transformScale)
+            .updateAll(json);
+        FieldHistory.recursive(ConditionSettings.Fields.region)
+            .transform(SCALE, PresetCompat::transformScale)
+            .markRemoved(MIN_VAL, CG_1_0)
+            .markRemoved(MAX_VAL, CG_1_0)
+            .markRemoved(NoiseMapSettings.Fields.range, CG_1_0)
+            .updateAll(json);
+        FieldHistory.recursive(OverrideSettings.Fields.wallDecorators)
+            .history(PREFERENCE, WallDecoratorSettings.Fields.placement)
+            .renameValue(WallDecoratorSettings.Fields.placement, REPLACE_MATCH, WallDecoratorSettings.Placement.EMBED.name())
+            .renameValue(WallDecoratorSettings.Fields.placement, REPLACE_ORIGINAL, WallDecoratorSettings.Placement.OVERLAY.name())
+            .updateAll(json);
     }
 
     /**
-     * This is a reusable function for renaming angles in tunnels and ravines.
-     * The value may be an object or an array.
+     * For replacing <code>largeStalactites</code> and <code>largeStalagmites</code> with the
+     * updated <code>stalactites</code> object syntax.
      *
-     * @param value The JSON value to be updated.
+     * @param json The root JSON object containing these fields.
      */
-    private static void renameAngles(JsonValue value) {
-        if (value.isObject()) {
-            renameAngles(value.asObject());
-        } else if (value.isArray()) {
-            for (JsonValue e : value.asArray()) {
-                if (e.isObject()) {
-                    renameAngles(e.asObject());
-                }
+    private static void condenseStalactites(JsonObject json) {
+        final List<JsonObject> largeStalactites = getObjectArray(json, LARGE_STALACTITES);
+        final List<JsonObject> largeStalagmites = getObjectArray(json, LARGE_STALAGMITES);
+        if (!largeStalactites.isEmpty() || !largeStalagmites.isEmpty()) {
+            final JsonArray stalactites = getArrayOrNew(json, CavePreset.Fields.stalactites);
+            for (JsonObject stalactite : largeStalactites) {
+                stalactite.set(StalactiteSettings.Fields.type, StalactiteSettings.Type.STALACTITE.name());
+                stalactites.add(stalactite);
+            }
+            for (JsonObject stalagmite: largeStalagmites) {
+                stalagmite.set(StalactiteSettings.Fields.type, StalactiteSettings.Type.STALAGMITE.name());
+                stalactites.add(stalactites);
+            }
+            json.set(CavePreset.Fields.stalactites, stalactites);
+        }
+    }
+
+    private static void updateRoomChance(JsonObject json) {
+        final List<JsonObject> tunnels = getObjectArray(json, CavePreset.Fields.tunnels);
+        boolean updated = false;
+
+        for (JsonObject tunnel : tunnels) {
+            final JsonValue roomChance = tunnel.get(ROOM_CHANCE);
+            if (roomChance != null) {
+                final JsonObject tunnelRooms = getObject(tunnel, TunnelSettings.Fields.rooms)
+                    .orElseGet(PresetCompat::getDefaultRooms)
+                    .set(RoomSettings.Fields.chance, roomChance);
+                tunnel.set(TunnelSettings.Fields.rooms, tunnelRooms);
+                updated = true;
             }
         }
-    }
-
-    /**
-     * For renaming tunnels and ravines when the value is a known object.
-     *
-     * @param json The JSON object to be updated.
-     */
-    private static void renameAngles(JsonObject json) {
-        rename(json, "angleXZ", "yaw");
-        rename(json, "angleY", "pitch");
-        rename(json, "twistXZ", "dYaw");
-        rename(json, "twistY", "dPitch");
-    }
-
-    /**
-     * Renames a value in a JSON object, if present.
-     *
-     * @param json The JSON object to be updated.
-     * @param from The original key name.
-     * @param to The new key name.
-     */
-    private static void rename(JsonObject json, String from, String to) {
-        final JsonValue get = json.get(from);
-        if (get != null) {
-            json.set(to, get);
-            json.remove(from);
+        if (updated) {
+            moveRoomsFromOverrides(json, tunnels);
         }
+    }
+
+    private static void moveRoomsFromOverrides(JsonObject json, List<JsonObject> tunnels) {
+        final JsonObject rooms = getObject(json, OverrideSettings.Fields.rooms)
+            .orElseGet(PresetCompat::getDefaultRooms);
+        // Copy these rooms to any tunnels which now need them.
+        for (JsonObject tunnel : tunnels) {
+            if (!tunnel.has(TunnelSettings.Fields.rooms)) {
+                tunnel.add(TunnelSettings.Fields.rooms, rooms);
+            }
+        }
+        json.remove(OverrideSettings.Fields.rooms);
+    }
+
+    private static JsonObject getDefaultRooms() {
+        final RoomSettings settings = RoomSettings.builder().build();
+        return new JsonObject().add(RoomSettings.Fields.scale, settings.scale)
+            .add(RoomSettings.Fields.stretch, settings.stretch);
+    }
+
+    private static Pair<String, JsonValue> transformScale(String name, JsonValue value) {
+        final double scale = value.asDouble();
+        final double threshold = (2.0 * scale) - 1.0; // Convert to range down.
+        return Pair.of(NoiseSettings.Fields.threshold, JsonValue.valueOf(threshold));
     }
 
     /**
@@ -94,14 +323,15 @@ class PresetCompat {
      * @param json The JSON object to be updated.
      */
     private static void removeBlankSlate(JsonObject json) {
-        if (json.has("blankSlate")) {
+        final JsonValue blankSlate = json.get(BLANK_SLATE);
+        if (blankSlate != null) {
             // User did *not* want a blank slate.
-            if (!json.get("blankSlate").asBoolean()) {
+            if (!blankSlate.asBoolean()) {
                 final JsonValue all = JsonValue.valueOf("ALL")
                     .setEOLComment("Default ravines and lava settings.");
                 setOrAdd(json, "$VANILLA", all);
             }
-            json.remove("blankSlate");
+            json.remove(BLANK_SLATE);
         }
     }
 
@@ -115,8 +345,8 @@ class PresetCompat {
         final JsonObject top = new JsonObject();
         final JsonObject bottom = new JsonObject();
 
-        moveValue("imports", json, top);
-        moveValue("variables", json, top);
+        moveValue(IMPORTS, json, top);
+        moveValue(VARIABLES, json, top);
         for (JsonObject.Member member : json) {
             if (member.getName().startsWith("$")) {
                 top.add(member.getName(), member.getValue());
