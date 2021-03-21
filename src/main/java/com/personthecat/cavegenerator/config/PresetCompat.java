@@ -13,6 +13,7 @@ import java.io.IOException;
 import java.util.List;
 
 import static com.personthecat.cavegenerator.util.HjsonTools.getArrayOrNew;
+import static com.personthecat.cavegenerator.util.HjsonTools.getIntOr;
 import static com.personthecat.cavegenerator.util.HjsonTools.getObjectArray;
 import static com.personthecat.cavegenerator.util.HjsonTools.getObject;
 import static com.personthecat.cavegenerator.util.HjsonTools.setOrAdd;
@@ -64,6 +65,9 @@ class PresetCompat {
     private static final String FREQUENCY = "frequency";
     private static final String ENABLED = "enabled";
     private static final String BLANK_SLATE = "blankSlate";
+    private static final String RADIUS_VARIANCE = "radiusVariance";
+    private static final String START_HEIGHT = "startHeight";
+    private static final String HEIGHT_VARIANCE = "heightVariance";
 
     // Other field names needed for performing updates.
     private static final String IMPORTS = "imports";
@@ -72,8 +76,6 @@ class PresetCompat {
     /**
      * This function takes care of any operation related to renaming and updating old variables,
      * as well as enforcing that imports be moved to the top of each file.
-     *
-     * Todo: track whether changes occur before overwriting.
      *
      * @param json The parsed JSON object to be updated.
      * @param file The file source of this object.
@@ -183,7 +185,9 @@ class PresetCompat {
 
     private static void updateClusters(JsonObject json) {
         FieldHistory.withPath(CavePreset.Fields.clusters)
-            .history(NOISE_3D, ConditionSettings.Fields.noise);
+            .history(NOISE_3D, ConditionSettings.Fields.noise)
+            .updateAll(json);
+        updateClusterRanges(json);
     }
 
     private static void updateLayers(JsonObject json) {
@@ -302,6 +306,41 @@ class PresetCompat {
         final RoomSettings settings = RoomSettings.builder().build();
         return new JsonObject().add(RoomSettings.Fields.scale, settings.scale)
             .add(RoomSettings.Fields.stretch, settings.stretch);
+    }
+
+    private static void updateClusterRanges(JsonObject json) {
+        for (JsonObject cluster : getObjectArray(json, CavePreset.Fields.clusters)) {
+            final JsonValue radiusVariance = cluster.get(RADIUS_VARIANCE);
+            if (radiusVariance != null) {
+                updateClusterRadii(cluster, radiusVariance.asInt() / 2);
+            }
+            if (cluster.has(START_HEIGHT) || cluster.has(HEIGHT_VARIANCE)) {
+                final int center = getIntOr(cluster, START_HEIGHT, 32);
+                final int variance = getIntOr(cluster, HEIGHT_VARIANCE, 16);
+                updateClusterCenter(cluster, center, variance / 2);
+            }
+        }
+    }
+
+    private static void updateClusterRadii(JsonObject cluster, int diff) {
+        final String radiusXKey = ClusterSettings.Fields.radiusX;
+        final String radiusYKey = ClusterSettings.Fields.radiusY;
+        final String radiusZKey = ClusterSettings.Fields.radiusZ;
+        final int radX = getIntOr(cluster, radiusXKey, 16);
+        final int radY = getIntOr(cluster, radiusYKey, 12);
+        final int radZ = getIntOr(cluster, radiusZKey, 16);
+
+        cluster.set(radiusXKey, new JsonArray().add(radX - diff).add(radX + diff).setCondensed(true))
+            .set(radiusYKey, new JsonArray().add(radY - diff).add(radY + diff).setCondensed(true))
+            .set(radiusZKey, new JsonArray().add(radZ - diff).add(radZ + diff).setCondensed(true));
+        cluster.remove(RADIUS_VARIANCE);
+    }
+
+    private static void updateClusterCenter(JsonObject cluster, int center, int diff) {
+        final String centerKey = ClusterSettings.Fields.centerHeight;
+        cluster.set(centerKey, new JsonArray().add(center - diff).add(center + diff).setCondensed(true));
+        cluster.remove(START_HEIGHT);
+        cluster.remove(HEIGHT_VARIANCE);
     }
 
     private static Pair<String, JsonValue> transformScale(String name, JsonValue value) {
