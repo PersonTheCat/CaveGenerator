@@ -52,28 +52,28 @@ public class TunnelSettings {
     @Default RoomSettings rooms = RoomSettings.builder().build();
 
     /** Horizontal rotation. */
-    @Default ScalableFloat dYaw = new ScalableFloat(0.0f, 0.0f, 0.75f, 4.0f, 1.0f);
+    @Default ScalableFloat dYaw = new ScalableFloat(0.0F, 0.0F, 0.75F, 4.0F, 1.0F);
 
     /** Vertical rotation. */
-    @Default ScalableFloat dPitch = new ScalableFloat(0.0f, 0.0f, 0.9f, 2.0f, 1.0f);
+    @Default ScalableFloat dPitch = new ScalableFloat(0.0f, 0.0f, 0.9f, 2.0F, 1.0F);
 
     /** Overall scale. */
-    @Default ScalableFloat scale = new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
+    @Default ScalableFloat scale = new ScalableFloat(0.0F, 1.0F, 1.0F, 0.0F, 1.0F);
 
     /** Vertical scale ratio. */
-    @Default ScalableFloat stretch = new ScalableFloat(1.0f, 1.0f, 1.0f, 0.0f, 1.0f);
+    @Default ScalableFloat stretch = new ScalableFloat(1.0F, 1.0F, 1.0F, 0.0F, 1.0F);
 
     /** Horizontal angle in radians. */
-    @Default ScalableFloat yaw = new ScalableFloat(0.0f, 1.0f, 1.0f, 0.0f, 1.0f);
+    @Default ScalableFloat yaw = new ScalableFloat(0.0F, 1.0F, 1.0F, 0.0F, 1.0F);
 
     /** Vertical angle in radians. */
-    @Default ScalableFloat pitch = new ScalableFloat(0.0f, 0.25f, 1.0f, 0.0f, 1.0f);
+    @Default ScalableFloat pitch = new ScalableFloat(0.0F, 0.25F, 1.0F, 0.0F, 1.0F);
 
     /** The chance that this tunnel will spawn as part of a system. */
     @Default int systemChance = 4;
 
     /** The chance that any tunnel will be skipped, thus increasing distance between tunnels. */
-    @Default int isolatedChance = 7;
+    @Default int chance = 7;
 
     /** The number of branches spawned when a tunnel system is created. */
     @Default int systemDensity = 4;
@@ -113,7 +113,7 @@ public class TunnelSettings {
             .mapScalableFloat(Fields.yaw, original.yaw, builder::yaw)
             .mapScalableFloat(Fields.pitch, original.pitch, builder::pitch)
             .mapFloat(Fields.systemChance, f -> builder.systemChance(invert(f)))
-            .mapFloat(Fields.isolatedChance, f -> builder.systemChance(invert(f)))
+            .mapFloat(Fields.chance, f -> builder.chance(invert(f)))
             .mapInt(Fields.systemDensity, builder::systemDensity)
             .mapInt(Fields.distance, builder::distance)
             .mapInt(Fields.count, builder::count)
