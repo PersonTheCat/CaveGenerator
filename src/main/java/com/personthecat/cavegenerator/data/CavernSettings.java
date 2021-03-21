@@ -26,7 +26,7 @@ public class CavernSettings {
 
     /** The default noise generator settings used by the caverns feature. */
     private static final NoiseSettings DEFAULT_GENERATOR =
-        NoiseSettings.builder().frequency(0.0143F).threshold(Range.of(0.6F)).stretch(0.5F).octaves(1).build();
+        NoiseSettings.builder().frequency(0.0143F).threshold(Range.of(-0.6F)).stretch(0.5F).octaves(1).build();
 
     /** The default ceiling noise parameters used by caverns, if absent. */
     private static final NoiseMapSettings DEFAULT_CEIL_NOISE =
@@ -76,6 +76,7 @@ public class CavernSettings {
             .mapBool(Fields.enabled, builder::enabled)
             .mapInt(Fields.resolution, builder::resolution)
             .mapArray(Fields.generators, CavernSettings::createNoise, builder::generators);
+
         // Forcibly disable biome restrictions for caverns until they look better.
         if (!ConfigFile.forceEnableCavernBiomes) {
             final ConditionSettings conditions = builder.build().conditions;

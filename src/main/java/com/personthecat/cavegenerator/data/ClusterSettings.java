@@ -58,7 +58,7 @@ public class ClusterSettings {
 
     /** Default values for cluster noise. */
     public static final NoiseSettings DEFAULT_NOISE =
-        NoiseSettings.builder().frequency(0.0143f).threshold(Range.of(0.6F)).stretch(0.5f).octaves(1).build();
+        NoiseSettings.builder().frequency(0.0143f).threshold(Range.of(-0.6F)).stretch(0.5f).octaves(1).build();
 
     public static ClusterSettings from(JsonObject json, OverrideSettings overrides) {
         final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();

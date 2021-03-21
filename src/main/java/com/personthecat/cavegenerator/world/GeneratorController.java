@@ -11,7 +11,6 @@ import lombok.Builder;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkPrimer;
 
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -23,7 +22,7 @@ public class GeneratorController {
 
     private final List<TunnelGenerator> tunnels;
     private final List<RavineGenerator> ravines;
-    @Nullable private final CavernGenerator caverns;
+    private final List<CavernGenerator> caverns;
     private final List<LayerGenerator> layers;
     private final ClusterGenerator globalClusters;
     private final ClusterGenerator layeredClusters;
@@ -35,7 +34,7 @@ public class GeneratorController {
         final GeneratorControllerBuilder builder = builder()
             .tunnels(map(preset.tunnels, t -> new TunnelGenerator(t, world)))
             .ravines(map(preset.ravines, r -> new RavineGenerator(r, world)))
-            .caverns(preset.caverns.map(c -> new CavernGenerator(c, world)).orElse(null))
+            .caverns(map(preset.caverns, r -> new CavernGenerator(r, world)))
             .layers(map(preset.layers, l -> new LayerGenerator(l, world)))
             .stalactites(map(preset.stalactites, s -> new StalactiteGenerator(s, world)))
             .pillars(map(preset.pillars, p -> new PillarGenerator(p, world)))
@@ -63,9 +62,7 @@ public class GeneratorController {
             layer.generate(world, world.rand, x, z, x, z, primer);
         }
         layeredClusters.generate(world, world.rand, x, z, x, z, primer);
-        if (caverns != null) {
-            caverns.generate(world, world.rand, x, z, x, z, primer);
-        }
+        caverns.forEach(c -> c.generate(world, world.rand, x, z, x, z, primer));
     }
 
     /** Generate all of the early, MapGenBase-style features that make up the bulk of the caves. */

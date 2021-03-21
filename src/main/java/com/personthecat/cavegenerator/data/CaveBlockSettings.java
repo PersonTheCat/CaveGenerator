@@ -44,7 +44,7 @@ public class CaveBlockSettings {
 
     /** The default noise values for CaveBlocks with noise. */
     public static final NoiseSettings DEFAULT_NOISE = NoiseSettings.builder()
-        .frequency(0.02f).threshold(Range.of(0.2F)).stretch(1.0f).octaves(1).build();
+        .frequency(0.02f).threshold(Range.of(-0.8F)).stretch(1.0f).octaves(1).build();
 
     /** An instance of the vanilla lava CaveBlocks that exists by default in all presets. */
     public static final CaveBlockSettings VANILLA_LAVA = CaveBlockSettings.builder()

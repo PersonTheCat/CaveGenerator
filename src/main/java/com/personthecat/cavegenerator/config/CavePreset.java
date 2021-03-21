@@ -14,15 +14,10 @@ import org.hjson.JsonObject;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
-
-import static com.personthecat.cavegenerator.util.CommonMethods.empty;
-import static com.personthecat.cavegenerator.util.CommonMethods.full;
 
 @FieldNameConstants
 @Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class CavePreset {
 
     /** Whether this preset is enabled at all. */
@@ -38,7 +33,7 @@ public class CavePreset {
     @Default List<RavineSettings> ravines = Collections.emptyList();
 
     /** Various noise generators which can be configured in extensively. */
-    @Default Optional<CavernSettings> caverns = empty();
+    @Default List<CavernSettings> caverns = Collections.emptyList();
 
     /** A series of layers designed to spawn upward throughout the world in sequence. */
     @Default List<LayerSettings> layers = Collections.emptyList();
@@ -66,7 +61,7 @@ public class CavePreset {
             .mapBool(Fields.enabled, builder::enabled)
             .mapArray(Fields.tunnels, o -> TunnelSettings.from(o, overrides), builder::tunnels)
             .mapArray(Fields.ravines, o -> RavineSettings.from(o, overrides), builder::ravines)
-            .mapObject(Fields.caverns, o -> builder.caverns(full(CavernSettings.from(o, overrides))))
+            .mapArray(Fields.caverns, o -> CavernSettings.from(o, overrides), builder::caverns)
             .mapArray(Fields.layers, o -> LayerSettings.from(o, overrides), builder::layers)
             .mapArray(Fields.clusters, o -> ClusterSettings.from(o, overrides), builder::clusters)
             .mapArray(Fields.stalactites, o -> StalactiteSettings.from(o, overrides), builder::stalactites)

@@ -240,9 +240,9 @@ public class FastNoise {
 	// Generates and sets the boolean threshold based on a scale of 0 - 1.
 	// Default: 0.5 -> 0.0.
 	public FastNoise SetThreshold(float min, float max) {
-		m_booleanMinThreshold = min;
-		// Treat a range of f1~f1 as a single threshold.
-		m_booleanMaxThreshold = max != min ? max : 1.0F;
+		// Treat a range of f1~f1 as a single threshold ranging downward.
+		m_booleanMinThreshold = min != max ? min : -1.0F;
+		m_booleanMaxThreshold = max;
 		return this;
 	}
 
