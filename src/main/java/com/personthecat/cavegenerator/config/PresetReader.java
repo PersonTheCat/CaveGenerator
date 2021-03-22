@@ -10,8 +10,10 @@ import java.util.*;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.empty;
 import static com.personthecat.cavegenerator.util.CommonMethods.extension;
+import static com.personthecat.cavegenerator.util.CommonMethods.f;
 import static com.personthecat.cavegenerator.util.CommonMethods.full;
 import static com.personthecat.cavegenerator.util.CommonMethods.noExtension;
+import static com.personthecat.cavegenerator.util.CommonMethods.runEx;
 import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
 import static com.personthecat.cavegenerator.io.SafeFileIO.safeListFiles;
 
@@ -94,7 +96,9 @@ public class PresetReader {
                 return JsonObject.readHjson(reader);
             }
         } catch (IOException ignored) {
-            throw runExF("Unable to load preset file {}.", file.getName());
+            throw runExF("Unable to load preset file {}", file.getName());
+        } catch (ParseException e) {
+            throw runEx(f("Error reading {}", file.getName()), e);
         }
     }
 }

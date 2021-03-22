@@ -112,7 +112,8 @@ public class FieldHistory {
                 final JsonValue value = member.getValue();
                 if (member.getName().equals(key)) {
                     HjsonTools.getRegularObjects(json, key).forEach(fn);
-                } else if (value.isObject()) {
+                }
+                if (value.isObject()) {
                     forEach(value.asObject(), fn);
                 } else if (value.isArray()) {
                     forEachInArray(value.asArray(), fn);
@@ -262,6 +263,7 @@ public class FieldHistory {
         private void markRemoved(JsonObject json) {
             final JsonValue value = json.get(key);
             if (value != null) {
+                json.setCondensed(false);
                 value.setEOLComment(f("Removed in {}. You can delete this field.", version));
             }
         }

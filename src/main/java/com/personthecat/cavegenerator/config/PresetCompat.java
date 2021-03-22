@@ -77,29 +77,29 @@ class PresetCompat {
      * This function takes care of any operation related to renaming and updating old variables,
      * as well as enforcing that imports be moved to the top of each file.
      *
+     * Todo: create deep clone for testing changes.
+     *
      * @param json The parsed JSON object to be updated.
      * @param file The file source of this object.
      * @return Whether an exception took place when writing the file.
      */
     static Result<IOException> update(JsonObject json, File file) {
-        final JsonObject updated = new JsonObject(json);
-        updateRoot(updated);
-        updateCaveBlocks(updated);
-        updateWallDecorators(updated);
-        updateRooms(updated);
-        updateTunnels(updated);
-        updateRavines(updated);
-        updateCaverns(updated);
-        updateClusters(updated);
-        updateLayers(updated);
-        updateStalactites(updated);
-        updatePillars(updated);
-        updateStructures(updated);
-        updateRecursive(updated);
-        removeBlankSlate(updated);
-        enforceValueOrder(updated);
-        // Only write to the file if it was changed.
-        return json != updated ? writeJson(updated, file) : Result.ok();
+        updateRoot(json);
+        updateCaveBlocks(json);
+        updateWallDecorators(json);
+        updateRooms(json);
+        updateTunnels(json);
+        updateRavines(json);
+        updateCaverns(json);
+        updateClusters(json);
+        updateLayers(json);
+        updateStalactites(json);
+        updatePillars(json);
+        updateStructures(json);
+        updateRecursive(json);
+        removeBlankSlate(json);
+        enforceValueOrder(json);
+        return writeJson(json, file);
     }
 
     private static void updateRoot(JsonObject json) {
@@ -204,6 +204,10 @@ class PresetCompat {
 
     private static void updateStalactites(JsonObject json) {
         condenseStalactites(json);
+        FieldHistory.withPath(CavePreset.Fields.stalactites)
+            .toRange(MIN_HEIGHT, 11, MAX_HEIGHT, 55, ConditionSettings.Fields.height)
+            .history(NOISE_2D, ConditionSettings.Fields.region)
+            .updateAll(json);
     }
 
     private static void updatePillars(JsonObject json) {
@@ -267,9 +271,11 @@ class PresetCompat {
             }
             for (JsonObject stalagmite: largeStalagmites) {
                 stalagmite.set(StalactiteSettings.Fields.type, StalactiteSettings.Type.STALAGMITE.name());
-                stalactites.add(stalactites);
+                stalactites.add(stalagmite);
             }
             json.set(CavePreset.Fields.stalactites, stalactites);
+            json.remove(LARGE_STALACTITES);
+            json.remove(LARGE_STALAGMITES);
         }
     }
 

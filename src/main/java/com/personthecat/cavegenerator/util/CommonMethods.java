@@ -25,6 +25,10 @@ public class CommonMethods {
         return new RuntimeException(x);
     }
 
+    public static RuntimeException runEx(String x, Throwable t) {
+        return new RuntimeException(x, t);
+    }
+
     /** Shorthand for a RuntimeException using String#format. */
     public static RuntimeException runExF(String x, Object... args) {
         return new RuntimeException(f(x, args));
