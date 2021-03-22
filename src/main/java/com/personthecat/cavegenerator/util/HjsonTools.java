@@ -248,6 +248,20 @@ public class HjsonTools {
         return array;
     }
 
+    /** Variant of {@link #getObjectArray} which does not coerce values into objects. */
+    public static List<JsonObject> getRegularObjects(JsonObject json, String field) {
+        final List<JsonObject> list = new ArrayList<>();
+        final JsonArray array = HjsonTools.getValue(json, field)
+                .map(HjsonTools::asOrToArray)
+                .orElseGet(JsonArray::new);
+        for (JsonValue value : array) {
+            if (value.isObject()) { // Ignore values that don't belong.
+                list.add(value.asObject());
+            }
+        }
+        return list;
+    }
+
     public static Optional<List<Integer>> getIntList(JsonObject json, String field) {
         return getArray(json, field).map(HjsonTools::toIntList);
     }

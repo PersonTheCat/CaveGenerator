@@ -14,7 +14,7 @@ import java.util.List;
 
 import static com.personthecat.cavegenerator.util.HjsonTools.getArrayOrNew;
 import static com.personthecat.cavegenerator.util.HjsonTools.getIntOr;
-import static com.personthecat.cavegenerator.util.HjsonTools.getObjectArray;
+import static com.personthecat.cavegenerator.util.HjsonTools.getRegularObjects;
 import static com.personthecat.cavegenerator.util.HjsonTools.getObject;
 import static com.personthecat.cavegenerator.util.HjsonTools.setOrAdd;
 import static com.personthecat.cavegenerator.util.HjsonTools.writeJson;
@@ -82,22 +82,22 @@ class PresetCompat {
      * @return Whether an exception took place when writing the file.
      */
     static Result<IOException> update(JsonObject json, File file) {
-        final JsonObject updated = new JsonObject().addAll(json);
-        updateRoot(json);
-        updateCaveBlocks(json);
-        updateWallDecorators(json);
-        updateRooms(json);
-        updateTunnels(json);
-        updateRavines(json);
-        updateCaverns(json);
-        updateClusters(json);
-        updateLayers(json);
-        updateStalactites(json);
-        updatePillars(json);
-        updateStructures(json);
-        updateRecursive(json);
-        removeBlankSlate(json);
-        enforceValueOrder(json);
+        final JsonObject updated = new JsonObject(json);
+        updateRoot(updated);
+        updateCaveBlocks(updated);
+        updateWallDecorators(updated);
+        updateRooms(updated);
+        updateTunnels(updated);
+        updateRavines(updated);
+        updateCaverns(updated);
+        updateClusters(updated);
+        updateLayers(updated);
+        updateStalactites(updated);
+        updatePillars(updated);
+        updateStructures(updated);
+        updateRecursive(updated);
+        removeBlankSlate(updated);
+        enforceValueOrder(updated);
         // Only write to the file if it was changed.
         return json != updated ? writeJson(updated, file) : Result.ok();
     }
@@ -167,6 +167,7 @@ class PresetCompat {
 
     private static void updateCaverns(JsonObject json) {
         FieldHistory.withPath(CavePreset.Fields.caverns)
+            .toRange(MIN_HEIGHT, 10, MAX_HEIGHT, 50, ConditionSettings.Fields.height)
             .history(NOISE_3D, CavernSettings.Fields.generators)
             .collapse(ConditionSettings.Fields.ceiling, NOISE_2D)
             .collapse(ConditionSettings.Fields.floor, NOISE_2D)
@@ -179,7 +180,8 @@ class PresetCompat {
             .toRange(MIN_VAL, 0.0, MAX_VAL, 8.0, NoiseMapSettings.Fields.range)
             .updateAll(json);
         FieldHistory.withPath(CavePreset.Fields.caverns, CavernSettings.Fields.generators)
-            .markRemoved(SCALE, CG_1_0)
+            .transform(SCALE, PresetCompat::transformScale)
+            .history(SCALE_Y, NoiseSettings.Fields.stretch)
             .updateAll(json);
     }
 
@@ -255,8 +257,8 @@ class PresetCompat {
      * @param json The root JSON object containing these fields.
      */
     private static void condenseStalactites(JsonObject json) {
-        final List<JsonObject> largeStalactites = getObjectArray(json, LARGE_STALACTITES);
-        final List<JsonObject> largeStalagmites = getObjectArray(json, LARGE_STALAGMITES);
+        final List<JsonObject> largeStalactites = getRegularObjects(json, LARGE_STALACTITES);
+        final List<JsonObject> largeStalagmites = getRegularObjects(json, LARGE_STALAGMITES);
         if (!largeStalactites.isEmpty() || !largeStalagmites.isEmpty()) {
             final JsonArray stalactites = getArrayOrNew(json, CavePreset.Fields.stalactites);
             for (JsonObject stalactite : largeStalactites) {
@@ -272,27 +274,28 @@ class PresetCompat {
     }
 
     private static void updateRoomChance(JsonObject json) {
-        final List<JsonObject> tunnels = getObjectArray(json, CavePreset.Fields.tunnels);
+        final List<JsonObject> tunnels = getRegularObjects(json, CavePreset.Fields.tunnels);
+        final JsonObject rooms = getObject(json, OverrideSettings.Fields.rooms)
+            .orElseGet(PresetCompat::getDefaultRooms);
         boolean updated = false;
 
         for (JsonObject tunnel : tunnels) {
             final JsonValue roomChance = tunnel.get(ROOM_CHANCE);
             if (roomChance != null) {
                 final JsonObject tunnelRooms = getObject(tunnel, TunnelSettings.Fields.rooms)
-                    .orElseGet(PresetCompat::getDefaultRooms)
+                    .orElseGet(() -> new JsonObject().addAll(rooms))
                     .set(RoomSettings.Fields.chance, roomChance);
                 tunnel.set(TunnelSettings.Fields.rooms, tunnelRooms);
+                tunnel.remove(ROOM_CHANCE);
                 updated = true;
             }
         }
         if (updated) {
-            moveRoomsFromOverrides(json, tunnels);
+            moveRoomsFromOverrides(json, rooms, tunnels);
         }
     }
 
-    private static void moveRoomsFromOverrides(JsonObject json, List<JsonObject> tunnels) {
-        final JsonObject rooms = getObject(json, OverrideSettings.Fields.rooms)
-            .orElseGet(PresetCompat::getDefaultRooms);
+    private static void moveRoomsFromOverrides(JsonObject json, JsonObject rooms, List<JsonObject> tunnels) {
         // Copy these rooms to any tunnels which now need them.
         for (JsonObject tunnel : tunnels) {
             if (!tunnel.has(TunnelSettings.Fields.rooms)) {
@@ -309,7 +312,7 @@ class PresetCompat {
     }
 
     private static void updateClusterRanges(JsonObject json) {
-        for (JsonObject cluster : getObjectArray(json, CavePreset.Fields.clusters)) {
+        for (JsonObject cluster : getRegularObjects(json, CavePreset.Fields.clusters)) {
             final JsonValue radiusVariance = cluster.get(RADIUS_VARIANCE);
             if (radiusVariance != null) {
                 updateClusterRadii(cluster, radiusVariance.asInt() / 2);

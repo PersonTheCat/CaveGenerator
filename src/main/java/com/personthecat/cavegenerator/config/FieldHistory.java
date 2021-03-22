@@ -90,7 +90,7 @@ public class FieldHistory {
 
         private void forEachContainer(JsonObject container, int index, Consumer<JsonObject> fn) {
             if (index < path.length) {
-                for (JsonObject o : HjsonTools.getObjectArray(container, path[index])) {
+                for (JsonObject o : HjsonTools.getRegularObjects(container, path[index])) {
                     forEachContainer(o, index + 1, fn);
                 }
             } else if (index == path.length) {
@@ -111,7 +111,7 @@ public class FieldHistory {
             for (JsonObject.Member member : json) {
                 final JsonValue value = member.getValue();
                 if (member.getName().equals(key)) {
-                    HjsonTools.getObjectArray(json, key).forEach(fn);
+                    HjsonTools.getRegularObjects(json, key).forEach(fn);
                 } else if (value.isObject()) {
                     forEach(value.asObject(), fn);
                 } else if (value.isArray()) {
