@@ -29,6 +29,9 @@ public class DecoratorSettings {
     /** Whether to include the blocks from various other features in this list. */
     @Default boolean replaceDecorators = true;
 
+    /** Whether to indiscriminately replace all non-bedrock blocks. */
+    @Default boolean replaceSolidBlocks = true;
+
     /** A list of blocks for this carver to place instead of air. */
     @Default List<CaveBlockSettings> caveBlocks = Collections.singletonList(CaveBlockSettings.VANILLA_LAVA);
 
@@ -47,6 +50,7 @@ public class DecoratorSettings {
         return new HjsonMapper(json)
             .mapStateList(Fields.replaceableBlocks, builder::replaceableBlocks)
             .mapBool(Fields.replaceDecorators, builder::replaceDecorators)
+            .mapBool(Fields.replaceSolidBlocks, builder::replaceSolidBlocks)
             .mapArray(Fields.caveBlocks, CaveBlockSettings::from, builder::caveBlocks)
             .mapArray(Fields.wallDecorators, WallDecoratorSettings::from, builder::wallDecorators)
             .release(builder::build);

@@ -25,7 +25,7 @@ import java.util.TreeMap;
 @Mod(
     modid = Main.MODID,
     name = "Cave Generator",
-    version = "0.19",
+    version = "1.0",
     dependencies = "after:worleycaves;",
     acceptableRemoteVersions = "*"
 )

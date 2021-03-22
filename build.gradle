@@ -10,7 +10,7 @@ buildscript {
 
 apply plugin: 'net.minecraftforge.gradle.forge'
 
-version = "0.19"
+version = "1.0"
 group = "PersonTheCat"
 archivesBaseName = "CaveGenerator"
 

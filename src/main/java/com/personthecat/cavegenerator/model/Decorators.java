@@ -46,9 +46,10 @@ public class Decorators {
     private static Predicate<IBlockState> compileCanReplace(DecoratorSettings settings, List<IBlockState> featureBlocks) {
         final List<IBlockState> replaceable = new ArrayList<>(settings.replaceableBlocks);
         if (replaceable.isEmpty()) {
-            return s -> true;
-        }
-        if (settings.replaceDecorators) {
+            return s -> !s.getBlock().equals(Blocks.BEDROCK);
+        } else if (settings.replaceSolidBlocks) {
+            return s -> s.isOpaqueCube() && !s.getBlock().equals(Blocks.BEDROCK) ;
+        } else if (settings.replaceDecorators) {
             replaceable.addAll(featureBlocks);
             settings.caveBlocks.forEach(c -> replaceable.addAll(c.states));
             settings.wallDecorators.forEach(w -> replaceable.addAll(w.states));

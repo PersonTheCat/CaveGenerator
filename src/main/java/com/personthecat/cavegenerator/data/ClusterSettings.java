@@ -11,6 +11,7 @@ import lombok.experimental.FieldNameConstants;
 import net.minecraft.block.Block;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hjson.JsonObject;
 
@@ -98,6 +99,10 @@ public class ClusterSettings {
 
     /** Returns whether this cluster is valid at these coordinates. */
     public boolean canSpawn(IBlockState state) {
+        // Todo: add setting to control air spawning
+        if (state.getBlock().equals(Blocks.AIR)) {
+            return false;
+        }
         if (matchers.isEmpty()) {
             // By default, only replace stone blocks.
             return state.getMaterial().equals(Material.ROCK);
