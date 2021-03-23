@@ -1,10 +1,13 @@
-package com.personthecat.cavegenerator.world;
+package com.personthecat.cavegenerator.world.generator;
 
 import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.config.ConfigFile;
+import com.personthecat.cavegenerator.world.GeneratorController;
+import com.personthecat.cavegenerator.world.HeightMapLocator;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkPrimer;
 import net.minecraft.world.gen.MapGenBase;
+import org.apache.commons.lang3.ArrayUtils;
 
 import javax.annotation.Nullable;
 import javax.annotation.ParametersAreNonnullByDefault;
@@ -29,17 +32,22 @@ public class EarlyCaveHook extends MapGenBase {
         }
         // Don't really have a good way to access this without writing the game myself.
         final Map<String, GeneratorController> generators = Main.instance.loadGenerators(world);
-        earlyGenerate(generators.values(), world, x, z, primer);
-        mapGenerate(generators.values(), world, x, z, primer);
+        final int[][] heightmap = ArrayUtils.contains(ConfigFile.heightMapDims, world.provider.getDimension())
+            ? HeightMapLocator.getHeightFromPrimer(primer)
+            : HeightMapLocator.FAUX_MAP;
+
+        earlyGenerate(generators.values(), heightmap, world, x, z, primer);
+        mapGenerate(generators.values(), heightmap, world, x, z, primer);
     }
 
-    private void earlyGenerate(Collection<GeneratorController> generators, World world, int x, int z, ChunkPrimer primer) {
+    private void earlyGenerate(Collection<GeneratorController> generators, int[][] heightmap, World world, int x, int z, ChunkPrimer primer) {
+        final PrimerContext ctx = new PrimerContext(heightmap, world, world.rand, x, z, x, z, primer);
         for (GeneratorController generator : generators) {
-            generator.earlyGenerate(world, x, z, primer);
+            generator.earlyGenerate(ctx);
         }
     }
 
-    private void mapGenerate(Collection<GeneratorController> generators, World world, int x, int z, ChunkPrimer primer) {
+    private void mapGenerate(Collection<GeneratorController> generators, int[][] heightmap, World world, int x, int z, ChunkPrimer primer) {
         final int range = ConfigFile.mapRange;
         this.rand.setSeed(world.getSeed());
         final long xMask = this.rand.nextLong();
@@ -50,8 +58,10 @@ public class EarlyCaveHook extends MapGenBase {
                 long xHash = (long) destX * xMask;
                 long zHash = (long) destZ * zMask;
                 this.rand.setSeed(xHash ^ zHash ^ world.getSeed());
+
+                final PrimerContext ctx = new PrimerContext(heightmap, world, rand, destX, destZ, x, z, primer);
                 for (GeneratorController generator : generators) {
-                    generator.mapGenerate(world, rand, destX, destZ, x, z, primer);
+                    generator.mapGenerate(ctx);
                 }
             }
         }

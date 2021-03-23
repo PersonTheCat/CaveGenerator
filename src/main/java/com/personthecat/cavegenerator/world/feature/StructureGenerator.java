@@ -27,21 +27,21 @@ public class StructureGenerator extends FeatureGenerator {
     }
 
     @Override
-    protected void doGenerate(FeatureInfo info) {
+    protected void doGenerate(WorldContext ctx) {
         for (int i = 0; i < cfg.count; i++) {
-            if (info.rand.nextDouble() <= cfg.chance) {
-                generateSingle(info);
+            if (ctx.rand.nextDouble() <= cfg.chance) {
+                generateSingle(ctx);
             }
         }
     }
 
-    private void generateSingle(FeatureInfo info) {
+    private void generateSingle(WorldContext ctx) {
         // Attempt to locate a suitable spawn position and then proceed.
-        getSpawnPos(info).ifPresent(pos -> {
-            if (allChecksPass(pos, info.world)) {
-                preStructureSpawn(info, pos);
+        getSpawnPos(ctx).ifPresent(pos -> {
+            if (allChecksPass(pos, ctx.world)) {
+                preStructureSpawn(ctx, pos);
                 final BlockPos adjusted = offset(centerBySize(pos, structure.getSize()), cfg.offset);
-                StructureSpawner.spawnStructure(structure, cfg.placement, info.world, adjusted);
+                StructureSpawner.spawnStructure(structure, cfg.placement, ctx.world, adjusted);
             }
         });
     }
@@ -55,7 +55,7 @@ public class StructureGenerator extends FeatureGenerator {
     }
 
     /** Attempts to determine a suitable spawn point in the current location. */
-    private Optional<BlockPos> getSpawnPos(FeatureInfo info) {
+    private Optional<BlockPos> getSpawnPos(WorldContext info) {
         // Favor vertical spawns, detecting horizontal surfaces first.
         if (cfg.directions.up || cfg.directions.down) {
             final Optional<BlockPos> vertical = getSpawnPosVertical(info, structure);
@@ -71,7 +71,7 @@ public class StructureGenerator extends FeatureGenerator {
     }
 
     /** Attempts to find a spawn point for this structure on the vertical axis. */
-    private Optional<BlockPos> getSpawnPosVertical(FeatureInfo info,  Template structure) {
+    private Optional<BlockPos> getSpawnPosVertical(WorldContext info, Template structure) {
         for (int i = 0; i < VERTICAL_RETRIES; i++) {
             // Start with random (x, z) coordinates.
             final BlockPos xz = randCoords(info.rand, structure.getSize(), info.offsetX, info.offsetZ);
@@ -100,7 +100,7 @@ public class StructureGenerator extends FeatureGenerator {
     }
 
     /** Attempts to find a spawn point for this structure on the horizontal axes. */
-    private Optional<BlockPos> getSpawnPosHorizontal(FeatureInfo info, Template structure) {
+    private Optional<BlockPos> getSpawnPosHorizontal(WorldContext info, Template structure) {
         final BlockPos size = structure.getSize();
         final Range height = conditions.getColumn(info.offsetX, info.offsetZ);
         for (int i = 0; i < HORIZONTAL_RETRIES; i++) {
@@ -146,7 +146,7 @@ public class StructureGenerator extends FeatureGenerator {
      * Attempts to find a random surface on the east-west axis by scaling north-south in a random direction.
      * Returns Optional#empty if no surface is found, or if the surface found is not below the terrain height.
      */
-    private Optional<BlockPos> randCoordsNS(FeatureInfo info, int sizeX, int y) {
+    private Optional<BlockPos> randCoordsNS(WorldContext info, int sizeX, int y) {
         final int x = cornerInsideChunkBounds(info.rand, sizeX) + info.offsetX;
         final int z = info.rand.nextBoolean()
             ? findOpeningNorth(info.world, x, y, info.offsetZ)
@@ -161,7 +161,7 @@ public class StructureGenerator extends FeatureGenerator {
      * Attempts to find a random surface on the north-south axis by scaling east-west in a random direction.
      * Returns Optional#empty if no surface is found, or if the surface found is not below the terrain height.
      */
-    private Optional<BlockPos> randCoordsEW(FeatureInfo info, int sizeZ, int y) {
+    private Optional<BlockPos> randCoordsEW(WorldContext info, int sizeZ, int y) {
         final int z = cornerInsideChunkBounds(info.rand, sizeZ) + info.offsetZ;
         final int x = info.rand.nextBoolean()
             ? findOpeningEast(info.world, y, z, info.offsetX)
@@ -185,7 +185,7 @@ public class StructureGenerator extends FeatureGenerator {
     }
 
     /** All operations related to structures before spawning should be organized herein. */
-    private void preStructureSpawn(FeatureInfo info, BlockPos pos) {
+    private void preStructureSpawn(WorldContext info, BlockPos pos) {
         if (cfg.rotateRandomly) {
             final Rotation randRotation = Rotation.values()[info.rand.nextInt(3)];
             cfg.placement.setRotation(randRotation);

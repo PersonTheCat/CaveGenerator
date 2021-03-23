@@ -4,7 +4,7 @@ import com.personthecat.cavegenerator.commands.CommandCave;
 import com.personthecat.cavegenerator.config.CavePreset;
 import com.personthecat.cavegenerator.io.JarFiles;
 import com.personthecat.cavegenerator.world.*;
-import com.personthecat.cavegenerator.world.FeatureCaveHook;
+import com.personthecat.cavegenerator.world.feature.FeatureCaveHook;
 import com.personthecat.cavegenerator.world.feature.StructureSpawner;
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.world.World;

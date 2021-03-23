@@ -38,14 +38,14 @@ public abstract class FeatureGenerator {
         return Objects.requireNonNull(world.get(), "World reference has been culled.");
     }
 
-    public final void generate(FeatureInfo info) {
-        final int dim = info.world.provider.getDimension();
+    public final void generate(WorldContext ctx) {
+        final int dim = ctx.world.provider.getDimension();
         if (conditions.dimensions.test(dim)) {
-            doGenerate(info);
+            doGenerate(ctx);
         }
     }
 
-    protected abstract void doGenerate(FeatureInfo info);
+    protected abstract void doGenerate(WorldContext ctx);
 
     /** Determines whether the IBlockState at the input coordinates is an opaque cube. */
     protected final boolean isSolid(World world, int x, int y, int z) {

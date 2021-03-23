@@ -46,10 +46,6 @@ public class CaveBlockSettings {
     public static final NoiseSettings DEFAULT_NOISE = NoiseSettings.builder()
         .frequency(0.02f).threshold(Range.of(-0.8F)).stretch(1.0f).octaves(1).build();
 
-    /** An instance of the vanilla lava CaveBlocks that exists by default in all presets. */
-    public static final CaveBlockSettings VANILLA_LAVA = CaveBlockSettings.builder()
-        .states(Collections.singletonList(Blocks.LAVA.getDefaultState())).height(Range.of(0, 10)).build();
-
     public static CaveBlockSettings from(JsonObject json) {
         final CaveBlockSettingsBuilder builder = builder();
         return new HjsonMapper(json)

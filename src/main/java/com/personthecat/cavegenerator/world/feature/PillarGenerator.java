@@ -28,22 +28,22 @@ public class PillarGenerator extends FeatureGenerator {
         this.cfg = cfg;
     }
 
-    protected void doGenerate(FeatureInfo info) {
-        final Random rand = info.rand;
+    protected void doGenerate(WorldContext ctx) {
+        final Random rand = ctx.rand;
         for (int i = 0; i < rand.nextInt(cfg.count + 1); i++) {
             // Avoid pillars spawning right next to each other.
-            final int x = ((rand.nextInt(6) * 2) + 2) + (info.chunkX * 16); // 2 to 14
-            final int z = ((rand.nextInt(6) * 2) + 1) + (info.chunkZ * 16); // 1 to 13
-            final Biome biome = info.world.getBiome(new BlockPos(x, 0, z));
+            final int x = ((rand.nextInt(6) * 2) + 2) + (ctx.chunkX * 16); // 2 to 14
+            final int z = ((rand.nextInt(6) * 2) + 1) + (ctx.chunkZ * 16); // 1 to 13
+            final Biome biome = ctx.world.getBiome(new BlockPos(x, 0, z));
 
             if (conditions.biomes.test(biome)) {
                 final Range height = conditions.getColumn(x, z);
 
                 if (height.diff() != 0) {
                     final int y = height.rand(rand);
-                    final int opening = findCeiling(info.world, x, y, z, height.max);
+                    final int opening = findCeiling(ctx.world, x, y, z, height.max);
                     if (opening != NONE_FOUND) {
-                        generateSingle(info.world, info.rand, new BlockPos(x, opening, z));
+                        generateSingle(ctx.world, ctx.rand, new BlockPos(x, opening, z));
                     }
                 }
             }

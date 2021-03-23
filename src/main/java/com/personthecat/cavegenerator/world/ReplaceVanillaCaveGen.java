@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.world;
 
 import com.personthecat.cavegenerator.config.ConfigFile;
+import com.personthecat.cavegenerator.world.generator.EarlyCaveHook;
 import net.minecraftforge.event.terraingen.InitMapGenEvent;
 import net.minecraftforge.fml.common.eventhandler.Event;
 import net.minecraftforge.fml.common.eventhandler.EventPriority;

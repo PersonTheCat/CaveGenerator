@@ -30,10 +30,10 @@ public class DecoratorSettings {
     @Default boolean replaceDecorators = true;
 
     /** Whether to indiscriminately replace all non-bedrock blocks. */
-    @Default boolean replaceSolidBlocks = true;
+    @Default boolean replaceSolidBlocks = false;
 
     /** A list of blocks for this carver to place instead of air. */
-    @Default List<CaveBlockSettings> caveBlocks = Collections.singletonList(CaveBlockSettings.VANILLA_LAVA);
+    @Default List<CaveBlockSettings> caveBlocks = Collections.emptyList();
 
     /** A list of blocks to replace the walls of this carver with. */
     @Default List<WallDecoratorSettings> wallDecorators = Collections.emptyList();

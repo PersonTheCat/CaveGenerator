@@ -25,8 +25,8 @@ public class TunnelGenerator extends SphereGenerator {
     }
 
     @Override
-    protected void generateChecked(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
-        createSystem(world, rand.nextLong(), destChunkX, destChunkZ, chunkX, chunkZ, primer);
+    protected void generateChecked(PrimerContext ctx) {
+        createSystem(ctx.world, ctx.rand.nextLong(), ctx.destChunkX, ctx.destChunkZ, ctx.chunkX, ctx.chunkZ, ctx.primer);
     }
 
     /** Starts a tunnel system between the input chunk coordinates. */

@@ -31,19 +31,15 @@ public class CavernGenerator extends WorldCarver {
     }
 
     @Override
-    public void generate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
-        if (conditions.dimensions.test(world.provider.getDimension())) {
-            generateChecked(world, rand, destChunkX, destChunkZ, chunkX, chunkZ, primer);
+    public void generate(PrimerContext ctx) {
+        if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
+            generateChecked(ctx);
         }
     }
 
     @Override
-    protected void generateChecked(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
-        final int[][] heightmap = ArrayUtils.contains(ConfigFile.heightMapDims, world.provider.getDimension())
-            ? HeightMapLocator.getHeightFromPrimer(primer)
-            : HeightMapLocator.FAUX_MAP;
-
-        generateCaverns(world, heightmap, rand, primer, chunkX, chunkZ);
+    protected void generateChecked(PrimerContext ctx) {
+        generateCaverns(ctx.world, ctx.heightmap, ctx.rand, ctx.primer, ctx.chunkX, ctx.chunkZ);
     }
 
     /** Generates giant air pockets in this chunk using a series of 3D noise generators. */

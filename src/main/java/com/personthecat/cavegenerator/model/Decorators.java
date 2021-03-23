@@ -1,7 +1,6 @@
 package com.personthecat.cavegenerator.model;
 
 import com.personthecat.cavegenerator.data.DecoratorSettings;
-import com.personthecat.cavegenerator.data.CaveBlockSettings;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -10,9 +9,7 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -44,7 +41,7 @@ public class Decorators {
 
     // This would ideally be adapted to check for other *kinds* of block features.
     private static Predicate<IBlockState> compileCanReplace(DecoratorSettings settings, List<IBlockState> featureBlocks) {
-        final List<IBlockState> replaceable = new ArrayList<>(settings.replaceableBlocks);
+        final Set<IBlockState> replaceable = new HashSet<>(settings.replaceableBlocks);
         if (replaceable.isEmpty()) {
             return s -> !s.getBlock().equals(Blocks.BEDROCK);
         } else if (settings.replaceSolidBlocks) {
@@ -55,7 +52,7 @@ public class Decorators {
             settings.wallDecorators.forEach(w -> replaceable.addAll(w.states));
         }
         if (replaceable.size() == 1) {
-            final IBlockState state = replaceable.get(0);
+            final IBlockState state = replaceable.iterator().next();
             return state::equals;
         }
         return replaceable::contains;

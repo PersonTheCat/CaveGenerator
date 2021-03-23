@@ -34,24 +34,24 @@ public class StalactiteGenerator extends FeatureGenerator {
     }
 
     @Override
-    protected void doGenerate(FeatureInfo info) {
-        final Random localRand = new Random(info.rand.nextInt());
+    protected void doGenerate(WorldContext ctx) {
+        final Random localRand = new Random(ctx.rand.nextInt());
         // Each iteration increments by `distance`. This changes the frequency
         // with which `noise` is calculated, theoretically impacting performance.
         // Lower frequencies do not require as high a resolution, as this
         // difference would typically not be visible.
-        for (int x = info.offsetX; x < info.offsetX + 16; x = x + resolution) {
-            for (int z = info.offsetZ; z < info.offsetZ + 16; z = z + resolution) {
-                final Biome biome = info.world.getBiome(new BlockPos(x, 0, z));
+        for (int x = ctx.offsetX; x < ctx.offsetX + 16; x = x + resolution) {
+            for (int z = ctx.offsetZ; z < ctx.offsetZ + 16; z = z + resolution) {
+                final Biome biome = ctx.world.getBiome(new BlockPos(x, 0, z));
                 if (conditions.biomes.test(biome) && conditions.region.GetBoolean(x, z)) {
-                    generateRegion(info, localRand, x, z);
+                    generateRegion(ctx, localRand, x, z);
                 }
             }
         }
     }
 
     /** Attempts to spawn a stalactite at every coordinate pair in this region. */
-    private void generateRegion(FeatureInfo info, Random rand, int x, int z) {
+    private void generateRegion(WorldContext info, Random rand, int x, int z) {
         for (int dx = x; dx < x + resolution; dx++) {
             for (int dz = z; dz < z + resolution; dz++) {
                 // Check this earlier -> do less when it fails.

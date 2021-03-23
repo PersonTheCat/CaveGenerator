@@ -2,18 +2,16 @@ package com.personthecat.cavegenerator.world;
 
 import com.personthecat.cavegenerator.config.CavePreset;
 import com.personthecat.cavegenerator.data.ClusterSettings;
-import com.personthecat.cavegenerator.world.feature.FeatureInfo;
 import com.personthecat.cavegenerator.world.feature.PillarGenerator;
 import com.personthecat.cavegenerator.world.feature.StalactiteGenerator;
 import com.personthecat.cavegenerator.world.feature.StructureGenerator;
+import com.personthecat.cavegenerator.world.feature.WorldContext;
 import com.personthecat.cavegenerator.world.generator.*;
 import lombok.Builder;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.ChunkPrimer;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Random;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -56,30 +54,30 @@ public class GeneratorController {
     }
 
     /** Generate noise-based features in the world before anything else.. */
-    public void earlyGenerate(World world, int x, int z, ChunkPrimer primer) {
-        globalClusters.generate(world, world.rand, x, z, x, z, primer);
+    public void earlyGenerate(PrimerContext ctx) {
+        globalClusters.generate(ctx);
         for (LayerGenerator layer : layers) {
-            layer.generate(world, world.rand, x, z, x, z, primer);
+            layer.generate(ctx);
         }
-        layeredClusters.generate(world, world.rand, x, z, x, z, primer);
-        caverns.forEach(c -> c.generate(world, world.rand, x, z, x, z, primer));
+        layeredClusters.generate(ctx);
+        caverns.forEach(c -> c.generate(ctx));
     }
 
     /** Generate all of the early, MapGenBase-style features that make up the bulk of the caves. */
-    public void mapGenerate(World world, Random rand, int destX, int destZ, int x, int z, ChunkPrimer primer) {
+    public void mapGenerate(PrimerContext ctx) {
         for (TunnelGenerator tunnel : tunnels) {
-            tunnel.generate(world, rand, destX, destZ, x, z, primer);
+            tunnel.generate(ctx);
         }
         for (RavineGenerator ravine : ravines) {
-            ravine.generate(world, rand, destX, destZ, x, z, primer);
+            ravine.generate(ctx);
         }
     }
 
     /** Spawn all of the superficial decorations that take place later in the chunk generation cycle. */
-    public void featureGenerate(FeatureInfo info) {
-        pillars.forEach(p -> p.generate(info));
-        stalactites.forEach(s -> s.generate(info));
-        structures.forEach(s -> s.generate(info));
+    public void featureGenerate(WorldContext ctx) {
+        pillars.forEach(p -> p.generate(ctx));
+        stalactites.forEach(s -> s.generate(ctx));
+        structures.forEach(s -> s.generate(ctx));
     }
 
 }

@@ -27,19 +27,19 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
     }
 
     @Override
-    public void generate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+    public void generate(PrimerContext ctx) {
         if (!features.isEmpty()) {
-            generateChecked(world, rand, destChunkX, destChunkZ, chunkX, chunkZ, primer);
+            generateChecked(ctx);
         }
     }
 
     @Override
-    protected void generateChecked(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+    protected void generateChecked(PrimerContext ctx) {
         // Always reset the seed for clusters.
-        rand.setSeed(world.getSeed());
+        ctx.rand.setSeed(ctx.world.getSeed());
         clusterMap.clear();
-        locateFinalClusters(world, rand, chunkX, chunkZ);
-        generateClusters(primer, chunkX, chunkZ);
+        locateFinalClusters(ctx.world, ctx.rand, ctx.chunkX, ctx.chunkZ);
+        generateClusters(ctx.primer, ctx.chunkX, ctx.chunkZ);
     }
 
     private void locateFinalClusters(World world, Random rand, int chunkX, int chunkZ) {

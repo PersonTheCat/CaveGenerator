@@ -6,6 +6,7 @@ import com.personthecat.cavegenerator.config.CavePreset;
 import com.personthecat.cavegenerator.config.PresetCombiner;
 import com.personthecat.cavegenerator.config.PresetCompressor;
 import com.personthecat.cavegenerator.config.PresetReader;
+import com.personthecat.cavegenerator.util.Result;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
@@ -24,6 +25,7 @@ import net.minecraftforge.fml.common.Loader;
 import org.apache.commons.lang3.ArrayUtils;
 import org.hjson.JsonObject;
 
+import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
@@ -90,6 +92,7 @@ public class CommandCave extends CommandBase {
         { "list", "Displays a list of all presets, with buttons", "for enabling / disabling." },
         { "test", "Applies night vision and gamemode 3 for easy", "cave viewing." },
         { "jump", "Teleports the player 1,000 blocks in each", "direction."},
+        { "open <name>", "Opens a preset in your default text editor."},
         { "combine <preset.path> <preset>", "Copies the first", "path into the second preset." },
         { "enable <name>", "Enables the preset with name <name>." },
         { "disable <name>", "Disables the preset with name <name>." },
@@ -149,6 +152,7 @@ public class CommandCave extends CommandBase {
             case "list" : list(sender); break;
             case "test" : test(sender); break;
             case "jump" : jump(sender); break;
+            case "open" : open(sender, args); break;
             case "combine" : combine(sender, args); break;
             case "enable" : setCaveEnabled(sender, args, true); break;
             case "disable" : setCaveEnabled(sender, args, false); break;
@@ -207,6 +211,21 @@ public class CommandCave extends CommandBase {
     /** Teleports the player 1,000 blocks in each direction. */
     private static void jump(ICommandSender sender) {
         sender.getServer().getCommandManager().executeCommand(sender, "/tp ~1000 ~ ~1000");
+    }
+
+    /** Opens a preset in the default text editor. */
+    private static void open(ICommandSender sender, String[] args) {
+        requireArgs(args, 1);
+        final Optional<File> located = CaveInit.locatePreset(args[0]);
+        if (located.isPresent()) {
+            try {
+                Desktop.getDesktop().open(located.get());
+            } catch (IOException e) {
+                sendMessage(sender, e.getMessage());
+            }
+        } else {
+            sendMessage(sender, "File not found.");
+        }
     }
 
     /** Combines two jsons using PresetCombiner */

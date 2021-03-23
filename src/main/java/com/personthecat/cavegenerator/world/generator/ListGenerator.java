@@ -31,12 +31,12 @@ public abstract class ListGenerator<T> {
         return Objects.requireNonNull(world.get(), "World reference has been culled.");
     }
 
-    public void generate(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+    public void generate(PrimerContext ctx) {
         // Stubbed for other global conditions.
-        generateChecked(world, rand, destChunkX, destChunkZ, chunkX, chunkZ, primer);
+        generateChecked(ctx);
     }
 
-    protected abstract void generateChecked(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer);
+    protected abstract void generateChecked(PrimerContext ctx);
 
     protected void forEachFeature(BiConsumer<T, Conditions> fn) {
         for (Pair<T, Conditions> feature : features) {

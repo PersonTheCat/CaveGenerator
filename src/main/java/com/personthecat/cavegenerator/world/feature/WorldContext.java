@@ -5,14 +5,14 @@ import net.minecraft.world.World;
 
 import java.util.Random;
 
-public class FeatureInfo {
+public class WorldContext {
     final int[][] heightmap;
     final GeneratorController gen;
     final Random rand;
     final int chunkX, chunkZ, offsetX, offsetZ;
     final World world;
 
-    public FeatureInfo(
+    public WorldContext(
         int[][] heightmap,
         GeneratorController gen,
         Random rand,

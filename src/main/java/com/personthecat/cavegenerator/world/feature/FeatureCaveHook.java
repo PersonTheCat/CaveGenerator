@@ -1,7 +1,8 @@
-package com.personthecat.cavegenerator.world;
+package com.personthecat.cavegenerator.world.feature;
 
 import com.personthecat.cavegenerator.Main;
-import com.personthecat.cavegenerator.world.feature.FeatureInfo;
+import com.personthecat.cavegenerator.world.GeneratorController;
+import com.personthecat.cavegenerator.world.HeightMapLocator;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.IChunkProvider;
 import net.minecraft.world.gen.IChunkGenerator;
@@ -19,8 +20,8 @@ public class FeatureCaveHook implements IWorldGenerator {
         final int[][] heightmap = HeightMapLocator.getHeightFromWorld(world, chunkX, chunkZ);
 
         for (GeneratorController generator : generators.values()) {
-            final FeatureInfo info = new FeatureInfo(heightmap, generator, rand, chunkX, chunkZ, world);
-            generator.featureGenerate(info);
+            final WorldContext ctx = new WorldContext(heightmap, generator, rand, chunkX, chunkZ, world);
+            generator.featureGenerate(ctx);
         }
     }
 }

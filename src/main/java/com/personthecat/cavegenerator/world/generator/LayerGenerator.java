@@ -17,15 +17,15 @@ public class LayerGenerator extends BasicGenerator {
     }
 
     @Override
-    protected void generateChecked(World world, Random rand, int destChunkX, int destChunkZ, int chunkX, int chunkZ, ChunkPrimer primer) {
+    protected void generateChecked(PrimerContext ctx) {
         for (int x = 0; x < 16; x++) {
-            final int actualX = x + (chunkX * 16);
+            final int actualX = x + (ctx.chunkX * 16);
             for (int z = 0; z < 16; z++) {
-                final int actualZ = z + (chunkZ * 16);
-                if (conditions.biomes.test(world.getBiome(new BlockPos(actualX, 0, actualZ)))) {
+                final int actualZ = z + (ctx.chunkZ * 16);
+                if (conditions.biomes.test(ctx.world.getBiome(new BlockPos(actualX, 0, actualZ)))) {
                     for (int y : conditions.getColumn(actualX, actualZ)) {
-                        if (BLK_STONE.equals(primer.getBlockState(x, y, z))) {
-                            primer.setBlockState(x, y, z, cfg.state);
+                        if (BLK_STONE.equals(ctx.primer.getBlockState(x, y, z))) {
+                            ctx.primer.setBlockState(x, y, z, cfg.state);
                         }
                     }
                 }
