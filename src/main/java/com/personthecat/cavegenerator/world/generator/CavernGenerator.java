@@ -1,16 +1,11 @@
 package com.personthecat.cavegenerator.world.generator;
 
-import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.data.CavernSettings;
 import com.personthecat.cavegenerator.data.NoiseSettings;
-import com.personthecat.cavegenerator.model.Range;
-import com.personthecat.cavegenerator.world.HeightMapLocator;
 import fastnoise.FastNoise;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkPrimer;
-import org.apache.commons.lang3.ArrayUtils;
-
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;

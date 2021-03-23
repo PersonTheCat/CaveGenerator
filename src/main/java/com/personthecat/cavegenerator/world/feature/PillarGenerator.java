@@ -42,7 +42,7 @@ public class PillarGenerator extends FeatureGenerator {
                 if (height.diff() != 0) {
                     final int y = height.rand(rand);
                     final int opening = findCeiling(ctx.world, x, y, z, height.max);
-                    if (opening != NONE_FOUND) {
+                    if (opening != NONE_FOUND && conditions.noise.GetBoolean(x, opening, z)) {
                         generateSingle(ctx.world, ctx.rand, new BlockPos(x, opening, z));
                     }
                 }

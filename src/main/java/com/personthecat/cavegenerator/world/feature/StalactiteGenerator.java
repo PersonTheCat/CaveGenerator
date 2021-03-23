@@ -64,7 +64,7 @@ public class StalactiteGenerator extends FeatureGenerator {
                         findCeiling(info.world, dx, height.min, dz, height.max):
                         findFloor(info.world, dx, height.max, dz, height.min);
 
-                    if (y != NONE_FOUND) {
+                    if (y != NONE_FOUND && conditions.noise.GetBoolean(dx, y, dz)) {
                         final BlockPos pos = new BlockPos(dx, y, dz);
                         if (checkSources(cfg.matchers, info.world, pos)) {
                             generateSingle(info.world, rand, pos);

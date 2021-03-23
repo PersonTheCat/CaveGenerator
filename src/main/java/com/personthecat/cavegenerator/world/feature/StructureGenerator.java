@@ -36,8 +36,11 @@ public class StructureGenerator extends FeatureGenerator {
     }
 
     private void generateSingle(WorldContext ctx) {
+        final Optional<BlockPos> spawnPos = getSpawnPos(ctx)
+            .filter(pos -> conditions.noise.GetBoolean(pos.getX(), pos.getY(), pos.getZ()));
+
         // Attempt to locate a suitable spawn position and then proceed.
-        getSpawnPos(ctx).ifPresent(pos -> {
+        spawnPos.ifPresent(pos -> {
             if (allChecksPass(pos, ctx.world)) {
                 preStructureSpawn(ctx, pos);
                 final BlockPos adjusted = offset(centerBySize(pos, structure.getSize()), cfg.offset);
