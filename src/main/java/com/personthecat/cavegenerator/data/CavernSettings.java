@@ -49,11 +49,16 @@ public class CavernSettings {
     /** Cave blocks and wall decorators applied to these caverns. */
     @Default DecoratorSettings decorators = DEFAULT_DECORATORS;
 
-    /** Whether to spawn caverns based on default settings. */
-    @Default boolean enabled = false;
-
     /** The number of blocks to iterate and interpolate between when generating. */
     @Default int resolution = 1;
+
+    /** Settings for how to generate these walls, if applicable. */
+    @Default NoiseMapSettings walls = NoiseMapSettings.builder()
+        .frequency(0.05F).range(Range.of(10, 18)).build();
+
+    /** Settings for translating wall noise up and down to obscure repetition. */
+    @Default NoiseMapSettings translation = NoiseMapSettings.builder()
+        .frequency(0.05F).range(Range.of(0, 255)).build();
 
     /** A list of noise generators to produce the shape of these caverns. */
     @Default List<NoiseSettings> generators = Collections.singletonList(DEFAULT_GENERATOR);
@@ -73,15 +78,11 @@ public class CavernSettings {
         new HjsonMapper(json)
             .mapSelf(o -> builder.conditions(ConditionSettings.from(o, original.conditions)))
             .mapSelf(o -> builder.decorators(DecoratorSettings.from(o, original.decorators)))
-            .mapBool(Fields.enabled, builder::enabled)
             .mapInt(Fields.resolution, builder::resolution)
+            .mapObject(Fields.walls, o -> builder.walls(NoiseMapSettings.from(o)))
+            .mapObject(Fields.translation, o -> builder.translation(NoiseMapSettings.from(o)))
             .mapArray(Fields.generators, CavernSettings::createNoise, builder::generators);
 
-        // Forcibly disable biome restrictions for caverns until they look better.
-        if (!ConfigFile.forceEnableCavernBiomes) {
-            final ConditionSettings conditions = builder.build().conditions;
-            builder.conditions(conditions.toBuilder().biomes(Collections.emptyList()).build());
-        }
         return builder.build();
     }
 

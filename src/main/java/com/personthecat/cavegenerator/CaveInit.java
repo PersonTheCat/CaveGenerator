@@ -18,6 +18,9 @@ import static com.personthecat.cavegenerator.io.SafeFileIO.*;
 @Log4j2
 public class CaveInit {
 
+    /** A setting indicating the location where example presets will be kept. */
+    private static final String EXAMPLES = Main.MODID + "/example_presets";
+
     /** A setting indicating the location where presets will be kept. */
     private static final String PRESETS = Main.MODID + "/presets";
 
@@ -38,6 +41,7 @@ public class CaveInit {
 
     private static final File CONFIG_DIR = Loader.instance().getConfigDir();
 
+    public static final File EXAMPLE_DIR = new File(CONFIG_DIR, EXAMPLES);
     public static final File PRESET_DIR = new File(CONFIG_DIR, PRESETS);
     public static final File IMPORT_DIR = new File(CONFIG_DIR, IMPORTS);
     public static final File GENERATED_DIR = new File(CONFIG_DIR, GENERATED);
@@ -57,12 +61,16 @@ public class CaveInit {
 
     /** Attempts to locate a preset using each of the possible extensions. */
     public static Optional<File> locatePreset(String preset) {
-        final File presetFile = new File(PRESET_DIR,  preset);
+        return locatePreset(PRESET_DIR, preset);
+    }
+
+    public static Optional<File> locatePreset(File directory, String preset) {
+        final File presetFile = new File(directory,  preset);
         if (safeFileExists(presetFile, "Error checking file: " + presetFile)) {
             return full(presetFile);
         }
         for (String ext : EXTENSIONS) {
-            final Optional<File> found = tryExtension(preset, ext);
+            final Optional<File> found = tryExtension(directory, preset, ext);
             if (found.isPresent()) {
                 return found;
             }
@@ -71,8 +79,8 @@ public class CaveInit {
     }
 
     /** Attempts to locate a preset using a specific extension. */
-    private static Optional<File> tryExtension(String preset, String extension) {
-        final File presetFile = new File(PRESET_DIR, preset + "." + extension);
+    private static Optional<File> tryExtension(File directory, String preset, String extension) {
+        final File presetFile = new File(directory, preset + "." + extension);
         if (safeFileExists(presetFile, NO_ACCESS)) {
             return full(presetFile);
         }

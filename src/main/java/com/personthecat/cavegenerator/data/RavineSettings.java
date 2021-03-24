@@ -61,11 +61,11 @@ public class RavineSettings {
     /** The 1/x chance of this ravine spawning. */
     @Default int chance = 5;
 
-    /** Whether to use a FastNoise generator for the wall of this ravine. */
-    @Default boolean useWallNoise = false;
-
     /** The 1/x chance of ravine segments being skipped. */
     @Default int resolution = 4;
+
+    /** Whether to use a FastNoise generator for the wall of this ravine. */
+    @Default boolean useWallNoise = false;
 
     /** Settings for how to generate these walls, if applicable. */
     @Default NoiseMapSettings walls = NoiseMapSettings.builder()
@@ -95,9 +95,9 @@ public class RavineSettings {
             .mapScalableFloat(Fields.pitch, original.pitch, builder::pitch)
             .mapInt(Fields.distance, builder::distance)
             .mapFloat(Fields.chance, f -> builder.chance(invert(f)))
+            .mapInt(Fields.resolution, builder::resolution)
             .mapObject(Fields.walls, o -> copyWallNoise(o, original, builder))
             .mapBool(Fields.useWallNoise, builder::useWallNoise)
-            .mapInt(Fields.resolution, builder::resolution)
             .release(builder::build);
     }
 

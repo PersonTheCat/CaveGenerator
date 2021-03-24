@@ -42,13 +42,6 @@ public class ConfigFile {
     public static boolean strictPresets = false;
 
     @Comment({
-        "Enables the experimental feature of restricting caverns",
-        "objects by biome. This will produce flat walls in your",
-        "world and is not the preferred solution."})
-    @RequiresMcRestart
-    public static boolean forceEnableCavernBiomes = false;
-
-    @Comment({
         "A list of dimensions where HeightMapLocator will check for the",
         "surface to avoid spawning caverns in water. Disable this in your",
         "dimension if you don't have regular oceans spawning."

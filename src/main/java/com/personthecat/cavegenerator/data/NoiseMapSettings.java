@@ -40,6 +40,9 @@ public class NoiseMapSettings {
     /** The type of noise generator to run. */
     @Default NoiseType type = NoiseType.SimplexFractal;
 
+    /** The number of fractal generation passes. */
+    @Default int octaves = 1;
+
     /** The range of values produced by the generator */
     @Default Range range = Range.of(-1, 1);
 
@@ -64,6 +67,7 @@ public class NoiseMapSettings {
         return new FastNoise(getSeed(world))
             .SetNoiseType(type)
             .SetFrequency(frequency)
+            .SetFractalOctaves(octaves)
             .SetRange(range.min, range.max)
             .SetInterp(FastNoise.Interp.Hermite);
     }

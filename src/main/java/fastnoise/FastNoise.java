@@ -660,6 +660,10 @@ public class FastNoise {
 		}
 	}
 
+	public float GetAdjustedNoise(float x) {
+		return (GetNoise(x) * m_multiple + m_addend) * (m_invert ? -1 : 1);
+	}
+
 	public float GetNoise(float x) {
 		x *= m_frequency;
 		// This is the only variant available.

@@ -4,6 +4,7 @@ import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.util.Result;
 import net.minecraftforge.fml.common.Loader;
 
+import javax.annotation.CheckReturnValue;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.List;
@@ -17,9 +18,9 @@ public class SafeFileIO {
     private static final File BACKUP_DIR = new File(Loader.instance().getConfigDir(), Main.MODID + "/backup");
 
     /**
-     * Ensures that the input @param file refers to a directory,
-     * creating one if nothing is found.
+     * Ensures that the input @param file refers to a directory, creating one if nothing is found.
      */
+    @CheckReturnValue
     public static Result<SecurityException> ensureDirExists(File file) {
         try { // Test for and create all directories.
             if (!file.exists()) {
@@ -33,6 +34,7 @@ public class SafeFileIO {
     }
 
     /** Safely calls File#mkdirs without testing. */
+    @CheckReturnValue
     public static Result<SecurityException> safeMkdirs(File file) {
         try { // Standard mkdirs() call.
             file.mkdirs();
@@ -55,6 +57,7 @@ public class SafeFileIO {
     }
 
     /** Copies a file to the specified directory. May look clean more than it is actually safe. */
+    @CheckReturnValue
     public static Result<IOException> safeCopy(File file, File toDir) {
         try {
             Files.copy(file.toPath(), new File(toDir, file.getName()).toPath());
@@ -77,6 +80,7 @@ public class SafeFileIO {
     }
 
     /** Equivalent of calling File#listFiles. Does not return null. */
+    @CheckReturnValue
     public static Optional<File[]> safeListFiles(File dir) {
         return Optional.ofNullable(dir.listFiles());
     }
@@ -90,6 +94,7 @@ public class SafeFileIO {
         }
     }
 
+    @CheckReturnValue
     public static Result<IOException> safeWrite(File file, String contents) {
         try {
             Writer tw = new FileWriter(file);
@@ -102,6 +107,7 @@ public class SafeFileIO {
     }
 
     /** Standard stream copy process. Returns an exception, instead of throwing it. */
+    @CheckReturnValue
     public static Result<IOException> copyStream(InputStream input, OutputStream output, int bufferSize) {
         byte[] buffer = new byte[bufferSize];
         int length;
@@ -116,6 +122,7 @@ public class SafeFileIO {
     }
 
     /** Retrieves an asset from the jar file. */
+    @CheckReturnValue
     public static Optional<InputStream> getResource(String path) {
         if (!path.startsWith("/")) {
             path = "/" + path;

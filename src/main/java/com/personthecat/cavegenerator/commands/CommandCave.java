@@ -6,6 +6,7 @@ import com.personthecat.cavegenerator.config.CavePreset;
 import com.personthecat.cavegenerator.config.PresetCombiner;
 import com.personthecat.cavegenerator.config.PresetCompressor;
 import com.personthecat.cavegenerator.config.PresetReader;
+import com.personthecat.cavegenerator.io.SafeFileIO;
 import com.personthecat.cavegenerator.util.Result;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -31,6 +32,7 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 
 import static com.personthecat.cavegenerator.io.SafeFileIO.*;
@@ -91,12 +93,15 @@ public class CommandCave extends CommandBase {
         { "reload", "Reloads the current presets from the the", "disk." },
         { "list", "Displays a list of all presets, with buttons", "for enabling / disabling." },
         { "test", "Applies night vision and gamemode 3 for easy", "cave viewing." },
+        { "untest", "Removes night vision and puts you in gamemode 1." },
         { "jump", "Teleports the player 1,000 blocks in each", "direction."},
-        { "open <name>", "Opens a preset in your default text editor."},
+        { "open [<name>]", "Opens a preset in your default text editor."},
         { "combine <preset.path> <preset>", "Copies the first", "path into the second preset." },
         { "enable <name>", "Enables the preset with name <name>." },
         { "disable <name>", "Disables the preset with name <name>." },
         { "new <name>", "Generates a new preset file with name", "<name>" },
+        { "copy <name>", "Copies a preset out of the example directory." },
+        { "delete <name>", "Moves a preset to the backup directory." },
         { "expand <name> [<as>]", "Writes the expanded copy of this preset", "under /generated" },
         { "compress <name> [<as>]", "Writes a compressed version of this", "preset under /generated" },
         { "tojson <name>", "Backs up and converts the specified", "file from hjson to standard JSON." },
@@ -151,12 +156,15 @@ public class CommandCave extends CommandBase {
             case "reload" : reload(sender); break;
             case "list" : list(sender); break;
             case "test" : test(sender); break;
+            case "untest": untest(sender); break;
             case "jump" : jump(sender); break;
             case "open" : open(sender, args); break;
             case "combine" : combine(sender, args); break;
             case "enable" : setCaveEnabled(sender, args, true); break;
             case "disable" : setCaveEnabled(sender, args, false); break;
             case "new" : newPreset(sender, args); break;
+            case "copy": copyPreset(sender, args); break;
+            case "delete": deletePreset(sender, args); break;
             case "expand" : writeExpanded(sender, args); break;
             case "compress" : writeCompressed(sender, args); break;
             case "tojson" : convert(sender, args, true); break;
@@ -190,21 +198,22 @@ public class CommandCave extends CommandBase {
     /** Applies night vision and gamemode 3 to the sender. */
     private static void test(ICommandSender sender) {
         // Get the entity from the sender.
-        Entity ent = sender.getCommandSenderEntity();
+        final Entity entity = sender.getCommandSenderEntity();
         // Verify that this was sent by a player.
-        if (ent instanceof EntityPlayer) {
-            EntityPlayer player = (EntityPlayer) ent;
-            // Update game mode.
+        if (entity instanceof EntityPlayer) {
+            final EntityPlayer player = (EntityPlayer) entity;
             player.setGameType(GameType.SPECTATOR);
-            // Apply night vision.
-            Optional<PotionEffect> nightVision = getNightVision();
-            if (nightVision.isPresent()) {
-                player.addPotionEffect(nightVision.get());
-            } else {
-                sendMessage(sender,
-                    "Build error: Person must have typed \"night_vision\" incorrectly. Please let him know."
-                );
-            }
+            player.addPotionEffect(getNightVision());
+        }
+    }
+
+    /** Removes night vision and gamemode 3 from the sender. */
+    private static void untest(ICommandSender sender) {
+        final Entity entity = sender.getCommandSenderEntity();
+        if (entity instanceof EntityPlayer) {
+            final EntityPlayer player = (EntityPlayer) entity;
+            player.setGameType(GameType.CREATIVE);
+            player.removeActivePotionEffect(getNightVision().getPotion());
         }
     }
 
@@ -215,8 +224,12 @@ public class CommandCave extends CommandBase {
 
     /** Opens a preset in the default text editor. */
     private static void open(ICommandSender sender, String[] args) {
-        requireArgs(args, 1);
-        final Optional<File> located = CaveInit.locatePreset(args[0]);
+        final Optional<File> located;
+        if (args.length > 0) {
+            located = CaveInit.locatePreset(args[0]);
+        } else {
+            located = full(CaveInit.PRESET_DIR);
+        }
         if (located.isPresent()) {
             try {
                 Desktop.getDesktop().open(located.get());
@@ -285,6 +298,34 @@ public class CommandCave extends CommandBase {
             .add("enabled", true);
         writeJson(preset, presetFile);
         sendMessage(sender, "Finished writing a new preset file.");
+    }
+
+    /** Copies a preset out of the example preset directory. */
+    private static void copyPreset(ICommandSender sender, String[] args) {
+        requireArgs(args, 1);
+        final Optional<File> located = CaveInit.locatePreset(CaveInit.EXAMPLE_DIR, args[0]);
+        if (located.isPresent()) {
+            safeCopy(located.get(), CaveInit.PRESET_DIR).throwIfPresent();
+            sendMessage(sender, "Successfully copied " + located.get().getName());
+        } else {
+            sendMessage(sender, "File not found.");
+        }
+    }
+
+    /** Makes a backup of and deletes a preset in the presets directory. */
+    private static void deletePreset(ICommandSender sender, String[] args) {
+        requireArgs(args, 1);
+        final Optional<File> located = CaveInit.locatePreset(args[0]);
+        if (located.isPresent()) {
+            backup(located.get());
+            if (!located.get().delete()) {
+                sendMessage(sender, "Unable to delete file. A backup was made.");
+            } else {
+                sendMessage(sender, located.get().getName() + " was moved to backups.");
+            }
+        } else {
+            sendMessage(sender, "File not found.");
+        }
     }
 
     /** Writes the expanded version of this preset (removing variables) under /generated. */
@@ -476,9 +517,10 @@ public class CommandCave extends CommandBase {
         return new TextComponentString(s);
     }
 
-    private static Optional<PotionEffect> getNightVision() {
-        Potion potion = Potion.getPotionFromResourceLocation("night_vision");
-        return full(new PotionEffect(potion, Integer.MAX_VALUE, 0, true, false));
+    private static PotionEffect getNightVision() {
+        final Potion potion = Potion.getPotionFromResourceLocation("night_vision");
+        Objects.requireNonNull(potion, "Build error: invalid potion ID.");
+        return new PotionEffect(potion, Integer.MAX_VALUE, 0, true, false);
     }
 
     /** Ensures that at least `num` arguments are present. */
