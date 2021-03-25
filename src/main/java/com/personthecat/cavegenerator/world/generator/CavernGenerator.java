@@ -3,6 +3,7 @@ package com.personthecat.cavegenerator.world.generator;
 import com.personthecat.cavegenerator.data.CavernSettings;
 import com.personthecat.cavegenerator.data.NoiseMapSettings;
 import com.personthecat.cavegenerator.data.NoiseSettings;
+import com.personthecat.cavegenerator.model.Range;
 import fastnoise.FastNoise;
 import lombok.AllArgsConstructor;
 import net.minecraft.util.math.BlockPos;
@@ -103,10 +104,17 @@ public class CavernGenerator extends WorldCarver {
             for (int z = 0; z < 16; z++) {
                 final int actualZ = z + (chunkZ * 16);
                 final BorderData border = getNearestBorder(actualX, actualZ);
+                final Range height = conditions.getColumn(heightmap, actualX, actualZ);
+                final int diff = height.diff() + 1; // Must be positive.
+                final int minOffset = diff / -2;
 
-                for (int y : conditions.getColumn(heightmap, actualX, actualZ)) {
+                for (int y : height) {
+                    final int relative = minOffset + height.max - y;
+                    final int sq = (relative * relative) / diff;
+                    final double distance = border.distance - sq;
+
                     final double wall = wallNoise[(y + border.offset) & 255];
-                    if (border.distance > wall && conditions.noise.GetBoolean(actualX, y, actualZ)) {
+                    if (distance > wall && conditions.noise.GetBoolean(actualX, y, actualZ)) {
                         for (FastNoise noise : generators) {
                             if (noise.GetBoolean(actualX, y, actualZ)) {
                                 replaceBlock(rand, primer, x, y, z, chunkX, chunkZ);
