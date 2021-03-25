@@ -1,7 +1,6 @@
 package com.personthecat.cavegenerator.data;
 
 import com.personthecat.cavegenerator.config.CavePreset;
-import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.util.HjsonMapper;
 import lombok.AccessLevel;
@@ -57,7 +56,7 @@ public class CavernSettings {
         .frequency(0.05F).range(Range.of(10, 18)).build();
 
     /** Settings for translating wall noise up and down to obscure repetition. */
-    @Default NoiseMapSettings translation = NoiseMapSettings.builder()
+    @Default NoiseMapSettings wallOffset = NoiseMapSettings.builder()
         .frequency(0.05F).range(Range.of(0, 255)).build();
 
     /** A list of noise generators to produce the shape of these caverns. */
@@ -80,7 +79,7 @@ public class CavernSettings {
             .mapSelf(o -> builder.decorators(DecoratorSettings.from(o, original.decorators)))
             .mapInt(Fields.resolution, builder::resolution)
             .mapObject(Fields.walls, o -> builder.walls(NoiseMapSettings.from(o)))
-            .mapObject(Fields.translation, o -> builder.translation(NoiseMapSettings.from(o)))
+            .mapObject(Fields.wallOffset, o -> builder.wallOffset(NoiseMapSettings.from(o)))
             .mapArray(Fields.generators, CavernSettings::createNoise, builder::generators);
 
         return builder.build();

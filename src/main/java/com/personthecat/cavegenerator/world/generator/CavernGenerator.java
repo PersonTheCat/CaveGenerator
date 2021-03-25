@@ -22,14 +22,14 @@ public class CavernGenerator extends WorldCarver {
     private final List<BiomeTestData> invalidBiomes = new ArrayList<>(25);
     private final double[] wallNoise = new double[256];
     private final List<FastNoise> generators;
-    private final FastNoise translation;
+    private final FastNoise wallOffset;
     private final int maxY;
     private final boolean hasBiomes;
 
     public CavernGenerator(CavernSettings cfg, World world) {
         super(cfg.conditions, cfg.decorators, world);
         this.generators = createGenerators(cfg.generators, world);
-        this.translation = cfg.translation.getGenerator(world);
+        this.wallOffset = cfg.wallOffset.getGenerator(world);
         this.maxY = conditions.height.max + cfg.conditions.ceiling.map(n -> n.range.max).orElse(0);
         this.hasBiomes = cfg.conditions.biomes.size() > 0 || cfg.conditions.blacklistBiomes;
         setupWallNoise(cfg.walls, world);
@@ -58,10 +58,22 @@ public class CavernGenerator extends WorldCarver {
     public void generate(PrimerContext ctx) {
         if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
             if (hasBiomes) {
-                fillInvalidBiomes(ctx.world, ctx.chunkX, ctx.chunkZ);
+                final BlockPos[] corners = {
+                    new BlockPos(ctx.offsetX + 1, 0, ctx.offsetZ + 1),
+                    new BlockPos(ctx.offsetX + 1, 0, ctx.offsetZ + 14),
+                    new BlockPos(ctx.offsetX + 14, 0, ctx.offsetZ + 1),
+                    new BlockPos(ctx.offsetX + 14, 0, ctx.offsetZ + 14)
+                };
+                for (BlockPos corner : corners) {
+                    if (conditions.biomes.test(ctx.world.getBiome(corner))) {
+                        fillInvalidBiomes(ctx.world, ctx.chunkX, ctx.chunkZ);
+                        generateChecked(ctx);
+                        invalidBiomes.clear();
+                    }
+                }
+            } else {
+                generateChecked(ctx);
             }
-            generateChecked(ctx);
-            invalidBiomes.clear();
         }
     }
 
@@ -77,7 +89,7 @@ public class CavernGenerator extends WorldCarver {
                 final int offsetZ = cZ * 16 + 8;
                 if (!conditions.biomes.test(getPredictBiome(world, offsetX, offsetZ))) {
                     // Translate the noise randomly for each chunk to minimize repetition.
-                    final int translateY = (int) translation.GetAdjustedNoise(offsetX, offsetZ);
+                    final int translateY = (int) wallOffset.GetAdjustedNoise(offsetX, offsetZ);
                     invalidBiomes.add(new BiomeTestData(offsetX, offsetZ, translateY));
                 }
             }
