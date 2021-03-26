@@ -45,7 +45,8 @@ public class TunnelSectionInfo {
         this.startZ = applyLimitXZ(MathHelper.floor(centerZ - radiusXZ) - chunkZ * 16 - 1);
         this.endZ = applyLimitXZ(MathHelper.floor(centerZ + radiusXZ) - chunkZ * 16 + 1);
         // Setup the array to the maximum possible size;
-        initializePositions();
+        int maxPossibleSize = (endX - startX) * (endY - startY) * (endZ - startZ);
+        positions = new BlockPos[maxPossibleSize];
     }
 
     /** Pre-calculates positions and stores them into an array. */
@@ -59,7 +60,6 @@ public class TunnelSectionInfo {
             for (int z = startZ; z < endZ; z++) {
                 final double distZ = ((z + chunkZ * 16) + 0.5 - centerZ) / radiusXZ;
                 final double distZ2 = distZ * distZ;
-                // To-do: Confirm that this is necessary. Might just improve performance.
                 if ((distX2 + distZ2) >= 1.0) {
                     continue;
                 }
@@ -101,12 +101,6 @@ public class TunnelSectionInfo {
         }
         shrinkPositionsToSize(index);
         return this;
-    }
-
-    /** Sets the positions array to be the maximum possible size for this section. */
-    private void initializePositions() {
-        int maxPossibleSize = (endX - startX) * (endY - startY) * (endZ - startZ);
-        positions = new BlockPos[maxPossibleSize];
     }
 
     /** Creates a slice of the array `positions`, from 0 to @param size. */

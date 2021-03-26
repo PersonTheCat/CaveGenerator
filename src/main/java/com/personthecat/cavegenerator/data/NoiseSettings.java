@@ -2,6 +2,7 @@ package com.personthecat.cavegenerator.data;
 
 import com.personthecat.cavegenerator.model.FloatRange;
 import com.personthecat.cavegenerator.model.Range;
+import com.personthecat.cavegenerator.noise.CachedNoiseGenerator;
 import com.personthecat.cavegenerator.util.HjsonMapper;
 import fastnoise.FastNoise;
 import fastnoise.FastNoise.*;
@@ -75,6 +76,9 @@ public class NoiseSettings {
     /** Whether to invert the acceptable values generated. */
     @Default boolean invert = false;
 
+    /** Whether to cache the output for equivalent generators in the current chunk. */
+    @Default boolean cache = false;
+
     /** The type of interpolation to use. */
     @Default Interp interp = Interp.Hermite;
 
@@ -119,6 +123,7 @@ public class NoiseSettings {
             .mapInt(Fields.offset, builder::offset)
             .mapBool(Fields.perturb, builder::perturb)
             .mapBool(Fields.invert, builder::invert)
+            .mapBool(Fields.cache, builder::cache)
             .mapInterp(Fields.interp, builder::interp)
             .mapNoiseType(Fields.type, builder::type)
             .mapFractalType(Fields.fractal, builder::fractal)
@@ -130,7 +135,7 @@ public class NoiseSettings {
 
     /** Converts these settings into a regular {@link FastNoise} object. */
     public FastNoise getGenerator(World world) {
-        return new FastNoise(getSeed(world))
+        final FastNoise noise = new FastNoise(getSeed(world))
             .SetNoiseType(type)
             .SetFrequency(frequency)
             .SetFractalType(fractal)
@@ -151,6 +156,7 @@ public class NoiseSettings {
             .SetThreshold(threshold.min, threshold.max)
             .SetStretch(stretch)
             .SetOffset(offset);
+        return cache ? new CachedNoiseGenerator(noise) : noise;
     }
 
     /** Generates a new seed from the input `base` value. */

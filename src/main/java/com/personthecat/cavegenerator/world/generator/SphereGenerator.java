@@ -25,7 +25,7 @@ public abstract class SphereGenerator extends WorldCarver {
 
     protected void generateSphere(Random rand, PrimerData data, TunnelSectionInfo section) {
         // If we need to test this section for water -> is there water?
-        if (!(shouldTestForWater(section.getLowestY(), section.getHighestY()) && testForWater(data.p, section))) {
+//        if (!(shouldTestForWater(section.getLowestY(), section.getHighestY()) && testForWater(data.p, section))) {
             // Generate the actual sphere.
             replaceSection(rand, data, section);
             // We need to generate twice; once to create walls,
@@ -34,7 +34,7 @@ public abstract class SphereGenerator extends WorldCarver {
                 // Decorate the sphere.
                 decorateSection(rand, data, section);
             }
-        }
+//        }
     }
 
     /** Calculates the maximum distance for this tunnel, if needed. */

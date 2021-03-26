@@ -59,6 +59,10 @@ public class Range implements Iterable<Integer> {
         return max - min;
     }
 
+    public boolean isEmpty() {
+        return false;
+    }
+
     @NotNull
     @Override
     public Iterator<Integer> iterator() {

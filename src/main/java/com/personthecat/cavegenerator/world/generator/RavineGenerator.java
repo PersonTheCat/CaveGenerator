@@ -60,7 +60,7 @@ public class RavineGenerator extends SphereGenerator {
         for (int currentPos = 0; currentPos < distance; currentPos++) {
             // Determine the radius by `scale`.
             final double radiusXZ = 1.5D + (MathHelper.sin(currentPos * (float) Math.PI / distance) * path.getScale());
-            final double radiusY = radiusXZ * path.getScaleY();
+            final double radiusY = radiusXZ * path.getStretch();
             path.update(mast, true, cfg.noiseYFactor, 0.05F);
 
             if (mast.nextInt(cfg.resolution) == 0) {

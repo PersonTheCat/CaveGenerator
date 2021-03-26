@@ -3,6 +3,7 @@ package com.personthecat.cavegenerator;
 import com.personthecat.cavegenerator.commands.CommandCave;
 import com.personthecat.cavegenerator.config.CavePreset;
 import com.personthecat.cavegenerator.io.JarFiles;
+import com.personthecat.cavegenerator.noise.CachedNoiseHelper;
 import com.personthecat.cavegenerator.world.*;
 import com.personthecat.cavegenerator.world.feature.FeatureCaveHook;
 import com.personthecat.cavegenerator.world.feature.StructureSpawner;
@@ -73,6 +74,7 @@ public class Main {
     public static void onServerStoppingEvent(FMLServerStoppingEvent event) {
         log.info("Unloading generators.");
         Main.instance.generators.clear();
+        CachedNoiseHelper.removeAll();
     }
 
     /** Loads a generator for the current dimension, if applicable. */

@@ -2,6 +2,7 @@ package com.personthecat.cavegenerator.world.generator;
 
 import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.config.ConfigFile;
+import com.personthecat.cavegenerator.noise.CachedNoiseHelper;
 import com.personthecat.cavegenerator.world.GeneratorController;
 import com.personthecat.cavegenerator.world.HeightMapLocator;
 import net.minecraft.world.World;
@@ -38,6 +39,7 @@ public class EarlyCaveHook extends MapGenBase {
 
         earlyGenerate(generators.values(), heightmap, world, x, z, primer);
         mapGenerate(generators.values(), heightmap, world, x, z, primer);
+        CachedNoiseHelper.resetAll();
     }
 
     private void earlyGenerate(Collection<GeneratorController> generators, int[][] heightmap, World world, int x, int z, ChunkPrimer primer) {

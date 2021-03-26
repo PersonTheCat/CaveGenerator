@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.data;
 
 import com.personthecat.cavegenerator.model.Range;
+import com.personthecat.cavegenerator.noise.CachedNoiseGenerator;
 import com.personthecat.cavegenerator.util.HjsonMapper;
 import fastnoise.FastNoise;
 import fastnoise.FastNoise.NoiseType;
@@ -46,6 +47,9 @@ public class NoiseMapSettings {
     /** The range of values produced by the generator */
     @Default Range range = Range.of(-1, 1);
 
+    /** Whether to cache the output for equivalent generators in the current chunk. */
+    @Default boolean cache = false;
+
     public static NoiseMapSettings from(JsonObject json, NoiseMapSettings defaults) {
         return copyInto(json, defaults.toBuilder());
     }
@@ -60,16 +64,18 @@ public class NoiseMapSettings {
             .mapFloat(Fields.frequency, builder::frequency)
             .mapNoiseType(Fields.type, builder::type)
             .mapRange(Fields.range, builder::range)
+            .mapBool(Fields.cache, builder::cache)
             .release(builder::build);
     }
 
     public FastNoise getGenerator(World world) {
-        return new FastNoise(getSeed(world))
+        final FastNoise noise = new FastNoise(getSeed(world))
             .SetNoiseType(type)
             .SetFrequency(frequency)
             .SetFractalOctaves(octaves)
             .SetRange(range.min, range.max)
             .SetInterp(FastNoise.Interp.Hermite);
+        return cache ? new CachedNoiseGenerator(noise) : noise;
     }
 
     /** Generates a new seed from the input `base` value. */

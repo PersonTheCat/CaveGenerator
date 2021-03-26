@@ -2,6 +2,7 @@ package com.personthecat.cavegenerator.data;
 
 import com.personthecat.cavegenerator.model.FloatRange;
 import com.personthecat.cavegenerator.model.Range;
+import com.personthecat.cavegenerator.noise.CachedNoiseGenerator;
 import com.personthecat.cavegenerator.util.HjsonMapper;
 import fastnoise.FastNoise;
 import fastnoise.FastNoise.NoiseType;
@@ -46,6 +47,9 @@ public class NoiseRegionSettings {
     /** Whether to invert the output of the generator. */
     @Default boolean invert = false;
 
+    /** Whether to cache the output for equivalent generators in the current chunk. */
+    @Default boolean cache = false;
+
     /** The type of noise generator to run. */
     @Default NoiseType type = NoiseType.SimplexFractal;
 
@@ -62,17 +66,19 @@ public class NoiseRegionSettings {
             .mapInt(Fields.seed, i -> builder.seed(full(i)))
             .mapFloat(Fields.frequency, builder::frequency)
             .mapFloatRange(Fields.threshold, builder::threshold)
+            .mapBool(Fields.cache, builder::cache)
             .mapNoiseType(Fields.type, builder::type)
             .release(builder::build);
     }
 
     public FastNoise getGenerator(World world) {
-        return new FastNoise(getSeed(world))
+        final FastNoise noise = new FastNoise(getSeed(world))
             .SetNoiseType(type)
             .SetThreshold(threshold.min, threshold.max)
             .SetFrequency(frequency)
             .SetInvert(invert)
             .SetInterp(FastNoise.Interp.Hermite);
+        return cache ? new CachedNoiseGenerator(noise) : noise;
     }
 
     /** Generates a new seed from the input `base` value. */

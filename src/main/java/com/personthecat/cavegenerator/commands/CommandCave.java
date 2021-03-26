@@ -7,6 +7,7 @@ import com.personthecat.cavegenerator.config.PresetCombiner;
 import com.personthecat.cavegenerator.config.PresetCompressor;
 import com.personthecat.cavegenerator.config.PresetReader;
 import com.personthecat.cavegenerator.io.SafeFileIO;
+import com.personthecat.cavegenerator.noise.CachedNoiseHelper;
 import com.personthecat.cavegenerator.util.Result;
 import net.minecraft.command.CommandBase;
 import net.minecraft.command.ICommandSender;
@@ -188,6 +189,7 @@ public class CommandCave extends CommandBase {
     private static void reload(ICommandSender sender) {
         CaveInit.initPresets(Main.instance.presets);
         Main.instance.generators.clear();
+        CachedNoiseHelper.removeAll();
         if (sender.getEntityWorld().provider.getDimension() != 0) {
             Main.instance.loadGenerators(sender.getServer().getWorld(0));
         }

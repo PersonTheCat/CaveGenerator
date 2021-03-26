@@ -17,6 +17,11 @@ public class EmptyRange extends Range {
         return INSTANCE;
     }
 
+    @Override
+    public boolean isEmpty() {
+        return true;
+    }
+
     @NotNull
     @Override
     public Iterator<Integer> iterator() {

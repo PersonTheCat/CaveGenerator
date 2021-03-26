@@ -20,7 +20,7 @@ public class TunnelPathInfo {
 
     /** The amount to alter angle(XZ/Y) per-segment. */
     private float dYaw, dPitch;
-    private float scale, scaleY;
+    private float scale, stretch;
 
     /** Coordinates of this tunnel's current destination. */
     private float x, y, z;
@@ -47,7 +47,7 @@ public class TunnelPathInfo {
         ScalableFloat dYaw,
         ScalableFloat dPitch,
         ScalableFloat scale,
-        ScalableFloat scaleY,
+        ScalableFloat stretch,
         Random rand,
         int destChunkX,
         int destChunkZ,
@@ -59,13 +59,13 @@ public class TunnelPathInfo {
         this.scale = scale.startVal + scale.startValRandFactor * (rand.nextFloat() * 2.00F + rand.nextFloat());
         this.dYaw = dYaw.startVal;
         this.dPitch = dPitch.startVal;
-        this.scaleY = scaleY.startVal;
+        this.stretch = stretch.startVal;
         this.sfYaw = yaw;
         this.sfPitch = pitch;
         this.sfdYaw = dYaw;
         this.sfdPitch = dPitch;
         this.sfScale = scale;
-        this.sfScaleY = scaleY;
+        this.sfScaleY = stretch;
         // Random coordinates in the destination chunk.
         final int heightDiff = maxHeight - minHeight;
         this.x = (destChunkX * 16) + rand.nextInt(16);
@@ -81,7 +81,7 @@ public class TunnelPathInfo {
         float dYaw,
         float dPitch,
         float scale,
-        float scaleY,
+        float stretch,
         float x,
         float y,
         float z
@@ -97,7 +97,7 @@ public class TunnelPathInfo {
         this.scale = scale;
         this.dYaw = dYaw;
         this.dPitch = dPitch;
-        this.scaleY = scaleY;
+        this.stretch = stretch;
         this.x = x;
         this.y = y;
         this.z = z;
@@ -124,8 +124,8 @@ public class TunnelPathInfo {
         scale *= by;
     }
 
-    public float getScaleY() {
-        return scaleY;
+    public float getStretch() {
+        return stretch;
     }
 
     public float getX() {
@@ -152,29 +152,29 @@ public class TunnelPathInfo {
     }
 
     void nextPos() {
-        final float cos = MathHelper.cos(pitch);
-        final float sin = MathHelper.sin(pitch);
-        x += MathHelper.cos(yaw) * cos;
-        y += sin;
-        z += MathHelper.sin(yaw) * cos;
+        final float cosPitch = MathHelper.cos(pitch);
+        final float sinPitch = MathHelper.sin(pitch);
+        x += MathHelper.cos(yaw) * cosPitch;
+        y += sinPitch;
+        z += MathHelper.sin(yaw) * cosPitch;
     }
 
-    void updateVals(Random rand, float twistPotential) {
+    void updateVals(Random rand, float maxRotation) {
         // Adjust the angle based on current twist(XZ/Y). twist
         // will have been recalculated on subsequent iterations.
         // The potency of twist is reduced immediately.
-        yaw += dYaw * twistPotential;
-        pitch += dPitch * twistPotential;
+        yaw += dYaw * maxRotation;
+        pitch += dPitch * maxRotation;
         // Rotates the beginning of the chain around the end.
-        dPitch = adjustTwist(dPitch, rand, sfdPitch);
+        dPitch = rotate(dPitch, rand, sfdPitch);
         // Positive is counterclockwise, negative is clockwise.
-        dYaw = adjustTwist(dYaw, rand, sfdYaw);
-        scale = adjustScale(scale, rand, sfScale);
-        scaleY = adjustScale(scaleY, rand, sfScaleY);
+        dYaw = rotate(dYaw, rand, sfdYaw);
+        scale = reScale(scale, rand, sfScale);
+        stretch = reScale(stretch, rand, sfScaleY);
     }
 
     /** Updates the value of `original` based on the input settings. */
-    private float adjustTwist(float original, Random rand, ScalableFloat f) {
+    private float rotate(float original, Random rand, ScalableFloat f) {
         original = (float) Math.pow(original, f.exponent);
         original *= f.factor;
         original += f.randFactor * (rand.nextFloat() - rand.nextFloat()) * rand.nextFloat();
@@ -182,7 +182,7 @@ public class TunnelPathInfo {
     }
 
     /** Updates the value of `original` based on the input settings. */
-    private float adjustScale(float original, Random rand, ScalableFloat f) {
+    private float reScale(float original, Random rand, ScalableFloat f) {
         original = (float) Math.pow(original, f.exponent);
         original *= f.factor;
         //original += f.randFactor * (rand.nextFloat() - 0.5F);

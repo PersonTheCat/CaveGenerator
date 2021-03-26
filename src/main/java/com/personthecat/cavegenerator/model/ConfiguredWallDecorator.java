@@ -1,7 +1,7 @@
 package com.personthecat.cavegenerator.model;
 
 import com.personthecat.cavegenerator.data.WallDecoratorSettings;
-import com.personthecat.cavegenerator.util.DummyGenerator;
+import com.personthecat.cavegenerator.noise.DummyGenerator;
 import fastnoise.FastNoise;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.World;

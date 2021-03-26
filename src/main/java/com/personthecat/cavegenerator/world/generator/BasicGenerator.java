@@ -7,6 +7,7 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
+import net.minecraft.world.biome.BiomeProvider;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import java.lang.ref.WeakReference;
@@ -34,10 +35,11 @@ public abstract class BasicGenerator {
 
     public void generate(PrimerContext ctx) {
         final int dim = ctx.world.provider.getDimension();
-        final Biome b = ctx.world.getBiome(new BlockPos(ctx.chunkX * 16, 0, ctx.chunkZ * 16));
-
-        if (conditions.dimensions.test(dim) && conditions.biomes.test(b)) {
-            generateChecked(ctx);
+        if (conditions.dimensions.test(dim)) {
+            final Biome b = ctx.world.getBiome(new BlockPos(ctx.destChunkX * 16 + 8, 0, ctx.destChunkZ * 16 + 8));
+            if (conditions.biomes.test(b)) {
+                generateChecked(ctx);
+            }
         }
     }
 

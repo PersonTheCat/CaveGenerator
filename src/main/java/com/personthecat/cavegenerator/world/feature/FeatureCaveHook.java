@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.world.feature;
 
 import com.personthecat.cavegenerator.Main;
+import com.personthecat.cavegenerator.noise.CachedNoiseHelper;
 import com.personthecat.cavegenerator.world.GeneratorController;
 import com.personthecat.cavegenerator.world.HeightMapLocator;
 import net.minecraft.world.World;
@@ -23,5 +24,6 @@ public class FeatureCaveHook implements IWorldGenerator {
             final WorldContext ctx = new WorldContext(heightmap, generator, rand, chunkX, chunkZ, world);
             generator.featureGenerate(ctx);
         }
+        CachedNoiseHelper.resetAll();
     }
 }

@@ -1,7 +1,7 @@
 package com.personthecat.cavegenerator.model;
 
 import com.personthecat.cavegenerator.data.CaveBlockSettings;
-import com.personthecat.cavegenerator.util.DummyGenerator;
+import com.personthecat.cavegenerator.noise.DummyGenerator;
 import fastnoise.FastNoise;
 import net.minecraft.world.World;
 

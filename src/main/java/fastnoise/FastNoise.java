@@ -31,9 +31,12 @@
 
 package fastnoise;
 
+import lombok.EqualsAndHashCode;
+
 import javax.vecmath.Vector2f;
 import javax.vecmath.Vector3f;
 
+@EqualsAndHashCode
 public class FastNoise {
 	public enum NoiseType {Value, ValueFractal, Perlin, PerlinFractal, Simplex, SimplexFractal, Cellular, WhiteNoise, Cubic, CubicFractal}
 	public enum Interp {Linear, Hermite, Quintic}
@@ -42,40 +45,44 @@ public class FastNoise {
 	public enum CellularReturnType {CellValue, NoiseLookup, Distance, Distance2, Distance2Add, Distance2Sub, Distance2Mul, Distance2Div,
 									Distance3, Distance3Add, Distance3Sub, Distance3Mul, Distance3Div}
 
-	private int m_seed = 1337;
-	private float m_frequency = 0.01f;
-	private Interp m_interp = Interp.Quintic;
-	private NoiseType m_noiseType = NoiseType.Simplex;
+	public int m_seed = 1337;
+	public float m_frequency = 0.01f;
+	public Interp m_interp = Interp.Quintic;
+	public NoiseType m_noiseType = NoiseType.Simplex;
 
-	private int m_octaves = 3;
-	private float m_lacunarity = 2.0f;
-	private float m_gain = 0.5f;
-	private FractalType m_fractalType = FractalType.FBM;
+	public int m_octaves = 3;
+	public float m_lacunarity = 2.0f;
+	public float m_gain = 0.5f;
+	public FractalType m_fractalType = FractalType.FBM;
 
-	private float m_fractalBounding;
+	public float m_fractalBounding;
 
-	private CellularDistanceFunction m_cellularDistanceFunction = CellularDistanceFunction.Euclidean;
-	private CellularReturnType m_cellularReturnType = CellularReturnType.CellValue;
-	private FastNoise m_cellularNoiseLookup = null;
-	private float m_cellularJitterX = 0.45f;
-	private float m_cellularJitterY = 0.45f;
-	private float m_cellularJitterZ = 0.45f;
-	private boolean m_cellular3Edge = false;
+	public CellularDistanceFunction m_cellularDistanceFunction = CellularDistanceFunction.Euclidean;
+	public CellularReturnType m_cellularReturnType = CellularReturnType.CellValue;
+	public FastNoise m_cellularNoiseLookup = null;
+	public float m_cellularJitterX = 0.45f;
+	public float m_cellularJitterY = 0.45f;
+	public float m_cellularJitterZ = 0.45f;
+	public boolean m_cellular3Edge = false;
 
-	private boolean m_gradientPerturb = false;
-	private float m_gradientPerturbAmp = 1.0f / 0.45f;
-	private float m_gradientPerturbFrequency = 0.1f;
+	public boolean m_gradientPerturb = false;
+	public float m_gradientPerturbAmp = 1.0f / 0.45f;
+	public float m_gradientPerturbFrequency = 0.1f;
+	public float m_stretch = 1.0f;
+	public int m_offset = 0;
+	public boolean m_invert = false;
 
-	private float m_multiple = 1.0f;
-	private float m_addend = 0.0f;
-	private float m_stretch = 1.0f;
+	// These values are ignored because they don't
+	// directly contribute to the noise output.
 
-	private int m_offset = 0;
-
-	private boolean m_invert = false;
-
-	private float m_booleanMinThreshold = 0.0f;
-	private float m_booleanMaxThreshold = 1.0f;
+	@EqualsAndHashCode.Exclude
+	public float m_multiple = 1.0f;
+	@EqualsAndHashCode.Exclude
+	public float m_addend = 0.0f;
+	@EqualsAndHashCode.Exclude
+	public float m_booleanMinThreshold = 0.0f;
+	@EqualsAndHashCode.Exclude
+	public float m_booleanMaxThreshold = 1.0f;
 
 	public FastNoise() {
 		this(1337);

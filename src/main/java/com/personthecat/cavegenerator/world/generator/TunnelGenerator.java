@@ -2,10 +2,9 @@ package com.personthecat.cavegenerator.world.generator;
 
 import com.personthecat.cavegenerator.data.TunnelSettings;
 import com.personthecat.cavegenerator.model.PrimerData;
-import net.minecraft.util.math.BlockPos;
+import com.personthecat.cavegenerator.model.Range;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import javax.annotation.Nullable;
@@ -52,6 +51,7 @@ public class TunnelGenerator extends SphereGenerator {
                     // From vanilla: alters the scale each time a room spawns. Remove this?
                     path.multiplyScale(rand.nextFloat() * rand.nextFloat() * 3.00F + 1.00F);
                 }
+
                 addTunnel(world, rand.nextLong(), data, path,0, distance);
             }
         }
@@ -95,7 +95,7 @@ public class TunnelGenerator extends SphereGenerator {
         for (int currentPos = position; currentPos < distance; currentPos++) {
             // Determine the radius by `scale`.
             final double radiusXZ = 1.5D + (MathHelper.sin(currentPos * (float) Math.PI / distance) * path.getScale());
-            final double radiusY = radiusXZ * path.getScaleY();
+            final double radiusY = radiusXZ * path.getStretch();
             path.update(mast, cfg.noiseYReduction, randomNoiseCorrection ? 0.92F : 0.70F, 0.1F);
 
             if (path.getScale() > 1.00F && distance > 0 && currentPos == randomBranchIndex) {
@@ -111,12 +111,14 @@ public class TunnelGenerator extends SphereGenerator {
             if (path.travelledTooFar(data, currentPos, distance)) {
                 return;
             }
+            final Range height = conditions.getColumn((int) path.getX(), (int) path.getZ());
+            if (height.isEmpty()) {
+                return;
+            }
             if (path.touchesChunk(data, radiusXZ * 2.0)) {
                 // Calculate all of the positions in the section.
                 // We'll be using them multiple times.
-                final int x = (int) path.getX(), y = (int) path.getY(), z = (int) path.getZ();
-                final Biome biome = world.getBiome(new BlockPos(x, 0, z));
-                if (conditions.checkSingle(biome, x, y, z)) {
+                if (height.contains((int) path.getY())) {
                     generateSphere(dec, data, new TunnelSectionInfo(data, path, radiusXZ, radiusY).calculate());
                 }
             }
@@ -133,7 +135,7 @@ public class TunnelGenerator extends SphereGenerator {
         // with the vanilla setup.
         final long seed = main.nextLong();
         final float scale = main.nextFloat() * cfg.rooms.scale + 1;
-        final float scaleY = cfg.rooms.stretch;
+        final float stretch = cfg.rooms.stretch;
         // Construct a local Random object for use within this function,
         // also matching the vanilla setup.
         final Random rand = new Random(seed);
@@ -141,12 +143,7 @@ public class TunnelGenerator extends SphereGenerator {
         final int position = distance / 2;
         // Determine the radius by `scale`.
         final double radiusXZ = 1.5D + (MathHelper.sin(position * (float) Math.PI / distance) * scale);
-        final double radiusY = radiusXZ * scaleY;
-        // Coordinates are normally shifted based on yaw
-        // and pitch. When the input angle would otherwise
-        // just be 0.0, this is the only value that would
-        // actually change.
-        x += 1;
+        final double radiusY = radiusXZ * stretch;
         // Calculate all of the positions in the section.
         // We'll be using them multiple times.
         generateSphere(main, data, new TunnelSectionInfo(data, x, y, z, radiusXZ, radiusY).calculate());
@@ -162,8 +159,8 @@ public class TunnelGenerator extends SphereGenerator {
             reset1 = path.reset(yaw1, pitch, rand.nextFloat() * 0.5F + 0.5F, 1.00F);
             reset2 = path.reset(yaw2, pitch, rand.nextFloat() * 0.5F + 0.5F, 1.00F);
         } else { // Continue with the same size (not vanilla).
-            reset1 = path.reset(yaw1, pitch, path.getScale(), path.getScaleY());
-            reset2 = path.reset(yaw2, pitch, path.getScale(), path.getScaleY());
+            reset1 = path.reset(yaw1, pitch, path.getScale(), path.getStretch());
+            reset2 = path.reset(yaw2, pitch, path.getScale(), path.getStretch());
         }
         if (branches != null) {
             branches.addTunnel(world, rand.nextLong(), data, reset1, currentPos, distance);

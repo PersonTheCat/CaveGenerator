@@ -1,4 +1,4 @@
-package com.personthecat.cavegenerator.util;
+package com.personthecat.cavegenerator.noise;
 
 import fastnoise.FastNoise;
 import lombok.AllArgsConstructor;
@@ -26,5 +26,15 @@ public class DummyGenerator extends FastNoise {
     @Override
     public boolean GetBoolean(float x, float y, float z) {
         return true;
+    }
+
+    @Override
+    public float GetNoise(float x, float y) {
+        return 0F;
+    }
+
+    @Override
+    public float GetNoise(float x, float y, float z) {
+        return 0F;
     }
 }
