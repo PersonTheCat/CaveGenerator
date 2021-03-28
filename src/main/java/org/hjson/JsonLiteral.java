@@ -58,7 +58,7 @@ class JsonLiteral extends JsonValue {
 
   @Override
   public int hashCode() {
-    return value.hashCode();
+    return super.hashCode() * 59 + value.hashCode();
   }
 
   @Override

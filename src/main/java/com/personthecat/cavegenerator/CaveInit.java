@@ -12,8 +12,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Optional;
 
-import static com.personthecat.cavegenerator.util.CommonMethods.*;
-import static com.personthecat.cavegenerator.io.SafeFileIO.*;
+import static com.personthecat.cavegenerator.util.CommonMethods.empty;
+import static com.personthecat.cavegenerator.util.CommonMethods.extension;
+import static com.personthecat.cavegenerator.util.CommonMethods.full;
+import static com.personthecat.cavegenerator.io.SafeFileIO.ensureDirExists;
+import static com.personthecat.cavegenerator.io.SafeFileIO.safeFileExists;
 
 @Log4j2
 public class CaveInit {

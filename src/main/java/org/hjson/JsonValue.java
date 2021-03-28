@@ -797,7 +797,11 @@ public abstract class JsonValue implements Serializable {
 
   @Override
   public int hashCode() {
-    return super.hashCode();
+    int result = 1;
+    result *= 59 + (this.bolComment == null ? 43 : this.bolComment.hashCode());
+    result *= 59 + (this.eolComment == null ? 43 : this.eolComment.hashCode());
+    result *= 59 + (this.intComment == null ? 43 : this.intComment.hashCode());
+    return result;
   }
 
   static boolean isPunctuatorChar(int c) {

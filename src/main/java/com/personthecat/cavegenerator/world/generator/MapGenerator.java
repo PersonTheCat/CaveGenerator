@@ -31,7 +31,7 @@ public abstract class MapGenerator extends WorldCarver {
     @Override
     public final void generate(PrimerContext ctx) {
         if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
-            for (Biome b : ctx.biomes.current) {
+            for (Biome b : ctx.biomes.current.get()) {
                 if (conditions.biomes.test(b)) {
                     generateChecked(ctx);
                     return;
@@ -88,8 +88,8 @@ public abstract class MapGenerator extends WorldCarver {
     private boolean shouldTestForWater(int lowestY, int highestY) {
         for (ConfiguredCaveBlock block : decorators.caveBlocks) {
             if (block.cfg.states.contains(BLK_WATER)) {
-                if (highestY <= block.cfg.height.max + WATER_WIGGLE_ROOM
-                    && lowestY >= block.cfg.height.min - WATER_WIGGLE_ROOM)
+                if (highestY <= block.cfg.height.max - WATER_WIGGLE_ROOM
+                    && lowestY >= block.cfg.height.min + WATER_WIGGLE_ROOM)
                 {
                     return false;
                 }

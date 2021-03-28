@@ -84,6 +84,7 @@ class PresetCompat {
      * @return Whether an exception took place when writing the file.
      */
     static Result<IOException> update(JsonObject json, File file) {
+        final int hash = json.hashCode();
         updateRoot(json);
         updateCaveBlocks(json);
         updateWallDecorators(json);
@@ -99,7 +100,8 @@ class PresetCompat {
         updateRecursive(json);
         removeBlankSlate(json);
         enforceValueOrder(json);
-        return writeJson(json, file);
+        // Only write if changes were made.
+        return ConfigFile.autoFormat || json.hashCode() != hash ? writeJson(json, file) : Result.ok();
     }
 
     private static void updateRoot(JsonObject json) {

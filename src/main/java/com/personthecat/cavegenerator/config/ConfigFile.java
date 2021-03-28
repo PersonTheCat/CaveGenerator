@@ -60,4 +60,9 @@ public class ConfigFile {
     @Comment("Whether to override and replace caverns in the nether.")
     @RequiresMcRestart
     public static boolean netherGenerate = false;
+
+    @Comment({
+        "Whether to automatically format your preset files. They will",
+        "still be reformatted if values are updated."})
+    public static boolean autoFormat = true;
 }

@@ -59,7 +59,7 @@ public class CavernGenerator extends WorldCarver {
     public void generate(PrimerContext ctx) {
         if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
             if (hasBiomes) {
-                for (Biome biome : ctx.biomes.current) {
+                for (Biome biome : ctx.biomes.current.get()) {
                     if (conditions.biomes.test(biome)) {
                         fillInvalidBiomes(ctx.biomes);
                         generateChecked(ctx);
@@ -79,7 +79,7 @@ public class CavernGenerator extends WorldCarver {
     }
 
     private void fillInvalidBiomes(BiomeSearch biomes) {
-        for (BiomeSearch.Data biome : biomes.surrounding) {
+        for (BiomeSearch.Data biome : biomes.surrounding.get()) {
             if (!conditions.biomes.test(biome.biome)) {
                 // Translate the noise randomly for each chunk to minimize repetition.
                 final int translateY = (int) wallOffset.GetAdjustedNoise(biome.centerX, biome.centerZ);

@@ -78,7 +78,7 @@ class JsonNumber extends JsonValue {
 
   @Override
   public int hashCode() {
-    return Double.valueOf(value).hashCode();
+    return super.hashCode() * 59 + Double.valueOf(value).hashCode();
   }
 
   @Override

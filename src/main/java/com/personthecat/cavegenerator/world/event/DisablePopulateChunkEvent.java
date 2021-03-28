@@ -1,4 +1,4 @@
-package com.personthecat.cavegenerator.world;
+package com.personthecat.cavegenerator.world.event;
 
 import com.personthecat.cavegenerator.config.ConfigFile;
 import net.minecraftforge.event.terraingen.PopulateChunkEvent;

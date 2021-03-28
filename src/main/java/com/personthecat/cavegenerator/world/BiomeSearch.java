@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.world;
 
 import com.personthecat.cavegenerator.config.ConfigFile;
+import com.personthecat.cavegenerator.util.Lazy;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import net.minecraft.util.math.BlockPos;
@@ -10,12 +11,13 @@ import net.minecraft.world.biome.BiomeProvider;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class BiomeSearch {
-    // Todo: profile using Lazy on these values
-    public final Biome[] current;
-    public final Data[] surrounding;
+    public final Lazy<Biome[]> current;
+    public final Lazy<Data[]> surrounding;
 
     public static BiomeSearch in(World world, int x, int z) {
-        return new BiomeSearch(inner(world, x, z), outer(world, x, z, ConfigFile.biomeRange));
+        final Lazy<Biome[]> current = Lazy.of(() -> inner(world, x, z));
+        final Lazy<Data[]> surrounding = Lazy.of(() -> outer(world, x, z, ConfigFile.biomeRange));
+        return new BiomeSearch(current, surrounding);
     }
 
     /** Accumulates a list of biomes at the four corners of this chunk. */
