@@ -2,6 +2,7 @@ package com.personthecat.cavegenerator.world.generator;
 
 import com.personthecat.cavegenerator.data.RavineSettings;
 import com.personthecat.cavegenerator.model.PrimerData;
+import com.personthecat.cavegenerator.model.Range;
 import fastnoise.FastNoise;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
@@ -11,7 +12,7 @@ import net.minecraft.world.chunk.ChunkPrimer;
 
 import java.util.Random;
 
-public class RavineGenerator extends SphereGenerator {
+public class RavineGenerator extends MapGenerator {
 
     /** From vanilla: avoids unnecessary allocations. */
     private final float[] mut = new float[256];
@@ -26,7 +27,7 @@ public class RavineGenerator extends SphereGenerator {
 
     /** Spawns all of the ravines for this preset. */
     @Override
-    protected void generateChecked(PrimerContext ctx) {
+    protected void mapGenerate(MapGenerationContext ctx) {
         if (ctx.rand.nextInt(cfg.chance) == 0) {
             startRavine(ctx.world, ctx.rand.nextLong(), ctx.destChunkX, ctx.destChunkZ, ctx.chunkX, ctx.chunkZ, ctx.primer);
         }
@@ -73,9 +74,8 @@ public class RavineGenerator extends SphereGenerator {
             if (path.touchesChunk(data, radiusXZ * 2.0)) {
                 // Calculate all of the positions in the section.
                 // We'll be using them multiple times.
-                final int x = (int) path.getX(), y = (int) path.getY(), z = (int) path.getZ();
-                final Biome biome = world.getBiome(new BlockPos(x, 0, z));
-                if (conditions.checkSingle(biome, x, y, z)) {
+                final Range height = conditions.getColumn((int) path.getX(), (int) path.getZ());
+                if (height.contains((int) path.getY())) {
                     generateSphere(dec, data, new TunnelSectionInfo(data, path, radiusXZ, radiusY).calculateMutated(mut));
                 }
             }

@@ -1,31 +1,67 @@
 package com.personthecat.cavegenerator.world.generator;
 
+import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.data.ConditionSettings;
 import com.personthecat.cavegenerator.data.DecoratorSettings;
 import com.personthecat.cavegenerator.model.ConfiguredCaveBlock;
 import com.personthecat.cavegenerator.model.PrimerData;
 import com.personthecat.cavegenerator.data.CaveBlockSettings;
+import com.personthecat.cavegenerator.world.GeneratorController;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import java.util.Random;
 
-public abstract class SphereGenerator extends WorldCarver {
+public abstract class MapGenerator extends WorldCarver {
 
     private static final IBlockState BLK_WATER = Blocks.WATER.getDefaultState();
 
     /** The vertical distance to the nearest water source block that can be ignored. */
     private static final int WATER_WIGGLE_ROOM = 7;
 
-    public SphereGenerator(ConditionSettings conditions, DecoratorSettings decorators, World world) {
+    protected final Random rand = new Random();
+
+    public MapGenerator(ConditionSettings conditions, DecoratorSettings decorators, World world) {
         super(conditions, decorators, world);
     }
 
+    @Override
+    public final void generate(PrimerContext ctx) {
+        if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
+            for (Biome b : ctx.biomes.current) {
+                if (conditions.biomes.test(b)) {
+                    generateChecked(ctx);
+                    return;
+                }
+            }
+        }
+    }
+
+    @Override
+    protected final void generateChecked(PrimerContext ctx) {
+        final int range = ConfigFile.mapRange;
+        this.rand.setSeed(ctx.world.getSeed());
+        final long xMask = this.rand.nextLong();
+        final long zMask = this.rand.nextLong();
+
+        for (int destX = ctx.chunkX - range; destX <= ctx.chunkX + range; destX++) {
+            for (int destZ = ctx.chunkZ - range; destZ <= ctx.chunkZ + range; destZ++) {
+                long xHash = (long) destX * xMask;
+                long zHash = (long) destZ * zMask;
+                this.rand.setSeed(xHash ^ zHash ^ ctx.world.getSeed());
+                this.mapGenerate(new MapGenerationContext(ctx, rand, destX, destZ));
+            }
+        }
+    }
+
+    protected abstract void mapGenerate(MapGenerationContext ctx);
+
     protected void generateSphere(Random rand, PrimerData data, TunnelSectionInfo section) {
         // If we need to test this section for water -> is there water?
-//        if (!(shouldTestForWater(section.getLowestY(), section.getHighestY()) && testForWater(data.p, section))) {
+        if (!(shouldTestForWater(section.getLowestY(), section.getHighestY()) && testForWater(data.p, section))) {
             // Generate the actual sphere.
             replaceSection(rand, data, section);
             // We need to generate twice; once to create walls,
@@ -34,7 +70,7 @@ public abstract class SphereGenerator extends WorldCarver {
                 // Decorate the sphere.
                 decorateSection(rand, data, section);
             }
-//        }
+        }
     }
 
     /** Calculates the maximum distance for this tunnel, if needed. */
@@ -77,5 +113,31 @@ public abstract class SphereGenerator extends WorldCarver {
     /** Decorates all blocks inside of this section. */
     private void decorateSection(Random rand, PrimerData data, TunnelSectionInfo section) {
         section.run((x, y, z) -> decorateBlock(rand, data.p, x, y, z, data.chunkX, data.chunkZ));
+    }
+
+    protected static class MapGenerationContext {
+        protected final int[][] heightmap;
+        protected final World world;
+        protected final Random rand;
+        protected final int destChunkX;
+        protected final int destChunkZ;
+        protected final int chunkX;
+        protected final int chunkZ;
+        protected final int offsetX;
+        protected final int offsetZ;
+        protected final ChunkPrimer primer;
+
+        private MapGenerationContext(PrimerContext ctx, Random rand, int destChunkX, int destChunkZ) {
+            this.heightmap = ctx.heightmap;
+            this.world = ctx.world;
+            this.rand = rand;
+            this.destChunkX = destChunkX;
+            this.destChunkZ = destChunkZ;
+            this.chunkX = ctx.chunkX;
+            this.chunkZ = ctx.chunkZ;
+            this.offsetX = ctx.offsetX;
+            this.offsetZ = ctx.offsetZ;
+            this.primer = ctx.primer;
+        }
     }
 }

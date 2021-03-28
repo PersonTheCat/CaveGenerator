@@ -28,9 +28,12 @@ public class StructureGenerator extends FeatureGenerator {
 
     @Override
     protected void doGenerate(WorldContext ctx) {
-        for (int i = 0; i < cfg.count; i++) {
-            if (ctx.rand.nextDouble() <= cfg.chance) {
-                generateSingle(ctx);
+        final BlockPos center = new BlockPos(ctx.offsetX, 0, ctx.offsetZ);
+        if (conditions.biomes.test(ctx.world.getBiomeForCoordsBody(center))) {
+            for (int i = 0; i < cfg.count; i++) {
+                if (ctx.rand.nextDouble() <= cfg.chance) {
+                    generateSingle(ctx);
+                }
             }
         }
     }
@@ -38,7 +41,6 @@ public class StructureGenerator extends FeatureGenerator {
     private void generateSingle(WorldContext ctx) {
         final Optional<BlockPos> spawnPos = getSpawnPos(ctx)
             .filter(pos -> conditions.noise.GetBoolean(pos.getX(), pos.getY(), pos.getZ()));
-
         // Attempt to locate a suitable spawn position and then proceed.
         spawnPos.ifPresent(pos -> {
             if (allChecksPass(pos, ctx.world)) {

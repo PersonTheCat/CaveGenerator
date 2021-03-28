@@ -29,10 +29,6 @@ public class FloatRange {
         return numBetween(rand, min, max);
     }
 
-    public boolean contains(float num) {
-        return num >= min && num <= max;
-    }
-
     public float diff() {
         return max - min;
     }

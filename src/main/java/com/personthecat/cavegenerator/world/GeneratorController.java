@@ -17,7 +17,6 @@ import java.util.stream.Collectors;
 
 @Builder
 public class GeneratorController {
-
     private final List<TunnelGenerator> tunnels;
     private final List<RavineGenerator> ravines;
     private final List<CavernGenerator> caverns;
@@ -56,21 +55,15 @@ public class GeneratorController {
     /** Generate noise-based features in the world before anything else.. */
     public void earlyGenerate(PrimerContext ctx) {
         globalClusters.generate(ctx);
-        for (LayerGenerator layer : layers) {
-            layer.generate(ctx);
-        }
+        layers.forEach(l -> l.generate(ctx));
         layeredClusters.generate(ctx);
         caverns.forEach(c -> c.generate(ctx));
     }
 
     /** Generate all of the early, MapGenBase-style features that make up the bulk of the caves. */
     public void mapGenerate(PrimerContext ctx) {
-        for (TunnelGenerator tunnel : tunnels) {
-            tunnel.generate(ctx);
-        }
-        for (RavineGenerator ravine : ravines) {
-            ravine.generate(ctx);
-        }
+        tunnels.forEach(t -> t.generate(ctx));
+        ravines.forEach(r -> r.generate(ctx));
     }
 
     /** Spawn all of the superficial decorations that take place later in the chunk generation cycle. */

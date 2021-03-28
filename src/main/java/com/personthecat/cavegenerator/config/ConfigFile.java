@@ -52,6 +52,11 @@ public class ConfigFile {
     @Comment("The chunk search range for tunnel and ravine features.")
     public static int mapRange = 8;
 
+    @Comment({
+        "The range in chunks to read biomes for features that use",
+        "distance-based biome testing."})
+    public static int biomeRange = 2;
+
     @Comment("Whether to override and replace caverns in the nether.")
     @RequiresMcRestart
     public static boolean netherGenerate = false;

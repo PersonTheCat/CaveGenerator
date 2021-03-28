@@ -22,6 +22,11 @@ public class EmptyRange extends Range {
         return true;
     }
 
+    @Override
+    public boolean contains(int num) {
+        return false;
+    }
+
     @NotNull
     @Override
     public Iterator<Integer> iterator() {

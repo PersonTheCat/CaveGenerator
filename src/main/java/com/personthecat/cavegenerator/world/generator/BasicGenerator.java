@@ -36,7 +36,7 @@ public abstract class BasicGenerator {
     public void generate(PrimerContext ctx) {
         final int dim = ctx.world.provider.getDimension();
         if (conditions.dimensions.test(dim)) {
-            final Biome b = ctx.world.getBiome(new BlockPos(ctx.destChunkX * 16 + 8, 0, ctx.destChunkZ * 16 + 8));
+            final Biome b = ctx.world.getBiome(new BlockPos(ctx.offsetX, 0, ctx.offsetZ));
             if (conditions.biomes.test(b)) {
                 generateChecked(ctx);
             }

@@ -10,7 +10,7 @@ import net.minecraft.world.chunk.ChunkPrimer;
 import javax.annotation.Nullable;
 import java.util.Random;
 
-public class TunnelGenerator extends SphereGenerator {
+public class TunnelGenerator extends MapGenerator {
 
     private static final float PI_OVER_2 = (float) (Math.PI / 2);
 
@@ -24,7 +24,7 @@ public class TunnelGenerator extends SphereGenerator {
     }
 
     @Override
-    protected void generateChecked(PrimerContext ctx) {
+    protected void mapGenerate(MapGenerationContext ctx) {
         createSystem(ctx.world, ctx.rand.nextLong(), ctx.destChunkX, ctx.destChunkZ, ctx.chunkX, ctx.chunkZ, ctx.primer);
     }
 
@@ -111,13 +111,10 @@ public class TunnelGenerator extends SphereGenerator {
             if (path.travelledTooFar(data, currentPos, distance)) {
                 return;
             }
-            final Range height = conditions.getColumn((int) path.getX(), (int) path.getZ());
-            if (height.isEmpty()) {
-                return;
-            }
             if (path.touchesChunk(data, radiusXZ * 2.0)) {
                 // Calculate all of the positions in the section.
                 // We'll be using them multiple times.
+                final Range height = conditions.getColumn((int) path.getX(), (int) path.getZ());
                 if (height.contains((int) path.getY())) {
                     generateSphere(dec, data, new TunnelSectionInfo(data, path, radiusXZ, radiusY).calculate());
                 }

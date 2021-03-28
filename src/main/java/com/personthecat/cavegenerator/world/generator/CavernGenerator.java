@@ -4,6 +4,7 @@ import com.personthecat.cavegenerator.data.CavernSettings;
 import com.personthecat.cavegenerator.data.NoiseMapSettings;
 import com.personthecat.cavegenerator.data.NoiseSettings;
 import com.personthecat.cavegenerator.model.Range;
+import com.personthecat.cavegenerator.world.BiomeSearch;
 import fastnoise.FastNoise;
 import lombok.AllArgsConstructor;
 import net.minecraft.util.math.BlockPos;
@@ -58,17 +59,12 @@ public class CavernGenerator extends WorldCarver {
     public void generate(PrimerContext ctx) {
         if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
             if (hasBiomes) {
-                final BlockPos[] corners = {
-                    new BlockPos(ctx.offsetX + 1, 0, ctx.offsetZ + 1),
-                    new BlockPos(ctx.offsetX + 1, 0, ctx.offsetZ + 14),
-                    new BlockPos(ctx.offsetX + 14, 0, ctx.offsetZ + 1),
-                    new BlockPos(ctx.offsetX + 14, 0, ctx.offsetZ + 14)
-                };
-                for (BlockPos corner : corners) {
-                    if (conditions.biomes.test(ctx.world.getBiome(corner))) {
-                        fillInvalidBiomes(ctx.world, ctx.chunkX, ctx.chunkZ);
+                for (Biome biome : ctx.biomes.current) {
+                    if (conditions.biomes.test(biome)) {
+                        fillInvalidBiomes(ctx.biomes);
                         generateChecked(ctx);
                         invalidBiomes.clear();
+                        return;
                     }
                 }
             } else {
@@ -82,30 +78,14 @@ public class CavernGenerator extends WorldCarver {
         generateCaverns(ctx.heightmap, ctx.rand, ctx.primer, ctx.chunkX, ctx.chunkZ);
     }
 
-    private void fillInvalidBiomes(World world, int chunkX, int chunkZ) {
-        for (int cX = chunkX - 2; cX <= chunkX + 2; cX++) {
-            for (int cZ = chunkZ - 2; cZ <= chunkZ + 2; cZ++) {
-                final int offsetX = cX * 16 + 8;
-                final int offsetZ = cZ * 16 + 8;
-                if (!conditions.biomes.test(getPredictBiome(world, offsetX, offsetZ))) {
-                    // Translate the noise randomly for each chunk to minimize repetition.
-                    final int translateY = (int) wallOffset.GetAdjustedNoise(offsetX, offsetZ);
-                    invalidBiomes.add(new BiomeTestData(offsetX, offsetZ, translateY));
-                }
+    private void fillInvalidBiomes(BiomeSearch biomes) {
+        for (BiomeSearch.Data biome : biomes.surrounding) {
+            if (!conditions.biomes.test(biome.biome)) {
+                // Translate the noise randomly for each chunk to minimize repetition.
+                final int translateY = (int) wallOffset.GetAdjustedNoise(biome.centerX, biome.centerZ);
+                invalidBiomes.add(new BiomeTestData(biome.centerX, biome.centerZ, translateY));
             }
         }
-    }
-
-    // Todo: find a common class for this.
-    private static Biome getPredictBiome(World world, int x, int z) {
-        final BlockPos pos = new BlockPos(x + 2, 0, z + 2);
-        final BiomeProvider provider = world.getBiomeProvider();
-        // Unlike the original, this does not contain a try-catch.
-        // May have to add that...
-        if (world.isBlockLoaded(pos)) {
-            return world.getChunk(pos).getBiome(pos, provider);
-        }
-        return provider.getBiomesForGeneration(null, x / 4, z / 4, 1, 1)[0];
     }
 
     /** Generates giant air pockets in this chunk using a series of 3D noise generators. */
