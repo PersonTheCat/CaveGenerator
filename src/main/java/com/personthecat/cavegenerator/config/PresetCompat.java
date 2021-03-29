@@ -137,7 +137,7 @@ class PresetCompat {
 
     private static void updateTunnels(JsonObject json) {
         FieldHistory.withPath(CavePreset.Fields.tunnels)
-            .toRange(MIN_HEIGHT, 8, MAX_HEIGHT, 128, ConditionSettings.Fields.height)
+            .toRange(MIN_HEIGHT, 8, MAX_HEIGHT, 128, TunnelSettings.Fields.originHeight)
             .history(ISOLATED_CHANCE, TunnelSettings.Fields.chance)
             .history(FREQUENCY, TunnelSettings.Fields.count)
             .history(ANGLE_XZ, TunnelSettings.Fields.yaw)
@@ -150,7 +150,7 @@ class PresetCompat {
 
     private static void updateRavines(JsonObject json) {
         FieldHistory.withPath(CavePreset.Fields.ravines)
-            .toRange(MIN_HEIGHT, 20, MAX_HEIGHT, 66, ConditionSettings.Fields.height)
+            .toRange(MIN_HEIGHT, 20, MAX_HEIGHT, 66, RavineSettings.Fields.originHeight)
             .history(ANGLE_XZ, RavineSettings.Fields.yaw)
             .history(ANGLE_Y, RavineSettings.Fields.pitch)
             .history(TWIST_XZ, RavineSettings.Fields.dYaw)

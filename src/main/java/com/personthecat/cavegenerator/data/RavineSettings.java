@@ -34,6 +34,9 @@ public class RavineSettings {
     /** Cave blocks and wall decorators applied to these ravines. */
     @Default DecoratorSettings decorators = DEFAULT_DECORATORS;
 
+    /** The height at which any ravine can originate. */
+    @Default Range originHeight = Range.of(20, 66);
+
     /** Statically reduces vertical noise. */
     @Default float noiseYFactor = 0.7F;
 
