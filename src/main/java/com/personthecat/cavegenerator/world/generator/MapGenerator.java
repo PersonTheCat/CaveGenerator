@@ -5,8 +5,7 @@ import com.personthecat.cavegenerator.data.ConditionSettings;
 import com.personthecat.cavegenerator.data.DecoratorSettings;
 import com.personthecat.cavegenerator.model.ConfiguredCaveBlock;
 import com.personthecat.cavegenerator.model.PrimerData;
-import com.personthecat.cavegenerator.data.CaveBlockSettings;
-import com.personthecat.cavegenerator.world.GeneratorController;
+import com.personthecat.cavegenerator.world.BiomeSearch;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
@@ -14,6 +13,7 @@ import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import java.util.Random;
+import java.util.function.Predicate;
 
 public abstract class MapGenerator extends WorldCarver {
 
@@ -31,13 +31,19 @@ public abstract class MapGenerator extends WorldCarver {
     @Override
     public final void generate(PrimerContext ctx) {
         if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
-            for (Biome b : ctx.biomes.current.get()) {
-                if (conditions.biomes.test(b)) {
-                    generateChecked(ctx);
-                    return;
-                }
+            if (!conditions.hasBiomes || anyMatch(ctx.biomes, conditions.biomes)) {
+                generateChecked(ctx);
             }
         }
+    }
+
+    private static boolean anyMatch(BiomeSearch biomes, Predicate<Biome> predicate) {
+        for (Biome b : biomes.current.get()) {
+            if (predicate.test(b)) {
+               return true;
+            }
+        }
+        return false;
     }
 
     @Override
@@ -88,8 +94,8 @@ public abstract class MapGenerator extends WorldCarver {
     private boolean shouldTestForWater(int lowestY, int highestY) {
         for (ConfiguredCaveBlock block : decorators.caveBlocks) {
             if (block.cfg.states.contains(BLK_WATER)) {
-                if (highestY <= block.cfg.height.max - WATER_WIGGLE_ROOM
-                    && lowestY >= block.cfg.height.min + WATER_WIGGLE_ROOM)
+                if (highestY <= block.cfg.height.max + WATER_WIGGLE_ROOM
+                    && lowestY >= block.cfg.height.min - WATER_WIGGLE_ROOM)
                 {
                     return false;
                 }

@@ -39,6 +39,9 @@ public class TunnelSettings {
     /** Cave blocks and wall decorators applied to these tunnels. */
     @Default DecoratorSettings decorators = DEFAULT_DECORATORS;
 
+    /** The height at which any tunnel system can originate. */
+    @Default Range originHeight = Range.of(8, 128);
+
     /** Controls a vanilla function for reducing vertical noise. */
     @Default boolean noiseYReduction = true;
 

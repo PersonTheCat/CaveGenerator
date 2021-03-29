@@ -77,8 +77,6 @@ class PresetCompat {
      * This function takes care of any operation related to renaming and updating old variables,
      * as well as enforcing that imports be moved to the top of each file.
      *
-     * Todo: create deep clone for testing changes. Hash does not account for comments
-     *
      * @param json The parsed JSON object to be updated.
      * @param file The file source of this object.
      * @return Whether an exception took place when writing the file.

@@ -7,10 +7,8 @@ import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.world.BiomeSearch;
 import fastnoise.FastNoise;
 import lombok.AllArgsConstructor;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
-import net.minecraft.world.biome.BiomeProvider;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import java.util.ArrayList;
@@ -25,14 +23,12 @@ public class CavernGenerator extends WorldCarver {
     private final List<FastNoise> generators;
     private final FastNoise wallOffset;
     private final int maxY;
-    private final boolean hasBiomes;
 
     public CavernGenerator(CavernSettings cfg, World world) {
         super(cfg.conditions, cfg.decorators, world);
         this.generators = createGenerators(cfg.generators, world);
         this.wallOffset = cfg.wallOffset.getGenerator(world);
         this.maxY = conditions.height.max + cfg.conditions.ceiling.map(n -> n.range.max).orElse(0);
-        this.hasBiomes = cfg.conditions.biomes.size() > 0 || cfg.conditions.blacklistBiomes;
         setupWallNoise(cfg.walls, world);
     }
 
@@ -58,7 +54,7 @@ public class CavernGenerator extends WorldCarver {
     @Override
     public void generate(PrimerContext ctx) {
         if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
-            if (hasBiomes) {
+            if (conditions.hasBiomes) {
                 for (Biome biome : ctx.biomes.current.get()) {
                     if (conditions.biomes.test(biome)) {
                         fillInvalidBiomes(ctx.biomes);

@@ -1,11 +1,17 @@
 package com.personthecat.cavegenerator.config;
 
+import com.personthecat.cavegenerator.Main;
 import net.minecraftforge.common.config.Config;
 import net.minecraftforge.common.config.Config.Comment;
 import net.minecraftforge.common.config.Config.RequiresMcRestart;
 import net.minecraftforge.common.config.Config.RequiresWorldRestart;
+import net.minecraftforge.common.config.ConfigManager;
+import net.minecraftforge.fml.client.event.ConfigChangedEvent;
+import net.minecraftforge.fml.common.Mod;
+import net.minecraftforge.fml.common.eventhandler.SubscribeEvent;
 
-@Config(modid = "cavegenerator")
+@Mod.EventBusSubscriber
+@Config(modid = Main.MODID)
 public class ConfigFile {
 
     @Comment({
@@ -65,4 +71,11 @@ public class ConfigFile {
         "Whether to automatically format your preset files. They will",
         "still be reformatted if values are updated."})
     public static boolean autoFormat = true;
+
+    @SubscribeEvent
+    public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
+        if (event.getModID().equals(Main.MODID)) {
+            ConfigManager.sync(Main.MODID, Config.Type.INSTANCE);
+        }
+    }
 }

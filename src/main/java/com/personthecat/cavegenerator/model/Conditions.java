@@ -20,6 +20,9 @@ public class Conditions {
     /** Any conditions for spawning this feature according to the current biome. */
     @Default Predicate<Biome> biomes = b -> true;
 
+    /** Indicates whether this feature has specific biome restrictions. */
+    @Default boolean hasBiomes = false;
+
     /** Any conditions for spawning this feature according to the current dimension. */
     @Default Predicate<Integer> dimensions = d -> true;
 
@@ -40,6 +43,7 @@ public class Conditions {
 
     public static Conditions compile(ConditionSettings settings, World world) {
         final ConditionsBuilder builder = builder()
+            .hasBiomes(settings.blacklistBiomes || !settings.biomes.isEmpty())
             .biomes(compileBiomes(settings))
             .dimensions(compileDimensions(settings))
             .height(settings.height);
