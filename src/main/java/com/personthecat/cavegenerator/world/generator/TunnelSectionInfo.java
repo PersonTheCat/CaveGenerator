@@ -17,7 +17,7 @@ public class TunnelSectionInfo {
     /** The exact purpose of some of these values is still unclear. */
     private final double centerX, centerY, centerZ;
     private final double radiusXZ, radiusY;
-    private final int chunkX, chunkZ;
+    private final int absX, absZ;
     private final int startX, endX;
     private final int startY, endY;
     private final int startZ, endZ;
@@ -35,15 +35,15 @@ public class TunnelSectionInfo {
         this.centerZ = z;
         this.radiusXZ = radiusXZ;
         this.radiusY = radiusY;
-        this.chunkX = data.chunkX;
-        this.chunkZ = data.chunkZ;
+        this.absX = data.chunkX * 16;
+        this.absZ = data.chunkZ * 16;
         // Always stay within the chunk bounds.
-        this.startX = applyLimitXZ(MathHelper.floor(centerX - radiusXZ) - chunkX * 16 - 1);
-        this.endX = applyLimitXZ(MathHelper.floor(centerX + radiusXZ) - chunkX * 16 + 1);
-        this.startY = applyLimitY(MathHelper.floor(centerY - radiusY) - 1);
-        this.endY = applyLimitY(MathHelper.floor(centerY + radiusY) + 1);
-        this.startZ = applyLimitXZ(MathHelper.floor(centerZ - radiusXZ) - chunkZ * 16 - 1);
-        this.endZ = applyLimitXZ(MathHelper.floor(centerZ + radiusXZ) - chunkZ * 16 + 1);
+        this.startX = limitXZ(MathHelper.floor(centerX - radiusXZ) - absX - 1);
+        this.endX = limitXZ(MathHelper.floor(centerX + radiusXZ) - absX + 1);
+        this.startY = limitY(MathHelper.floor(centerY - radiusY) - 1);
+        this.endY = limitY(MathHelper.floor(centerY + radiusY) + 1);
+        this.startZ = limitXZ(MathHelper.floor(centerZ - radiusXZ) - absZ - 1);
+        this.endZ = limitXZ(MathHelper.floor(centerZ + radiusXZ) - absZ + 1);
         // Setup the array to the maximum possible size;
         int maxPossibleSize = (endX - startX) * (endY - startY) * (endZ - startZ);
         positions = new BlockPos[maxPossibleSize];
@@ -55,10 +55,10 @@ public class TunnelSectionInfo {
         int index = 0;
         for (int x = startX; x < endX; x++) {
             // (Relative coordinate, centered, offset) / radius?
-            final double distX = ((x + chunkX * 16) + 0.5 - centerX) / radiusXZ;
+            final double distX = ((x + absX) + 0.5 - centerX) / radiusXZ;
             final double distX2 = distX * distX;
             for (int z = startZ; z < endZ; z++) {
-                final double distZ = ((z + chunkZ * 16) + 0.5 - centerZ) / radiusXZ;
+                final double distZ = ((z + absZ) + 0.5 - centerZ) / radiusXZ;
                 final double distZ2 = distZ * distZ;
                 if ((distX2 + distZ2) >= 1.0) {
                     continue;
@@ -81,10 +81,10 @@ public class TunnelSectionInfo {
     public TunnelSectionInfo calculateMutated(float[] mut) {
         int index = 0;
         for (int x = startX; x < endX; x++) {
-            final double distX = ((x + chunkX * 16) + 0.5 - centerX) / radiusXZ;
+            final double distX = ((x + absX) + 0.5 - centerX) / radiusXZ;
             final double distX2 = distX * distX;
             for (int z = startZ; z < endZ; z++) {
-                final double distZ = ((z + chunkZ * 16) + 0.5 - centerZ) / radiusXZ;
+                final double distZ = ((z + absZ) + 0.5 - centerZ) / radiusXZ;
                 final double distZ2 = distZ * distZ;
                 if (distX2 + distZ2 >= 1.0) {
                     continue;
@@ -134,12 +134,12 @@ public class TunnelSectionInfo {
     }
 
     /** Makes sure the resulting value stays within chunk bounds. */
-    private static int applyLimitXZ(int xz) {
+    private static int limitXZ(int xz) {
         return xz < 0 ? 0 : xz > 16 ? 16 : xz;
     }
 
     /** Makes sure the resulting value stays between y = 1 & y = 248 */
-    private static int applyLimitY(int y) {
+    private static int limitY(int y) {
         return y < 1 ? 1 : y > 248 ? 248 : y;
     }
 }

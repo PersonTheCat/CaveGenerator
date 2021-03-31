@@ -39,20 +39,23 @@ public class TunnelGenerator extends MapGenerator {
                 // Add a room at the center? of the system.
                 branches += rand.nextInt(cfg.systemDensity);
             }
+            final int distance = cfg.distance;
+            final PrimerData data = new PrimerData(primer, x, z);
 
             for (int j = 0; j < branches; j++) {
-                final int distance = cfg.distance;
-                final PrimerData data = new PrimerData(primer, x, z);
                 final TunnelPathInfo path = new TunnelPathInfo(cfg, rand, destX, destZ);
-
-                // Per-vanilla: this randomly increases the size.
-                if (rand.nextInt(cfg.rooms.chance) == 0) {
-                    addRoom(rand, data, path.getX(), path.getY(), path.getZ());
-                    // From vanilla: alters the scale each time a room spawns. Remove this?
-                    path.multiplyScale(rand.nextFloat() * rand.nextFloat() * 3.00F + 1.00F);
+                // Todo: verify that we need to check this outside of the current chunk.
+                if (conditions.getColumn((int) path.getX(), (int) path.getZ()).contains((int) path.getY())) {
+                    if (conditions.noise.GetBoolean(path.getX(), path.getZ())) {
+                        // Per-vanilla: this randomly increases the size.
+                        if (rand.nextInt(cfg.rooms.chance) == 0) {
+                            addRoom(rand, data, path.getX(), path.getY(), path.getZ());
+                            // From vanilla: alters the scale each time a room spawns. Remove this?
+                            path.multiplyScale(rand.nextFloat() * rand.nextFloat() * 3.00F + 1.00F);
+                        }
+                        addTunnel(world, rand.nextLong(), data, path,0, distance);
+                    }
                 }
-
-                addTunnel(world, rand.nextLong(), data, path,0, distance);
             }
         }
     }
@@ -111,14 +114,18 @@ public class TunnelGenerator extends MapGenerator {
             if (path.travelledTooFar(data, currentPos, distance)) {
                 return;
             }
-            if (path.touchesChunk(data, radiusXZ * 2.0)) {
-                // Calculate all of the positions in the section.
-                // We'll be using them multiple times.
-                final Range height = conditions.getColumn((int) path.getX(), (int) path.getZ());
-                if (height.contains((int) path.getY())) {
-                    generateSphere(dec, data, new TunnelSectionInfo(data, path, radiusXZ, radiusY).calculate());
-                }
+            if (!path.touchesChunk(data, radiusXZ * 2.0)) {
+                continue;
             }
+            if (getNearestBorder((int) path.getX(), (int) path.getZ()) < radiusXZ + 2) {
+                continue;
+            }
+            if (!conditions.height.contains((int) path.getY())) {
+                continue;
+            }
+            // Calculate all of the positions in the section.
+            // We'll be using them multiple times.
+            generateSphere(dec, data, new TunnelSectionInfo(data, path, radiusXZ, radiusY).calculate());
         }
     }
 

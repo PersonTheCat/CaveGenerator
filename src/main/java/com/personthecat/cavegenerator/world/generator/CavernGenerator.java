@@ -14,11 +14,12 @@ import net.minecraft.world.chunk.ChunkPrimer;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class CavernGenerator extends WorldCarver {
 
-    private final List<BiomeTestData> invalidBiomes = new ArrayList<>(25);
+    private final List<BiomeTestData> invalidBiomes = new ArrayList<>(BiomeSearch.size());
     private final double[] wallNoise = new double[256];
     private final List<FastNoise> generators;
     private final FastNoise wallOffset;
@@ -55,13 +56,10 @@ public class CavernGenerator extends WorldCarver {
     public void generate(PrimerContext ctx) {
         if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
             if (conditions.hasBiomes) {
-                for (Biome biome : ctx.biomes.current.get()) {
-                    if (conditions.biomes.test(biome)) {
-                        fillInvalidBiomes(ctx.biomes);
-                        generateChecked(ctx);
-                        invalidBiomes.clear();
-                        return;
-                    }
+                if (anyMatches(ctx.biomes, conditions.biomes)) {
+                    fillInvalidBiomes(ctx.biomes);
+                    generateChecked(ctx);
+                    invalidBiomes.clear();
                 }
             } else {
                 generateChecked(ctx);
@@ -69,9 +67,13 @@ public class CavernGenerator extends WorldCarver {
         }
     }
 
-    @Override
-    protected void generateChecked(PrimerContext ctx) {
-        generateCaverns(ctx.heightmap, ctx.rand, ctx.primer, ctx.chunkX, ctx.chunkZ);
+    private static boolean anyMatches(BiomeSearch biomes, Predicate<Biome> predicate) {
+        for (Biome b : biomes.current.get()) {
+            if (predicate.test(b)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private void fillInvalidBiomes(BiomeSearch biomes) {
@@ -82,6 +84,11 @@ public class CavernGenerator extends WorldCarver {
                 invalidBiomes.add(new BiomeTestData(biome.centerX, biome.centerZ, translateY));
             }
         }
+    }
+
+    @Override
+    protected void generateChecked(PrimerContext ctx) {
+        generateCaverns(ctx.heightmap, ctx.rand, ctx.primer, ctx.chunkX, ctx.chunkZ);
     }
 
     /** Generates giant air pockets in this chunk using a series of 3D noise generators. */

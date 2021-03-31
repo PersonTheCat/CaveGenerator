@@ -8,10 +8,13 @@ import com.personthecat.cavegenerator.model.PrimerData;
 import com.personthecat.cavegenerator.world.BiomeSearch;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 import java.util.function.Predicate;
 
@@ -22,6 +25,7 @@ public abstract class MapGenerator extends WorldCarver {
     /** The vertical distance to the nearest water source block that can be ignored. */
     private static final int WATER_WIGGLE_ROOM = 7;
 
+    protected final List<BlockPos> invalidBiomes = new ArrayList<>(BiomeSearch.size());
     protected final Random rand = new Random();
 
     public MapGenerator(ConditionSettings conditions, DecoratorSettings decorators, World world) {
@@ -31,19 +35,36 @@ public abstract class MapGenerator extends WorldCarver {
     @Override
     public final void generate(PrimerContext ctx) {
         if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
-            if (!conditions.hasBiomes || anyMatch(ctx.biomes, conditions.biomes)) {
+            if (conditions.hasBiomes) {
+                if (anyMatches(ctx.biomes, conditions.biomes)) {
+                    fillInvalidBiomes(ctx.biomes);
+                    generateChecked(ctx);
+                    invalidBiomes.clear();
+                }
+            } else {
                 generateChecked(ctx);
             }
+//            fillInvalidBiomes(ctx.biomes);
+//            generateChecked(ctx);
+//            invalidBiomes.clear();
         }
     }
 
-    private static boolean anyMatch(BiomeSearch biomes, Predicate<Biome> predicate) {
+    private static boolean anyMatches(BiomeSearch biomes, Predicate<Biome> predicate) {
         for (Biome b : biomes.current.get()) {
             if (predicate.test(b)) {
                return true;
             }
         }
         return false;
+    }
+
+    private void fillInvalidBiomes(BiomeSearch biomes) {
+        for (BiomeSearch.Data biome : biomes.surrounding.get()) {
+            if (!conditions.biomes.test(biome.biome)) {
+                invalidBiomes.add(new BlockPos(biome.centerX, 0, biome.centerZ));
+            }
+        }
     }
 
     @Override
@@ -64,6 +85,18 @@ public abstract class MapGenerator extends WorldCarver {
     }
 
     protected abstract void mapGenerate(MapGenerationContext ctx);
+
+    protected double getNearestBorder(int x, int z) {
+        double shortestDistance = Double.MAX_VALUE;
+
+        for (BlockPos invalid : invalidBiomes) {
+            final double sum = Math.pow(x - invalid.getX(), 2) + Math.pow(z - invalid.getZ(), 2);
+            final double distance = Math.sqrt(sum);
+
+            shortestDistance = Math.min(distance, shortestDistance);
+        }
+        return shortestDistance;
+    }
 
     protected void generateSphere(Random rand, PrimerData data, TunnelSectionInfo section) {
         // If we need to test this section for water -> is there water?

@@ -2,12 +2,9 @@ package com.personthecat.cavegenerator.world.generator;
 
 import com.personthecat.cavegenerator.data.RavineSettings;
 import com.personthecat.cavegenerator.model.PrimerData;
-import com.personthecat.cavegenerator.model.Range;
 import fastnoise.FastNoise;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import java.util.Random;
@@ -29,18 +26,23 @@ public class RavineGenerator extends MapGenerator {
     @Override
     protected void mapGenerate(MapGenerationContext ctx) {
         if (ctx.rand.nextInt(cfg.chance) == 0) {
-            startRavine(ctx.world, ctx.rand.nextLong(), ctx.destChunkX, ctx.destChunkZ, ctx.chunkX, ctx.chunkZ, ctx.primer);
+            startRavine(ctx.heightmap, ctx.rand.nextLong(), ctx.destChunkX, ctx.destChunkZ, ctx.chunkX, ctx.chunkZ, ctx.primer);
         }
     }
 
     /** Starts a ravine between the input chunk coordinates. */
-    private void startRavine(World world, long seed, int destX, int destZ, int x, int z, ChunkPrimer primer) {
+    private void startRavine(int[][] heightmap, long seed, int destX, int destZ, int x, int z, ChunkPrimer primer) {
         final Random rand = new Random(seed);
         final int distance = cfg.distance;
         final PrimerData data = new PrimerData(primer, x, z);
         final TunnelPathInfo path = new TunnelPathInfo(cfg, rand, destX, destZ);
 
-        addRavine(world, rand.nextLong(), data, path, distance);
+        // Todo: verify that we need to check this outside of the current chunk.
+        if (conditions.getColumn(heightmap, destX, destZ).contains((int) path.getY())) {
+            if (conditions.noise.GetBoolean(path.getX(), path.getZ())) {
+                addRavine(rand.nextLong(), data, path, distance);
+            }
+        }
     }
 
     /**
@@ -49,7 +51,7 @@ public class RavineGenerator extends MapGenerator {
      * values between 1-4, stored above. The difference in scale typically observed in
      * ravines is the result of arguments input to this function.
      */
-    private void addRavine(World world, long seed, PrimerData data, TunnelPathInfo path, int distance) {
+    private void addRavine(long seed, PrimerData data, TunnelPathInfo path, int distance) {
         // Master RNG for this tunnel.
         final Random mast = new Random(seed);
         // Avoid issues with inconsistent Random calls.
@@ -71,14 +73,18 @@ public class RavineGenerator extends MapGenerator {
             if (path.travelledTooFar(data, currentPos, distance)) {
                 return;
             }
-            if (path.touchesChunk(data, radiusXZ * 2.0)) {
-                // Calculate all of the positions in the section.
-                // We'll be using them multiple times.
-                final Range height = conditions.getColumn((int) path.getX(), (int) path.getZ());
-                if (height.contains((int) path.getY())) {
-                    generateSphere(dec, data, new TunnelSectionInfo(data, path, radiusXZ, radiusY).calculateMutated(mut));
-                }
+            if (!path.touchesChunk(data, radiusXZ * 2.0)) {
+                continue;
             }
+            if (getNearestBorder((int) path.getX(), (int) path.getZ()) < radiusXZ + 2) {
+                continue;
+            }
+            if (!conditions.height.contains((int) path.getY())) {
+                continue;
+            }
+            // Calculate all of the positions in the section.
+            // We'll be using them multiple times.
+            generateSphere(dec, data, new TunnelSectionInfo(data, path, radiusXZ, radiusY).calculateMutated(mut));
         }
     }
 

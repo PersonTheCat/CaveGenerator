@@ -14,6 +14,13 @@ public class BiomeSearch {
     public final Lazy<Biome[]> current;
     public final Lazy<Data[]> surrounding;
 
+    /** A public accessor to calculate the current biome array size. */
+    public static int size() {
+        final int d = ConfigFile.biomeRange * 2 + 1;
+        return d * d;
+    }
+
+    /** Acquires biomes at the four corners of this chunk. */
     public static BiomeSearch in(World world, int x, int z) {
         final Lazy<Biome[]> current = Lazy.of(() -> inner(world, x, z));
         final Lazy<Data[]> surrounding = Lazy.of(() -> outer(world, x, z, ConfigFile.biomeRange));
