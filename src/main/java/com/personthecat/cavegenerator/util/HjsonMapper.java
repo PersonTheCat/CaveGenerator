@@ -18,6 +18,7 @@ import net.minecraft.world.gen.structure.template.PlacementSettings;
 import org.hjson.JsonObject;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
@@ -62,6 +63,15 @@ public class HjsonMapper {
 
     public HjsonMapper mapRange(String field, Consumer<Range> ifPresent) {
         HjsonTools.getRange(json, field).ifPresent(ifPresent);
+        return this;
+    }
+
+    public HjsonMapper mapRangeOrTry(String field, String otherField, Consumer<Range> ifPresent) {
+        final Optional<Range> range = HjsonTools.getRange(json, field);
+        range.ifPresent(ifPresent);
+        if (!range.isPresent()) {
+            return mapRange(otherField, ifPresent);
+        }
         return this;
     }
 

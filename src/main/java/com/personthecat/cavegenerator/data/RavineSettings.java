@@ -89,6 +89,7 @@ public class RavineSettings {
         return new HjsonMapper(json)
             .mapSelf(o -> builder.conditions(ConditionSettings.from(o, original.conditions)))
             .mapSelf(o -> builder.decorators(DecoratorSettings.from(o, original.decorators)))
+            .mapRangeOrTry(Fields.originHeight, ConditionSettings.Fields.height, builder::originHeight)
             .mapFloat(Fields.noiseYFactor, builder::noiseYFactor)
             .mapScalableFloat(Fields.dYaw, original.dYaw, builder::dYaw)
             .mapScalableFloat(Fields.dPitch, original.dPitch, builder::dPitch)

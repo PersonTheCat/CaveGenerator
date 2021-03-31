@@ -105,6 +105,7 @@ public class TunnelSettings {
         return new HjsonMapper(json)
             .mapSelf(o -> builder.conditions(ConditionSettings.from(o, original.conditions)))
             .mapSelf(o -> builder.decorators(DecoratorSettings.from(o, original.decorators)))
+            .mapRangeOrTry(Fields.originHeight, ConditionSettings.Fields.height, builder::originHeight)
             .mapBool(Fields.noiseYReduction, builder::noiseYReduction)
             .mapBool(Fields.resizeBranches, builder::resizeBranches)
             .mapObject(Fields.branches, o -> builder.branches(full(from(o))))
