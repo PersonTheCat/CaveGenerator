@@ -117,7 +117,7 @@ public class TunnelGenerator extends MapGenerator {
             if (!path.touchesChunk(data, radiusXZ * 2.0)) {
                 continue;
             }
-            if (getNearestBorder((int) path.getX(), (int) path.getZ()) < radiusXZ + 2) {
+            if (getNearestBorder((int) path.getX(), (int) path.getZ()) < radiusXZ + 9) {
                 continue;
             }
             if (!conditions.height.contains((int) path.getY())) {
