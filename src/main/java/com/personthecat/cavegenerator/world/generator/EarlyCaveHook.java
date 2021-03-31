@@ -2,6 +2,7 @@ package com.personthecat.cavegenerator.world.generator;
 
 import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.config.ConfigFile;
+import com.personthecat.cavegenerator.noise.CachedNoiseHelper;
 import com.personthecat.cavegenerator.world.BiomeSearch;
 import com.personthecat.cavegenerator.world.GeneratorController;
 import com.personthecat.cavegenerator.world.HeightMapLocator;
@@ -40,5 +41,6 @@ public class EarlyCaveHook extends MapGenBase {
             generator.earlyGenerate(ctx);
             generator.mapGenerate(ctx);
         }
+        CachedNoiseHelper.resetAll();
     }
 }

@@ -44,9 +44,6 @@ public abstract class MapGenerator extends WorldCarver {
             } else {
                 generateChecked(ctx);
             }
-//            fillInvalidBiomes(ctx.biomes);
-//            generateChecked(ctx);
-//            invalidBiomes.clear();
         }
     }
 
