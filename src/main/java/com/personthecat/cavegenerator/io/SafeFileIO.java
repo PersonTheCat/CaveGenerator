@@ -35,7 +35,7 @@ public class SafeFileIO {
 
     /** Safely calls File#mkdirs without testing. */
     @CheckReturnValue
-    public static Result<SecurityException> safeMkdirs(File file) {
+    public static Result<SecurityException> mkdirs(File file) {
         try { // Standard mkdirs() call.
             file.mkdirs();
         } catch (SecurityException e) {
@@ -46,7 +46,7 @@ public class SafeFileIO {
     }
 
     /** Checks whether @param file exists, neatly throwing @param error, if needed. */
-    public static boolean safeFileExists(File file, String error) {
+    public static boolean fileExists(File file, String error) {
         boolean ret;
         try {
             ret = file.exists();
@@ -58,7 +58,7 @@ public class SafeFileIO {
 
     /** Copies a file to the specified directory. May look clean more than it is actually safe. */
     @CheckReturnValue
-    public static Result<IOException> safeCopy(File file, File toDir) {
+    public static Result<IOException> copy(File file, File toDir) {
         try {
             Files.copy(file.toPath(), new File(toDir, file.getName()).toPath());
         } catch (IOException e) {
@@ -70,18 +70,26 @@ public class SafeFileIO {
     /** Copies a file to the backup directory. */
     public static void backup(File file) {
         final File backup = new File(BACKUP_DIR, file.getName());
-        if (!safeFileExists(BACKUP_DIR, "Unable to handle backup directory.")) {
-            safeMkdirs(BACKUP_DIR);
+        if (!fileExists(BACKUP_DIR, "Unable to handle backup directory.")) {
+            mkdirs(BACKUP_DIR).throwIfPresent();
         }
-        if (safeFileExists(backup, "Unable to handle existing backup file.")) {
+        if (fileExists(backup, "Unable to handle existing backup file.")) {
             backup.delete();
         }
-        safeCopy(file, BACKUP_DIR).throwIfPresent();
+        copy(file, BACKUP_DIR).throwIfPresent();
+    }
+
+    /** Renames a file when given a top-level name only. */
+    public static void rename(File file, String name) {
+        final File path = new File(file.getParentFile(), name);
+        if (!file.renameTo(path)) {
+            throw runExF("Cannot rename: {}", path);
+        }
     }
 
     /** Equivalent of calling File#listFiles. Does not return null. */
     @CheckReturnValue
-    public static Optional<File[]> safeListFiles(File dir) {
+    public static Optional<File[]> listFiles(File dir) {
         return Optional.ofNullable(dir.listFiles());
     }
 
@@ -91,18 +99,6 @@ public class SafeFileIO {
             return full(Files.readAllLines(file.toPath()));
         } catch (IOException ignored) {
             return empty();
-        }
-    }
-
-    @CheckReturnValue
-    public static Result<IOException> safeWrite(File file, String contents) {
-        try {
-            Writer tw = new FileWriter(file);
-            tw.write(contents);
-            tw.close();
-            return Result.ok();
-        } catch (IOException e) {
-            return Result.of(e);
         }
     }
 

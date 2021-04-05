@@ -75,9 +75,9 @@ public class JarFiles {
     }
 
     private static void copyVanilla() {
-        if (!safeFileExists(CaveInit.PRESET_DIR, "Error: Unable to read from preset directory.")) {
+        if (!fileExists(CaveInit.PRESET_DIR, "Error: Unable to read from preset directory.")) {
             // The directory doesn't exist. Create it.
-            safeMkdirs(CaveInit.PRESET_DIR)
+            mkdirs(CaveInit.PRESET_DIR)
                 .expect("Error: Unable to create preset directory.");
             // Copy only the vanilla preset. The others should be modifiable.
             // To-do: There was talk about changing this.
@@ -92,7 +92,7 @@ public class JarFiles {
             final String fromLocation = ASSETS_PATH + "/imports/" + i + ".cave";
             final String toLocation = CaveInit.IMPORT_DIR + "/" + i + ".cave";
             // Only copy each file if it doesn't already exist.
-            if (!safeFileExists(new File(toLocation), "Unable to check " + toLocation)) {
+            if (!fileExists(new File(toLocation), "Unable to check " + toLocation)) {
                 copyFile(fromLocation, toLocation);
             }
         }
@@ -100,9 +100,9 @@ public class JarFiles {
 
     /** Copies the example structures from the jar to the disk. */
     private static void copyStructures() {
-        if (!safeFileExists(StructureSpawner.DIR, "Error: Unable to read from structure directory.")) {
+        if (!fileExists(StructureSpawner.DIR, "Error: Unable to read from structure directory.")) {
             // The directory doesn't exist. Create it.
-            safeMkdirs(StructureSpawner.DIR)
+            mkdirs(StructureSpawner.DIR)
                 .expect("Error: Unable to create structure directory.");
 
             for (String structure : STRUCTURES) {

@@ -17,29 +17,51 @@ public class RavineGenerator extends MapGenerator {
     private final FastNoise wallNoise;
 
     public RavineGenerator(RavineSettings cfg, World world) {
-        super(cfg.conditions, cfg.decorators, world);
+        super(cfg.conditions, cfg.decorators, world, true);
         this.cfg = cfg;
         this.wallNoise = cfg.walls.getGenerator(world);
     }
 
-    /** Spawns all of the ravines for this preset. */
     @Override
     protected void mapGenerate(MapGenerationContext ctx) {
         if (ctx.rand.nextInt(cfg.chance) == 0) {
-            startRavine(ctx.heightmap, ctx.rand.nextLong(), ctx.destChunkX, ctx.destChunkZ, ctx.chunkX, ctx.chunkZ, ctx.primer);
+            startRavine(ctx.rand.nextLong(), ctx.destChunkX, ctx.destChunkZ, ctx.chunkX, ctx.chunkZ, ctx.primer);
+        }
+    }
+
+    @Override
+    protected void fillSphere(SphereData sphere, double cX, double cY, double cZ, int absX, int absZ,
+              double radXZ, double radY, int miX, int maX, int miY, int maY, int miZ, int maZ) {
+        for (int x = miX; x < maX; x++) {
+            final double distX = ((x + absX) + 0.5 - cX) / radXZ;
+            final double distX2 = distX * distX;
+            for (int z = miZ; z < maZ; z++) {
+                final double distZ = ((z + absZ) + 0.5 - cZ) / radXZ;
+                final double distZ2 = distZ * distZ;
+                if (distX2 + distZ2 >= 1.0) {
+                    continue;
+                }
+                for (int y = maY; y > miY; y--) {
+                    final double distY = ((y - 1) + 0.5 - cY) / radY;
+                    final double distY2 = distY * distY;
+                    if ((distX2 + distZ2) * (double) mut[y - 1] + distY2 / 6.0 < 1.0) {
+                        sphere.add(x, y, z);
+                    }
+                }
+            }
         }
     }
 
     /** Starts a ravine between the input chunk coordinates. */
-    private void startRavine(int[][] heightmap, long seed, int destX, int destZ, int x, int z, ChunkPrimer primer) {
+    private void startRavine(long seed, int destX, int destZ, int x, int z, ChunkPrimer primer) {
         final Random rand = new Random(seed);
         final int distance = cfg.distance;
         final PrimerData data = new PrimerData(primer, x, z);
         final TunnelPathInfo path = new TunnelPathInfo(cfg, rand, destX, destZ);
 
         // Todo: verify that we need to check this outside of the current chunk.
-        if (conditions.getColumn(heightmap, destX, destZ).contains((int) path.getY())) {
-            if (conditions.noise.GetBoolean(path.getX(), path.getZ())) {
+        if (conditions.getColumn((int) path.getX(), (int) path.getZ()).contains((int) path.getY())) {
+            if (conditions.noise.GetBoolean(path.getX(), path.getY(), path.getZ())) {
                 addRavine(rand.nextLong(), data, path, distance);
             }
         }
@@ -58,7 +80,7 @@ public class RavineGenerator extends MapGenerator {
         final Random dec = new Random(seed);
         distance = getDistance(mast, distance);
         // Unique wall mutations for this chasm.
-        final float[] mut = getMutations(mast);
+        fillMutations(mast);
 
         for (int currentPos = 0; currentPos < distance; currentPos++) {
             // Determine the radius by `scale`.
@@ -84,20 +106,21 @@ public class RavineGenerator extends MapGenerator {
             }
             // Calculate all of the positions in the section.
             // We'll be using them multiple times.
-            generateSphere(dec, data, new TunnelSectionInfo(data, path, radiusXZ, radiusY).calculateMutated(mut));
+            generateSphere(data, dec, path.getX(), path.getY(), path.getZ(), radiusXZ, radiusY);
         }
     }
 
     /** Used to produce the variations in horizontal scale seen in ravines. */
-    private float[] getMutations(Random rand) {
+    private void fillMutations(Random rand) {
         if (cfg.useWallNoise) {
-            return getMutationsNoise();
+            fillMutationsWithNoise();
+        } else {
+            fillMutationsVanilla(rand);
         }
-        return getMutationsVanilla(rand);
     }
 
     /** The effectively vanilla implementation of getMutations(). */
-    private float[] getMutationsVanilla(Random rand) {
+    private void fillMutationsVanilla(Random rand) {
         float val = 1.0f;
         for (int i = 0; i < mut.length; i++) {
             if (i == 0 || rand.nextInt(3) == 0) {
@@ -105,14 +128,12 @@ public class RavineGenerator extends MapGenerator {
             }
             mut[i] = val * val;
         }
-        return mut;
     }
 
     /** Variant of getMutations() which produces aberrations using a noise generator. */
-    private float[] getMutationsNoise() {
+    private void fillMutationsWithNoise() {
         for (int i = 0; i < mut.length; i++) {
             mut[i] = wallNoise.GetAdjustedNoise(0, i);
         }
-        return mut;
     }
 }

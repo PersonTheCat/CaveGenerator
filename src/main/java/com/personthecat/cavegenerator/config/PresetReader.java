@@ -15,7 +15,7 @@ import static com.personthecat.cavegenerator.util.CommonMethods.full;
 import static com.personthecat.cavegenerator.util.CommonMethods.noExtension;
 import static com.personthecat.cavegenerator.util.CommonMethods.runEx;
 import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
-import static com.personthecat.cavegenerator.io.SafeFileIO.safeListFiles;
+import static com.personthecat.cavegenerator.io.SafeFileIO.listFiles;
 
 /**
  * This class is responsible for initiating all of the raw JSON-related operations
@@ -57,7 +57,7 @@ public class PresetReader {
     /** Loads and updates every JSON file in a directory. */
     private static Map<File, JsonObject> loadJsons(File dir) {
         final Map<File, JsonObject> jsons = new HashMap<>();
-        for (File file : safeListFiles(dir).orElse(new File[0])) {
+        for (File file : listFiles(dir).orElse(new File[0])) {
             log.info("Parsing preset file: {}", file.getName());
             jsons.put(file, loadJson(file).asObject());
         }

@@ -57,11 +57,9 @@ public abstract class WorldCarver extends BasicGenerator {
 
     // Todo: this is heinous.
     private boolean decorateVertical(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ, boolean up) {
-        // Up vs. down things.
         final int offset = up ? y + 1 : y - 1;
         final List<ConfiguredWallDecorator> decorators = up ? this.decorators.wallMap.up : this.decorators.wallMap.down;
         for (ConfiguredWallDecorator decorator : decorators) {
-            // The candidate block state to be tested / replaced.
             final IBlockState candidate = primer.getBlockState(x, offset, z);
             // Ignore air blocks.
             if (candidate.getMaterial().equals(Material.AIR)) {

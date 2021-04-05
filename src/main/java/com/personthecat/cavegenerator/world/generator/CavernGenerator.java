@@ -7,6 +7,7 @@ import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.world.BiomeSearch;
 import fastnoise.FastNoise;
 import lombok.AllArgsConstructor;
+import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
@@ -24,12 +25,14 @@ public class CavernGenerator extends WorldCarver {
     private final List<FastNoise> generators;
     private final FastNoise wallOffset;
     private final int maxY;
+    private final CavernSettings cfg;
 
     public CavernGenerator(CavernSettings cfg, World world) {
         super(cfg.conditions, cfg.decorators, world);
         this.generators = createGenerators(cfg.generators, world);
         this.wallOffset = cfg.wallOffset.getGenerator(world);
         this.maxY = conditions.height.max + cfg.conditions.ceiling.map(n -> n.range.max).orElse(0);
+        this.cfg = cfg;
         setupWallNoise(cfg.walls, world);
     }
 
@@ -111,10 +114,14 @@ public class CavernGenerator extends WorldCarver {
                     final double wall = wallNoise[(y + border.offset) & 255];
                     if (distance > wall && conditions.noise.GetBoolean(actualX, y, actualZ)) {
                         for (FastNoise noise : generators) {
-                            if (noise.GetBoolean(actualX, y, actualZ)) {
+                            final float value = noise.GetNoise(actualX, y, actualZ);
+
+                            if (noise.IsInThreshold(value)) {
                                 replaceBlock(rand, primer, x, y, z, chunkX, chunkZ);
                                 caverns[y][z][x] = true;
                                 break;
+                            } else if (noise.IsOuter(value, cfg.shellDistance)) {
+                                primer.setBlockState(x, y, z, cfg.shellState);
                             }
                         }
                     }

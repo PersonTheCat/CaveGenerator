@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.noise;
 
+import java.util.Arrays;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -12,9 +13,9 @@ public class CachedNoiseHelper {
         if (pull != null) {
             return pull;
         }
-        final Cache c = new Cache();
-        DATA.put(hash, c);
-        return c;
+        final Cache push = new Cache();
+        DATA.put(hash, push);
+        return push;
     }
 
     public static void resetAll() {
@@ -34,8 +35,8 @@ public class CachedNoiseHelper {
      * have the chance to occur.
      */
     public static class Cache {
-        private float[] output3 = new float[16 * 16 * 256];
-        private float[] output2 = new float[16 * 16];
+        private final float[] output3 = new float[16 * 16 * 256];
+        private final float[] output2 = new float[16 * 16];
 
         public float getNoise(int x, int y, int z) {
             return output3[x << 12 | z << 8 | y];
@@ -54,8 +55,8 @@ public class CachedNoiseHelper {
         }
 
         private void reset() {
-            output3 = new float[16 * 16 * 256];
-            output2 = new float[16 * 16];
+            Arrays.fill(output3, 0F);
+            Arrays.fill(output2, 0F);
         }
     }
 

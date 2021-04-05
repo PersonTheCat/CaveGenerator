@@ -9,6 +9,7 @@ import com.personthecat.cavegenerator.world.BiomeSearch;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
@@ -26,10 +27,13 @@ public abstract class MapGenerator extends WorldCarver {
     private static final int WATER_WIGGLE_ROOM = 7;
 
     protected final List<BlockPos> invalidBiomes = new ArrayList<>(BiomeSearch.size());
+    private final SphereData sphere = new SphereData();
     protected final Random rand = new Random();
+    private final boolean testWater;
 
-    public MapGenerator(ConditionSettings conditions, DecoratorSettings decorators, World world) {
+    public MapGenerator(ConditionSettings conditions, DecoratorSettings decorators, World world, boolean testWater) {
         super(conditions, decorators, world);
+        this.testWater = testWater;
     }
 
     @Override
@@ -95,19 +99,39 @@ public abstract class MapGenerator extends WorldCarver {
         return shortestDistance;
     }
 
-    protected void generateSphere(Random rand, PrimerData data, TunnelSectionInfo section) {
+    protected final void generateSphere(PrimerData data, Random rand, double x, double y, double z, double radXZ, double radY) {
+        final int miX = limitXZ(MathHelper.floor(x - radXZ) - data.absX - 1);
+        final int maX = limitXZ(MathHelper.floor(x + radXZ) - data.absX + 1);
+        final int miY = limitY(MathHelper.floor(y - radY) - 1);
+        final int maY = limitY(MathHelper.floor(y + radY) + 1);
+        final int miZ = limitXZ(MathHelper.floor(z - radXZ) - data.absZ - 1);
+        final int maZ = limitXZ(MathHelper.floor(z + radXZ) - data.absZ + 1);
+
+        this.sphere.reset();
+        this.sphere.grow(maX - miX, maY - miY, maZ - miZ);
+        this.fillSphere(this.sphere, x, y, z, data.absX, data.absZ, radXZ, radY, miX, maX, miY, maY, miZ, maZ);
+
         // If we need to test this section for water -> is there water?
-        if (!(shouldTestForWater(section.getLowestY(), section.getHighestY()) && testForWater(data.p, section))) {
-            // Generate the actual sphere.
-            replaceSection(rand, data, section);
-            // We need to generate twice; once to create walls,
-            // and once again to decorate those walls.
-            if (hasLocalDecorators()) {
-                // Decorate the sphere.
-                decorateSection(rand, data, section);
+        if (!(this.shouldTestForWater(miY, maY) && this.testForWater(data.p, this.sphere))) {
+            this.replaceSphere(data, rand, this.sphere);
+            if (this.hasLocalDecorators()) {
+                this.decorateSphere(data, rand, this.sphere);
             }
         }
     }
+
+    /** Makes sure the resulting value stays within chunk bounds. */
+    private static int limitXZ(int xz) {
+        return xz < 0 ? 0 : Math.min(xz, 16);
+    }
+
+    /** Makes sure the resulting value stays between y = 1 & y = 248 */
+    private static int limitY(int y) {
+        return y < 1 ? 1 : Math.min(y, 248);
+    }
+
+    protected abstract void fillSphere(SphereData sphere, double cX, double cY, double cZ, int absX, int absZ,
+            double radXZ, double radY, int miX, int maX, int miY, int maY, int miZ, int maZ);
 
     /** Calculates the maximum distance for this tunnel, if needed. */
     protected int getDistance(Random rand, int input) {
@@ -121,11 +145,14 @@ public abstract class MapGenerator extends WorldCarver {
      * Returns whether a test should be run to determine whether water is
      * found and stop generating.
      */
-    private boolean shouldTestForWater(int lowestY, int highestY) {
+    private boolean shouldTestForWater(int miY, int maY) {
+        if (!this.testWater) {
+            return false;
+        }
         for (ConfiguredCaveBlock block : decorators.caveBlocks) {
             if (block.cfg.states.contains(BLK_WATER)) {
-                if (highestY <= block.cfg.height.max + WATER_WIGGLE_ROOM
-                    && lowestY >= block.cfg.height.min - WATER_WIGGLE_ROOM)
+                if (maY <= block.cfg.height.max + WATER_WIGGLE_ROOM
+                    && miY >= block.cfg.height.min - WATER_WIGGLE_ROOM)
                 {
                     return false;
                 }
@@ -135,20 +162,18 @@ public abstract class MapGenerator extends WorldCarver {
     }
 
     /** Determines whether any water exists in the current section. */
-    private boolean testForWater(ChunkPrimer primer, TunnelSectionInfo section) {
-        return section.test(pos ->
-            primer.getBlockState(pos.getX(), pos.getY() + 1, pos.getZ()).equals(BLK_WATER)
-        );
+    protected boolean testForWater(ChunkPrimer primer, SphereData section) {
+        return section.anyMatches((x, y, z) -> primer.getBlockState(x, y, z).equals(BLK_WATER));
     }
 
     /** Replaces all blocks inside of this section. */
-    private void replaceSection(Random rand, PrimerData data, TunnelSectionInfo section) {
-        section.run((x, y, z) -> replaceBlock(rand, data.p, x, y, z, data.chunkX, data.chunkZ));
+    protected void replaceSphere(PrimerData data, Random rand, SphereData sphere) {
+        sphere.forEach((x, y, z) -> this.replaceBlock(rand, data.p, x, y, z, data.chunkX, data.chunkZ));
     }
 
     /** Decorates all blocks inside of this section. */
-    private void decorateSection(Random rand, PrimerData data, TunnelSectionInfo section) {
-        section.run((x, y, z) -> decorateBlock(rand, data.p, x, y, z, data.chunkX, data.chunkZ));
+    protected void decorateSphere(PrimerData data, Random rand, SphereData sphere) {
+        sphere.forEach((x, y, z) -> this.decorateBlock(rand, data.p, x, y, z, data.chunkX, data.chunkZ));
     }
 
     protected static class MapGenerationContext {

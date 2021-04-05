@@ -6,10 +6,9 @@ import com.personthecat.cavegenerator.config.CavePreset;
 import com.personthecat.cavegenerator.config.PresetCombiner;
 import com.personthecat.cavegenerator.config.PresetCompressor;
 import com.personthecat.cavegenerator.config.PresetReader;
-import com.personthecat.cavegenerator.io.SafeFileIO;
 import com.personthecat.cavegenerator.noise.CachedNoiseHelper;
-import com.personthecat.cavegenerator.util.Result;
 import net.minecraft.command.CommandBase;
+import net.minecraft.command.ICommandManager;
 import net.minecraft.command.ICommandSender;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.player.EntityPlayer;
@@ -36,9 +35,23 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 
-import static com.personthecat.cavegenerator.io.SafeFileIO.*;
-import static com.personthecat.cavegenerator.util.CommonMethods.*;
-import static com.personthecat.cavegenerator.util.HjsonTools.*;
+import static com.personthecat.cavegenerator.io.SafeFileIO.backup;
+import static com.personthecat.cavegenerator.io.SafeFileIO.ensureDirExists;
+import static com.personthecat.cavegenerator.io.SafeFileIO.rename;
+import static com.personthecat.cavegenerator.io.SafeFileIO.copy;
+import static com.personthecat.cavegenerator.io.SafeFileIO.fileExists;
+import static com.personthecat.cavegenerator.io.SafeFileIO.listFiles;
+import static com.personthecat.cavegenerator.util.CommonMethods.extension;
+import static com.personthecat.cavegenerator.util.CommonMethods.f;
+import static com.personthecat.cavegenerator.util.CommonMethods.full;
+import static com.personthecat.cavegenerator.util.CommonMethods.noExtension;
+import static com.personthecat.cavegenerator.util.CommonMethods.nullable;
+import static com.personthecat.cavegenerator.util.CommonMethods.runEx;
+import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
+import static com.personthecat.cavegenerator.util.CommonMethods.toArray;
+import static com.personthecat.cavegenerator.util.HjsonTools.getBool;
+import static com.personthecat.cavegenerator.util.HjsonTools.writeJson;
+import static com.personthecat.cavegenerator.util.HjsonTools.setOrAdd;
 
 public class CommandCave extends CommandBase {
 
@@ -95,7 +108,7 @@ public class CommandCave extends CommandBase {
         { "list", "Displays a list of all presets, with buttons", "for enabling / disabling." },
         { "test", "Applies night vision and gamemode 3 for easy", "cave viewing." },
         { "untest", "Removes night vision and puts you in gamemode 1." },
-        { "jump", "Teleports the player 1,000 blocks in each", "direction."},
+        { "jump [<k>]", "Teleports the player 1,000 * k blocks in each", "direction."},
         { "open [<name>]", "Opens a preset in your default text editor."},
         { "combine <preset.path> <preset>", "Copies the first", "path into the second preset." },
         { "enable <name>", "Enables the preset with name <name>." },
@@ -103,6 +116,7 @@ public class CommandCave extends CommandBase {
         { "new <name>", "Generates a new preset file with name", "<name>" },
         { "copy <name>", "Copies a preset out of the example directory." },
         { "delete <name>", "Moves a preset to the backup directory." },
+        { "rename <name> <new>", "Renames a preset, ignoring its extension." },
         { "expand <name> [<as>]", "Writes the expanded copy of this preset", "under /generated" },
         { "compress <name> [<as>]", "Writes a compressed version of this", "preset under /generated" },
         { "tojson <name>", "Backs up and converts the specified", "file from hjson to standard JSON." },
@@ -158,7 +172,7 @@ public class CommandCave extends CommandBase {
             case "list" : list(sender); break;
             case "test" : test(sender); break;
             case "untest": untest(sender); break;
-            case "jump" : jump(sender); break;
+            case "jump" : jump(sender, args); break;
             case "open" : open(sender, args); break;
             case "combine" : combine(sender, args); break;
             case "enable" : setCaveEnabled(sender, args, true); break;
@@ -166,6 +180,7 @@ public class CommandCave extends CommandBase {
             case "new" : newPreset(sender, args); break;
             case "copy": copyPreset(sender, args); break;
             case "delete": deletePreset(sender, args); break;
+            case "rename": renamePreset(sender, args); break;
             case "expand" : writeExpanded(sender, args); break;
             case "compress" : writeCompressed(sender, args); break;
             case "tojson" : convert(sender, args, true); break;
@@ -219,9 +234,14 @@ public class CommandCave extends CommandBase {
         }
     }
 
-    /** Teleports the player 1,000 blocks in each direction. */
-    private static void jump(ICommandSender sender) {
-        sender.getServer().getCommandManager().executeCommand(sender, "/tp ~1000 ~ ~1000");
+    /** Teleports the player 1,000 * k blocks in each direction. */
+    private static void jump(ICommandSender sender, String[] args) {
+        final ICommandManager mgr = Objects.requireNonNull(sender.getServer()).getCommandManager();
+        int distance = 1000;
+        if (args.length > 0) {
+            distance *= Float.parseFloat(args[0]);
+        }
+        mgr.executeCommand(sender,  f("/tp ~{} ~ ~{}", distance, distance));
     }
 
     /** Opens a preset in the default text editor. */
@@ -258,11 +278,13 @@ public class CommandCave extends CommandBase {
             File preset = located.get();
             // Logic could be improved.
             PresetReader.getPresetJson(preset).ifPresent(cave -> {
-                setOrAdd(cave, "enabled", enabled).setComment("enabled",
-                    "Whether the preset is enabled globally.");
+                if (cave.has("enabled")) {
+                    cave.set("enabled", enabled);
+                } else {
+                    cave.add("enabled", enabled, "Whether the preset is enabled globally.");
+                }
                 // Try to write the updated preset to the disk.
-                writeJson(cave, preset)
-                    .expectF("Error writing to {}", preset.getName());
+                writeJson(cave, preset).expectF("Error writing to {}", preset.getName());
             });
         } else {
             throw runExF("No preset was found named {}", args[0]);
@@ -275,7 +297,7 @@ public class CommandCave extends CommandBase {
         ITextComponent msg = tcs("") // Parent has no formatting.
             .appendSibling(VIEW_BUTTON.createCopy());
 
-        safeListFiles(CaveInit.PRESET_DIR).ifPresent(files -> {
+        listFiles(CaveInit.PRESET_DIR).ifPresent(files -> {
             msg.appendSibling(tcs("\n"));
             for (File file : files) {
                 if (CaveInit.validExtension(file)) {
@@ -292,7 +314,7 @@ public class CommandCave extends CommandBase {
         requireArgs(args, 1);
         final String presetName = noExtension(args[0]) + ".cave";
         final File presetFile = new File(CaveInit.PRESET_DIR, presetName);
-        if (safeFileExists(presetFile, "Unable to read from the preset directory.")) {
+        if (fileExists(presetFile, "Unable to read from the preset directory.")) {
             sendMessage(sender, "This preset already exists.");
             return;
         }
@@ -307,7 +329,7 @@ public class CommandCave extends CommandBase {
         requireArgs(args, 1);
         final Optional<File> located = CaveInit.locatePreset(CaveInit.EXAMPLE_DIR, args[0]);
         if (located.isPresent()) {
-            safeCopy(located.get(), CaveInit.PRESET_DIR).throwIfPresent();
+            copy(located.get(), CaveInit.PRESET_DIR).throwIfPresent();
             sendMessage(sender, "Successfully copied " + located.get().getName());
         } else {
             sendMessage(sender, "File not found.");
@@ -325,6 +347,20 @@ public class CommandCave extends CommandBase {
             } else {
                 sendMessage(sender, located.get().getName() + " was moved to backups.");
             }
+        } else {
+            sendMessage(sender, "File not found.");
+        }
+    }
+
+    /** Renames a preset, ignoring its extension. */
+    private static void renamePreset(ICommandSender sender, String[] args) {
+        requireArgs(args, 2);
+        final Optional<File> located = CaveInit.locatePreset(args[0]);
+        if (located.isPresent()) {
+            final File file = located.get();
+            final String name = noExtension(args[1]) + "." + extension(file);
+            rename(file, name);
+            sendMessage(sender, f("{} was renamed to {}", file.getName(), name));
         } else {
             sendMessage(sender, "File not found.");
         }

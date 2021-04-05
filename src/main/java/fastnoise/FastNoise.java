@@ -484,9 +484,19 @@ public class FastNoise {
 		return xd * g.x + yd * g.y + zd * g.z;
 	}
 
-	public boolean GetBoolean(float x, float y, float z) {
-		final float noise = GetNoise(x, y, z);
+	public final boolean IsInThreshold(float noise) {
 		return m_invert != (noise >= m_booleanMinThreshold && noise <= m_booleanMaxThreshold);
+	}
+
+	public final boolean IsOuter(float noise, float d) {
+		if (m_invert) {
+			return noise <= m_booleanMinThreshold + d || noise >= m_booleanMaxThreshold - d;
+		}
+		return noise >= m_booleanMinThreshold - d && noise <= m_booleanMaxThreshold + d;
+	}
+
+	public boolean GetBoolean(float x, float y, float z) {
+		return IsInThreshold(GetNoise(x, y, z));
 	}
 
 	public float GetAdjustedNoise(float x, float y, float z) {
@@ -578,8 +588,7 @@ public class FastNoise {
 	}
 
 	public boolean GetBoolean(float x, float y) {
-		final float noise = GetNoise(x, y);
-		return m_invert != (noise >= m_booleanMinThreshold && noise <= m_booleanMaxThreshold);
+		return IsInThreshold(GetNoise(x, y));
 	}
 
 	public float GetAdjustedNoise(float x, float y) {

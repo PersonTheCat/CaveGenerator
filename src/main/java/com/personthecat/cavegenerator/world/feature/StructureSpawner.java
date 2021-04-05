@@ -38,7 +38,7 @@ public class StructureSpawner {
         structures.clear();
 
         // Safely view the files in this directory.
-        safeListFiles(DIR).ifPresent((files) -> { // Files found.
+        listFiles(DIR).ifPresent((files) -> { // Files found.
             for (File file : files) {
                 // Limit to nbt files only.
                 if (!file.getName().endsWith(".nbt")) {

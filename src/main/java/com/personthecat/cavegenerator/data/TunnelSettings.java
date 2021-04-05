@@ -52,7 +52,7 @@ public class TunnelSettings {
     @Default Optional<TunnelSettings> branches = empty();
 
     /** Settings for how rooms should spawn at tunnel system origins. */
-    @Default RoomSettings rooms = RoomSettings.builder().build();
+    @Default Optional<RoomSettings> rooms = empty();
 
     /** Horizontal rotation. */
     @Default ScalableFloat dYaw = new ScalableFloat(0.0F, 0.0F, 0.75F, 4.0F, 1.0F);
@@ -93,7 +93,8 @@ public class TunnelSettings {
     public static TunnelSettings from(JsonObject json, OverrideSettings overrides) {
         final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();
         final DecoratorSettings decorators = overrides.apply(DEFAULT_DECORATORS.toBuilder()).build();
-        return copyInto(json, builder().conditions(conditions).decorators(decorators));
+        final TunnelSettingsBuilder builder = overrides.apply(builder());
+        return copyInto(json, builder.conditions(conditions).decorators(decorators));
     }
 
     public static TunnelSettings from(JsonObject json) {
@@ -109,7 +110,7 @@ public class TunnelSettings {
             .mapBool(Fields.noiseYReduction, builder::noiseYReduction)
             .mapBool(Fields.resizeBranches, builder::resizeBranches)
             .mapObject(Fields.branches, o -> builder.branches(full(from(o))))
-            .mapObject(Fields.rooms, o -> builder.rooms(RoomSettings.from(o)))
+            .mapObject(Fields.rooms, o -> builder.rooms(full(RoomSettings.from(o))))
             .mapScalableFloat(Fields.dYaw, original.dYaw, builder::dYaw)
             .mapScalableFloat(Fields.dPitch, original.dPitch, builder::dPitch)
             .mapScalableFloat(Fields.scale, original.scale, builder::scale)

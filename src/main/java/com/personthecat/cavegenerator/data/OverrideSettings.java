@@ -111,7 +111,7 @@ public class OverrideSettings {
 
     public TunnelSettings.TunnelSettingsBuilder apply(TunnelSettings.TunnelSettingsBuilder builder) {
         this.branches.ifPresent(b -> builder.branches(full(b)));
-        this.rooms.ifPresent(builder::rooms);
+        this.rooms.ifPresent(r -> builder.rooms(full(r)));
         return builder;
     }
 

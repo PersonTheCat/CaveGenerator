@@ -16,7 +16,7 @@ import static com.personthecat.cavegenerator.util.CommonMethods.empty;
 import static com.personthecat.cavegenerator.util.CommonMethods.extension;
 import static com.personthecat.cavegenerator.util.CommonMethods.full;
 import static com.personthecat.cavegenerator.io.SafeFileIO.ensureDirExists;
-import static com.personthecat.cavegenerator.io.SafeFileIO.safeFileExists;
+import static com.personthecat.cavegenerator.io.SafeFileIO.fileExists;
 
 @Log4j2
 public class CaveInit {
@@ -69,7 +69,7 @@ public class CaveInit {
 
     public static Optional<File> locatePreset(File directory, String preset) {
         final File presetFile = new File(directory,  preset);
-        if (safeFileExists(presetFile, "Error checking file: " + presetFile)) {
+        if (fileExists(presetFile, "Error checking file: " + presetFile)) {
             return full(presetFile);
         }
         for (String ext : EXTENSIONS) {
@@ -84,7 +84,7 @@ public class CaveInit {
     /** Attempts to locate a preset using a specific extension. */
     private static Optional<File> tryExtension(File directory, String preset, String extension) {
         final File presetFile = new File(directory, preset + "." + extension);
-        if (safeFileExists(presetFile, NO_ACCESS)) {
+        if (fileExists(presetFile, NO_ACCESS)) {
             return full(presetFile);
         }
         return empty();

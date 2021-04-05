@@ -24,9 +24,11 @@ public class TunnelPathInfo {
 
     /** Coordinates of this tunnel's current destination. */
     private float x, y, z;
+
+    /** Instructions for mutating values over time. */
     private final ScalableFloat sfYaw, sfPitch;
     private final ScalableFloat sfdYaw, sfdPitch;
-    private final ScalableFloat sfScale, sfScaleY;
+    private final ScalableFloat sfScale, sfStretch;
 
     private static final float PI_TIMES_2 = (float) (Math.PI * 2);
 
@@ -65,7 +67,7 @@ public class TunnelPathInfo {
         this.sfdYaw = dYaw;
         this.sfdPitch = dPitch;
         this.sfScale = scale;
-        this.sfScaleY = stretch;
+        this.sfStretch = stretch;
         // Random coordinates in the destination chunk.
         final int heightDiff = maxHeight - minHeight;
         this.x = (destChunkX * 16) + rand.nextInt(16);
@@ -91,7 +93,7 @@ public class TunnelPathInfo {
         this.sfdYaw = from.sfdYaw;
         this.sfdPitch = from.sfdPitch;
         this.sfScale = from.sfScale;
-        this.sfScaleY = from.sfScaleY;
+        this.sfStretch = from.sfStretch;
         this.yaw = yaw;
         this.pitch = pitch;
         this.scale = scale;
@@ -170,7 +172,7 @@ public class TunnelPathInfo {
         // Positive is counterclockwise, negative is clockwise.
         dYaw = rotate(dYaw, rand, sfdYaw);
         scale = reScale(scale, rand, sfScale);
-        stretch = reScale(stretch, rand, sfScaleY);
+        stretch = reScale(stretch, rand, sfStretch);
     }
 
     /** Updates the value of `original` based on the input settings. */
@@ -206,9 +208,9 @@ public class TunnelPathInfo {
     }
 
     public boolean touchesChunk(PrimerData data, double diameterXZ) {
-        return x >= data.centerX - 16.0 - diameterXZ &&
-            z >= data.centerZ - 16.0 - diameterXZ &&
-            x <= data.centerX + 16.0 + diameterXZ &&
-            z <= data.centerZ + 16.0 + diameterXZ;
+        return x >= data.centerX - 16.0 - diameterXZ
+            && z >= data.centerZ - 16.0 - diameterXZ
+            && x <= data.centerX + 16.0 + diameterXZ
+            && z <= data.centerZ + 16.0 + diameterXZ;
     }
 }
