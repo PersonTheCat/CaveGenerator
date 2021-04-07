@@ -15,11 +15,13 @@ public class RavineGenerator extends MapGenerator {
     private final float[] mut = new float[256];
     private final RavineSettings cfg;
     private final FastNoise wallNoise;
+    private final double cutoff;
 
     public RavineGenerator(RavineSettings cfg, World world) {
         super(cfg.conditions, cfg.decorators, world, true);
         this.cfg = cfg;
         this.wallNoise = cfg.walls.getGenerator(world);
+        this.cutoff = 1.0 + cfg.cutoffStrength;
     }
 
     @Override
@@ -44,7 +46,7 @@ public class RavineGenerator extends MapGenerator {
                 for (int y = maY; y > miY; y--) {
                     final double distY = ((y - 1) + 0.5 - cY) / rY;
                     final double distY2 = distY * distY;
-                    if ((distX2 + distZ2) * (double) mut[y - 1] + distY2 / 6.0 < 1.0) {
+                    if ((distX2 + distZ2) * mut[y - 1] + distY2 / this.cutoff < 1.0) {
                         sphere.inner.add(x, y, z);
                     }
                 }
@@ -55,21 +57,47 @@ public class RavineGenerator extends MapGenerator {
     @Override
     protected void fillDouble(SphereData sphere, double cX, double cY, double cZ, int absX, int absZ, double rXZ,
               double rY, double roXZ, double roY, int miX, int maX, int miY, int maY, int miZ, int maZ) {
+        final double rXZ2 = rXZ * rXZ;
+        final double rY2 = rY * rY;
+        final double roXZ2 = roXZ * roXZ;
+        final double roY2 = roY * roY;
+        final int d = (int) (roY - rY);
+        final int miOY = Math.max(1, miY - d);
+        final int maOY = Math.min(248, maY + d);
+
         for (int x = miX; x < maX; x++) {
-            final double distX = ((x + absX) + 0.5 - cX) / rXZ;
+            final double distX = ((x + absX) + 0.5 - cX);
             final double distX2 = distX * distX;
             for (int z = miZ; z < maZ; z++) {
-                final double distZ = ((z + absZ) + 0.5 - cZ) / rXZ;
+                final double distZ = ((z + absZ) + 0.5 - cZ);
                 final double distZ2 = distZ * distZ;
-                if (distX2 + distZ2 >= 1.0) {
+                final double sumRoXZ = distX2 / roXZ2 + distZ2 / roXZ2;
+                if (sumRoXZ >= 1.0) {
                     continue;
                 }
+                final double sumRXZ = distX2 / rXZ2 + distZ2 / rXZ2;
+                this.coverOuter(sphere, sumRoXZ, roY2, x, z, cY, miOY, miY);
                 for (int y = maY; y > miY; y--) {
-                    final double distY = ((y - 1) + 0.5 - cY) / rY;
+                    final double distY = ((y - 1) + 0.5 - cY);
                     final double distY2 = distY * distY;
-                    if ((distX2 + distZ2) * (double) mut[y - 1] + distY2 / 6.0 < 1.0) {
+                    if (sumRXZ * mut[y - 1] + distY2 / rY2 / this.cutoff < 1.0) {
                         sphere.inner.add(x, y, z);
+                    } else if (sumRoXZ * mut[y - 1] + distY2 / roY2 / this.cutoff < 1.0) {
+                        sphere.shell.add(x, y, z);
                     }
+                }
+                this.coverOuter(sphere, sumRoXZ, roY2, x, z, cY, maY, maOY);
+            }
+        }
+    }
+
+    private void coverOuter(SphereData sphere, double sumRoXZ, double roY2, int x, int z, double cY, int min, int max) {
+        if (this.cutoff > 1.0) {
+            for (int y = max; y > min; y--) {
+                final double distY = ((y - 1) + 0.5 - cY);
+                final double distY2 = distY * distY;
+                if (sumRoXZ * mut[y - 1] + distY2 / roY2 / this.cutoff < 1.0) {
+                    sphere.shell.add(x, y, z);
                 }
             }
         }

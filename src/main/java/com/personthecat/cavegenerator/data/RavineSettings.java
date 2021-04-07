@@ -67,6 +67,9 @@ public class RavineSettings {
     /** The 1/x chance of ravine segments being skipped. */
     @Default int resolution = 4;
 
+    /** A ratio of how much to flatten the bottom and top of this feature. */
+    @Default double cutoffStrength = 5.0;
+
     /** Whether to use a FastNoise generator for the wall of this ravine. */
     @Default boolean useWallNoise = false;
 
@@ -100,6 +103,7 @@ public class RavineSettings {
             .mapInt(Fields.distance, builder::distance)
             .mapFloat(Fields.chance, f -> builder.chance(invert(f)))
             .mapInt(Fields.resolution, builder::resolution)
+            .mapFloat(Fields.cutoffStrength, builder::cutoffStrength)
             .mapObject(Fields.walls, o -> copyWallNoise(o, original, builder))
             .mapBool(Fields.useWallNoise, builder::useWallNoise)
             .release(builder::build);

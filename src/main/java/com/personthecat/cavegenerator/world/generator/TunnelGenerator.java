@@ -66,15 +66,17 @@ public class TunnelGenerator extends MapGenerator {
             for (int z = miZ; z < maZ; z++) {
                 final double distZ = ((z + absZ) + 0.5 - cZ);
                 final double distZ2 = distZ * distZ;
-                if ((distX2 / roXZ2 + distZ2 / roXZ2) >= 1.0) {
+                final double sumRoXZ = distX2 / roXZ2 + distZ2 / roXZ2;
+                if (sumRoXZ >= 1.0) {
                     continue;
                 }
+                final double sumRXZ = distX2 / rXZ2 + distZ2 / rXZ2;
                 for (int y = maY; y > miY; y--) {
                     final double distY = ((y - 1) + 0.5 - cY);
                     final double distY2 = distY * distY;
-                    if ((distY / rY > -0.7) && ((distX2 / rXZ2 + distY2 / rY2 + distZ2 / rXZ2) < 1.0)) {
+                    if ((distY / rY > -0.7) && (sumRXZ + distY2 / rY2 < 1.0)) {
                         sphere.inner.add(x, y, z);
-                    } else if (distX2 / roXZ2 + distY2 / roY2 + distZ2 / roXZ2 < 1.0) {
+                    } else if (sumRoXZ + distY2 / roY2 < 1.0) {
                         sphere.shell.add(x, y, z);
                     }
                 }
