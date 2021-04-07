@@ -59,7 +59,7 @@ public class StalactiteGenerator extends FeatureGenerator {
                     continue;
                 }
                 final Range height = conditions.getColumn(dx, dz);
-                if (height.diff() != 0) {
+                if (height.diff() != 0 && conditions.region.GetBoolean(dz, dz)) {
                     final int y = StalactiteSettings.Type.STALACTITE.equals(cfg.type) ?
                         findCeiling(info.world, dx, height.min, dz, height.max):
                         findFloor(info.world, dx, height.max, dz, height.min);

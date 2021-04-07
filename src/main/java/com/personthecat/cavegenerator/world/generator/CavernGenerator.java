@@ -7,7 +7,6 @@ import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.world.BiomeSearch;
 import fastnoise.FastNoise;
 import lombok.AllArgsConstructor;
-import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
@@ -25,15 +24,13 @@ public class CavernGenerator extends WorldCarver {
     private final List<FastNoise> generators;
     private final FastNoise wallOffset;
     private final int maxY;
-    private final CavernSettings cfg;
 
     public CavernGenerator(CavernSettings cfg, World world) {
         super(cfg.conditions, cfg.decorators, world);
         this.generators = createGenerators(cfg.generators, world);
         this.wallOffset = cfg.wallOffset.getGenerator(world);
         this.maxY = conditions.height.max + cfg.conditions.ceiling.map(n -> n.range.max).orElse(0);
-        this.cfg = cfg;
-        setupWallNoise(cfg.walls, world);
+        this.setupWallNoise(cfg.walls, world);
     }
 
     private static List<FastNoise> createGenerators(List<NoiseSettings> settings, World world) {
@@ -80,11 +77,11 @@ public class CavernGenerator extends WorldCarver {
     }
 
     private void fillInvalidBiomes(BiomeSearch biomes) {
-        for (BiomeSearch.Data biome : biomes.surrounding.get()) {
-            if (!conditions.biomes.test(biome.biome)) {
+        for (BiomeSearch.Data d : biomes.surrounding.get()) {
+            if (!(conditions.biomes.test(d.biome) && conditions.region.GetBoolean(d.centerX, d.centerZ))) {
                 // Translate the noise randomly for each chunk to minimize repetition.
-                final int translateY = (int) wallOffset.GetAdjustedNoise(biome.centerX, biome.centerZ);
-                invalidBiomes.add(new BiomeTestData(biome.centerX, biome.centerZ, translateY));
+                final int translateY = (int) wallOffset.GetAdjustedNoise(d.centerX, d.centerZ);
+                invalidBiomes.add(new BiomeTestData(d.centerX, d.centerZ, translateY));
             }
         }
     }

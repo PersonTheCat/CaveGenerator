@@ -4,7 +4,6 @@ import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.data.ConditionSettings;
 import com.personthecat.cavegenerator.data.DecoratorSettings;
 import com.personthecat.cavegenerator.model.ConfiguredCaveBlock;
-import com.personthecat.cavegenerator.model.ConfiguredShell;
 import com.personthecat.cavegenerator.model.PrimerData;
 import com.personthecat.cavegenerator.world.BiomeSearch;
 import net.minecraft.block.state.IBlockState;
@@ -62,9 +61,9 @@ public abstract class MapGenerator extends WorldCarver {
     }
 
     private void fillInvalidBiomes(BiomeSearch biomes) {
-        for (BiomeSearch.Data biome : biomes.surrounding.get()) {
-            if (!conditions.biomes.test(biome.biome)) {
-                invalidBiomes.add(new BlockPos(biome.centerX, 0, biome.centerZ));
+        for (BiomeSearch.Data d : biomes.surrounding.get()) {
+            if (!(conditions.biomes.test(d.biome) && conditions.region.GetBoolean(d.centerX, d.centerZ))) {
+                this.invalidBiomes.add(new BlockPos(d.centerX, 0, d.centerZ));
             }
         }
     }

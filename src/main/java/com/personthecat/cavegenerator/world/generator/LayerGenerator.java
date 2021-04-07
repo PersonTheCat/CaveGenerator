@@ -3,6 +3,7 @@ package com.personthecat.cavegenerator.world.generator;
 import com.personthecat.cavegenerator.data.LayerSettings;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
+import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import java.util.Random;
@@ -22,10 +23,13 @@ public class LayerGenerator extends BasicGenerator {
             final int actualX = x + (ctx.chunkX * 16);
             for (int z = 0; z < 16; z++) {
                 final int actualZ = z + (ctx.chunkZ * 16);
-                if (conditions.biomes.test(ctx.world.getBiome(new BlockPos(actualX, 0, actualZ)))) {
+                final Biome b = ctx.world.getBiome(new BlockPos(actualX, 0, actualZ));
+                if (conditions.biomes.test(b) && conditions.region.GetBoolean(actualX, actualZ)) {
                     for (int y : conditions.getColumn(actualX, actualZ)) {
                         if (BLK_STONE.equals(ctx.primer.getBlockState(x, y, z))) {
-                            ctx.primer.setBlockState(x, y, z, cfg.state);
+                            if (conditions.noise.GetBoolean(x, z)) {
+                                ctx.primer.setBlockState(x, y, z, cfg.state);
+                            }
                         }
                     }
                 }

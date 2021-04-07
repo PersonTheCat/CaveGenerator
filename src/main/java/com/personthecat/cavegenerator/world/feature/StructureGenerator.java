@@ -85,7 +85,7 @@ public class StructureGenerator extends FeatureGenerator {
             final Range height = conditions.getColumn(x, z);
             final int maxY = Math.min(info.heightmap[x & 15][z & 15], height.max);
             final int minY = height.min;
-            if (minY >= maxY) continue;
+            if (minY >= maxY || !conditions.region.GetBoolean(x, z)) continue;
 
             final int y;
             // Search both -> just up -> just down.
@@ -108,16 +108,18 @@ public class StructureGenerator extends FeatureGenerator {
     private Optional<BlockPos> getSpawnPosHorizontal(WorldContext info, Template structure) {
         final BlockPos size = structure.getSize();
         final Range height = conditions.getColumn(info.offsetX, info.offsetZ);
-        for (int i = 0; i < HORIZONTAL_RETRIES; i++) {
-            final int y = height.rand(info.rand);
-            Optional<BlockPos> pos;
-            if (info.rand.nextBoolean()) {
-                pos = randCoordsNS(info, size.getX(), y);
-            } else {
-                pos = randCoordsEW(info, size.getZ(), y);
-            }
-            if (pos.isPresent()) {
-                return pos;
+        if (height.diff() != 0 && conditions.region.GetBoolean(info.offsetX, info.offsetZ)) {
+            for (int i = 0; i < HORIZONTAL_RETRIES; i++) {
+                final int y = height.rand(info.rand);
+                Optional<BlockPos> pos;
+                if (info.rand.nextBoolean()) {
+                    pos = randCoordsNS(info, size.getX(), y);
+                } else {
+                    pos = randCoordsEW(info, size.getZ(), y);
+                }
+                if (pos.isPresent()) {
+                    return pos;
+                }
             }
         }
         return empty();

@@ -39,7 +39,7 @@ public class PillarGenerator extends FeatureGenerator {
             if (conditions.biomes.test(biome)) {
                 final Range height = conditions.getColumn(x, z);
 
-                if (height.diff() != 0) {
+                if (height.diff() != 0 && conditions.region.GetBoolean(x, z)) {
                     final int y = height.rand(rand);
                     final int opening = findCeiling(ctx.world, x, y, z, height.max);
                     if (opening != NONE_FOUND && conditions.noise.GetBoolean(x, opening, z)) {

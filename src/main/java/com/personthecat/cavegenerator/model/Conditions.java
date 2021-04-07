@@ -79,22 +79,16 @@ public class Conditions {
 
     /** Get the current height range when given two absolute coordinates. */
     public Range getColumn(int x, int z) {
-        if (region.GetBoolean(x, z)) {
-            final int min = height.min + (int) floor.GetAdjustedNoise((float) x, (float) z);
-            final int max = height.max + (int) ceiling.GetAdjustedNoise((float) x, (float) z);
-            return Range.of(min, max);
-        }
-        return Range.empty();
+        final int min = height.min + (int) floor.GetAdjustedNoise((float) x, (float) z);
+        final int max = height.max + (int) ceiling.GetAdjustedNoise((float) x, (float) z);
+        return Range.of(min, max);
     }
 
     /** Get the current height range when given two absolute coordinates and a heightmap of the current chunk. */
     public Range getColumn(int[][] heightmap, int x, int z) {
-        if (region.GetBoolean(x, z)) {
-            final int min = height.min + (int) floor.GetAdjustedNoise((float) x, (float) z);
-            final int max = Math.min(height.max, heightmap[x & 15][z & 15]) + (int) ceiling.GetAdjustedNoise((float) x, (float) z);
-            return Range.of(min, max);
-        }
-        return Range.empty();
+        final int min = height.min + (int) floor.GetAdjustedNoise((float) x, (float) z);
+        final int max = Math.min(height.max, heightmap[x & 15][z & 15]) + (int) ceiling.GetAdjustedNoise((float) x, (float) z);
+        return Range.of(min, max);
     }
 
     /** Intended for any generator that does relatively few checks. Will verify everything but the dimension. */
