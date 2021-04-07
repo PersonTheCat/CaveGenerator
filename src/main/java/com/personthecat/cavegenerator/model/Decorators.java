@@ -10,9 +10,9 @@ import net.minecraft.init.Blocks;
 import net.minecraft.world.World;
 
 import java.util.*;
-import java.util.function.Function;
 import java.util.function.Predicate;
-import java.util.stream.Collectors;
+
+import static com.personthecat.cavegenerator.util.CommonMethods.map;
 
 @Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
@@ -37,10 +37,6 @@ public class Decorators {
             .wallMap(WallDecoratorMap.sort(settings.wallDecorators, world))
             .shell(new ConfiguredShell(settings.shell, world))
             .build();
-    }
-
-    private static <T, U> List<U> map(List<T> list, Function<T, U> mapper) {
-        return list.stream().map(mapper).collect(Collectors.toList());
     }
 
     // This would ideally be adapted to check for other *kinds* of block features.

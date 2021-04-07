@@ -8,8 +8,8 @@ import net.minecraft.world.World;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
+import static com.personthecat.cavegenerator.util.CommonMethods.map;
 
 public class ConfiguredShell {
 
@@ -32,10 +32,6 @@ public class ConfiguredShell {
         this.sphereRadius = 0.0;
         this.noiseThreshold = 0.0F;
         this.decorators = Collections.emptyList();
-    }
-
-    private static <T, U> List<U> map(List<T> list, Function<T, U> mapper) {
-        return list.stream().map(mapper).collect(Collectors.toList());
     }
 
     public static class Decorator {

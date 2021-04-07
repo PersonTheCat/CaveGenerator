@@ -3,8 +3,10 @@ package com.personthecat.cavegenerator.util;
 import java.io.File;
 import java.lang.reflect.Array;
 import java.util.*;
+import java.util.function.Function;
 import java.util.function.Predicate;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import net.minecraft.block.Block;
 import net.minecraft.block.properties.IProperty;
@@ -81,6 +83,11 @@ public class CommonMethods {
             }
         }
         return empty();
+    }
+
+    /** Maps the given list to an {@link ArrayList} of a new type. */
+    public static <T, U> List<U> map(List<T> list, Function<T, U> mapper) {
+        return list.stream().map(mapper).collect(Collectors.toList());
     }
 
     /**

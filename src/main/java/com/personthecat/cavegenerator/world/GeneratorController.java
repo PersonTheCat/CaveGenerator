@@ -6,14 +6,19 @@ import com.personthecat.cavegenerator.world.feature.PillarGenerator;
 import com.personthecat.cavegenerator.world.feature.StalactiteGenerator;
 import com.personthecat.cavegenerator.world.feature.StructureGenerator;
 import com.personthecat.cavegenerator.world.feature.WorldContext;
-import com.personthecat.cavegenerator.world.generator.*;
+import com.personthecat.cavegenerator.world.generator.TunnelGenerator;
+import com.personthecat.cavegenerator.world.generator.RavineGenerator;
+import com.personthecat.cavegenerator.world.generator.CavernGenerator;
+import com.personthecat.cavegenerator.world.generator.LayerGenerator;
+import com.personthecat.cavegenerator.world.generator.ClusterGenerator;
+import com.personthecat.cavegenerator.world.generator.PrimerContext;
 import lombok.Builder;
 import net.minecraft.world.World;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.function.Function;
-import java.util.stream.Collectors;
+
+import static com.personthecat.cavegenerator.util.CommonMethods.map;
 
 @Builder
 public class GeneratorController {
@@ -38,10 +43,6 @@ public class GeneratorController {
             .structures(map(preset.structures, s -> new StructureGenerator(s, world)));
         sortClusters(preset.clusters, world, builder);
         return builder.build();
-    }
-
-    private static <T, U> List<U> map(List<T> list, Function<T, U> mapper) {
-        return list.stream().map(mapper).collect(Collectors.toList());
     }
 
     private static void sortClusters(List<ClusterSettings> clusters, World world, GeneratorControllerBuilder builder) {
