@@ -27,11 +27,15 @@ public class Decorators {
     /** Determines which blocks to place to the side of the given coordinates. */
     @Default WallDecoratorMap wallMap = WallDecoratorMap.builder().build();
 
+    /** Determines which blocks to place surrounding the current feature. */
+    @Default ConfiguredShell shell = ConfiguredShell.EMPTY_SHELL;
+
     public static Decorators compile(DecoratorSettings settings, List<IBlockState> featureBlocks, World world) {
         return builder()
             .canReplace(compileCanReplace(settings, featureBlocks))
             .caveBlocks(map(settings.caveBlocks, b -> new ConfiguredCaveBlock(b, world)))
             .wallMap(WallDecoratorMap.sort(settings.wallDecorators, world))
+            .shell(new ConfiguredShell(settings.shell, world))
             .build();
     }
 
@@ -50,6 +54,7 @@ public class Decorators {
             replaceable.addAll(featureBlocks);
             settings.caveBlocks.forEach(c -> replaceable.addAll(c.states));
             settings.wallDecorators.forEach(w -> replaceable.addAll(w.states));
+            settings.shell.decorators.forEach(s -> replaceable.addAll(s.states));
         }
         if (replaceable.size() == 1) {
             final IBlockState state = replaceable.iterator().next();

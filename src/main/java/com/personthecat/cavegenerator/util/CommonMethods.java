@@ -103,7 +103,7 @@ public class CommonMethods {
     /** Determines the extension of the input `file`. */
     public static String extension(final File file) {
         final String[] split = file.getName().split(Pattern.quote("."));
-        return split.length == 0 ? "" : split[split.length - 1];
+        return split.length == 1 ? "" : split[split.length - 1];
     }
 
     /** Gets the file name, minus the extension. */

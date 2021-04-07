@@ -62,6 +62,9 @@ public class OverrideSettings {
     /** A list of blocks to replace the walls of this carver with. */
     @Default Optional<List<WallDecoratorSettings>> wallDecorators = empty();
 
+    /** Variant of wall decorators which can spawn multiple levels deep without directionality. */
+    @Default Optional<ShellSettings> shell = empty();
+
     /** Optional branch overrides for all tunnels. */
     @Default Optional<TunnelSettings> branches = empty();
 
@@ -83,6 +86,7 @@ public class OverrideSettings {
             .mapBool(Fields.replaceDecorators, b -> builder.replaceDecorators(full(b)))
             .mapArray(Fields.caveBlocks, CaveBlockSettings::from, l -> builder.caveBlocks(full(l)))
             .mapArray(Fields.wallDecorators, WallDecoratorSettings::from, l -> builder.wallDecorators(full(l)))
+            .mapObject(Fields.shell, s -> builder.shell(full(ShellSettings.from(s))))
             .mapObject(Fields.branches, b -> builder.branches(full(TunnelSettings.from(b))))
             .mapObject(Fields.rooms, r -> builder.rooms(full(RoomSettings.from(r))))
             .release(builder::build);
@@ -106,6 +110,7 @@ public class OverrideSettings {
         this.replaceDecorators.ifPresent(builder::replaceDecorators);
         this.caveBlocks.ifPresent(builder::caveBlocks);
         this.wallDecorators.ifPresent(builder::wallDecorators);
+        this.shell.ifPresent(builder::shell);
         return builder;
     }
 

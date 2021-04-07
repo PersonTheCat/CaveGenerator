@@ -32,9 +32,8 @@ public class TunnelGenerator extends MapGenerator {
 
     @Override
     protected void fillSphere(SphereData sphere, double cX, double cY, double cZ, int absX, int absZ,
-              double radXZ, double radY, int miX, int maX, int miY, int maY, int miZ, int maZ) {
+            double radXZ, double radY, int miX, int maX, int miY, int maY, int miZ, int maZ) {
         for (int x = miX; x < maX; x++) {
-            // (Relative coordinate, centered, offset) / radius?
             final double distX = ((x + absX) + 0.5 - cX) / radXZ;
             final double distX2 = distX * distX;
             for (int z = miZ; z < maZ; z++) {
@@ -47,7 +46,36 @@ public class TunnelGenerator extends MapGenerator {
                     final double distY = ((y - 1) + 0.5 - cY) / radY;
                     final double distY2 = distY * distY;
                     if ((distY > -0.7) && ((distX2 + distY2 + distZ2) < 1.0)) {
-                        sphere.add(x, y, z);
+                        sphere.inner.add(x, y, z);
+                    }
+                }
+            }
+        }
+    }
+
+    @Override
+    protected void fillDouble(SphereData sphere, double cX, double cY, double cZ, int absX, int absZ, double rXZ,
+              double rY, double roXZ, double roY, int miX, int maX, int miY, int maY, int miZ, int maZ) {
+        final double rXZ2 = rXZ * rXZ;
+        final double rY2 = rY * rY;
+        final double roXZ2 = roXZ * roXZ;
+        final double roY2 = roY * roY;
+        for (int x = miX; x < maX; x++) {
+            final double distX = ((x + absX) + 0.5 - cX);
+            final double distX2 = distX * distX;
+            for (int z = miZ; z < maZ; z++) {
+                final double distZ = ((z + absZ) + 0.5 - cZ);
+                final double distZ2 = distZ * distZ;
+                if ((distX2 / roXZ2 + distZ2 / roXZ2) >= 1.0) {
+                    continue;
+                }
+                for (int y = maY; y > miY; y--) {
+                    final double distY = ((y - 1) + 0.5 - cY);
+                    final double distY2 = distY * distY;
+                    if ((distY / rY > -0.7) && ((distX2 / rXZ2 + distY2 / rY2 + distZ2 / rXZ2) < 1.0)) {
+                        sphere.inner.add(x, y, z);
+                    } else if (distX2 / roXZ2 + distY2 / roY2 + distZ2 / roXZ2 < 1.0) {
+                        sphere.shell.add(x, y, z);
                     }
                 }
             }
@@ -57,7 +85,7 @@ public class TunnelGenerator extends MapGenerator {
     /** Starts a tunnel system between the input chunk coordinates. */
     private void createSystem(World world, long seed, int destX, int destZ, int x, int z, ChunkPrimer primer) {
         final Random rand = new Random(seed);
-        final int frequency = getTunnelFrequency(rand);
+        final int frequency = this.getTunnelFrequency(rand);
         for (int i = 0; i < frequency; i++) {
             int branches = 1;
             if (rand.nextInt(cfg.systemChance) == 0) {
@@ -111,15 +139,19 @@ public class TunnelGenerator extends MapGenerator {
     private void addTunnel(World world, long seed, PrimerData data, TunnelPathInfo path, int position, int distance) {
         // Main RNG for this tunnel.
         final Random rand = new Random(seed);
-        distance = getDistance(rand, distance);
+        distance = this.getDistance(rand, distance);
         // Determine where to place branches, if applicable.
         final int randomBranchIndex = rand.nextInt(distance / 2) + distance / 4;
         final boolean randomNoiseCorrection = rand.nextInt(6) == 0;
 
         for (int currentPos = position; currentPos < distance; currentPos++) {
             // Determine the radius by `scale`.
-            final double radiusXZ = 1.5D + (MathHelper.sin(currentPos * (float) Math.PI / distance) * path.getScale());
-            final double radiusY = radiusXZ * path.getStretch();
+            final double rXZ = 1.5D + (MathHelper.sin(currentPos * (float) Math.PI / distance) * path.getScale());
+            final double rY = rXZ * path.getStretch();
+            final double d = this.decorators.shell.cfg.sphereRadius;
+            final double roXZ = rXZ + d;
+            final double roY = rY + d;
+
             path.update(rand, cfg.noiseYReduction, randomNoiseCorrection ? 0.92F : 0.70F, 0.1F);
 
             if (path.getScale() > 1.00F && distance > 0 && currentPos == randomBranchIndex) {
@@ -137,18 +169,16 @@ public class TunnelGenerator extends MapGenerator {
             }
             // Avoid issues with inconsistent Random calls.
             final int decSeed = rand.nextInt(); // Todo: profile this
-            if (!path.touchesChunk(data, radiusXZ * 2.0)) {
+            if (!path.touchesChunk(data, roXZ * 2.0)) {
                 continue;
             }
-            if (getNearestBorder((int) path.getX(), (int) path.getZ()) < radiusXZ + 9) {
+            if (this.getNearestBorder((int) path.getX(), (int) path.getZ()) < roXZ + 9) {
                 continue;
             }
             if (!conditions.height.contains((int) path.getY())) {
                 continue;
             }
-            // Calculate all of the positions in the section.
-            // We'll be using them multiple times.
-            this.generateSphere(data, new Random(decSeed), path.getX(), path.getY(), path.getZ(), radiusXZ, radiusY);
+            this.generateSphere(data, new Random(decSeed), path.getX(), path.getY(), path.getZ(), rXZ, rY, roXZ, roY);
         }
     }
 
@@ -168,11 +198,10 @@ public class TunnelGenerator extends MapGenerator {
         final int distance = getDistance(local, 0);
         final int position = distance / 2;
         // Determine the radius by `scale`.
-        final double radiusXZ = 1.5D + (MathHelper.sin(position * (float) Math.PI / distance) * scale);
-        final double radiusY = radiusXZ * stretch;
-        // Calculate all of the positions in the section.
-        // We'll be using them multiple times.
-        this.generateSphere(data, local, x, y, z, radiusXZ, radiusY);
+        final double rXZ = 1.5D + (MathHelper.sin(position * (float) Math.PI / distance) * scale);
+        final double rY = rXZ * stretch;
+        final double d = this.decorators.shell.cfg.sphereRadius;
+        this.generateSphere(data, local, x, y, z, rXZ, rY, rXZ + d, rY + d);
     }
 
     private void addBranches(World world, Random rand, PrimerData data, TunnelPathInfo path, int currentPos, int distance) {

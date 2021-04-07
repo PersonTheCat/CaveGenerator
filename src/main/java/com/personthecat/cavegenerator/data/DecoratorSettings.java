@@ -38,6 +38,9 @@ public class DecoratorSettings {
     /** A list of blocks to replace the walls of this carver with. */
     @Default List<WallDecoratorSettings> wallDecorators = Collections.emptyList();
 
+    /** A variant of wall decorators that can spawn multiple layers deep without directionality. */
+    @Default ShellSettings shell = ShellSettings.builder().build();
+
     public static DecoratorSettings from(JsonObject json, DecoratorSettings defaults) {
         return copyInto(json, defaults.toBuilder());
     }

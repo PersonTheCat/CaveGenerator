@@ -101,8 +101,8 @@ public class CavernGenerator extends WorldCarver {
             final int actualX = x + (chunkX * 16);
             for (int z = 0; z < 16; z++) {
                 final int actualZ = z + (chunkZ * 16);
-                final BorderData border = getNearestBorder(actualX, actualZ);
-                final Range height = conditions.getColumn(heightmap, actualX, actualZ);
+                final BorderData border = this.getNearestBorder(actualX, actualZ);
+                final Range height = this.conditions.getColumn(heightmap, actualX, actualZ);
                 final int diff = height.diff() + 1; // Must be positive.
                 final int minOffset = diff / -2;
 
@@ -111,26 +111,26 @@ public class CavernGenerator extends WorldCarver {
                     final int sq = (relative * relative) / diff;
                     final double distance = border.distance - sq;
 
-                    final double wall = wallNoise[(y + border.offset) & 255];
-                    if (distance > wall && conditions.noise.GetBoolean(actualX, y, actualZ)) {
-                        for (FastNoise noise : generators) {
+                    final double wall = this.wallNoise[(y + border.offset) & 255];
+                    if (distance > wall && this.conditions.noise.GetBoolean(actualX, y, actualZ)) {
+                        for (FastNoise noise : this.generators) {
                             final float value = noise.GetNoise(actualX, y, actualZ);
 
                             if (noise.IsInThreshold(value)) {
-                                replaceBlock(rand, primer, x, y, z, chunkX, chunkZ);
+                                this.replaceBlock(rand, primer, x, y, z, chunkX, chunkZ);
                                 caverns[y][z][x] = true;
                                 break;
-                            } else if (noise.IsOuter(value, cfg.shellDistance)) {
-                                primer.setBlockState(x, y, z, cfg.shellState);
+                            } else if (noise.IsOuter(value, decorators.shell.noiseThreshold)) {
+                                this.generateShell(rand, primer, x, y, z, y, chunkX, chunkZ);
                             }
                         }
                     }
                 }
             }
         }
-        // Caverns must be completed generated before decorating.
-        if (hasLocalDecorators()) {
-            decorateCaverns(caverns, rand, primer, chunkX, chunkZ);
+        // Caverns must be completely generated before decorating.
+        if (this.hasLocalDecorators()) {
+            this.decorateCaverns(caverns, rand, primer, chunkX, chunkZ);
         }
     }
 

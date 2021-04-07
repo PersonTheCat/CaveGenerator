@@ -4,6 +4,7 @@ import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.data.ConditionSettings;
 import com.personthecat.cavegenerator.data.DecoratorSettings;
 import com.personthecat.cavegenerator.model.ConfiguredCaveBlock;
+import com.personthecat.cavegenerator.model.ConfiguredShell;
 import com.personthecat.cavegenerator.model.PrimerData;
 import com.personthecat.cavegenerator.world.BiomeSearch;
 import net.minecraft.block.state.IBlockState;
@@ -99,23 +100,30 @@ public abstract class MapGenerator extends WorldCarver {
         return shortestDistance;
     }
 
-    protected final void generateSphere(PrimerData data, Random rand, double x, double y, double z, double radXZ, double radY) {
-        final int miX = limitXZ(MathHelper.floor(x - radXZ) - data.absX - 1);
-        final int maX = limitXZ(MathHelper.floor(x + radXZ) - data.absX + 1);
-        final int miY = limitY(MathHelper.floor(y - radY) - 1);
-        final int maY = limitY(MathHelper.floor(y + radY) + 1);
-        final int miZ = limitXZ(MathHelper.floor(z - radXZ) - data.absZ - 1);
-        final int maZ = limitXZ(MathHelper.floor(z + radXZ) - data.absZ + 1);
+    protected final void generateSphere(PrimerData data, Random rand, double x, double y, double z,
+            double rXZ, double rY, double roXZ, double roY) {
+        final int miX = limitXZ(MathHelper.floor(x - roXZ) - data.absX - 1);
+        final int maX = limitXZ(MathHelper.floor(x + roXZ) - data.absX + 1);
+        final int miY = limitY(MathHelper.floor(y - roY) - 1);
+        final int maY = limitY(MathHelper.floor(y + roY) + 1);
+        final int miZ = limitXZ(MathHelper.floor(z - roXZ) - data.absZ - 1);
+        final int maZ = limitXZ(MathHelper.floor(z + roXZ) - data.absZ + 1);
 
         this.sphere.reset();
         this.sphere.grow(maX - miX, maY - miY, maZ - miZ);
-        this.fillSphere(this.sphere, x, y, z, data.absX, data.absZ, radXZ, radY, miX, maX, miY, maY, miZ, maZ);
+
+        if (roXZ - rXZ != 0 && rand.nextInt(decorators.shell.cfg.sphereResolution ) == 0) {
+            this.fillDouble(this.sphere, x, y, z, data.absX, data.absZ, rXZ, rY, roXZ, roY, miX, maX, miY, maY, miZ, maZ);
+        } else {
+            this.fillSphere(this.sphere, x, y, z, data.absX, data.absZ, rXZ, rY, miX, maX, miY, maY, miZ, maZ);
+        }
 
         // If we need to test this section for water -> is there water?
-        if (!(this.shouldTestForWater(miY, maY) && this.testForWater(data.p, this.sphere))) {
-            this.replaceSphere(data, rand, this.sphere);
+        if (!(this.shouldTestForWater(miY, maY) && this.testForWater(data.p, this.sphere.inner))) {
+            this.generateShell(data, rand, this.sphere.shell, (int) y);
+            this.replaceSphere(data, rand, this.sphere.inner);
             if (this.hasLocalDecorators()) {
-                this.decorateSphere(data, rand, this.sphere);
+                this.decorateSphere(data, rand, this.sphere.inner);
             }
         }
     }
@@ -130,8 +138,13 @@ public abstract class MapGenerator extends WorldCarver {
         return y < 1 ? 1 : Math.min(y, 248);
     }
 
+    /** Provides reusable instructions on where to place and decorate blocks. */
     protected abstract void fillSphere(SphereData sphere, double cX, double cY, double cZ, int absX, int absZ,
-            double radXZ, double radY, int miX, int maX, int miY, int maY, int miZ, int maZ);
+            double rXZ, double rY, int miX, int maX, int miY, int maY, int miZ, int maZ);
+
+    /** Variant of #fillSphere which includes an outer shell. This is more expensive. */
+    protected abstract void fillDouble(SphereData sphere, double cX, double cY, double cZ, int absX, int absZ,
+            double rXZ, double rY, double roXZ, double roY, int miX, int maX, int miY, int maY, int miZ, int maZ);
 
     /** Calculates the maximum distance for this tunnel, if needed. */
     protected int getDistance(Random rand, int input) {
@@ -162,17 +175,22 @@ public abstract class MapGenerator extends WorldCarver {
     }
 
     /** Determines whether any water exists in the current section. */
-    protected boolean testForWater(ChunkPrimer primer, SphereData section) {
-        return section.anyMatches((x, y, z) -> primer.getBlockState(x, y, z).equals(BLK_WATER));
+    protected boolean testForWater(ChunkPrimer primer, PositionFlags sphere) {
+        return sphere.anyMatches((x, y, z) -> primer.getBlockState(x, y, z).equals(BLK_WATER));
+    }
+
+    /** Replaces all of the blocks around the current sphere, if applicable. */
+    protected void generateShell(PrimerData data, Random rand, PositionFlags sphere, int cY) {
+        sphere.forEach((x, y, z) -> this.generateShell(rand, data.p, x, y, z, cY, data.chunkX, data.chunkZ));
     }
 
     /** Replaces all blocks inside of this section. */
-    protected void replaceSphere(PrimerData data, Random rand, SphereData sphere) {
+    protected void replaceSphere(PrimerData data, Random rand, PositionFlags sphere) {
         sphere.forEach((x, y, z) -> this.replaceBlock(rand, data.p, x, y, z, data.chunkX, data.chunkZ));
     }
 
     /** Decorates all blocks inside of this section. */
-    protected void decorateSphere(PrimerData data, Random rand, SphereData sphere) {
+    protected void decorateSphere(PrimerData data, Random rand, PositionFlags sphere) {
         sphere.forEach((x, y, z) -> this.decorateBlock(rand, data.p, x, y, z, data.chunkX, data.chunkZ));
     }
 

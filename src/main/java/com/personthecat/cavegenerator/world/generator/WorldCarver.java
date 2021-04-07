@@ -2,9 +2,7 @@ package com.personthecat.cavegenerator.world.generator;
 
 import com.personthecat.cavegenerator.data.ConditionSettings;
 import com.personthecat.cavegenerator.data.DecoratorSettings;
-import com.personthecat.cavegenerator.model.ConfiguredCaveBlock;
-import com.personthecat.cavegenerator.model.ConfiguredWallDecorator;
-import com.personthecat.cavegenerator.model.Decorators;
+import com.personthecat.cavegenerator.model.*;
 import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
@@ -45,14 +43,31 @@ public abstract class WorldCarver extends BasicGenerator {
         }
     }
 
+    /** Spawns blocks from the shell decorator settings for a single coordinate. */
+    protected void generateShell(Random rand, ChunkPrimer primer, int x, int y, int z, int cY, int chunkX, int chunkZ) {
+        for (ConfiguredShell.Decorator shell : decorators.shell.decorators) {
+            if (shell.cfg.height.contains(cY)) {
+                final IBlockState candidate = primer.getBlockState(x, y, z);
+                if (shell.matches(candidate) && shell.testNoise(x, y, z, chunkX, chunkZ)) {
+                    for (IBlockState state : shell.cfg.states) {
+                        if (rand.nextFloat() <= shell.cfg.chance) {
+                            primer.setBlockState(x, y, z, state);
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     /** Conditionally replaces the current block with blocks from this generator's WallDecorators. */
     protected void decorateBlock(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ) {
-        if (decorateVertical(rand, primer, x, y, z, chunkX, chunkZ, true)) {
+        if (this.decorateVertical(rand, primer, x, y, z, chunkX, chunkZ, true)) {
             return;
-        } else if (decorateVertical(rand, primer, x, y, z, chunkX, chunkZ, false)) {
+        } else if (this.decorateVertical(rand, primer, x, y, z, chunkX, chunkZ, false)) {
             return;
         }
-        decorateHorizontal(rand, primer, x, y, z, chunkX, chunkZ);
+        this.decorateHorizontal(rand, primer, x, y, z, chunkX, chunkZ);
     }
 
     // Todo: this is heinous.
