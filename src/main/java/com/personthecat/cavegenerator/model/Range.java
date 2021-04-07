@@ -43,10 +43,6 @@ public class Range implements Iterable<Integer> {
         return new FloatRange(a);
     }
 
-    public static EmptyRange empty() {
-        return EmptyRange.getInstance();
-    }
-
     public int rand(Random rand) {
         return numBetween(rand, min, max);
     }
@@ -57,10 +53,6 @@ public class Range implements Iterable<Integer> {
 
     public int diff() {
         return max - min;
-    }
-
-    public boolean isEmpty() {
-        return false;
     }
 
     @NotNull
