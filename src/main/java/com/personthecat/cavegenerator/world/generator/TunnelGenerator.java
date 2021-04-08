@@ -150,7 +150,7 @@ public class TunnelGenerator extends MapGenerator {
             // Determine the radius by `scale`.
             final double rXZ = 1.5D + (MathHelper.sin(currentPos * (float) Math.PI / distance) * path.getScale());
             final double rY = rXZ * path.getStretch();
-            final double d = this.decorators.shell.cfg.sphereRadius;
+            final double d = this.decorators.shell.cfg.radius;
             final double roXZ = rXZ + d;
             final double roY = rY + d;
 
@@ -202,7 +202,7 @@ public class TunnelGenerator extends MapGenerator {
         // Determine the radius by `scale`.
         final double rXZ = 1.5D + (MathHelper.sin(position * (float) Math.PI / distance) * scale);
         final double rY = rXZ * stretch;
-        final double d = this.decorators.shell.cfg.sphereRadius;
+        final double d = this.decorators.shell.cfg.radius;
         this.generateSphere(data, local, x, y, z, rXZ, rY, rXZ + d, rY + d);
     }
 

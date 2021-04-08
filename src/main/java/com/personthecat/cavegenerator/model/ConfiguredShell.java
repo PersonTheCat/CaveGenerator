@@ -22,8 +22,8 @@ public class ConfiguredShell {
 
     public ConfiguredShell(ShellSettings cfg, World world) {
         this.cfg = cfg;
-        this.sphereRadius = cfg.sphereRadius;
-        this.noiseThreshold = cfg.noiseThreshold.orElse(((float) cfg.sphereRadius + 0.0001F) / 10.0F);
+        this.sphereRadius = cfg.radius;
+        this.noiseThreshold = cfg.noiseThreshold.orElse(((float) cfg.radius + 0.0001F) / 10.0F);
         this.decorators = map(cfg.decorators, d -> new Decorator(d, world));
     }
 

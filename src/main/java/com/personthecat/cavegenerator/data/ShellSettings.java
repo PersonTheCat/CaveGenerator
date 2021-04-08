@@ -27,7 +27,7 @@ import static com.personthecat.cavegenerator.util.CommonMethods.full;
 public class ShellSettings {
 
     /** The radius of blocks to decorate when a guaranteed number of blocks is possible. */
-    @Default double sphereRadius = 0.0;
+    @Default double radius = 0.0;
 
     /** The 1 / x chance that a sphere will have a shell. */
     @Default int sphereResolution = 2;
@@ -41,7 +41,7 @@ public class ShellSettings {
     public static ShellSettings from(JsonObject json) {
         final ShellSettingsBuilder builder = builder();
         return new HjsonMapper(json)
-            .mapFloat(Fields.sphereRadius, builder::sphereRadius)
+            .mapFloat(Fields.radius, builder::radius)
             .mapInt(Fields.sphereResolution, builder::sphereResolution)
             .mapFloat(Fields.noiseThreshold, f -> builder.noiseThreshold(full(f)))
             .mapArray(Fields.decorators, Decorator::from, builder::decorators)
