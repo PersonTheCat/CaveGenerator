@@ -8,13 +8,11 @@ import com.personthecat.cavegenerator.world.BiomeSearch;
 import fastnoise.FastNoise;
 import lombok.AllArgsConstructor;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 public class CavernGenerator extends WorldCarver {
@@ -48,7 +46,7 @@ public class CavernGenerator extends WorldCarver {
             final double angle = (i + 1) * increment;
             final int x = (int) (r * Math.cos(angle));
             final int y = (int) (r * Math.sin(angle));
-            wallNoise[i] = noise.GetAdjustedNoise(x, y);
+            this.wallNoise[i] = noise.GetAdjustedNoise(x, y);
         }
     }
 
@@ -56,24 +54,15 @@ public class CavernGenerator extends WorldCarver {
     public void generate(PrimerContext ctx) {
         if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
             if (conditions.hasBiomes) {
-                if (anyMatches(ctx.biomes, conditions.biomes)) {
-                    fillInvalidBiomes(ctx.biomes);
-                    generateChecked(ctx);
-                    invalidBiomes.clear();
+                if (ctx.biomes.anyMatches(conditions.biomes)) {
+                    this.fillInvalidBiomes(ctx.biomes);
+                    this.generateChecked(ctx);
+                    this.invalidBiomes.clear();
                 }
             } else {
-                generateChecked(ctx);
+                this.generateChecked(ctx);
             }
         }
-    }
-
-    private static boolean anyMatches(BiomeSearch biomes, Predicate<Biome> predicate) {
-        for (Biome b : biomes.current.get()) {
-            if (predicate.test(b)) {
-                return true;
-            }
-        }
-        return false;
     }
 
     private void fillInvalidBiomes(BiomeSearch biomes) {
@@ -81,7 +70,7 @@ public class CavernGenerator extends WorldCarver {
             if (!(conditions.biomes.test(d.biome) && conditions.region.GetBoolean(d.centerX, d.centerZ))) {
                 // Translate the noise randomly for each chunk to minimize repetition.
                 final int translateY = (int) wallOffset.GetAdjustedNoise(d.centerX, d.centerZ);
-                invalidBiomes.add(new BiomeTestData(d.centerX, d.centerZ, translateY));
+                this.invalidBiomes.add(new BiomeTestData(d.centerX, d.centerZ, translateY));
             }
         }
     }
@@ -102,24 +91,36 @@ public class CavernGenerator extends WorldCarver {
                 final Range height = this.conditions.getColumn(heightmap, actualX, actualZ);
                 final int diff = height.diff() + 1; // Must be positive.
                 final int minOffset = diff / -2;
+                // Adjust the height to accommodate the shell.
+                final int d = (int) decorators.shell.sphereRadius;
+                final int min = Math.max(1, height.min - d);
+                final int max = Math.min(255, height.max + d);
 
-                for (int y : height) {
-                    final int relative = minOffset + height.max - y;
-                    final int sq = (relative * relative) / diff;
-                    final double distance = border.distance - sq;
+                for (int y = max; y > min; y--) {
+                    if (this.conditions.noise.GetBoolean(actualX, y, actualZ)) {
+                        final int relative = minOffset + height.max - y;
+                        final int sq = (relative * relative) / diff;
+                        final double distance = border.distance - sq;
 
-                    final double wall = this.wallNoise[(y + border.offset) & 255];
-                    if (distance > wall && this.conditions.noise.GetBoolean(actualX, y, actualZ)) {
-                        for (FastNoise noise : this.generators) {
-                            final float value = noise.GetNoise(actualX, y, actualZ);
+                        final double wall = this.wallNoise[(y + border.offset) & 255];
+                        if (distance > wall) {
+                            for (FastNoise noise : this.generators) {
+                                final float value = noise.GetNoise(actualX, y, actualZ);
 
-                            if (noise.IsInThreshold(value)) {
-                                this.replaceBlock(rand, primer, x, y, z, chunkX, chunkZ);
-                                caverns[y][z][x] = true;
-                                break;
-                            } else if (noise.IsOuter(value, decorators.shell.noiseThreshold)) {
-                                this.generateShell(rand, primer, x, y, z, y, chunkX, chunkZ);
+                                if (noise.IsInThreshold(value)) {
+                                    if (height.contains(y)) {
+                                        this.replaceBlock(rand, primer, x, y, z, chunkX, chunkZ);
+                                        caverns[y][z][x] = true;
+                                        break;
+                                    } else {
+                                        this.generateShell(rand, primer, x, y, z, y, chunkX, chunkZ);
+                                    }
+                                } else if (noise.IsOuter(value, decorators.shell.noiseThreshold)) {
+                                    this.generateShell(rand, primer, x, y, z, y, chunkX, chunkZ);
+                                }
                             }
+                        } else if (distance > wall - d) {
+                            this.generateShell(rand, primer, x, y, z, y, chunkX, chunkZ);
                         }
                     }
                 }

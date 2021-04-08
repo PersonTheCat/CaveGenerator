@@ -77,6 +77,7 @@ public class RavineGenerator extends MapGenerator {
                 }
                 final double sumRXZ = distX2 / rXZ2 + distZ2 / rXZ2;
                 this.coverOuter(sphere, sumRoXZ, roY2, x, z, cY, miOY, miY);
+                this.coverOuter(sphere, sumRoXZ, roY2, x, z, cY, maY, maOY);
                 for (int y = maY; y > miY; y--) {
                     final double distY = ((y - 1) + 0.5 - cY);
                     final double distY2 = distY * distY;
@@ -86,7 +87,6 @@ public class RavineGenerator extends MapGenerator {
                         sphere.shell.add(x, y, z);
                     }
                 }
-                this.coverOuter(sphere, sumRoXZ, roY2, x, z, cY, maY, maOY);
             }
         }
     }

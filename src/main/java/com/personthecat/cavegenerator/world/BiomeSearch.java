@@ -9,10 +9,22 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
 
+import java.util.function.Predicate;
+
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class BiomeSearch {
     public final Lazy<Biome[]> current;
     public final Lazy<Data[]> surrounding;
+
+    /** Checks the surrounding biomes for the first match when given a predicate. */
+    public boolean anyMatches(Predicate<Biome> predicate) {
+        for (Biome b : current.get()) {
+            if (predicate.test(b)) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     /** A public accessor to calculate the current biome array size. */
     public static int size() {

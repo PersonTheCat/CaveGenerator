@@ -11,13 +11,11 @@ import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
-import net.minecraft.world.biome.Biome;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
-import java.util.function.Predicate;
 
 public abstract class MapGenerator extends WorldCarver {
 
@@ -40,24 +38,15 @@ public abstract class MapGenerator extends WorldCarver {
     public final void generate(PrimerContext ctx) {
         if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
             if (conditions.hasBiomes) {
-                if (anyMatches(ctx.biomes, conditions.biomes)) {
-                    fillInvalidBiomes(ctx.biomes);
-                    generateChecked(ctx);
-                    invalidBiomes.clear();
+                if (ctx.biomes.anyMatches(conditions.biomes)) {
+                    this.fillInvalidBiomes(ctx.biomes);
+                    this.generateChecked(ctx);
+                    this.invalidBiomes.clear();
                 }
             } else {
-                generateChecked(ctx);
+                this.generateChecked(ctx);
             }
         }
-    }
-
-    private static boolean anyMatches(BiomeSearch biomes, Predicate<Biome> predicate) {
-        for (Biome b : biomes.current.get()) {
-            if (predicate.test(b)) {
-               return true;
-            }
-        }
-        return false;
     }
 
     private void fillInvalidBiomes(BiomeSearch biomes) {

@@ -48,7 +48,7 @@ public class Range implements Iterable<Integer> {
     }
 
     public boolean contains(int num) {
-        return num >= min && num <= max;
+        return num >= min && num < max;
     }
 
     public int diff() {
