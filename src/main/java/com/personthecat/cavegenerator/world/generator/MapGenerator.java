@@ -5,6 +5,7 @@ import com.personthecat.cavegenerator.data.ConditionSettings;
 import com.personthecat.cavegenerator.data.DecoratorSettings;
 import com.personthecat.cavegenerator.model.ConfiguredCaveBlock;
 import com.personthecat.cavegenerator.model.PrimerData;
+import com.personthecat.cavegenerator.util.PositionFlags;
 import com.personthecat.cavegenerator.world.BiomeSearch;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;

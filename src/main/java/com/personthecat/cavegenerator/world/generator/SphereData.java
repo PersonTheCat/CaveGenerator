@@ -1,5 +1,7 @@
 package com.personthecat.cavegenerator.world.generator;
 
+import com.personthecat.cavegenerator.util.PositionFlags;
+
 public class SphereData {
 
     /** The inner sphere being carved out by the generator. */

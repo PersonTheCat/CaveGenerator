@@ -1,7 +1,4 @@
-package com.personthecat.cavegenerator.world.generator;
-
-import com.personthecat.cavegenerator.util.PositionConsumer;
-import com.personthecat.cavegenerator.util.PositionPredicate;
+package com.personthecat.cavegenerator.util;
 
 import java.util.Arrays;
 
