@@ -32,14 +32,14 @@ public class StructureGenerator extends FeatureGenerator {
         if (conditions.biomes.test(ctx.world.getBiomeForCoordsBody(center))) {
             for (int i = 0; i < cfg.count; i++) {
                 if (ctx.rand.nextDouble() <= cfg.chance) {
-                    generateSingle(ctx);
+                    this.generateSingle(ctx);
                 }
             }
         }
     }
 
     private void generateSingle(WorldContext ctx) {
-        final Optional<BlockPos> spawnPos = getSpawnPos(ctx)
+        final Optional<BlockPos> spawnPos = this.getSpawnPos(ctx)
             .filter(pos -> conditions.noise.GetBoolean(pos.getX(), pos.getY(), pos.getZ()));
         // Attempt to locate a suitable spawn position and then proceed.
         spawnPos.ifPresent(pos -> {
@@ -52,25 +52,25 @@ public class StructureGenerator extends FeatureGenerator {
     }
 
     private boolean allChecksPass(BlockPos pos, World world) {
-        return checkSources(cfg.matchers, world, pos) &&
-            checkNonSolid(cfg.nonSolidChecks, world, pos) &&
-            checkSolid(cfg.solidChecks, world, pos) &&
-            checkAir(cfg.airChecks, world, pos) &&
-            checkWater(cfg.waterChecks, world, pos);
+        return checkSources(cfg.matchers, world, pos)
+            && checkNonSolid(cfg.nonSolidChecks, world, pos)
+            && checkSolid(cfg.solidChecks, world, pos)
+            && checkAir(cfg.airChecks, world, pos)
+            && checkWater(cfg.waterChecks, world, pos);
     }
 
     /** Attempts to determine a suitable spawn point in the current location. */
     private Optional<BlockPos> getSpawnPos(WorldContext info) {
         // Favor vertical spawns, detecting horizontal surfaces first.
         if (cfg.directions.up || cfg.directions.down) {
-            final Optional<BlockPos> vertical = getSpawnPosVertical(info, structure);
+            final Optional<BlockPos> vertical = this.getSpawnPosVertical(info, structure);
             if (vertical.isPresent()) {
                 return vertical;
             } // else, try horizontal
         }
         // Attempt to locate any vertical surfaces, if necessary.
         if (cfg.directions.side) {
-            return getSpawnPosHorizontal(info, structure);
+            return this.getSpawnPosHorizontal(info, structure);
         }
         return empty();
     }
@@ -90,11 +90,11 @@ public class StructureGenerator extends FeatureGenerator {
             final int y;
             // Search both -> just up -> just down.
             if (cfg.directions.up && cfg.directions.down) {
-                y = findOpeningVertical(info.rand, info.world, x, z, minY, maxY);
+                y = this.findOpeningVertical(info.rand, info.world, x, z, minY, maxY);
             } else if (cfg.directions.up) {
-                y = randFindCeiling(info.world, info.rand, x, z, minY, maxY);
+                y = this.randFindCeiling(info.world, info.rand, x, z, minY, maxY);
             } else {
-                y = randFindFloor(info.world, info.rand, x, z, minY, maxY);
+                y = this.randFindFloor(info.world, info.rand, x, z, minY, maxY);
             }
             // Check to see if an opening was found, else retry;
             if (y != NONE_FOUND) {
@@ -111,11 +111,11 @@ public class StructureGenerator extends FeatureGenerator {
         if (height.diff() != 0 && conditions.region.GetBoolean(info.offsetX, info.offsetZ)) {
             for (int i = 0; i < HORIZONTAL_RETRIES; i++) {
                 final int y = height.rand(info.rand);
-                Optional<BlockPos> pos;
+                final Optional<BlockPos> pos;
                 if (info.rand.nextBoolean()) {
-                    pos = randCoordsNS(info, size.getX(), y);
+                    pos = this.randCoordsNS(info, size.getX(), y);
                 } else {
-                    pos = randCoordsEW(info, size.getZ(), y);
+                    pos = this.randCoordsEW(info, size.getZ(), y);
                 }
                 if (pos.isPresent()) {
                     return pos;
@@ -156,8 +156,8 @@ public class StructureGenerator extends FeatureGenerator {
     private Optional<BlockPos> randCoordsNS(WorldContext info, int sizeX, int y) {
         final int x = cornerInsideChunkBounds(info.rand, sizeX) + info.offsetX;
         final int z = info.rand.nextBoolean()
-            ? findOpeningNorth(info.world, x, y, info.offsetZ)
-            : findOpeningSouth(info.world, x, y, info.offsetZ);
+            ? this.findOpeningNorth(info.world, x, y, info.offsetZ)
+            : this.findOpeningSouth(info.world, x, y, info.offsetZ);
         if (z != NONE_FOUND && y < info.heightmap[x & 15][z & 15]) {
             return full(new BlockPos(x, y, z));
         }
@@ -171,8 +171,8 @@ public class StructureGenerator extends FeatureGenerator {
     private Optional<BlockPos> randCoordsEW(WorldContext info, int sizeZ, int y) {
         final int z = cornerInsideChunkBounds(info.rand, sizeZ) + info.offsetZ;
         final int x = info.rand.nextBoolean()
-            ? findOpeningEast(info.world, y, z, info.offsetX)
-            : findOpeningWest(info.world, y, z, info.offsetX);
+            ? this.findOpeningEast(info.world, y, z, info.offsetX)
+            : this.findOpeningWest(info.world, y, z, info.offsetX);
         if (x != NONE_FOUND && y < info.heightmap[x & 15][z & 15]) {
             return full(new BlockPos(x, y, z));
         }

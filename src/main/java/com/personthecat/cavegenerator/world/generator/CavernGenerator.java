@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 public class CavernGenerator extends WorldCarver {
 
-    private final List<BiomeTestData> invalidBiomes = new ArrayList<>(((BiomeSearch.size() * 2) + 1) * 2 - 1);
+    private final List<BiomeTestData> invalidBiomes;
     private final double[] wallNoise = new double[256];
     private final List<FastNoise> generators;
     private final FastNoise wallOffset;
@@ -29,6 +29,9 @@ public class CavernGenerator extends WorldCarver {
     private final double wallCurveRatio;
     private final boolean wallInterpolated;
     private final boolean hasShell;
+    private final int maxY;
+    private final int diffY;
+    private final int curveOffset;
 
     public CavernGenerator(CavernSettings cfg, World world) {
         super(cfg.conditions, cfg.decorators, world);
@@ -36,12 +39,17 @@ public class CavernGenerator extends WorldCarver {
         this.wallOffset = cfg.wallOffset.getGenerator(world);
         this.stretcher = Stretcher.withSize(0);
         this.wallCurveRatio = cfg.wallCurveRatio;
-        this.wallInterpolated = cfg.wallInterpolated;
+        this.wallInterpolated = cfg.wallInterpolation;
         this.hasShell = !this.decorators.shell.decorators.isEmpty();
 
-        final int minY = conditions.height.min + cfg.conditions.floor.map(n -> n.range.max).orElse(0);
-        final int maxY = conditions.height.max + cfg.conditions.ceiling.map(n -> n.range.max).orElse(0);
-        this.caverns = new PositionFlags(16 * 16 * maxY - minY);
+        final int minY = conditions.height.min + cfg.conditions.floor.map(n -> n.range.min).orElse(0);
+        this.maxY = conditions.height.max + cfg.conditions.ceiling.map(n -> n.range.max).orElse(0);
+        this.diffY = this.maxY - minY;
+        this.caverns = new PositionFlags(16 * 16 * this.maxY - minY);
+        this.curveOffset = (this.diffY + 1) / -2;
+
+        final int r = BiomeSearch.size();
+        this.invalidBiomes = new ArrayList<>(this.wallInterpolated ? (r * 2 + 1) * 2 - 1 : r);
         this.setupWallNoise(cfg.walls, world);
     }
 
@@ -185,8 +193,6 @@ public class CavernGenerator extends WorldCarver {
         final double distance = border.distance;
         final int offset = border.offset;
         final Range height = this.conditions.getColumn(heightmap, actualX, actualZ);
-        final int diff = height.diff() + 1; // Must be positive.
-        final int minOffset = diff / -2;
         // Adjust the height to accommodate the shell.
         final int d = (int) decorators.shell.sphereRadius;
         final int min = Math.max(1, height.min - d);
@@ -195,8 +201,8 @@ public class CavernGenerator extends WorldCarver {
 
         for (int y = min; y < max; y++) {
             if (this.conditions.noise.GetBoolean(actualX, y, actualZ)) {
-                final double relY = minOffset + height.max - y;
-                final double curve = distance - ((relY * relY) / diff * this.wallCurveRatio);
+                final double relY = this.curveOffset + this.maxY - y;
+                final double curve = distance - ((relY * relY) / this.diffY * this.wallCurveRatio);
 
                 final double wall = this.wallNoise[(y + offset) & 255];
                 if (curve > wall) {

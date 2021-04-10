@@ -41,7 +41,6 @@ public class ConfiguredWallDecorator {
 
     /** Variant of testNoise() that uses absolute coordinates. */
     private boolean testNoise(int x, int y, int z) {
-        // Calling Optional#get because `settings` will always be present when `noise` is present.
         return noise.GetBoolean(x, y, z);
     }
 
@@ -58,10 +57,9 @@ public class ConfiguredWallDecorator {
         if (WallDecoratorSettings.Placement.OVERLAY.equals(cfg.placement)) {
             primer.setBlockState(xO, yO, zO, state);
             return true;
-        } else {
-            primer.setBlockState(xD, yD, zD, state);
-            return false;
         }
+        primer.setBlockState(xD, yD, zD, state);
+        return false;
     }
 
 }

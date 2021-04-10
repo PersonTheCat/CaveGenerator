@@ -75,7 +75,7 @@ public class NoiseMapSettings {
 
     public FastNoise getGenerator(World world) {
         if (dummy) {
-            return new DummyGenerator(0L);
+            return new DummyGenerator((range.min + range.max) / 2.0F);
         }
         final FastNoise noise = new FastNoise(getSeed(world))
             .SetNoiseType(type)

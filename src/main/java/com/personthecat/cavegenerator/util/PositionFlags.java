@@ -1,7 +1,5 @@
 package com.personthecat.cavegenerator.util;
 
-import java.util.Arrays;
-
 /**
  * A reusable list of <em>relative</em> block positions stored in an array of raw integers.
  * This class is designed to reduce the number of memory allocations that occur when generating
@@ -82,9 +80,8 @@ public class PositionFlags {
         return false;
     }
 
-    /** Clears all data from the array and resets the cursor to 0. */
+    /** Resets the cursor to 0. No need to overwrite values. */
     public void reset() {
-        Arrays.fill(positions, 0, this.index, 0); // This avoids GC performance cost.
         this.index = 0;
     }
 }

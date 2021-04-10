@@ -141,7 +141,7 @@ public class NoiseSettings {
     /** Converts these settings into a regular {@link FastNoise} object. */
     public FastNoise getGenerator(World world) {
         if (dummy) {
-            return new DummyGenerator(0L);
+            return new DummyGenerator(0F);
         }
         final FastNoise noise = new FastNoise(getSeed(world))
             .SetNoiseType(type)

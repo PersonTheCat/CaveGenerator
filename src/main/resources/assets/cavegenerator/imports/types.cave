@@ -1,0 +1,57 @@
+{
+  # Simple settings for any noise generator
+  # that will produce a dummy generator.
+  DUMMY_GENERATOR: {
+    dummy: true
+  }
+  # Represents the full range of y-coordinates.
+  ANY_HEIGHT: [ 0, 255 ]
+  # Represents one half of all y-coordinates.
+  HALF_HEIGHT: [ 0, 127 ]
+  # Indicates that a feature should only spawn
+  # in a specific dimension.
+  OVERWORLD: [ 0 ]
+  NETHER: [ -1 ]
+  THE_END: [ 1 ]
+  # Indicates that a feature should only spawn
+  # in a specific biome type.
+  OCEAN_BIOMES: {
+    types: [
+      OCEAN
+    ]
+  }
+  WATER_BIOMES: {
+    types: [
+      OCEAN
+      RIVER
+    ]
+  }
+  # For features to spawn only in rare biomes.
+  RARE_BIOMES: {
+    types: [
+      RARE
+    ]
+  }
+  # For features to spawn only in hill biomes.
+  HILL_BIOMES: {
+    types: [
+      HILLS
+    ]
+  }
+  # For features to spawn only in forest biomes.
+  FOREST_BIOMES: {
+    types: [
+      FOREST
+    ]
+  }
+  COLD_BIOMES: {
+    types: [
+      COLD
+    ]
+  }
+  HOT_BIOMES: {
+    types: [
+      HOT
+    ]
+  }
+}

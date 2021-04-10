@@ -1,5 +1,5 @@
 VANILLA: {
-  dimensions: [0]
+  dimensions: [ 0 ]
   biomes: {}
   replaceableBlocks: $REPLACE_DIRT_STONE
   rooms: $VANILLA_ROOM
@@ -14,11 +14,11 @@ VANILLA: {
   ]
 }
 
-REPLACE_DIRT_STONE: [ "stone", "dirt", "grass" ]
+REPLACE_DIRT_STONE: [ "stone", "dirt", "grass", "hardened_clay" ]
 
 VANILLA_ROOM: {
   scale: 6
-  skew: 0.5
+  stretch: 0.5
   chance: 0.1
 }
 
@@ -33,7 +33,7 @@ VANILLA_TUNNELS: {
   resolution: 4
   distance: 0
   systemChance: 0.25
-  isolatedChance: 0.142
+  chance: 0.142
   systemDensity: 4
   roomChance: 0.1
   noiseYReduction: true
@@ -57,7 +57,7 @@ VANILLA_TUNNELS: {
     randFactor: 0
     exponent: 1
   }
-  skew: {
+  stretch: {
     startVal: 1
     factor: 1
     randFactor: 0
@@ -97,7 +97,7 @@ VANILLA_RAVINES: {
     randFactor: 0
     exponent: 1
   }
-  skew: {
+  stretch: {
     startVal: 3
     factor: 1
     randFactor: 0
