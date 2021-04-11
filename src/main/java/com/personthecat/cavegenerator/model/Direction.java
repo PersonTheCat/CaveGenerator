@@ -33,42 +33,33 @@ public enum Direction {
     @AllArgsConstructor
     @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
     public static class Container {
-        boolean up, down, side; // Todo: support all cardinals
 
-        /** Converts a direction array into a Direction.Container */
-        public static Container from(Direction[] directions) {
-            // Empty array -> all == true
-            if (directions.length == 0) {
-                return new Container(true, true, true);
-            }
-            boolean up = false, down = false, side = false;
-            for (Direction direction : directions) {
-                switch (direction) {
-                    case UP : up = true; break;
-                    case DOWN : down = true; break;
-                    case SIDE : side = true; break;
-                    case ALL : return new Container(true, true, true);
-                }
-            }
-            return new Container(up, down, side);
-        }
+        private static final Container ALL_DIRECTIONS =
+            new Container(true, true, true, true, true, true, true);
+
+        boolean up, down, side, north, south, east, west;
 
         /** Converts a direction array into a Direction.Container */
         public static Container from(List<Direction> directions) {
             // Empty array -> all == true
             if (directions.isEmpty()) {
-                return new Container(true, true, true);
+                return ALL_DIRECTIONS;
             }
-            boolean up = false, down = false, side = false;
+            boolean up = false, down = false, side = false, north = false, south = false, east = false, west = false;
+            // Directions are assumed to be non-redundant from preset tester.
             for (Direction direction : directions) {
                 switch (direction) {
                     case UP : up = true; break;
                     case DOWN : down = true; break;
                     case SIDE : side = true; break;
-                    case ALL : return new Container(true, true, true);
+                    case NORTH : north = true; break;
+                    case SOUTH : south = true; break;
+                    case EAST : east = true; break;
+                    case WEST : west = true; break;
+                    case ALL : return ALL_DIRECTIONS;
                 }
             }
-            return new Container(up, down, side);
+            return new Container(up, down, side, north, south, east, west);
         }
     }
 }

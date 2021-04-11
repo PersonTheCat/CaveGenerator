@@ -77,46 +77,51 @@ public class StalactiteGenerator extends FeatureGenerator {
     }
 
     private void generateSingle(World world, Random rand, BlockPos pos) {
-        if (cfg.wide) {
-            int length = place(world, rand, pos, cfg.maxLength, 4);
-            placeSides(world, rand, pos, length * 2 / 3, length + 1);
-            placeCorners(world, rand, pos, length / 4, 3);
-        } else { // Just place the single column and stop.
-            place(world, rand, pos, cfg.maxLength, 3);
+        int length = cfg.length.rand(rand);
+        if (hasEnoughSpace(world, pos, length + cfg.space)) {
+            this.place(world, pos, length);
+            if (length > 2 && cfg.wide) {
+                this.placeAll(world, rand, length * 2 / 3, sidePositions(pos));
+                this.placeAll(world, rand, length / 4, cornerPositions(pos));
+                if (length > 5 && cfg.giant) {
+                     this.placeAll(world, rand, length / 4, outerSidePositions(pos));
+                     this.placeAll(world, rand, length / 6, outerCornerPositions(pos));
+                }
+            }
         }
     }
 
-    private int place(World world, Random rand, BlockPos start, int length, int stopChance) {
-        BlockPos pos = start;
-        int i = 1; // Skip the initial position. It's the surface.
-        for (; i < length; i++) {
-            // Determine whether to go up or down.
+    private boolean hasEnoughSpace(World world, BlockPos pos, int space) {
+        for (int i = 0; i < space; i++) {
             pos = StalactiteSettings.Type.STALACTITE.equals(cfg.type) ? pos.down() : pos.up();
-            // Stop randomly / when the current block is solid.
-            if (world.getBlockState(pos).isOpaqueCube() || rand.nextInt(stopChance) == 0) {
-                break;
-            } // Set the new state.
+            if (world.getBlockState(pos).isOpaqueCube()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private void place(World world, BlockPos pos, int length) {
+        for (int i = 0; i < length; i++) {
+            pos = StalactiteSettings.Type.STALACTITE.equals(cfg.type) ? pos.down() : pos.up();
             world.setBlockState(pos, cfg.state, 16);
         }
-        return i; // Return the actual length.
     }
 
-    private void placeSides(World world, Random rand, BlockPos pos, int length, int stopChance) {
-        for (BlockPos cardinal : sidePositions(pos)) {
-            findPlace(world, rand, cardinal, length, stopChance);
+    private void placeAll(World world, Random rand, int length, BlockPos[] positions) {
+        for (BlockPos pos : positions) {
+            if (!cfg.symmetrical) {
+                final int min = length / 2;
+                length = rand.nextInt(length - min + 1) + min;
+            }
+            this.findPlace(world, pos, length);
         }
     }
 
-    private void placeCorners(World world, Random rand, BlockPos pos, int length, int stopChance) {
-        for (BlockPos ordinal : cornerPositions(pos)) {
-            findPlace(world, rand, ordinal, length, stopChance);
-        }
-    }
-
-    private void findPlace(World world, Random rand, BlockPos pos, int length, int stopChance) {
+    private void findPlace(World world, BlockPos pos, int length) {
         for (int i = 0; i < 3; i++) {
             if (world.getBlockState(pos).isOpaqueCube()) {
-                place(world, rand, pos, length, stopChance);
+                this.place(world, pos, length);
                 return;
             } // Go in the opposite direction and find a surface.
             pos = StalactiteSettings.Type.STALACTITE.equals(cfg.type) ? pos.up() : pos.down();
@@ -140,6 +145,30 @@ public class StalactiteGenerator extends FeatureGenerator {
             new BlockPos(x + 1, y, z + 1), // Southeast
             new BlockPos(x - 1, y, z + 1), // Southwest
             new BlockPos(x - 1, y, z - 1)  // Northwest
+        };
+    }
+
+    private static BlockPos[] outerSidePositions(BlockPos pos) {
+        final int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        return new BlockPos[] {
+            new BlockPos(x, y, z - 2), // North
+            new BlockPos(x, y, z + 2), // South
+            new BlockPos(x + 2, y, z), // East
+            new BlockPos(x - 2, y, z)  // West
+        };
+    }
+
+    private static BlockPos[] outerCornerPositions(BlockPos pos) {
+        final int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        return new BlockPos[] {
+            new BlockPos(x + 2, y, z + 1),
+            new BlockPos(x + 2, y, z - 1),
+            new BlockPos(x - 2, y, z + 1),
+            new BlockPos(x - 2, y, z - 1),
+            new BlockPos(x + 1, y, z + 2),
+            new BlockPos(x - 1, y, z + 2),
+            new BlockPos(x + 1, y, z - 2),
+            new BlockPos(x - 1, y, z - 2)
         };
     }
 }

@@ -175,7 +175,7 @@ public abstract class FeatureGenerator {
     }
 
     /**
-     * Searches north with and offset of 8 until an opening is found.
+     * Searches north with an offset of 8 until an opening is found.
      * Returns NONE_FOUND if no opening is found.
      */
     protected final int findOpeningNorth(World world, int x, int y, int offsetZ) {
@@ -191,7 +191,7 @@ public abstract class FeatureGenerator {
     }
 
     /**
-     * Searches south with and offset of 8 until an opening is found.
+     * Searches south with an offset of 8 until an opening is found.
      * Returns NONE_FOUND if no opening is found.
      */
     protected final int findOpeningSouth(World world, int x, int y, int offsetZ) {
@@ -207,7 +207,7 @@ public abstract class FeatureGenerator {
     }
 
     /**
-     * Searches east with and offset of 8 until an opening is found.
+     * Searches east with an offset of 8 until an opening is found.
      * Returns NONE_FOUND if no opening is found.
      */
     protected final int findOpeningEast(World world, int y, int z, int offsetX) {
@@ -223,7 +223,7 @@ public abstract class FeatureGenerator {
     }
 
     /**
-     * Searches west with and offset of 8 until an opening is found.
+     * Searches west with an offset of 8 until an opening is found.
      * Returns NONE_FOUND if no opening is found.
      */
     protected final int findOpeningWest(World world, int y, int z, int offsetX) {

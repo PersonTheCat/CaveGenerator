@@ -21,13 +21,11 @@ public class SplitMixRandom {
     private static long staffordMix13(long z) {
         z = (z ^ (z >>> 30)) * 0xBF58476D1CE4E5B9L;
         z = (z ^ (z >>> 27)) * 0x94D049BB133111EBL;
-
         return z ^ (z >>> 31);
     }
 
     private static int staffordMix4Upper32(long z) {
         z = (z ^ (z >>> 33)) * 0x62A9D9ED799705F5L;
-
         return (int) (((z ^ (z >>> 28)) * 0xCB24D0A5C88C35B3L) >>> 32);
     }
 
@@ -47,21 +45,15 @@ public class SplitMixRandom {
         if (n <= 0) {
             throw new IllegalArgumentException("illegal bound " + n + " (must be positive)");
         }
-
         long t = staffordMix13(this.x += PHI);
-
         final long nMinus1 = n - 1;
-
         if ((n & nMinus1) == 0) {
             return t & nMinus1;
         }
-
         long u = t >>> 1;
-
         while (u + nMinus1 - (t = u % n) < 0) {
             u = staffordMix13(this.x += PHI) >>> 1;
         }
-
         return t;
     }
 

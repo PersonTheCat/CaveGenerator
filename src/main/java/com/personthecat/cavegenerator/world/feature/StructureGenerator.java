@@ -72,7 +72,20 @@ public class StructureGenerator extends FeatureGenerator {
         if (cfg.directions.side) {
             return this.getSpawnPosHorizontal(info, structure);
         }
-        return empty();
+        Optional<BlockPos> side = empty();
+        if (cfg.directions.north) {
+            side = this.getSpawnPosN(info, structure);
+        }
+        if (cfg.directions.south && !side.isPresent()) {
+            side = this.getSpawnPosS(info, structure);
+        }
+        if (cfg.directions.east && !side.isPresent()) {
+            side = this.getSpawnPosE(info, structure);
+        }
+        if (cfg.directions.west && !side.isPresent()) {
+            side = this.getSpawnPosW(info, structure);
+        }
+        return side;
     }
 
     /** Attempts to find a spawn point for this structure on the vertical axis. */
@@ -125,6 +138,70 @@ public class StructureGenerator extends FeatureGenerator {
         return empty();
     }
 
+    /** Locates a northern wall as a potential spawn candidate. */
+    private Optional<BlockPos> getSpawnPosN(WorldContext info, Template structure) {
+        final BlockPos size = structure.getSize();
+        final Range height = conditions.getColumn(info.offsetX, info.offsetZ);
+        if (height.diff() != 0 && conditions.region.GetBoolean(info.offsetX, info.offsetZ)) {
+            for (int i = 0; i < HORIZONTAL_RETRIES; i++) {
+                final int y = height.rand(info.rand);
+                final Optional<BlockPos> pos = this.randCoordsN(info, size.getX(), y);
+                if (pos.isPresent()) {
+                    return pos;
+                }
+            }
+        }
+        return empty();
+    }
+
+    /** Locates a southern wall as a potential spawn candidate. */
+    private Optional<BlockPos> getSpawnPosS(WorldContext info, Template structure) {
+        final BlockPos size = structure.getSize();
+        final Range height = conditions.getColumn(info.offsetX, info.offsetZ);
+        if (height.diff() != 0 && conditions.region.GetBoolean(info.offsetX, info.offsetZ)) {
+            for (int i = 0; i < HORIZONTAL_RETRIES; i++) {
+                final int y = height.rand(info.rand);
+                final Optional<BlockPos> pos = this.randCoordsS(info, size.getX(), y);
+                if (pos.isPresent()) {
+                    return pos;
+                }
+            }
+        }
+        return empty();
+    }
+
+    /** Locates an eastern wall as a potential spawn candidate. */
+    private Optional<BlockPos> getSpawnPosE(WorldContext info, Template structure) {
+        final BlockPos size = structure.getSize();
+        final Range height = conditions.getColumn(info.offsetX, info.offsetZ);
+        if (height.diff() != 0 && conditions.region.GetBoolean(info.offsetX, info.offsetZ)) {
+            for (int i = 0; i < HORIZONTAL_RETRIES; i++) {
+                final int y = height.rand(info.rand);
+                final Optional<BlockPos> pos = this.randCoordsE(info, size.getZ(), y);
+                if (pos.isPresent()) {
+                    return pos;
+                }
+            }
+        }
+        return empty();
+    }
+
+    /** Locates a western wall as a potential spawn candidate. */
+    private Optional<BlockPos> getSpawnPosW(WorldContext info, Template structure) {
+        final BlockPos size = structure.getSize();
+        final Range height = conditions.getColumn(info.offsetX, info.offsetZ);
+        if (height.diff() != 0 && conditions.region.GetBoolean(info.offsetX, info.offsetZ)) {
+            for (int i = 0; i < HORIZONTAL_RETRIES; i++) {
+                final int y = height.rand(info.rand);
+                final Optional<BlockPos> pos = this.randCoordsW(info, size.getZ(), y);
+                if (pos.isPresent()) {
+                    return pos;
+                }
+            }
+        }
+        return empty();
+    }
+
     /**
      * Generate a random x or z coordinate based on size. Ensure that the resulting coordinate will not
      * produce cascading gen lag.
@@ -144,8 +221,8 @@ public class StructureGenerator extends FeatureGenerator {
 
     /** Generates random, valid coordinate pair for this location. */
     private BlockPos randCoords(Random rand, BlockPos size, int offsetX, int offsetZ) {
-        final int x = randCoord(rand, size.getX(), offsetX);
-        final int z = randCoord(rand, size.getZ(), offsetZ);
+        final int x = this.randCoord(rand, size.getX(), offsetX);
+        final int z = this.randCoord(rand, size.getZ(), offsetZ);
         return new BlockPos(x, 0, z);
     }
 
@@ -173,6 +250,46 @@ public class StructureGenerator extends FeatureGenerator {
         final int x = info.rand.nextBoolean()
             ? this.findOpeningEast(info.world, y, z, info.offsetX)
             : this.findOpeningWest(info.world, y, z, info.offsetX);
+        if (x != NONE_FOUND && y < info.heightmap[x & 15][z & 15]) {
+            return full(new BlockPos(x, y, z));
+        }
+        return empty();
+    }
+
+    /** Variant of #randCoords which operates north-bound only. */
+    private Optional<BlockPos> randCoordsN(WorldContext info, int sizeX, int y) {
+        final int x = cornerInsideChunkBounds(info.rand, sizeX) + info.offsetX;
+        final int z = this.findOpeningNorth(info.world, x, y, info.offsetZ);
+        if (z != NONE_FOUND && y < info.heightmap[x & 15][z & 15]) {
+            return full(new BlockPos(x, y, z));
+        }
+        return empty();
+    }
+
+    /** Variant of #randCoordsNS which operates south-bound only. */
+    private Optional<BlockPos> randCoordsS(WorldContext info, int sizeX, int y) {
+        final int x = cornerInsideChunkBounds(info.rand, sizeX) + info.offsetX;
+        final int z = this.findOpeningSouth(info.world, x, y, info.offsetZ);
+        if (z != NONE_FOUND && y < info.heightmap[x & 15][z & 15]) {
+            return full(new BlockPos(x, y, z));
+        }
+        return empty();
+    }
+
+    /** Variant of #randCoordsEW which operates east-bound only. */
+    private Optional<BlockPos> randCoordsE(WorldContext info, int sizeZ, int y) {
+        final int z = cornerInsideChunkBounds(info.rand, sizeZ) + info.offsetZ;
+        final int x = this.findOpeningEast(info.world, y, z, info.offsetX);
+        if (x != NONE_FOUND && y < info.heightmap[x & 15][z & 15]) {
+            return full(new BlockPos(x, y, z));
+        }
+        return empty();
+    }
+
+    /** Variant of #randCoordsEW which operates west-bound only. */
+    private Optional<BlockPos> randCoordsW(WorldContext info, int sizeZ, int y) {
+        final int z = cornerInsideChunkBounds(info.rand, sizeZ) + info.offsetZ;
+        final int x = this.findOpeningWest(info.world, y, z, info.offsetX);
         if (x != NONE_FOUND && y < info.heightmap[x & 15][z & 15]) {
             return full(new BlockPos(x, y, z));
         }

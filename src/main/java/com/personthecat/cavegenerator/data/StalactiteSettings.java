@@ -39,14 +39,23 @@ public class StalactiteSettings {
     /** Whether this structure should spawn upward or downward, i.e. stalagmite or stalactite. */
     @Default Type type = Type.STALACTITE;
 
-    /** Required fields. Must be supplied by the constructor. */
+    /** Whether to spawn a stalactite with sides and corners. */
     @Default boolean wide = true;
+
+    /** Whether to spawn an additional layer of blocks around the sides and corners. */
+    @Default boolean giant = false;
 
     /** The 0-1 chance that this spawner should run in any given chunk. */
     @Default double chance = 0.167F;
 
-    /** The maximum length to generate. */
-    @Default int maxLength = 3;
+    /** The possible lengths to generate. */
+    @Default Range length = Range.of(3, 5);
+
+    /** The minimum amount of free space above or below  */
+    @Default int space = 3;
+
+    /** Whether all sides should have the same length. */
+    @Default boolean symmetrical = true;
 
     /** Source blocks to check for before spawning. */
     @Default List<IBlockState> matchers = Collections.emptyList();
@@ -70,8 +79,11 @@ public class StalactiteSettings {
             .mapSelf(o -> builder.conditions(ConditionSettings.from(o, builder.conditions$value)))
             .mapEnum(Fields.type, Type.class, builder::type)
             .mapBool(Fields.wide, builder::wide)
+            .mapBool(Fields.giant, builder::giant)
             .mapFloat(Fields.chance, builder::chance)
-            .mapInt(Fields.maxLength, builder::maxLength)
+            .mapRange(Fields.length, builder::length)
+            .mapInt(Fields.space, builder::space)
+            .mapBool(Fields.symmetrical, builder::symmetrical)
             .mapStateList(Fields.matchers, builder::matchers)
             .release(builder::build);
     }
