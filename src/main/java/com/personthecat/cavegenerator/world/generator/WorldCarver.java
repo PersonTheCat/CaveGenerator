@@ -3,9 +3,7 @@ package com.personthecat.cavegenerator.world.generator;
 import com.personthecat.cavegenerator.data.ConditionSettings;
 import com.personthecat.cavegenerator.data.DecoratorSettings;
 import com.personthecat.cavegenerator.model.*;
-import net.minecraft.block.material.Material;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkPrimer;
 
@@ -61,94 +59,112 @@ public abstract class WorldCarver extends BasicGenerator {
     }
 
     /** Conditionally replaces the current block with blocks from this generator's WallDecorators. */
-    protected void decorateBlock(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ) {
-        if (this.decorateVertical(rand, primer, x, y, z, chunkX, chunkZ, true)) {
-            return;
-        } else if (this.decorateVertical(rand, primer, x, y, z, chunkX, chunkZ, false)) {
+    protected void decorateBlock(Random rand, ChunkPrimer primer, int x, int y, int z, int cX, int cZ) {
+        if (!this.decorators.wallMap.containsAny) {
             return;
         }
-        this.decorateHorizontal(rand, primer, x, y, z, chunkX, chunkZ);
+        if (decorateAll(this.decorators.wallMap.all, primer, rand, x, y, z, cX, cZ)) {
+            return;
+        }
+        if (decorateSide(this.decorators.wallMap.side, primer, rand, x, y, z, cX, cZ)) {
+            return;
+        }
+        if (y > 0 && decorate(this.decorators.wallMap.down, primer, rand, x, y, z, x, y - 1, z, cX, cZ)) {
+            return;
+        }
+        if (y < 15 && decorate(this.decorators.wallMap.up, primer, rand, x, y, z, x, y + 1, z, cX, cZ)) {
+            return;
+        }
+        if (x > 0 && decorate(this.decorators.wallMap.west, primer, rand, x, y, z, x - 1, y, z, cX, cZ)) {
+            return;
+        }
+        if (x < 15 && decorate(this.decorators.wallMap.east, primer, rand, x, y, z, x + 1, y, z, cX, cZ)) {
+            return;
+        }
+        if (z > 0 && decorate(this.decorators.wallMap.north, primer, rand, x, y, z, x, y, z - 1, cX, cZ)) {
+            return;
+        }
+        if (z < 15) {
+            decorate(this.decorators.wallMap.south, primer, rand, x, y, z, x, y, z + 1, cX, cZ);
+        }
     }
 
-    // Todo: this is heinous.
-    private boolean decorateVertical(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ, boolean up) {
-        final int offset = up ? y + 1 : y - 1;
-        final List<ConfiguredWallDecorator> decorators = up ? this.decorators.wallMap.up : this.decorators.wallMap.down;
-        for (ConfiguredWallDecorator decorator : decorators) {
-            final IBlockState candidate = primer.getBlockState(x, offset, z);
-            // Ignore air blocks.
-            if (candidate.getMaterial().equals(Material.AIR)) {
-                return false;
-            }
-            // Filter for valid generators at this position and for this block state.
-            if (decorator.canGenerate(rand, candidate, x, y, z, chunkX, chunkZ)) {
-                if (decorator.matchesBlock(candidate)) {
-                    for (IBlockState state : decorator.cfg.states) {
-                        if (rand.nextFloat() <= decorator.cfg.chance) {
-                            // Place block -> return success if original was replaced.
-                            if (decorator.decidePlace(state, primer, x, y, z, x, offset, z)) {
-                                return true;
-                            } // else continue iterating through decorators.
-                        }
-                    }
+    // Avoids redundant noise calculations, if applicable.
+    private static boolean decorateAll(List<ConfiguredWallDecorator> all, ChunkPrimer primer, Random rand, int x, int y, int z, int cX, int cZ) {
+        for (ConfiguredWallDecorator decorator : all) {
+            if (decorator.canGenerate(rand, x, y, z, cX, cZ)) {
+                if (y > 0 && checkPlaceWall(decorator, primer, rand, x, y, z, x, y - 1, z)) {
+                    return true;
+                }
+                if (y < 255 && checkPlaceWall(decorator, primer, rand, x, y, z, x, y + 1, z)) {
+                    return true;
+                }
+                if (x > 0 && checkPlaceWall(decorator, primer, rand, x, y, z, x - 1, y, z)) {
+                    return true;
+                }
+                if (x < 15 && checkPlaceWall(decorator, primer, rand, x, y, z, x + 1, y, z)) {
+                    return true;
+                }
+                if (z > 0 && checkPlaceWall(decorator, primer, rand, x, y, z, x, y, z - 1)) {
+                    return true;
+                }
+                if (z < 15 && checkPlaceWall(decorator, primer, rand, x, y, z, x, y, z + 1)) {
+                    return true;
                 }
             }
         }
-        // Everything failed.
         return false;
     }
 
-    // Todo: refactor this to be easier to read and support multiple directions.
-    private void decorateHorizontal(Random rand, ChunkPrimer primer, int x, int y, int z, int chunkX, int chunkZ ) {
-        // Avoid repeated calculations.
-        final List<ConfiguredWallDecorator> testedDecorators = pretestDecorators(rand, x, y, z, chunkX, chunkZ);
-        // We'll need to reiterate through those decorators below.
-        // Todo: This is probably where you'd add in specific direction support.
-        for (BlockPos pos : nsew(x, y, z)) {
-            if (!areCoordsInChunk(pos.getX(), pos.getZ())) {
-                continue;
-            }
-            final IBlockState candidate = primer.getBlockState(pos.getX(), pos.getY(), pos.getZ());
-            // Ignore air blocks.
-            if (candidate.getMaterial().equals(Material.AIR)) {
-                continue;
-            }
-            for (ConfiguredWallDecorator decorator : testedDecorators) {
-                if (decorator.matchesBlock(candidate)) {
-                    for (IBlockState state : decorator.cfg.states) {
-                        if (rand.nextFloat() <= decorator.cfg.chance) {
-                            // Place block -> return success if original was replaced.
-                            if (decorator.decidePlace(state, primer, x, y, z, pos.getX(), pos.getY(), pos.getZ())) {
-                                return;
-                            } // else continue iterating through decorators.
-                        }
-                    }
+    private static boolean decorateSide(List<ConfiguredWallDecorator> side, ChunkPrimer primer, Random rand, int x, int y, int z, int cX, int cZ) {
+        for (ConfiguredWallDecorator decorator : side) {
+            if (decorator.canGenerate(rand, x, y, z, cX, cZ)) {
+                if (x > 0 && checkPlaceWall(decorator, primer, rand, x, y, z, x - 1, y, z)) {
+                    return true;
+                }
+                if (x < 15 && checkPlaceWall(decorator, primer, rand, x, y, z, x + 1, y, z)) {
+                    return true;
+                }
+                if (z > 0 && checkPlaceWall(decorator, primer, rand, x, y, z, x, y, z - 1)) {
+                    return true;
+                }
+                if (z < 15 && checkPlaceWall(decorator, primer, rand, x, y, z, x, y, z + 1)) {
+                    return true;
                 }
             }
         }
+        return false;
     }
 
-    private List<ConfiguredWallDecorator> pretestDecorators(Random rand, int x, int y, int z, int chunkX, int chunkZ) {
-        final List<ConfiguredWallDecorator> testedDecorators = new ArrayList<>();
-        for (ConfiguredWallDecorator decorator : decorators.wallMap.north) { // Todo: this used to be all horizontal decorators
-            // Filter for valid generators at this position only.
-            if (decorator.canGenerate(rand, x, y, z, chunkX, chunkZ)) {
-                testedDecorators.add(decorator);
+
+    private static boolean checkPlaceWall(ConfiguredWallDecorator decorator, ChunkPrimer primer, Random rand, int x, int y, int z, int xO, int yO, int zO) {
+        if (decorator.matchesBlock(primer.getBlockState(xO, yO, zO))) {
+            return placeWall(decorator, primer, rand, x, y, z, xO, yO, zO);
+        }
+        return false;
+    }
+
+    private static boolean decorate(List<ConfiguredWallDecorator> decorators, ChunkPrimer primer, Random rand, int x, int y, int z, int xO, int yO, int zO, int cX, int cZ) {
+        for (ConfiguredWallDecorator decorator : decorators) {
+            final IBlockState candidate = primer.getBlockState(xO, yO, zO);
+            if (decorator.canGenerate(rand, candidate, x, y, z, cX, cZ)) {
+                if (placeWall(decorator, primer, rand, x, y, z, xO, yO, zO)) {
+                    return true;
+                }
             }
         }
-        return testedDecorators;
+        return false;
     }
 
-    private BlockPos[] nsew(int x, int y, int z) {
-        return new BlockPos[] {
-            new BlockPos(x, y, z - 1), // North
-            new BlockPos(x, y, z + 1), // South
-            new BlockPos(x + 1, y, z), // East
-            new BlockPos(x - 1, y, z)  // West
-        };
-    }
-
-    protected boolean areCoordsInChunk(int x, int z) {
-        return x > -1 && x < 16 && z > -1 && z < 16;
+    // Returns true if the current block is replaced, not the wall.
+    private static boolean placeWall(ConfiguredWallDecorator decorator, ChunkPrimer primer, Random rand, int x, int y, int z, int xO, int yO, int zO) {
+        for (IBlockState state : decorator.cfg.states) {
+            if (rand.nextFloat() <= decorator.cfg.chance) {
+                if (decorator.decidePlace(state, primer, x, y, z, xO, yO, zO)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

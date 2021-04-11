@@ -13,6 +13,8 @@ import java.util.List;
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 public class WallDecoratorMap {
 
+    @Singular("all") List<ConfiguredWallDecorator> all;
+    @Singular("side") List<ConfiguredWallDecorator> side;
     @Singular("up") List<ConfiguredWallDecorator> up;
     @Singular("down") List<ConfiguredWallDecorator> down;
     @Singular("north") List<ConfiguredWallDecorator> north;
@@ -27,8 +29,8 @@ public class WallDecoratorMap {
             final ConfiguredWallDecorator wall = new ConfiguredWallDecorator(cfg, world);
             for (Direction d : cfg.directions) {
                 switch (d) {
-                    case ALL: builder.up(wall).down(wall).north(wall).south(wall).east(wall).west(wall); break;
-                    case SIDE: builder.north(wall).south(wall).east(wall).west(wall); break;
+                    case ALL: builder.all(wall); break;
+                    case SIDE: builder.side(wall); break;
                     case UP: builder.up(wall); break;
                     case DOWN: builder.down(wall); break;
                     case NORTH: builder.north(wall); break;
