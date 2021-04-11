@@ -3,6 +3,7 @@ package com.personthecat.cavegenerator.world.generator;
 import com.personthecat.cavegenerator.data.ClusterSettings;
 import com.personthecat.cavegenerator.model.Conditions;
 import com.personthecat.cavegenerator.util.IdentityMultiValueMap;
+import com.personthecat.cavegenerator.util.XoRoShiRo;
 import com.personthecat.cavegenerator.world.RandomChunkSelector;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
@@ -62,7 +63,7 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
 
                             if (selector.getBooleanForCoordinates(id, cX, cZ, threshold)) {
                                 // Get an RNG unique to this chunk.
-                                final Random localRand = new Random(cX ^ cZ ^ clusterSeed);
+                                final Random localRand = new XoRoShiRo(cX ^ cZ ^ clusterSeed);
                                 final int y = cfg.centerHeight.rand(localRand);
                                 // Finalize all values.
                                 final BlockPos origin = new BlockPos(x, y, z);

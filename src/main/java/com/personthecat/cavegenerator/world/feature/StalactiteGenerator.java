@@ -2,6 +2,7 @@ package com.personthecat.cavegenerator.world.feature;
 
 import com.personthecat.cavegenerator.data.StalactiteSettings;
 import com.personthecat.cavegenerator.model.Range;
+import com.personthecat.cavegenerator.util.XoRoShiRo;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -35,7 +36,7 @@ public class StalactiteGenerator extends FeatureGenerator {
 
     @Override
     protected void doGenerate(WorldContext ctx) {
-        final Random localRand = new Random(ctx.rand.nextInt());
+        final Random localRand = new XoRoShiRo(ctx.rand.nextInt());
         // Each iteration increments by `distance`. This changes the frequency
         // with which `noise` is calculated, theoretically impacting performance.
         // Lower frequencies do not require as high a resolution, as this

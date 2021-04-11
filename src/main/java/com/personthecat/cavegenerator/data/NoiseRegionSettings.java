@@ -5,6 +5,7 @@ import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.noise.CachedNoiseGenerator;
 import com.personthecat.cavegenerator.noise.DummyGenerator;
 import com.personthecat.cavegenerator.util.HjsonMapper;
+import com.personthecat.cavegenerator.util.XoRoShiRo;
 import fastnoise.FastNoise;
 import fastnoise.FastNoise.NoiseType;
 import lombok.AccessLevel;
@@ -92,7 +93,7 @@ public class NoiseRegionSettings {
     /** Generates a new seed from the input `base` value. */
     private int getSeed(World world) {
         return seed.map(num -> {
-            final Random rand = new Random(world.getSeed());
+            final Random rand = new XoRoShiRo(world.getSeed());
             final FastNoise simple = new FastNoise(rand.nextInt());
             return Float.floatToIntBits(simple.GetNoise(num));
         }).orElseGet(world.rand::nextInt);

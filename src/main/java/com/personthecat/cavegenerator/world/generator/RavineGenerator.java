@@ -2,6 +2,7 @@ package com.personthecat.cavegenerator.world.generator;
 
 import com.personthecat.cavegenerator.data.RavineSettings;
 import com.personthecat.cavegenerator.model.PrimerData;
+import com.personthecat.cavegenerator.util.XoRoShiRo;
 import fastnoise.FastNoise;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
@@ -105,7 +106,7 @@ public class RavineGenerator extends MapGenerator {
 
     /** Starts a ravine between the input chunk coordinates. */
     private void startRavine(long seed, int destX, int destZ, int x, int z, ChunkPrimer primer) {
-        final Random rand = new Random(seed);
+        final Random rand = new XoRoShiRo(seed);
         final int distance = cfg.distance;
         final PrimerData data = new PrimerData(primer, x, z);
         final TunnelPathInfo path = new TunnelPathInfo(cfg, rand, destX, destZ);
@@ -126,9 +127,9 @@ public class RavineGenerator extends MapGenerator {
      */
     private void addRavine(long seed, PrimerData data, TunnelPathInfo path, int distance) {
         // Master RNG for this tunnel.
-        final Random mast = new Random(seed);
+        final Random mast = new XoRoShiRo(seed);
         // Avoid issues with inconsistent Random calls.
-        final Random dec = new Random(seed);
+        final Random dec = new XoRoShiRo(seed);
         distance = this.getDistance(mast, distance);
         // Unique wall mutations for this chasm.
         this.fillMutations(mast);

@@ -6,6 +6,7 @@ import com.personthecat.cavegenerator.data.DecoratorSettings;
 import com.personthecat.cavegenerator.model.ConfiguredCaveBlock;
 import com.personthecat.cavegenerator.model.PrimerData;
 import com.personthecat.cavegenerator.util.PositionFlags;
+import com.personthecat.cavegenerator.util.XoRoShiRo;
 import com.personthecat.cavegenerator.world.BiomeSearch;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -27,7 +28,7 @@ public abstract class MapGenerator extends WorldCarver {
 
     protected final List<BlockPos> invalidBiomes = new ArrayList<>(BiomeSearch.size());
     private final SphereData sphere = new SphereData();
-    protected final Random rand = new Random();
+    protected final Random rand = new XoRoShiRo(0L);
     private final boolean testWater;
 
     public MapGenerator(ConditionSettings conditions, DecoratorSettings decorators, World world, boolean testWater) {

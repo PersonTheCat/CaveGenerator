@@ -3,6 +3,7 @@ package com.personthecat.cavegenerator.world.generator;
 import com.personthecat.cavegenerator.data.RoomSettings;
 import com.personthecat.cavegenerator.data.TunnelSettings;
 import com.personthecat.cavegenerator.model.PrimerData;
+import com.personthecat.cavegenerator.util.XoRoShiRo;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkPrimer;
@@ -86,7 +87,7 @@ public class TunnelGenerator extends MapGenerator {
 
     /** Starts a tunnel system between the input chunk coordinates. */
     private void createSystem(World world, long seed, int destX, int destZ, int x, int z, ChunkPrimer primer) {
-        final Random rand = new Random(seed);
+        final Random rand = new XoRoShiRo(seed);
         final int frequency = this.getTunnelFrequency(rand);
         for (int i = 0; i < frequency; i++) {
             int branches = 1;
@@ -140,7 +141,7 @@ public class TunnelGenerator extends MapGenerator {
      */
     private void addTunnel(World world, long seed, PrimerData data, TunnelPathInfo path, int position, int distance) {
         // Main RNG for this tunnel.
-        final Random rand = new Random(seed);
+        final Random rand = new XoRoShiRo(seed);
         distance = this.getDistance(rand, distance);
         // Determine where to place branches, if applicable.
         final int randomBranchIndex = rand.nextInt(distance / 2) + distance / 4;
@@ -180,7 +181,7 @@ public class TunnelGenerator extends MapGenerator {
             if (!conditions.height.contains((int) path.getY())) {
                 continue;
             }
-            this.generateSphere(data, new Random(decSeed), path.getX(), path.getY(), path.getZ(), rXZ, rY, roXZ, roY);
+            this.generateSphere(data, new XoRoShiRo(decSeed), path.getX(), path.getY(), path.getZ(), rXZ, rY, roXZ, roY);
         }
     }
 
@@ -196,7 +197,7 @@ public class TunnelGenerator extends MapGenerator {
         scale = main.nextFloat() * scale + 1;
         // Construct a local Random object for use within this function,
         // also matching the vanilla setup.
-        final Random local = new Random(seed);
+        final Random local = new XoRoShiRo(seed);
         final int distance = getDistance(local, 0);
         final int position = distance / 2;
         // Determine the radius by `scale`.
