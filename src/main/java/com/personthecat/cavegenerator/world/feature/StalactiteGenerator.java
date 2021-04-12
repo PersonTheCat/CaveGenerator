@@ -3,6 +3,7 @@ package com.personthecat.cavegenerator.world.feature;
 import com.personthecat.cavegenerator.data.StalactiteSettings;
 import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.util.XoRoShiRo;
+import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -27,10 +28,10 @@ public class StalactiteGenerator extends FeatureGenerator {
      * Higher frequency -> higher resolution -> lower distance.
      */
     private static int calculateResolution(double chance) {
-        if (chance < 25.0) return 16; // 00 to 25 -> 1x / chunk
-        if (chance < 35.0) return 8;  // 25 to 35 -> 4x / chunk
-        if (chance < 55.0) return 4;  // 35 to 55 -> 16x / chunk
-        if (chance < 75.0) return 2;  // 55 to 75 -> 64x / chunk
+        if (chance < 0.25) return 16; // 00 to 25 -> 1x / chunk
+        if (chance < 0.35) return 8;  // 25 to 35 -> 4x / chunk
+        if (chance < 0.55) return 4;  // 35 to 55 -> 16x / chunk
+        if (chance < 0.75) return 2;  // 55 to 75 -> 64x / chunk
         return 1;                     // 75 to 100 -> 256x / chunk
     }
 
@@ -45,7 +46,7 @@ public class StalactiteGenerator extends FeatureGenerator {
             for (int z = ctx.offsetZ; z < ctx.offsetZ + 16; z = z + resolution) {
                 final Biome biome = ctx.world.getBiome(new BlockPos(x, 0, z));
                 if (conditions.biomes.test(biome) && conditions.region.GetBoolean(x, z)) {
-                    generateRegion(ctx, localRand, x, z);
+                    this.generateRegion(ctx, localRand, x, z);
                 }
             }
         }
@@ -61,14 +62,17 @@ public class StalactiteGenerator extends FeatureGenerator {
                 }
                 final Range height = conditions.getColumn(dx, dz);
                 if (height.diff() != 0 && conditions.region.GetBoolean(dz, dz)) {
+                    final int maxY = Math.min(info.heightmap[dx & 15][dz & 15] - SURFACE_ROOM, height.max);
+                    if (maxY <= height.min) continue;
+
                     final int y = StalactiteSettings.Type.STALACTITE.equals(cfg.type) ?
-                        findCeiling(info.world, dx, height.min, dz, height.max):
-                        findFloor(info.world, dx, height.max, dz, height.min);
+                        this.findCeiling(info.world, dx, height.min, dz, maxY):
+                        this.findFloor(info.world, dx, maxY, dz, height.min);
 
                     if (y != NONE_FOUND && conditions.noise.GetBoolean(dx, y, dz)) {
                         final BlockPos pos = new BlockPos(dx, y, dz);
                         if (checkSources(cfg.matchers, info.world, pos)) {
-                            generateSingle(info.world, rand, pos);
+                            this.generateSingle(info.world, rand, pos);
                         }
                     }
                 }
@@ -111,7 +115,7 @@ public class StalactiteGenerator extends FeatureGenerator {
     private void placeAll(World world, Random rand, int length, BlockPos[] positions) {
         for (BlockPos pos : positions) {
             if (!cfg.symmetrical) {
-                final int min = length / 2;
+                final int min = length * 3 / 4;
                 length = rand.nextInt(length - min + 1) + min;
             }
             this.findPlace(world, pos, length);

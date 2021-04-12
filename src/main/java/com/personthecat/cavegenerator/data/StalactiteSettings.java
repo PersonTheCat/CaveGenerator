@@ -79,13 +79,21 @@ public class StalactiteSettings {
             .mapSelf(o -> builder.conditions(ConditionSettings.from(o, builder.conditions$value)))
             .mapEnum(Fields.type, Type.class, builder::type)
             .mapBool(Fields.wide, builder::wide)
-            .mapBool(Fields.giant, builder::giant)
+            .mapBool(Fields.giant, g -> copyGiant(g, builder))
             .mapFloat(Fields.chance, builder::chance)
             .mapRange(Fields.length, builder::length)
             .mapInt(Fields.space, builder::space)
             .mapBool(Fields.symmetrical, builder::symmetrical)
             .mapStateList(Fields.matchers, builder::matchers)
             .release(builder::build);
+    }
+
+    // Giant stalactites should automatically be large.
+    private static void copyGiant(boolean giant, StalactiteSettingsBuilder builder) {
+        builder.giant(giant);
+        if (giant) {
+            builder.wide(true);
+        }
     }
 
     public enum Type {

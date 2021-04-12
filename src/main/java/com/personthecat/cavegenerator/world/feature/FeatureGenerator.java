@@ -25,6 +25,9 @@ public abstract class FeatureGenerator {
     /** The value returned by any surface locator when no surface is found. */
     protected static final int NONE_FOUND = Integer.MIN_VALUE;
 
+    /** Minimum distance below the surface for all late features. */
+    protected static final int SURFACE_ROOM = 5;
+
     protected final Conditions conditions;
     protected final WeakReference<World> world;
 

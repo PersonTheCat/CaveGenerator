@@ -44,7 +44,7 @@ public class StructureGenerator extends FeatureGenerator {
         // Attempt to locate a suitable spawn position and then proceed.
         spawnPos.ifPresent(pos -> {
             if (allChecksPass(pos, ctx.world)) {
-                preStructureSpawn(ctx, pos);
+                this.preStructureSpawn(ctx, pos);
                 final BlockPos adjusted = offset(centerBySize(pos, structure.getSize()), cfg.offset);
                 StructureSpawner.spawnStructure(structure, cfg.placement, ctx.world, adjusted);
             }
@@ -92,11 +92,11 @@ public class StructureGenerator extends FeatureGenerator {
     private Optional<BlockPos> getSpawnPosVertical(WorldContext info, Template structure) {
         for (int i = 0; i < VERTICAL_RETRIES; i++) {
             // Start with random (x, z) coordinates.
-            final BlockPos xz = randCoords(info.rand, structure.getSize(), info.offsetX, info.offsetZ);
+            final BlockPos xz = this.randCoords(info.rand, structure.getSize(), info.offsetX, info.offsetZ);
             final int x = xz.getX();
             final int z = xz.getZ();
             final Range height = conditions.getColumn(x, z);
-            final int maxY = Math.min(info.heightmap[x & 15][z & 15], height.max);
+            final int maxY = Math.min(info.heightmap[x & 15][z & 15] - SURFACE_ROOM, height.max);
             final int minY = height.min;
             if (minY >= maxY || !conditions.region.GetBoolean(x, z)) continue;
 
