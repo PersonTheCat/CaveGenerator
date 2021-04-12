@@ -1,14 +1,27 @@
 package com.personthecat.cavegenerator.config;
 
+import com.personthecat.cavegenerator.util.Calculator;
+import lombok.AllArgsConstructor;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
 import java.io.File;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-import static com.personthecat.cavegenerator.util.HjsonTools.*;
-import static com.personthecat.cavegenerator.util.CommonMethods.*;
+import static com.personthecat.cavegenerator.util.HjsonTools.asOrToArray;
+import static com.personthecat.cavegenerator.util.HjsonTools.FORMATTER;
+import static com.personthecat.cavegenerator.util.HjsonTools.getArray;
+import static com.personthecat.cavegenerator.util.HjsonTools.getObject;
+import static com.personthecat.cavegenerator.util.HjsonTools.getObjectOrNew;
+import static com.personthecat.cavegenerator.util.HjsonTools.setOrAdd;
+import static com.personthecat.cavegenerator.util.CommonMethods.empty;
+import static com.personthecat.cavegenerator.util.CommonMethods.find;
+import static com.personthecat.cavegenerator.util.CommonMethods.full;
+import static com.personthecat.cavegenerator.util.CommonMethods.runEx;
+import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
 
 public class PresetExpander {
 
@@ -27,6 +40,8 @@ public class PresetExpander {
         copyVanilla(presets, definitions);
         // Expand the variables now inside of each json.
         presets.forEach((f, json) -> expandVariables(json));
+        // Evaluate any arithmetic expressions in all presets.
+        presets.forEach((f, json) -> evaluateAll(json));
         // Delete all of the now unneeded imports and variables.
         presets.forEach((f, json) -> deleteUnused(json));
     }
@@ -133,7 +148,7 @@ public class PresetExpander {
      */
     private static JsonObject getRequiredImport(Map<File, JsonObject> definitions, String filename) {
         Objects.requireNonNull(filename, "Imports may not be null.");
-        final ImportHelper helper = new ImportHelper(filename);
+        final Import helper = new Import(filename);
         // Get the JSON object by filename.
         final JsonObject json = find(definitions.entrySet(), e -> helper.filename.equals(e.getKey().getName()))
             .map(Map.Entry::getValue)
@@ -232,42 +247,54 @@ public class PresetExpander {
     }
 
     /**
-     * If <code>val</code> is a reference, the source will be copied into <code>clone</code>.
+     * If <code>val</code> contains references, the values will be copied from <code>from</code>.
      *
      * @param from The source where variables are defined.
-     * @param s A string which may or may not be a reference.
-     * @return The substituted value, if possible.
+     * @param s A string which may or may not contain references.
+     * @return The substituted value, if necessary.
      */
     private static Optional<JsonValue> trySubstitute(JsonObject from, String s) {
-        return asReference(s).map(ref -> substitute(from, ref));
-    }
-
-    /**
-     * Attempts to extract a variable reference from any potential <code>JsonString</code>.
-     *
-     * @param s A string which may or may not be a reference.
-     * @return The name of the reference, if present.
-     */
-    private static Optional<String> asReference(String s) {
-        if (s.startsWith("$")) {
-            return full(s.substring(1));
+        if (!Reference.containsReferences(s)) {
+            return empty();
         }
-        return empty();
+        String ret = s;
+        do {
+            for (Reference r : Reference.getAll(ret)) {
+                ret = ret.replace(r.raw, substitute(from, r));
+            }
+        } while (Reference.containsReferences(ret));
+        // Convert to and from a JSON value to allow in-place substitutions.
+        return full(JsonValue.readHjson(ret));
     }
 
     /**
-     * Copies a key from a JSON object, asserting that one must exist.
+     * Copies a value by key from a JSON object, asserting that one must exist.
      *
      * @throws RuntimeException If the JSON does not contain the expected key.
      * @param from The source where variables are defined.
      * @param ref A string which is known to be a reference.
      * @return The value contained within <code>from</code>.
      */
-    private static JsonValue substitute(JsonObject from, String ref) {
+    private static JsonValue readValue(JsonObject from, String ref) {
         if (from.has(ref)) {
             return from.get(ref);
         }
         throw runExF("Use of undeclared variable: {}", ref);
+    }
+
+    /**
+     * Generates the raw string value of a variable reference with support for arguments.
+     *
+     * @param from The source where variables are defined.
+     * @param ref The parsed reference containing a key and arguments.
+     * @return The raw generated string after processing variable substitution.
+     */
+    private static String substitute(JsonObject from, Reference ref) {
+        String buffer = readValue(from, ref.key).toString(FORMATTER);
+        for (int i = 0; i < ref.args.size(); i++) {
+            buffer = buffer.replace("@" + (i + 1), ref.args.get(i));
+        }
+        return buffer;
     }
 
     /**
@@ -276,7 +303,7 @@ public class PresetExpander {
      * of strings indicating which fields to merge, or else <code>ALL</code>.
      *
      * <p>
-     *  For example, assume the following preset: <code>
+     *  For example, assume the following preset: <pre>
      *    variables: {
      *      TEST: {
      *          hello: world
@@ -286,14 +313,14 @@ public class PresetExpander {
      *        $TEST: ALL
      *        hi: mom
      *    }
-     * </code>
+     * </pre>
      *  After expanding the value <code>TEST</code>, the contents of <code>demo</code>
-     *  become the following: <code>
+     *  become the following: <pre>
      *    demo: {
      *      hello: world
      *      hi: mom
      *    }
-     * </code>
+     * </pre>
      * </p>
      *
      * @param from The source where variables are defined.
@@ -377,8 +404,74 @@ public class PresetExpander {
             }
             final String key = v.asString();
             // If the value exists, override it.
-            setOrAdd(to, key, substitute(from, key));
+            setOrAdd(to, key, readValue(from, key));
         }
+    }
+
+    /**
+     * Evaluates any arithmetic expressions inside of a JSON object.
+     *
+     * <p>
+     *  For example, given this object: <pre>
+     *    test: {
+     *      exp: ((2 + 2) * 2) ^ 2
+     *    }
+     * </pre>
+     *  This will be the output: <pre>
+     *    test: {
+     *      exp: 64.0
+     *    }
+     * </pre>
+     * </p>
+     *
+     * Remember that these objects are evaluated in place, and as such,
+     * the original contents are destroyed.
+     *
+     * @param json An object which may or may not contain expressions.
+     */
+    private static void evaluateAll(JsonObject json) {
+        final JsonObject clone = new JsonObject();
+        for (JsonObject.Member member : json) {
+            final String name = member.getName();
+            final JsonValue value = member.getValue();
+            if (value.isString()) {
+                final String exp = value.asString();
+                if (Calculator.isExpression(exp)) {
+                    clone.add(name, Calculator.evaluate(value.asString()));
+                    continue;
+                }
+            } else if (value.isObject()) {
+                evaluateAll(value.asObject());
+            } else if (value.isArray()) {
+                evaluateAll(value.asArray());
+            }
+            clone.add(name, value);
+        }
+        replaceContents(clone, json);
+    }
+
+    /**
+     * Evaluates any arithmetic expressions inside of a JSON array.
+     *
+     * @param json An array which may or may not contain expressions.
+     */
+    private static void evaluateAll(JsonArray json) {
+        final JsonArray clone = new JsonArray();
+        for (JsonValue value : json) {
+            if (value.isString()) {
+                final String exp = value.asString();
+                if (Calculator.isExpression(exp)) {
+                    clone.add(Calculator.evaluate(value.asString()));
+                    continue;
+                }
+            } else if (value.isObject()) {
+                evaluateAll(value.asObject());
+            } else if (value.isArray()) {
+                evaluateAll(value.asArray());
+            }
+            clone.add(value);
+        }
+        replaceContents(clone, json);
     }
 
     /**
@@ -415,17 +508,46 @@ public class PresetExpander {
 
     /** Splits an import statement into its tokens. */
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private static class ImportHelper {
+    private static class Import {
         final String filename;
         final Optional<String> variable;
         final Optional<String> as;
 
-        ImportHelper(String statement) {
+        Import(String statement) {
             final String[] splitAs = statement.split("\\s*(as|AS|As)\\s*");
             final String[] splitVar = splitAs[0].split("\\s*::\\s*");
             filename = splitVar[0];
             variable = splitVar.length > 1 ? full(splitVar[1]) : empty();
             as = splitAs.length > 1 ? full(splitAs[1]) : empty();
+        }
+    }
+
+    @AllArgsConstructor
+    private static class Reference {
+        /** A pattern used for testing whether a string contains arguments. */
+        static final Pattern REFERENCE_PATTERN = Pattern.compile("\\$(\\w+)(?:\\((.*)\\))?");
+
+        final String raw;
+        final String key;
+        final List<String> args;
+
+        static boolean containsReferences(String val) {
+            return val.contains("$");
+        }
+
+        static List<Reference> getAll(String val) {
+            final Matcher matcher = REFERENCE_PATTERN.matcher(val);
+            final List<Reference> references = new ArrayList<>();
+            while (matcher.find()) {
+                final String key = matcher.group(1);
+                final String rawArgs = matcher.group(2);
+                final List<String> args = new ArrayList<>();
+                if (rawArgs != null && !rawArgs.isEmpty()) {
+                    Collections.addAll(args, rawArgs.split("\\s*,\\s*"));
+                }
+                references.add(new Reference(matcher.group(0), key, args));
+            }
+            return references;
         }
     }
 }

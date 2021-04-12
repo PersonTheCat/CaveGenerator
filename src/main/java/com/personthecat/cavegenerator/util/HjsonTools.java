@@ -31,7 +31,7 @@ import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
 public class HjsonTools {
 
     /** The settings to be used when outputting JsonObjects to the disk. */
-    private static final HjsonOptions FORMATTER = new HjsonOptions()
+    public static final HjsonOptions FORMATTER = new HjsonOptions()
         .setAllowCondense(true)
         .setAllowMultiVal(true)
         .setCommentSpace(0)
