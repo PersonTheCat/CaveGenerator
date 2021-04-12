@@ -1,7 +1,9 @@
 package com.personthecat.cavegenerator;
 
 import com.personthecat.cavegenerator.config.CavePreset;
+import com.personthecat.cavegenerator.config.ConfigFile;
 import com.personthecat.cavegenerator.config.PresetReader;
+import com.personthecat.cavegenerator.util.HjsonTools;
 import lombok.extern.log4j.Log4j2;
 import net.minecraftforge.fml.common.Loader;
 
@@ -57,7 +59,16 @@ public class CaveInit {
         // Go ahead and clear this to allow presets to be reloaded.
         presets.clear();
         // Handle all files in the preset directory.
-        presets.putAll(PresetReader.getPresets(PRESET_DIR, IMPORT_DIR));
+        final Map<String, CavePreset> loaded = PresetReader.getPresets(PRESET_DIR, IMPORT_DIR);
+        presets.putAll(loaded);
+        // If necessary, automatically write the expanded values.
+        if (ConfigFile.autoGenerate) {
+            ensureDirExists(GENERATED_DIR).expect(CANT_CREATE);
+            loaded.forEach((name, preset) -> {
+                final File file = new File(GENERATED_DIR, name + ".cave");
+                HjsonTools.writeJson(preset.raw, file).throwIfPresent();
+            });
+        }
         // Inform the user of which presets were loaded.
         printLoadedPresets(presets);
     }

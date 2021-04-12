@@ -72,6 +72,13 @@ public class ConfigFile {
         "still be reformatted if values are updated."})
     public static boolean autoFormat = true;
 
+    @Comment({
+        "Whether to automatically generate preset files inside of",
+        "cavegenerator/generated. This will help you see how your",
+        "variables are getting expanded every time you reload your",
+        "presets."})
+    public static boolean autoGenerate = true;
+
     @SubscribeEvent
     public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
         if (event.getModID().equals(Main.MODID)) {

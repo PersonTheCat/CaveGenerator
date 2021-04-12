@@ -324,6 +324,7 @@ public class StructureGenerator extends FeatureGenerator {
      * a structure is started at this coordinate, the other end cannot exceed chunk bounds.
      */
     private static int cornerInsideChunkBounds(Random rand, int size) {
+        // Todo: better testing for cascading generation lag
         final int min = size / 2;
         return rand.nextInt(16 - min) + min;
     }
