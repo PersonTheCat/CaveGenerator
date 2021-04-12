@@ -240,12 +240,21 @@ public class HjsonTools {
     public static List<JsonObject> getObjectArray(JsonObject json, String field) {
         List<JsonObject> array = new ArrayList<>();
         getValue(json, field).map(HjsonTools::asOrToArray)
-            .ifPresent(a -> a.forEach(e -> {
+            .ifPresent(a -> flatten(array, a));
+        return array;
+    }
+
+    /** Recursively flattens object arrays into a single dimension. */
+    private static void flatten(List<JsonObject> array, JsonArray source) {
+        for (JsonValue value: source) {
+            if (value.isArray()) {
+                flatten(array, value.asArray());
+            } else {
                 // This is assumed to be an object. If it isn't,
                 // The user should be informed (i.e. crash).
-                array.add(e.asObject());
-            }));
-        return array;
+                array.add(value.asObject());
+            }
+        }
     }
 
     /** Variant of {@link #getObjectArray} which does not coerce values into objects. */
