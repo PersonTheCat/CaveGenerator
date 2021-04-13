@@ -23,6 +23,9 @@ import static com.personthecat.cavegenerator.io.SafeFileIO.fileExists;
 @Log4j2
 public class CaveInit {
 
+    /** A setting indicating the location where backups will be stored. */
+    private static final String BACKUPS = Main.MODID + "/backup";
+
     /** A setting indicating the location where example presets will be kept. */
     private static final String EXAMPLES = Main.MODID + "/example_presets";
 
@@ -47,6 +50,7 @@ public class CaveInit {
     private static final File CONFIG_DIR = Loader.instance().getConfigDir();
 
     public static final File CG_DIR = new File(CONFIG_DIR, Main.MODID);
+    public static final File BACKUP_DIR = new File(CONFIG_DIR, BACKUPS);
     public static final File EXAMPLE_DIR = new File(CONFIG_DIR, EXAMPLES);
     public static final File PRESET_DIR = new File(CONFIG_DIR, PRESETS);
     public static final File IMPORT_DIR = new File(CONFIG_DIR, IMPORTS);

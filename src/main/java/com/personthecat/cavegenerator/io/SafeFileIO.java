@@ -1,21 +1,24 @@
 package com.personthecat.cavegenerator.io;
 
-import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.util.Result;
-import net.minecraftforge.fml.common.Loader;
 
 import javax.annotation.CheckReturnValue;
 import java.io.*;
 import java.nio.file.Files;
 import java.util.List;
 import java.util.Optional;
-import static com.personthecat.cavegenerator.util.CommonMethods.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import static com.personthecat.cavegenerator.util.CommonMethods.empty;
+import static com.personthecat.cavegenerator.util.CommonMethods.full;
+import static com.personthecat.cavegenerator.util.CommonMethods.nullable;
+import static com.personthecat.cavegenerator.util.CommonMethods.runEx;
+import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
+import static com.personthecat.cavegenerator.CaveInit.BACKUP_DIR;
 
 /** A few potentially controversial ways for handling errors in file io. */
 public class SafeFileIO {
-
-    /** The directory where all file backups will be stored. */
-    private static final File BACKUP_DIR = new File(Loader.instance().getConfigDir(), Main.MODID + "/backup");
 
     /**
      * Ensures that the input @param file refers to a directory, creating one if nothing is found.
@@ -69,14 +72,27 @@ public class SafeFileIO {
 
     /** Copies a file to the backup directory. */
     public static void backup(File file) {
-        final File backup = new File(BACKUP_DIR, file.getName());
+        backup(file, false);
+    }
+
+    /** Copies (or moves) a file to the backup directory. */
+    public static void backup(File file, boolean move) {
         if (!fileExists(BACKUP_DIR, "Unable to handle backup directory.")) {
             mkdirs(BACKUP_DIR).throwIfPresent();
         }
+        final File backup = new File(BACKUP_DIR, file.getName());
+        final BackupHelper helper = new BackupHelper(file);
+        helper.cycle(BACKUP_DIR);
         if (fileExists(backup, "Unable to handle existing backup file.")) {
-            backup.delete();
+            throw runExF("Could not rename backups: {}", file.getName());
         }
-        copy(file, BACKUP_DIR).throwIfPresent();
+        if (move) {
+            if (!file.renameTo(backup)) {
+                throw runExF("Error moving {} to backups", file.getName());
+            }
+        } else {
+            copy(file, BACKUP_DIR).throwIfPresent();
+        }
     }
 
     /** Renames a file when given a top-level name only. */
@@ -130,5 +146,47 @@ public class SafeFileIO {
     public static InputStream getRequiredResource(String path) {
         return getResource(path)
             .orElseThrow(() -> runExF("The required file \"{}\" was not present in the jar.", path));
+    }
+
+    private static class BackupHelper {
+        final String base;
+        final String ext;
+        final Pattern pattern;
+
+        BackupHelper(File file) {
+            final String name = file.getName();
+            final int dotIndex = name.indexOf(".");
+            if (dotIndex > 0) {
+                base = name.substring(0, dotIndex);
+                ext = name.substring(dotIndex);
+            } else {
+                base = name;
+                ext = "";
+            }
+            pattern = Pattern.compile(base + "(\\s\\((\\d+)\\))?" + ext);
+        }
+
+        void cycle(File dir) {
+            final File[] matching = dir.listFiles(this::matches);
+            for (int i = matching.length - 1; i > -1; i--) {
+                final File f = matching[i];
+                final int number = this.getNumber(f);
+                final File newFile = new File(f.getParentFile(), base + " (" + (number + 1) + ")" + ext);
+                if (!f.renameTo(newFile)) {
+                    throw runExF("Could not increment backup: {}", f.getName());
+                }
+            }
+        }
+
+        boolean matches(File file) {
+            return pattern.matcher(file.getName()).matches();
+        }
+
+        int getNumber(File file) {
+            final Matcher matcher = pattern.matcher(file.getName());
+            if (!matcher.find()) throw runExF("Backup deleted externally: {}", file.getName());
+            final String g2 = matcher.group(2);
+            return g2 == null ? 0 : Integer.parseInt(g2);
+        }
     }
 }

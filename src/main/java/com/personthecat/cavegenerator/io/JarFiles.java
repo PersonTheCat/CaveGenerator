@@ -30,7 +30,7 @@ public class JarFiles {
     private static final String TUTORIAL_NAME = "TUTORIAL.cave";
 
     /** The name of the stripped tutorial file. */
-    private static final String TUTORIAL_STRIPPED_NAME = "TUTORIAL_STRIPPED.cave";
+    private static final String REFERENCE_NAME = "REFERENCE.cave";
 
     /** All of the <b>example</b> presets to be copied from the jar. */
     private static final String[] PRESETS = {
@@ -48,7 +48,7 @@ public class JarFiles {
 
     /** Any preset that specifically belongs in /imports. */
     private static final String[] IMPORTS = {
-        "defaults"
+        "blocks", "conditions", "defaults", "types"
     };
 
     /** Copies the example presets from the jar to the disk. */
@@ -70,7 +70,9 @@ public class JarFiles {
         for (String fileName : PRESETS) {
             final String fromLocation = ASSETS_PATH + "/presets/" + fileName + ".cave";
             final String toLocation = EXAMPLE_DIR + "/" + fileName + ".cave";
-            copyFile(fromLocation, toLocation);
+            if (!fileExists(new File(toLocation), "Security error on " + toLocation)) {
+                copyFile(fromLocation, toLocation);
+            }
         }
     }
 
@@ -122,8 +124,8 @@ public class JarFiles {
 
         // Copy the condensed version.
         // Todo: Generate this file.
-        final String fromLocation2 = ASSETS_PATH + "/" + TUTORIAL_STRIPPED_NAME;
-        final String toLocation2 = ROOT_DIR + "/" + TUTORIAL_STRIPPED_NAME;
+        final String fromLocation2 = ASSETS_PATH + "/" + REFERENCE_NAME;
+        final String toLocation2 = ROOT_DIR + "/" + REFERENCE_NAME;
         copyFile(fromLocation2, toLocation2);
     }
 

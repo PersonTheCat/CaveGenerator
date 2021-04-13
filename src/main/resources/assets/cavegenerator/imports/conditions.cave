@@ -1,0 +1,34 @@
+{
+  # Represents the full range of y-coordinates.
+  ANY_HEIGHT: [ 0, 255 ]
+  # Represents one half of all y-coordinates.
+  HALF_HEIGHT: [ 0, 127 ]
+  # Indicates that a feature should only spawn
+  # in a specific dimension.
+  OVERWORLD: [ 0 ]
+  NETHER: [ -1 ]
+  THE_END: [ 1 ]
+  # A function that produces a simple biome
+  # settings object when given a list of biome
+  # types.
+  # Parameters:
+  #  @1  -> type
+  #  @2? -> type
+  #  @3? -> type
+  #  @...
+  # Examples:
+  #  $TYPES(FOREST)
+  #  $TYPES(HILLS, RARE)
+  TYPES: {
+    types: [ "@1", "@2?", "@3?", "@4?", "@5?" ]
+  }
+  # Indicates that a feature should only spawn
+  # in a specific biome type.
+  OCEAN_BIOMES: $TYPES(OCEAN)
+  WATER_BIOMES: $TYPES(OCEAN, RIVER)
+  RARE_BIOMES: $TYPES(RARE)
+  HILL_BIOMES: $TYPES(HILLS)
+  FOREST_BIOMES: $TYPES(FOREST)
+  COLD_BIOMES: $TYPES(COLD)
+  HOT_BIOMES: $TYPES(HOT)
+}

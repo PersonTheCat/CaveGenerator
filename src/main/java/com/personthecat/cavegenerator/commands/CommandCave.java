@@ -24,6 +24,7 @@ import net.minecraft.util.text.event.HoverEvent;
 import net.minecraft.world.GameType;
 import net.minecraftforge.fml.common.Loader;
 import org.apache.commons.lang3.ArrayUtils;
+import org.apache.commons.lang3.StringUtils;
 import org.hjson.JsonObject;
 
 import java.awt.*;
@@ -115,6 +116,7 @@ public class CommandCave extends CommandBase {
         { "copy <name> [<dir>]", "Recursively copies presets out of", "config/cavegenerator." },
         { "move <name> <dir>", "Moves a preset out of the preset", "directory." },
         { "delete <name>", "Moves a preset to the backup directory." },
+        { "clean [<dir>]", "Moves disabled presets to the backup directory."},
         { "rename <name> <new>", "Renames a preset, ignoring its extension." },
         { "expand <name> [<as>]", "Writes the expanded copy of this preset", "under /generated" },
         { "compress <name> [<as>]", "Writes a compressed version of this", "preset under /generated" },
@@ -180,6 +182,7 @@ public class CommandCave extends CommandBase {
             case "copy": copyPreset(sender, args); break;
             case "move": movePreset(sender, args); break;
             case "delete": deletePreset(sender, args); break;
+            case "clean": cleanPresets(sender, args); break;
             case "rename": renamePreset(sender, args); break;
             case "expand" : writeExpanded(sender, args); break;
             case "compress" : writeCompressed(sender, args); break;
@@ -187,7 +190,7 @@ public class CommandCave extends CommandBase {
             case "tohjson" : convert(sender, args, false); break;
             case "page" :
             case "help" : helpCommand(sender, args); break;
-            default : displayHelp(sender, 1);
+            default : helpCommand(sender, command);
         }
     }
 
@@ -284,13 +287,12 @@ public class CommandCave extends CommandBase {
                 } else {
                     cave.add("enabled", enabled, "Whether the preset is enabled globally.");
                 }
+                final File f = enabled && dir != CaveInit.PRESET_DIR
+                    ? new File(CaveInit.PRESET_DIR, preset.getName())
+                    : preset;
                 // Try to write the updated preset to the disk.
-                writeJson(cave, preset).expectF("Error writing to {}", preset.getName());
+                writeJson(cave, f).expectF("Error writing to {}", f.getName());
             });
-            if (enabled && dir != CaveInit.PRESET_DIR) {
-                copy(preset, CaveInit.PRESET_DIR).throwIfPresent();
-                sendMessage(sender, f("Copied {} to preset directory.", preset.getName()));
-            }
         } else {
             throw runExF("No preset was found named {}", args[0]);
         }
@@ -301,14 +303,7 @@ public class CommandCave extends CommandBase {
     private static void list(ICommandSender sender, String[] args) {
         final File dir = args.length > 0 ? new File(CaveInit.CG_DIR, args[0]) : CaveInit.PRESET_DIR;
         if (!dir.exists()) {
-            final List<String> names = new ArrayList<>();
-            for (File f : CaveInit.CG_DIR.listFiles()) {
-                if (f.isDirectory()) {
-                    names.add(f.getName());
-                }
-            }
-            final String options = Arrays.toString(names.toArray(new String[0]));
-            sendMessage(sender, f("Invalid directory. Options: {}", options));
+            displayDirectories(sender);
             return;
         }
         ITextComponent msg = tcs("") // Parent has no formatting.
@@ -383,7 +378,14 @@ public class CommandCave extends CommandBase {
         if (located.isPresent()) {
             final File f = located.get();
             final File dir = new File(CaveInit.CG_DIR, args[1]);
+            if (!dir.exists()) {
+                ensureDirExists(dir).throwIfPresent();
+                sendMessage(sender, f("Created folder: {}", dir.getName()));
+            }
             copy(f, dir).throwIfPresent();
+            if (!f.delete()) {
+                sendMessage(sender, "Original could not be deleted.");
+            }
             sendMessage(sender, f("The file was moved to {}/{}", dir.getName(), f.getName()));
         } else {
             sendMessage(sender, "File not found.");
@@ -395,14 +397,44 @@ public class CommandCave extends CommandBase {
         requireArgs(args, 1);
         final Optional<File> located = CaveInit.locatePreset(args[0]);
         if (located.isPresent()) {
-            backup(located.get());
-            if (!located.get().delete()) {
-                sendMessage(sender, "Unable to delete file. A backup was made.");
-            } else {
-                sendMessage(sender, located.get().getName() + " was moved to backups.");
-            }
+            backup(located.get(), true);
+            sendMessage(sender, located.get().getName() + " was moved to backups.");
         } else {
             sendMessage(sender, "File not found.");
+        }
+    }
+
+    private static void cleanPresets(ICommandSender sender, String[] args) {
+        final File dir = args.length > 0
+            ? new File(CaveInit.CG_DIR, args[0])
+            : CaveInit.PRESET_DIR;
+        if (!dir.exists()) {
+            displayDirectories(sender);
+            return;
+        }
+        if (dir.equals(CaveInit.BACKUP_DIR)) {
+            if (args.length > 1 && "force".equalsIgnoreCase(args[1])) {
+                for (File f : dir.listFiles(CaveInit::validExtension)) {
+                    if (!f.delete()) {
+                        throw runExF("Error deleting {}", f.getName());
+                    }
+                }
+            } else {
+                sendMessage(sender, "Rerun with \"force\" to delete backups.");
+            }
+            return;
+        }
+        int numDisabled = 0;
+        for (File f : dir.listFiles(CaveInit::validExtension)) {
+            if (!isPresetEnabled(f)) {
+                backup(f, true);
+                numDisabled++;
+            }
+        }
+        if (numDisabled > 0) {
+            sendMessage(sender, f("{} preset(s) were moved to backups."));
+        } else {
+            sendMessage(sender, f("There are no disabled presets in {}.", dir.getName()));
         }
     }
 
@@ -490,9 +522,11 @@ public class CommandCave extends CommandBase {
     }
 
     /** The standard help command, specifying the page number. */
-    private static void helpCommand(ICommandSender sender, String[] args) {
+    private static void helpCommand(ICommandSender sender, String... args) {
         requireArgs(args, 1);
-        displayHelp(sender, Integer.parseInt(args[0]));
+        final String arg = args[0];
+        final int page = StringUtils.isNumeric(arg) ? Integer.parseInt(arg) : 1;
+        displayHelp(sender, page);
     }
 
     private static ITextComponent getListElementText(File file) {
@@ -516,9 +550,9 @@ public class CommandCave extends CommandBase {
 
     /** Generates the help message, displaying usage for each sub-command. */
     private static ITextComponent[] createHelpMessage() {
-        List<TextComponentString> msgs = new ArrayList<>();
+        final List<TextComponentString> msgs = new ArrayList<>();
         final int numLines = getNumElements(USAGE_TEXT) - USAGE_TEXT.length;
-        final int numPages = numLines / USAGE_LENGTH - 1;
+        final int numPages = numLines / USAGE_LENGTH - 2;
         // The actual pages..
         for (int i = 0; i < USAGE_TEXT.length; i += USAGE_LENGTH) {
             final TextComponentString header = getUsageHeader((i / USAGE_LENGTH) + 1, numPages);
@@ -598,6 +632,17 @@ public class CommandCave extends CommandBase {
     /** A ClickEvent constructor for opening files. */
     private static ClickEvent clickToOpen(String path) {
         return new ClickEvent(ClickEvent.Action.OPEN_FILE, path);
+    }
+
+    private static void displayDirectories(ICommandSender user) {
+        final List<String> names = new ArrayList<>();
+        for (File f : CaveInit.CG_DIR.listFiles()) {
+            if (f.isDirectory()) {
+                names.add(f.getName());
+            }
+        }
+        final String options = Arrays.toString(names.toArray(new String[0]));
+        sendMessage(user, f("Invalid directory. Options: {}", options));
     }
 
     /** Shorthand for sending a message to the input user. */
