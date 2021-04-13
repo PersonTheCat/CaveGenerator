@@ -40,8 +40,10 @@ public class PresetReader {
         jsons.forEach(SyntaxHelper::check);
         definitions.forEach(SyntaxHelper::check);
         // Update all of the raw json objects.
-        jsons.forEach((file, json) -> PresetCompat.update(json, file)
-            .expectF("Error updating {}", file));
+        definitions.forEach((file, json) -> PresetCompat.updateImport(json, file)
+            .expectF("Updating import {}", file));
+        jsons.forEach((file, json) -> PresetCompat.updatePreset(json, file)
+            .expectF("Updating preset {}", file));
         // Expand all of the variable definitions and imports.
         PresetExpander.expandAll(jsons, definitions);
         // Mark all values as unused so we can track them.

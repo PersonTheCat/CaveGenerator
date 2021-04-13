@@ -1,10 +1,12 @@
 package com.personthecat.cavegenerator.io;
 
+import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.util.Result;
 
 import javax.annotation.CheckReturnValue;
 import java.io.*;
 import java.nio.file.Files;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.regex.Matcher;
@@ -82,7 +84,7 @@ public class SafeFileIO {
         }
         final File backup = new File(BACKUP_DIR, file.getName());
         final BackupHelper helper = new BackupHelper(file);
-        helper.cycle(BACKUP_DIR);
+        helper.cycle();
         if (fileExists(backup, "Unable to handle existing backup file.")) {
             throw runExF("Could not rename backups: {}", file.getName());
         }
@@ -166,12 +168,12 @@ public class SafeFileIO {
             pattern = Pattern.compile(base + "(\\s\\((\\d+)\\))?" + ext);
         }
 
-        void cycle(File dir) {
-            final File[] matching = dir.listFiles(this::matches);
-            for (int i = matching.length - 1; i > -1; i--) {
-                final File f = matching[i];
-                final int number = this.getNumber(f);
-                final File newFile = new File(f.getParentFile(), base + " (" + (number + 1) + ")" + ext);
+        void cycle() {
+            final List<File> matching = Arrays.asList(CaveInit.BACKUP_DIR.listFiles(this::matches));
+            matching.sort(this::compare); // Reverse order.
+            for (File f : matching) {
+                final int number = this.getNumber(f) + 1;
+                final File newFile = new File(f.getParentFile(), base + " (" + number + ")" + ext);
                 if (!f.renameTo(newFile)) {
                     throw runExF("Could not increment backup: {}", f.getName());
                 }
@@ -187,6 +189,10 @@ public class SafeFileIO {
             if (!matcher.find()) throw runExF("Backup deleted externally: {}", file.getName());
             final String g2 = matcher.group(2);
             return g2 == null ? 0 : Integer.parseInt(g2);
+        }
+
+        private int compare(File f1, File f2) {
+            return Integer.compare(this.getNumber(f2), this.getNumber(f1));
         }
     }
 }

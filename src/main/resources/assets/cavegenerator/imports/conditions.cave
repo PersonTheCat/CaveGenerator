@@ -24,11 +24,11 @@
   }
   # Indicates that a feature should only spawn
   # in a specific biome type.
-  OCEAN_BIOMES: $TYPES(OCEAN)
-  WATER_BIOMES: $TYPES(OCEAN, RIVER)
-  RARE_BIOMES: $TYPES(RARE)
-  HILL_BIOMES: $TYPES(HILLS)
-  FOREST_BIOMES: $TYPES(FOREST)
-  COLD_BIOMES: $TYPES(COLD)
-  HOT_BIOMES: $TYPES(HOT)
+  OCEAN_BIOMES: { types: [ "OCEAN" ] }
+  WATER_BIOMES: { types: [ "OCEAN", "RIVER" ] }
+  RARE_BIOMES: { types: [ "RARE" ] }
+  HILL_BIOMES: { types: [ "HILLS" ] }
+  FOREST_BIOMES: { types: [ "FOREST" ] }
+  COLD_BIOMES: { types: [ "COLD" ] }
+  HOT_BIOMES: { types: [ "HOT" ] }
 }

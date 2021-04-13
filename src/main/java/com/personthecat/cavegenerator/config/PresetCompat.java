@@ -1,6 +1,9 @@
 package com.personthecat.cavegenerator.config;
 
+import com.google.common.collect.ImmutableMap;
 import com.personthecat.cavegenerator.data.*;
+import com.personthecat.cavegenerator.io.JarFiles;
+import com.personthecat.cavegenerator.util.HjsonTools;
 import com.personthecat.cavegenerator.util.Result;
 import lombok.extern.log4j.Log4j2;
 import org.apache.commons.lang3.tuple.Pair;
@@ -11,6 +14,9 @@ import org.hjson.JsonValue;
 import java.io.File;
 import java.io.IOException;
 import java.util.List;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static com.personthecat.cavegenerator.util.HjsonTools.getArrayOrNew;
 import static com.personthecat.cavegenerator.util.HjsonTools.getIntOr;
@@ -70,8 +76,26 @@ class PresetCompat {
     private static final String HEIGHT_VARIANCE = "heightVariance";
 
     // Other field names needed for performing updates.
-    private static final String IMPORTS = "imports";
-    private static final String VARIABLES = "variables";
+    private static final String IMPORTS = PresetExpander.IMPORTS;
+    private static final String VARIABLES = PresetExpander.VARIABLES;
+
+    // Deprecated fields in defaults.cave
+    private static final String VANILLA = PresetExpander.VANILLA;
+    private static final String REPLACE_DIRT_STONE = "REPLACE_DIRT_STONE";
+    private static final String VANILLA_ROOM = "VANILLA_ROOM";
+    private static final String LAVA_CAVE_BLOCK = "LAVA_CAVE_BLOCK";
+    private static final String VANILLA_TUNNELS = "VANILLA_TUNNELS";
+    private static final String VANILLA_RAVINES = "VANILLA_RAVINES";
+
+    private static final Pattern DEFAULT_IMPORT = Pattern.compile(PresetExpander.DEFAULTS + "\\s*::\\s*(\\w+)");
+
+    private static final Map<String, String> IMPORT_FIELD_MAP = ImmutableMap.<String, String>builder()
+        .put(REPLACE_DIRT_STONE, DecoratorSettings.Fields.replaceableBlocks)
+        .put(VANILLA_ROOM, OverrideSettings.Fields.rooms)
+        .put(LAVA_CAVE_BLOCK, OverrideSettings.Fields.caveBlocks)
+        .put(VANILLA_TUNNELS, CavePreset.Fields.tunnels)
+        .put(VANILLA_RAVINES, CavePreset.Fields.ravines)
+        .build();
 
     /**
      * This function takes care of any operation related to renaming and updating old variables,
@@ -81,9 +105,28 @@ class PresetCompat {
      * @param file The file source of this object.
      * @return Whether an exception took place when writing the file.
      */
-    static Result<IOException> update(JsonObject json, File file) {
+    static Result<IOException> updatePreset(JsonObject json, File file) {
         final int hash = json.hashCode();
+        updateRegularValues(json);
+        // Only write if changes were made.
+        return ConfigFile.autoFormat || json.hashCode() != hash ? writeJson(json, file) : Result.ok();
+    }
+
+    static Result<IOException> updateImport(JsonObject json, File file) {
+        final int hash = json.hashCode();
+        // defaults.cave::VANILLA was changed to be easier to update.
+        if (file.getName().equals(PresetExpander.DEFAULTS) && json.has(PresetExpander.VANILLA)) {
+            updateDefaults(json);
+        } else if (ConfigFile.updateImports) {
+            updateRegularValues(json);
+        }
+        // Only write if changes were made.
+        return ConfigFile.autoFormat || json.hashCode() != hash ? writeJson(json, file) : Result.ok();
+    }
+
+    private static void updateRegularValues(JsonObject json) {
         updateRoot(json);
+        updateImports(json);
         updateCaveBlocks(json);
         updateWallDecorators(json);
         updateRooms(json);
@@ -98,8 +141,17 @@ class PresetCompat {
         updateRecursive(json);
         removeBlankSlate(json);
         enforceValueOrder(json);
-        // Only write if changes were made.
-        return ConfigFile.autoFormat || json.hashCode() != hash ? writeJson(json, file) : Result.ok();
+    }
+
+    private static void updateDefaults(JsonObject json) {
+        // Swap old and new defaults, preserving extraneous data.
+        json.remove(VANILLA)
+            .remove(REPLACE_DIRT_STONE)
+            .remove(VANILLA_ROOM)
+            .remove(LAVA_CAVE_BLOCK)
+            .remove(VANILLA_RAVINES)
+            .remove(VANILLA_TUNNELS)
+            .addAll(JarFiles.getDefaults());
     }
 
     private static void updateRoot(JsonObject json) {
@@ -113,12 +165,33 @@ class PresetCompat {
             .updateAll(json);
     }
 
+    private static void updateImports(JsonObject json) {
+        if (json.has(IMPORTS)) {
+            final JsonArray imports = HjsonTools.asOrToArray(json.get(IMPORTS));
+            final JsonArray clone = new JsonArray();
+            for (JsonValue value : imports) {
+                clone.add(replaceImportVal(value.asString()));
+            }
+            json.set(IMPORTS, clone.setCondensed(imports.isCondensed()));
+        }
+    }
+
+    private static String replaceImportVal(String val) {
+        final Matcher matcher = DEFAULT_IMPORT.matcher(val);
+        if (matcher.matches()) {
+            final String name = matcher.group(1);
+            if (IMPORT_FIELD_MAP.containsKey(name)) {
+                return PresetExpander.DEFAULTS + "::" + IMPORT_FIELD_MAP.get(name) + " as " + name;
+            }
+        }
+        return val;
+    }
+
     private static void updateCaveBlocks(JsonObject json) {
         FieldHistory.withPath(OverrideSettings.Fields.caveBlocks)
             .toRange(MIN_HEIGHT, 0, MAX_HEIGHT, 50, CaveBlockSettings.Fields.height)
             .history(NOISE_3D, CaveBlockSettings.Fields.noise)
             .updateAll(json);
-
     }
 
     private static void updateWallDecorators(JsonObject json) {

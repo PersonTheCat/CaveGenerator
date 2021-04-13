@@ -12,7 +12,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.personthecat.cavegenerator.util.HjsonTools.asOrToArray;
-import static com.personthecat.cavegenerator.util.HjsonTools.FORMATTER;
+import static com.personthecat.cavegenerator.util.HjsonTools.NO_COMMENTS;
 import static com.personthecat.cavegenerator.util.HjsonTools.getArray;
 import static com.personthecat.cavegenerator.util.HjsonTools.getObject;
 import static com.personthecat.cavegenerator.util.HjsonTools.getObjectOrNew;
@@ -25,6 +25,18 @@ import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
 
 public class PresetExpander {
 
+    /** The name of the imports array at the top of any preset file. */
+    public static final String IMPORTS = "imports";
+
+    /** The name of the variables object at the top of any preset file. */
+    public static final String VARIABLES = "variables";
+
+    /** The name of the file containing default settings. */
+    public static final String DEFAULTS = "defaults.cave";
+
+    /** The name of the implicit variable holding all of the default settings. */
+    public static final String VANILLA = "VANILLA";
+
     /**
      * Expands all of the variable definitions and imports into concrete data.
      *
@@ -36,7 +48,7 @@ public class PresetExpander {
         definitions.forEach((f, json) -> expand(json));
         // Copy all of the imports directly into each json.
         presets.forEach((f, json) -> copyImports(definitions, json));
-        // Copy defaults.cave::VANILLA implicitly, if absent.
+        // Copy defaults.cave as VANILLA implicitly, if absent.
         copyVanilla(presets, definitions);
         // Expand the variables now inside of each json.
         presets.forEach((f, json) -> expandVariables(json));
@@ -47,7 +59,7 @@ public class PresetExpander {
     }
 
     /**
-     * Copies the value <code>defaults.cave::VANILLA</code> implicitly. This will
+     * Copies the value <code>defaults.cave as VANILLA</code> implicitly. This will
      * improve concision and hopefully give new users less to learn. My concern is
      * that it will obscure the purpose of the <code>imports</code> array, as every
      * other variable still needs to be imported manually. I may quickly remove this
@@ -58,19 +70,15 @@ public class PresetExpander {
      */
     private static void copyVanilla(Map<File, JsonObject> presets, Map<File, JsonObject> definitions) {
         // This should not be possible anyway.
-        final JsonObject defaults = getDefaults(definitions)
-            .orElseThrow(() -> runEx("defaults.cave may not be renamed or deleted."));
-        // We could quietly add this value back in if missing.
-        // Not sure if that's the right thing to do.
-        final JsonObject vanilla = getObject(defaults, "VANILLA")
-            .orElseThrow(() -> runEx("defaults.cave::VANILLA is implicit and may not be removed."));
+        final JsonObject vanilla = getDefaults(definitions)
+            .orElseThrow(() -> runEx(DEFAULTS + " may not be renamed or deleted."));
         // Add this value implicitly in every preset.
         // It will be removed if unused.
         for (JsonObject json : presets.values()) {
-            final JsonObject variables = getObjectOrNew(json, "variables");
+            final JsonObject variables = getObjectOrNew(json, VARIABLES);
             // Users can declare their own variables called VANILLA.
-            if (!variables.has("VANILLA")) {
-                variables.add("VANILLA", vanilla);
+            if (!variables.has(VANILLA)) {
+                variables.add(VANILLA, vanilla);
             }
         }
     }
@@ -83,7 +91,7 @@ public class PresetExpander {
      */
     private static Optional<JsonObject> getDefaults(Map<File, JsonObject> definitions) {
         for (Map.Entry<File, JsonObject> entry : definitions.entrySet()) {
-            if (entry.getKey().getName().equals("defaults.cave")) {
+            if (entry.getKey().getName().equals(DEFAULTS)) {
                 return full(entry.getValue());
             }
         }
@@ -100,7 +108,7 @@ public class PresetExpander {
     private static void copyImports(Map<File, JsonObject> definitions, JsonObject json) {
         final Set<JsonObject> imports = new HashSet<>();
         // Copy by reference all of the required jsons into a set.
-        getArray(json, "imports").ifPresent(arr -> {
+        getArray(json, IMPORTS).ifPresent(arr -> {
             for (JsonValue value : arr) {
                 if (!value.isString()) {
                     throw runExF("Invalid data type in imports: {}", value.toString());
@@ -109,7 +117,7 @@ public class PresetExpander {
             }
         });
         // copy the contents of each import into variables.
-        final JsonObject variables = getObjectOrNew(json, "variables");
+        final JsonObject variables = getObjectOrNew(json, VARIABLES);
         for (JsonObject o : imports) {
             variables.addAll(o);
         }
@@ -185,7 +193,7 @@ public class PresetExpander {
      * @param json The JSON object to be expanded.
      */
     private static void expandVariables(JsonObject json) {
-        final JsonObject variables = getObject(json, "variables")
+        final JsonObject variables = getObject(json, VARIABLES)
             .orElseThrow(() -> runEx("Nothing to expand."));
         expand(variables);
         copyObject(variables, json);
@@ -290,7 +298,7 @@ public class PresetExpander {
      * @return The raw generated string after processing variable substitution.
      */
     private static String substitute(JsonObject from, Reference ref) {
-        String buffer = readValue(from, ref.key).toString(FORMATTER);
+        String buffer = readValue(from, ref.key).toString(NO_COMMENTS);
         for (int i = 0; i < ref.args.size(); i++) {
             buffer = buffer.replaceAll("@" + (i + 1) + "(?!\\d)", Matcher.quoteReplacement(ref.args.get(i)));
         }
@@ -502,8 +510,8 @@ public class PresetExpander {
      * @param json The JSON object to be cleaned.
      */
     private static void deleteUnused(JsonObject json) {
-        json.remove("imports");
-        json.remove("variables");
+        json.remove(IMPORTS);
+        json.remove(VARIABLES);
     }
 
     /** Splits an import statement into its tokens. */

@@ -108,7 +108,7 @@ public class CommandCave extends CommandBase {
         { "test", "Applies night vision and gamemode 3 for easy", "cave viewing." },
         { "untest", "Removes night vision and puts you in gamemode 1." },
         { "jump [<k>]", "Teleports the player 1,000 * k blocks in each", "direction."},
-        { "open [<name>]", "Opens a preset in your default text editor."},
+        { "open [<name>] [<dir>]", "Opens a preset in your default text editor."},
         { "combine <preset.path> <preset>", "Copies the first", "path into the second preset." },
         { "enable <name> [<dir>]", "Enables the preset with name <name>." },
         { "disable <name> [<dir>]", "Disables the preset with name <name>." },
@@ -250,7 +250,9 @@ public class CommandCave extends CommandBase {
     /** Opens a preset in the default text editor. */
     private static void open(ICommandSender sender, String[] args) {
         final Optional<File> located;
-        if (args.length > 0) {
+        if (args.length > 1) {
+            located = CaveInit.locatePreset(new File(CaveInit.CG_DIR, args[1]), args[0]);
+        } else if (args.length > 0) {
             located = CaveInit.locatePreset(args[0]);
         } else {
             located = full(CaveInit.PRESET_DIR);
@@ -410,20 +412,33 @@ public class CommandCave extends CommandBase {
             : CaveInit.PRESET_DIR;
         if (!dir.exists()) {
             displayDirectories(sender);
-            return;
+        } else if (dir.equals(CaveInit.BACKUP_DIR)) {
+            deleteFiles(sender, args, dir);
+        } else {
+            backupFiles(sender, dir);
         }
-        if (dir.equals(CaveInit.BACKUP_DIR)) {
-            if (args.length > 1 && "force".equalsIgnoreCase(args[1])) {
-                for (File f : dir.listFiles(CaveInit::validExtension)) {
-                    if (!f.delete()) {
-                        throw runExF("Error deleting {}", f.getName());
-                    }
+    }
+
+    private static void deleteFiles(ICommandSender sender, String[] args, File dir) {
+        int numDeleted = 0;
+        if (args.length > 1 && "force".equalsIgnoreCase(args[1])) {
+            for (File f : dir.listFiles(CaveInit::validExtension)) {
+                if (!f.delete()) {
+                    throw runExF("Error deleting {}", f.getName());
                 }
-            } else {
-                sendMessage(sender, "Rerun with \"force\" to delete backups.");
+                numDeleted++;
             }
-            return;
+            if (numDeleted > 0) {
+                sendMessage(sender, f("{} preset(s) were permanently deleted.", numDeleted));
+            } else {
+                sendMessage(sender, f("There were no files to delete."));
+            }
+        } else {
+            sendMessage(sender, "Rerun with \"force\" to delete backups.");
         }
+    }
+
+    private static void backupFiles(ICommandSender sender, File dir) {
         int numDisabled = 0;
         for (File f : dir.listFiles(CaveInit::validExtension)) {
             if (!isPresetEnabled(f)) {
@@ -432,7 +447,7 @@ public class CommandCave extends CommandBase {
             }
         }
         if (numDisabled > 0) {
-            sendMessage(sender, f("{} preset(s) were moved to backups."));
+            sendMessage(sender, f("{} preset(s) were moved to backups.", numDisabled));
         } else {
             sendMessage(sender, f("There are no disabled presets in {}.", dir.getName()));
         }

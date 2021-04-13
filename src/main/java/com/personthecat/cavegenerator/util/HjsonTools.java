@@ -39,6 +39,15 @@ public class HjsonTools {
         .setBracesSameLine(true)
         .setOutputComments(true);
 
+    /** An equivalent formatter used for parsing functions without comments. */
+    public static final HjsonOptions NO_COMMENTS = new HjsonOptions()
+        .setAllowCondense(true)
+        .setAllowMultiVal(true)
+        .setCommentSpace(0)
+        .setSpace(2)
+        .setBracesSameLine(true)
+        .setOutputComments(false);
+
     /** Writes the JsonObject to the disk. */
     public static Result<IOException> writeJson(JsonObject json, File file) {
         Result<IOException> result = Result.ok();

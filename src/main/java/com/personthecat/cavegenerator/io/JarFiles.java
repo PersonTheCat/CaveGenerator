@@ -2,23 +2,26 @@ package com.personthecat.cavegenerator.io;
 
 import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.Main;
+import com.personthecat.cavegenerator.config.PresetExpander;
+import com.personthecat.cavegenerator.config.PresetReader;
 import com.personthecat.cavegenerator.world.feature.StructureSpawner;
-import net.minecraftforge.fml.common.Loader;
+import lombok.extern.log4j.Log4j2;
+import org.hjson.JsonObject;
+import org.hjson.JsonValue;
 
 import java.io.*;
 
 import static com.personthecat.cavegenerator.io.SafeFileIO.*;
+import static com.personthecat.cavegenerator.util.CommonMethods.runEx;
 
+@Log4j2
 public class JarFiles {
 
     /** A setting indicating the parent folder of all presets. */
-    private static final File ROOT_DIR = new File(Loader.instance().getConfigDir(), Main.MODID);
-
-    /** A setting indicating the location where example presets will be kept. */
-    private static final String EXAMPLE_PATH = ROOT_DIR + "/example_presets";
+    private static final File ROOT_DIR = CaveInit.CG_DIR;
 
     /** The actual folder containing the example presets. */
-    private static final File EXAMPLE_DIR = new File(EXAMPLE_PATH);
+    private static final File EXAMPLE_DIR = CaveInit.EXAMPLE_DIR;
 
     /** The path where all of this mod's assets are stored. */
     private static final String ASSETS_PATH = "assets/" + Main.MODID;
@@ -64,6 +67,26 @@ public class JarFiles {
         copyImports();
         copyStructures();
         copyTutorial();
+    }
+
+    public static JsonObject getDefaults() {
+        final String fromLocation = ASSETS_PATH + "/imports/" + PresetExpander.DEFAULTS;
+        final InputStream is = getRequiredResource(fromLocation);
+        final Reader rx = new InputStreamReader(is);
+        final JsonObject json;
+        try {
+            json = JsonValue.readHjson(rx).asObject();
+        } catch (IOException e) {
+            throw runEx("Reading internal defaults.cave");
+        } finally {
+            try {
+                is.close();
+                rx.close();
+            } catch (IOException e) {
+                log.warn("Unable to dispose resources.");
+            }
+        }
+        return json;
     }
 
     private static void copyExamples() {
