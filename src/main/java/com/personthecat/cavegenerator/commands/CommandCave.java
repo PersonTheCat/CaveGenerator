@@ -30,10 +30,8 @@ import java.awt.*;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.List;
-import java.util.Objects;
-import java.util.Optional;
 
 import static com.personthecat.cavegenerator.io.SafeFileIO.backup;
 import static com.personthecat.cavegenerator.io.SafeFileIO.ensureDirExists;
@@ -41,6 +39,7 @@ import static com.personthecat.cavegenerator.io.SafeFileIO.rename;
 import static com.personthecat.cavegenerator.io.SafeFileIO.copy;
 import static com.personthecat.cavegenerator.io.SafeFileIO.fileExists;
 import static com.personthecat.cavegenerator.io.SafeFileIO.listFiles;
+import static com.personthecat.cavegenerator.util.CommonMethods.empty;
 import static com.personthecat.cavegenerator.util.CommonMethods.extension;
 import static com.personthecat.cavegenerator.util.CommonMethods.f;
 import static com.personthecat.cavegenerator.util.CommonMethods.full;
@@ -51,7 +50,6 @@ import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
 import static com.personthecat.cavegenerator.util.CommonMethods.toArray;
 import static com.personthecat.cavegenerator.util.HjsonTools.getBool;
 import static com.personthecat.cavegenerator.util.HjsonTools.writeJson;
-import static com.personthecat.cavegenerator.util.HjsonTools.setOrAdd;
 
 public class CommandCave extends CommandBase {
 
@@ -105,16 +103,17 @@ public class CommandCave extends CommandBase {
     /** The actual text to be used by the help messages. */
     private static final String[][] USAGE_TEXT = {
         { "reload", "Reloads the current presets from the the", "disk." },
-        { "list", "Displays a list of all presets, with buttons", "for enabling / disabling." },
+        { "list [<dir>]", "Displays a list of all presets, with buttons", "for enabling / disabling." },
         { "test", "Applies night vision and gamemode 3 for easy", "cave viewing." },
         { "untest", "Removes night vision and puts you in gamemode 1." },
         { "jump [<k>]", "Teleports the player 1,000 * k blocks in each", "direction."},
         { "open [<name>]", "Opens a preset in your default text editor."},
         { "combine <preset.path> <preset>", "Copies the first", "path into the second preset." },
-        { "enable <name>", "Enables the preset with name <name>." },
-        { "disable <name>", "Disables the preset with name <name>." },
+        { "enable <name> [<dir>]", "Enables the preset with name <name>." },
+        { "disable <name> [<dir>]", "Disables the preset with name <name>." },
         { "new <name>", "Generates a new preset file with name", "<name>" },
-        { "copy <name>", "Copies a preset out of the example directory." },
+        { "copy <name> [<dir>]", "Recursively copies presets out of", "config/cavegenerator." },
+        { "move <name> <dir>", "Moves a preset out of the preset", "directory." },
         { "delete <name>", "Moves a preset to the backup directory." },
         { "rename <name> <new>", "Renames a preset, ignoring its extension." },
         { "expand <name> [<as>]", "Writes the expanded copy of this preset", "under /generated" },
@@ -169,7 +168,7 @@ public class CommandCave extends CommandBase {
     private static void handle(MinecraftServer server, ICommandSender sender, String command, String[] args) {
         switch (command) {
             case "reload" : reload(sender); break;
-            case "list" : list(sender); break;
+            case "list" : list(sender, args); break;
             case "test" : test(sender); break;
             case "untest": untest(sender); break;
             case "jump" : jump(sender, args); break;
@@ -179,6 +178,7 @@ public class CommandCave extends CommandBase {
             case "disable" : setCaveEnabled(sender, args, false); break;
             case "new" : newPreset(sender, args); break;
             case "copy": copyPreset(sender, args); break;
+            case "move": movePreset(sender, args); break;
             case "delete": deletePreset(sender, args); break;
             case "rename": renamePreset(sender, args); break;
             case "expand" : writeExpanded(sender, args); break;
@@ -273,9 +273,10 @@ public class CommandCave extends CommandBase {
     /** Sets whether the specified preset is enabled. */
     private static void setCaveEnabled(ICommandSender sender, String[] args, boolean enabled) {
         requireArgs(args, 1);
-        Optional<File> located = CaveInit.locatePreset(args[0]);
+        final File dir = args.length > 1 ? new File(CaveInit.CG_DIR, args[1]) : CaveInit.PRESET_DIR;
+        final Optional<File> located = CaveInit.locatePreset(dir, args[0]);
         if (located.isPresent()) {
-            File preset = located.get();
+            final File preset = located.get();
             // Logic could be improved.
             PresetReader.getPresetJson(preset).ifPresent(cave -> {
                 if (cave.has("enabled")) {
@@ -286,6 +287,10 @@ public class CommandCave extends CommandBase {
                 // Try to write the updated preset to the disk.
                 writeJson(cave, preset).expectF("Error writing to {}", preset.getName());
             });
+            if (enabled && dir != CaveInit.PRESET_DIR) {
+                copy(preset, CaveInit.PRESET_DIR).throwIfPresent();
+                sendMessage(sender, f("Copied {} to preset directory.", preset.getName()));
+            }
         } else {
             throw runExF("No preset was found named {}", args[0]);
         }
@@ -293,11 +298,23 @@ public class CommandCave extends CommandBase {
     }
 
     /** A command for listing and enabling / disabling presets. */
-    private static void list(ICommandSender sender) {
+    private static void list(ICommandSender sender, String[] args) {
+        final File dir = args.length > 0 ? new File(CaveInit.CG_DIR, args[0]) : CaveInit.PRESET_DIR;
+        if (!dir.exists()) {
+            final List<String> names = new ArrayList<>();
+            for (File f : CaveInit.CG_DIR.listFiles()) {
+                if (f.isDirectory()) {
+                    names.add(f.getName());
+                }
+            }
+            final String options = Arrays.toString(names.toArray(new String[0]));
+            sendMessage(sender, f("Invalid directory. Options: {}", options));
+            return;
+        }
         ITextComponent msg = tcs("") // Parent has no formatting.
             .appendSibling(VIEW_BUTTON.createCopy());
 
-        listFiles(CaveInit.PRESET_DIR).ifPresent(files -> {
+        listFiles(dir).ifPresent(files -> {
             msg.appendSibling(tcs("\n"));
             for (File file : files) {
                 if (CaveInit.validExtension(file)) {
@@ -324,13 +341,50 @@ public class CommandCave extends CommandBase {
         sendMessage(sender, "Finished writing a new preset file.");
     }
 
-    /** Copies a preset out of the example preset directory. */
+    /** Copies a preset into the preset directory. */
     private static void copyPreset(ICommandSender sender, String[] args) {
         requireArgs(args, 1);
-        final Optional<File> located = CaveInit.locatePreset(CaveInit.EXAMPLE_DIR, args[0]);
+        final Optional<File> located;
+        if (args.length > 1) {
+            final File dir = new File(CaveInit.CG_DIR, args[1]);
+            located = CaveInit.locatePreset(dir, args[0]);
+        } else {
+            located = locateRecursively(CaveInit.CG_DIR, args[0]);
+        }
         if (located.isPresent()) {
-            copy(located.get(), CaveInit.PRESET_DIR).throwIfPresent();
-            sendMessage(sender, "Successfully copied " + located.get().getName());
+            final File f = located.get();
+            copy(f, CaveInit.PRESET_DIR).throwIfPresent();
+            final String relativePath = f.getPath().replace(CaveInit.CG_DIR.getPath(), "");
+            sendMessage(sender, "Successfully copied " + relativePath);
+        } else {
+            sendMessage(sender, "File not found.");
+        }
+    }
+
+    /** Recursively locates a valid cave preset inside of the mod directory. */
+    private static Optional<File> locateRecursively(File dir, String name) {
+        for (File f : dir.listFiles()) {
+            if (f.isDirectory()) {
+                final Optional<File> inDir = locateRecursively(f, name);
+                if (inDir.isPresent()) {
+                    return inDir;
+                }
+            } else if (CaveInit.validExtension(f) && noExtension(f).equals(name)) {
+                return full(f);
+            }
+        }
+        return empty();
+    }
+
+    /** Moves a preset out of the preset directory. */
+    private static void movePreset(ICommandSender sender, String[] args) {
+        requireArgs(args, 2);
+        final Optional<File> located = CaveInit.locatePreset(args[0]);
+        if (located.isPresent()) {
+            final File f = located.get();
+            final File dir = new File(CaveInit.CG_DIR, args[1]);
+            copy(f, dir).throwIfPresent();
+            sendMessage(sender, f("The file was moved to {}/{}", dir.getName(), f.getName()));
         } else {
             sendMessage(sender, "File not found.");
         }
@@ -442,13 +496,14 @@ public class CommandCave extends CommandBase {
     }
 
     private static ITextComponent getListElementText(File file) {
-        String fileName = noExtension(file);
+        final String dir = file.getParentFile().getName();
+        final String fileName = noExtension(file);
         if (isPresetEnabled(file)) {
             return tcs(" * " + fileName + " (Enabled) ")
-                .appendSibling(disableButton(fileName));
+                .appendSibling(disableButton(fileName, dir));
         } else {
             return tcs(" * " + fileName + " (Disabled) ")
-                .appendSibling(enableButton(fileName));
+                .appendSibling(enableButton(fileName, dir));
         }
     }
 
@@ -518,19 +573,19 @@ public class CommandCave extends CommandBase {
     }
 
     /** Creates a new enable button. */
-    private static ITextComponent enableButton(String fileName) {
+    private static ITextComponent enableButton(String fileName, String dir) {
         final Style style = ENABLE_BUTTON_STYLE
             .createDeepCopy()
-            .setClickEvent(clickToRun("/cave enable " + fileName + " && reload && list"));
+            .setClickEvent(clickToRun("/cave enable " + fileName + " " + dir + " && reload && list"));
         return tcs("[ENABLE]")
             .setStyle(style);
     }
 
     /** Creates a new enable button. */
-    private static ITextComponent disableButton(String fileName) {
+    private static ITextComponent disableButton(String fileName, String dir) {
         final Style style = DISABLE_BUTTON_STYLE
             .createDeepCopy()
-            .setClickEvent(clickToRun("/cave disable " + fileName + " && reload && list"));
+            .setClickEvent(clickToRun("/cave disable " + fileName + " " + dir + " && reload && list"));
         return tcs("[DISABLE]")
             .setStyle(style);
     }

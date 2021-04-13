@@ -46,6 +46,7 @@ public class CaveInit {
 
     private static final File CONFIG_DIR = Loader.instance().getConfigDir();
 
+    public static final File CG_DIR = new File(CONFIG_DIR, Main.MODID);
     public static final File EXAMPLE_DIR = new File(CONFIG_DIR, EXAMPLES);
     public static final File PRESET_DIR = new File(CONFIG_DIR, PRESETS);
     public static final File IMPORT_DIR = new File(CONFIG_DIR, IMPORTS);
@@ -56,7 +57,7 @@ public class CaveInit {
         // Verify the folders' integrity before proceeding.
         ensureDirExists(PRESET_DIR).expect(CANT_CREATE);
         ensureDirExists(IMPORT_DIR).expect(CANT_CREATE);
-        // Go ahead and clear this to allow presets to be reloaded.
+        // Go ahead and cfinal File dir = new File(CaveInit.CG_DIR, args[1]);lear this to allow presets to be reloaded.
         presets.clear();
         // Handle all files in the preset directory.
         final Map<String, CavePreset> loaded = PresetReader.getPresets(PRESET_DIR, IMPORT_DIR);
