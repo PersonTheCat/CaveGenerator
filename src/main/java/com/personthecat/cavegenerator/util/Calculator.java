@@ -10,7 +10,7 @@ import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
 public class Calculator {
 
     /** A pattern used for testing whether a string is or is not a supported expression. */
-    private static final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\d+\\.?\\s*[()*/^+-]\\s*\\d+.*");
+    private static final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\d+\\.?\\s*\\)*\\s*[()*/^+-]\\s*\\(*\\s*\\d+.*");
 
     public static boolean isExpression(String exp) {
         return EXPRESSION_PATTERN.matcher(exp).find();

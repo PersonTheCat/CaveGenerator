@@ -292,7 +292,7 @@ public class PresetExpander {
     private static String substitute(JsonObject from, Reference ref) {
         String buffer = readValue(from, ref.key).toString(FORMATTER);
         for (int i = 0; i < ref.args.size(); i++) {
-            buffer = buffer.replace("@" + (i + 1), ref.args.get(i));
+            buffer = buffer.replaceAll("@" + (i + 1) + "(?!\\d)", Matcher.quoteReplacement(ref.args.get(i)));
         }
         return buffer;
     }
