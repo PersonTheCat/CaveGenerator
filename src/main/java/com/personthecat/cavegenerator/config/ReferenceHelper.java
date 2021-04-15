@@ -87,27 +87,30 @@ public class ReferenceHelper {
                 final char c = val.charAt(i);
                 if (c != ' ' && c != '\t') {
                     final int closing;
+                    final int read;
                     switch (c) {
                         case '[' :
-                            final int e1 = findClosing(val, i, '[', ']');
-                            closing = findNext(val, e1,',', false);
+                            final int bk = findClosing(val, i, '[', ']');
+                            closing = read = findNext(val, bk,',', false);
                             break;
                         case '{' :
-                            final int e2 = findClosing(val, i, '{', '}');
-                            closing = findNext(val, e2,',', false);
+                            final int bc = findClosing(val, i, '{', '}');
+                            closing = read = findNext(val, bc,',', false);
                             break;
                         case '"' :
                             i++;
-                            closing = findNext(val, i, '"', true) - 1;
+                            read = findNext(val, i, '"', true);
+                            closing = findNext(val, read, ',', false);
                             break;
                         case '\'' :
                             i++;
-                            closing = findNext(val, i, '\'', true) - 1;
+                            read = findNext(val, i, '\'', true);
+                            closing = findNext(val, read, ',', false);
                             break;
                         default :
-                            closing = findNext(val, i, ',', false);
+                            closing = read = findNext(val, i, ',', false);
                     }
-                    args.add(val.substring(i, closing));
+                    args.add(val.substring(i, read));
                     i = closing + 1;
                 }
                 i++;
@@ -285,6 +288,8 @@ public class ReferenceHelper {
      * @throws IllegalStateException if a balanced closer is not found.
      * @param val The raw string which is expected to contain a closer.
      * @param opening The index of the opening parenthesis.
+     * @param open The character to be balanced with.
+     * @param close The character being searched for.
      * @return The index of the closing parenthesis.
      */
     private static int findClosing(String val, int opening, char open, char close) {
@@ -313,6 +318,15 @@ public class ReferenceHelper {
         throw new IllegalStateException("Missing " + close + " in function");
     }
 
+    /**
+     * Finds the next possible instance of this character, ignoring escaped characters.
+     *
+     * @param val The raw string being searched through.
+     * @param index The starting index to search from.
+     * @param f The exact character to find.
+     * @param required Whether to throw an exception if the character is missing.
+     * @return The index of this character, or else end of string.
+     */
     private static int findNext(String val, int index, char f, boolean required) {
         boolean esc = false;
         for (int i = index; i < val.length(); i++) {

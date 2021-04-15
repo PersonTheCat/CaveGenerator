@@ -1,15 +1,18 @@
 package com.personthecat.cavegenerator.config;
 
+import com.personthecat.cavegenerator.data.*;
+import com.personthecat.cavegenerator.model.Direction;
+import com.personthecat.cavegenerator.model.FloatRange;
+import com.personthecat.cavegenerator.model.Range;
+import com.personthecat.cavegenerator.model.ScalableFloat;
 import lombok.extern.log4j.Log4j2;
-import net.minecraft.block.BlockStone;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
+import net.minecraft.world.biome.Biome;
+import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.logging.log4j.Level;
 import org.hjson.JsonObject;
+import org.hjson.JsonValue;
 
 import java.util.List;
-
-import static com.personthecat.cavegenerator.util.CommonMethods.getVariant;
 
 /**
  *   This class is intended for detecting a series of common errors in the preset creation
@@ -26,16 +29,6 @@ import static com.personthecat.cavegenerator.util.CommonMethods.getVariant;
  */
 @Log4j2
 public class PresetTester {
-
-    /**
-     * A list of blocks that are commonly used as matchers or marked as replaceable when this
-     * action would have no effect, theoretically reducing performance.
-     */
-    private static final IBlockState[] COMMON_PROBLEM_STATES = {
-        getVariant(Blocks.STONE, BlockStone.VARIANT, BlockStone.EnumType.ANDESITE),
-        getVariant(Blocks.STONE, BlockStone.VARIANT, BlockStone.EnumType.DIORITE),
-        getVariant(Blocks.STONE, BlockStone.VARIANT, BlockStone.EnumType.GRANITE)
-    };
 
     private final CavePreset preset;
     private final Level low, high;
@@ -56,22 +49,17 @@ public class PresetTester {
     public void run() {
         log.info(" ### Begin testing {} ###", name);
         log.info(" --- Json diagnostics ---");
-//        debugExistingFields(preset.preset);
-//        debugUnusedFields(preset.preset);
-//        info(" --- Logic and syntax diagnostics ---");
-//        testSpawns(preset.conditions);
-//        testTunnels(preset.tunnels);
-//        testRavines(preset.ravines);
-//        testCaverns(preset.caverns);
-//        testStructures(preset.structures);
-//        testClusters(preset.decorators.clusters);
-//        testLayers(preset.decorators.stoneLayers);
-//        testCaveBlocks(preset.decorators.caveBlocks);
-//        testWallDecorators(preset.decorators.wallDecorators);
-//        testStalactites(preset.decorators.stalactites);
-//        testPillars(preset.decorators.pillars);
-//        testEarlyMatchers(preset.replaceable, "replaceableBlocks");
-        log.info("Other tests temporarily disabled (WIP).");
+        this.debugExistingFields(preset.raw);
+        this.debugUnusedFields(preset.raw);
+        log.info(" --- Logic and syntax diagnostics ---");
+        this.testTunnels(preset.tunnels);
+        this.testRavines(preset.ravines);
+        this.testCaverns(preset.caverns);
+        this.testStructures(preset.structures);
+        this.testClusters(preset.clusters);
+        this.testLayers(preset.layers);
+        this.testStalactites(preset.stalactites);
+        this.testPillars(preset.pillars);
         log.info(" ### {} testing complete ###", name);
     }
 
@@ -80,13 +68,18 @@ public class PresetTester {
         log.info("The following fields were found in {}. If you do not see one, "
             + "you may have accidentally commented it out.", name);
         for (JsonObject.Member m : json) {
-            log.info(" * {}", m.getName());
+            final JsonValue v = m.getValue();
+            if (v.isArray()) {
+                log.info(" * {} ({})", m.getName(), v.asArray().size());
+            } else {
+                log.info(" * {}", m.getName());
+            }
         }
     }
 
     /** Inform the user of which fields were never accessed by PresetReader. */
     private void debugUnusedFields(JsonObject json) {
-        List<String> unused = json.getUnusedPaths();
+        final List<String> unused = json.getUnusedPaths();
         if (unused.size() == 0) {
             log.info("No unused fields were detected inside of {}", name);
             return;
@@ -97,250 +90,336 @@ public class PresetTester {
             log.log(low, " * {}", s);
         }
     }
-//
-//    private void testSpawns(SpawnSettings s) {
-//        if (s.dimensions.length > 8) {
-//            log(low, "High number of dimensions in the dimension list. Consider " +
-//                "{} `useDimensionBlacklist.`", (s.dimensionBlacklist ? "enabling" : "disabling"));
-//        }
-//        testHeights(s.minHeight, s.maxHeight, "root");
-//    }
-//
-//    private void testTunnels(TunnelSettings[] s) {
-//        for (TunnelSettings cfg : s) {
-//            testTunnel(cfg);
-//        }
-//    }
-//
-//    private void testTunnel(TunnelSettings s) {
-//        testDistance(s.startDistance, "tunnels.distance");
-//        testHeights(s.minHeight, s.maxHeight, "tunnels");
-//        assertGreaterThan(s.systemDensity, 0, "tunnels.systemDensity");
-//        testAngle(s.yaw, "tunnels.yaw");
-//        testAngle(s.pitch, "tunnels.pitch");
-//    }
-//
-//    private void testRavines(RavineSettings[] s) {
-//        for (RavineSettings cfg : s) {
-//            testRavine(cfg);
-//        }
-//    }
-//
-//    private void testRavine(RavineSettings s) {
-//        testDistance(s.startDistance, "ravines.distance");
-//        testHeights(s.minHeight, s.maxHeight, "ravines");
-//        testAngle(s.yaw, "ravines.yaw");
-//        testAngle(s.pitch, "ravines.pitch");
-//        testNoise(s.wallNoise, "ravines.wallNoise");
-//    }
-//
-//    private void testCaverns(CavernSettings s) {
-//        testHeights(s.minHeight, s.maxHeight, "caverns");
-//        for (int i = 0; i < s.noise.length; i++) {
-//            testNoise(s.noise[i], "caverns.noise3D[" + i + "]");
-//        }
-//        testNoise(s.ceilNoise, "caverns.ceiling");
-//        testNoise(s.floorNoise, "caverns.floor");
-//    }
-//
-//    private void testStructures(StructureSettings[] structures) {
-//        for (StructureSettings s : structures) {
-//            final String path = "structures[name=" + s.name + "]";
-//            if (s.settings.getIntegrity() < 0 || s.settings.getIntegrity() > 1) {
-//                log(high, "Invalid integrity @ {}. Use a number between 0 and 1.", path);
-//            }
-//            if (s.frequency > 100) {
-//                log(low, "Unusually high frequency @ {}. You may benefit from a different mod.", path);
-//            }
-//            testChance(s.chance, path);
-//        }
-//    }
-//
-//    private void testClusters(ClusterSettings[] clusters) {
-//        for (ClusterSettings c : clusters) {
-//            final String path = "clusters[state=" + c.getState() + "]";
-//            testChance(c.getChance(), path);
-//        }
-//    }
-//
-//    private void testLayers(StoneLayer[] layers) {
-//        int previousHeight = -1;
-//
-//        for (StoneLayer l : layers) {
-//            // Check height order.
-//            if (l.getMaxHeight() <= previousHeight) { // Need to think about the level used here.
-//                log(low, "Unclear StoneLayer height settings. The array is not sorted in ascending order.");
-//            }
-//            previousHeight = l.getMaxHeight();
-//            // Normal tests.
-//            testNoise(l.getSettings(), "stoneLayers[state=" + l.getState() + "]");
-//        }
-//    }
-//
-//
-//    private void testCaveBlocks(CaveBlockSettings[] caveBlocks) {
-//        int lastMinHeight = -1, lastMaxHeight = -1;
-//        boolean foundGuaranteed = false;
-//
-//        for (CaveBlockSettings c : caveBlocks) {
-//            final String path = "caveBlocks[state=" + c.getState() + "]";
-//            // Check for unreachable objects.
-//            if (foundGuaranteed) {
-//                log(high, "Additional CaveBlock objects found despite an earlier object where `chance=1`. " +
-//                    "{} will have no effect.", path);
-//            }
-//            if (c.getChance() == 1 &&
-//                lastMinHeight == c.getMinHeight() &&
-//                lastMaxHeight == c.getMaxHeight()
-//            ) {
-//                foundGuaranteed = true;
-//            }
-//            lastMinHeight = c.getMinHeight();
-//            lastMaxHeight = c.getMaxHeight();
-//            // Normal tests.
-//            testChance(c.getChance(), path);
-//            testHeights(c.getMinHeight(), c.getMaxHeight(), path);
-//        }
-//    }
-//
-//    private void testWallDecorators(WallDecoratorSettings[] wallDecorators) {
-//        int lastMinHeight = -1, lastMaxHeight = -1;
-//        boolean foundGuaranteed = false;
-//
-//        for (WallDecoratorSettings d : wallDecorators) {
-//            final String path = "wallDecorators[state=" + d.getState() + "]";
-//            // Check for unreachable objects.
-//            if (foundGuaranteed) {
-//                log(high, "Additional WallDecorator objects found despite an earlier object where `chance=1`. " +
-//                    "{} will have no effect.", path);
-//            }
-//            if (d.getChance() == 1 &&
-//                !d.spawnInPatches() &&
-//                lastMinHeight == d.getMinHeight() &&
-//                lastMaxHeight == d.getMaxHeight()
-//            ) {
-//                log(low, "{} uses full coverage. It may be better to use StoneClusters.", path);
-//                foundGuaranteed = true;
-//            }
-//            lastMinHeight = d.getMinHeight();
-//            lastMaxHeight = d.getMaxHeight();
-//            // Normal tests.
-//            d.getSettings().ifPresent(s -> testNoise(s, path));
-//            testChance(d.getChance(), path);
-//            testHeights(d.getMinHeight(), d.getMaxHeight(), path);
-//            testDirections(d.getDirections(), path);
-//        }
-//    }
-//
-//    private void testStalactites(Stalactite[] stalactites) {
-//        for (Stalactite s : stalactites) {
-//            final String path = s.getType() == Stalactite.Type.STALACTITE ?
-//                "largeStalactites[state=" + s.getState() + "]":
-//                "largeStalagmites[state=" + s.getState() + "]";
-//            s.getSettings().ifPresent(n -> testNoise(n, path));
-//            testHeights(s.getMinHeight(), s.getMaxHeight(), path);
-//            testChance(s.getChance(), path);
-//        }
-//    }
-//
-//    private void testPillars(Pillar[] pillars) {
-//        for (Pillar p : pillars) {
-//            final String path = "giantPillars[state=" + p.getState() + "]";
-//            testHeights(p.getMinHeight(), p.getMaxHeight(), path);
-//            testLength(p.getMinHeight(), p.getMaxHeight(), path);
-//        }
-//    }
-//
-//    /** Test for a series of common blocks that do not usually exist at this point in time. */
-//    private void testEarlyMatchers(IBlockState[] states, String path) {
-//        for (IBlockState state : states) {
-//            // If it is a problem block and it isn't specifically placed by the current generator.
-//            if (ArrayUtils.contains(COMMON_PROBLEM_STATES, state) && !ArrayUtils.contains(decorators, state)) {
-//                log(low, "Unnecessary block @ {}. Unless it is placed by a different preset or mod, " +
-//                "{} does not exist when this array is used.", path, state);
-//            }
-//        }
-//    }
-//
-//    /** In general, it doesn't sense for distance to be < 0. */
-//    private void testDistance(int distance, String path) {
-//        if (distance < 0) {
-//            log(low, "Negative value @ {}. This may have no effect.", path);
-//        }
-//    }
-//
-//    /** Ensure that min < max. */
-//    private void testHeights(int min, int max, String path) {
-//        if (min > max) {
-//            log(high, "Invalid range @ {}. minHeight > maxHeight", path);
-//        }
-//    }
-//
-//    /** Ensures that val > ref */
-//    private void assertGreaterThan(int val, int ref, String path) {
-//        if (val <= ref) {
-//            log(high, "Invalid number # {}. It must be greater than {}", path, ref);
-//        }
-//    }
-//
-//    /** Variant of testHeights() with the updated error message. */
-//    private void testLength(int min, int max, String path) {
-//        if (min > max) {
-//            log(high, "Invalid range @ {}. minLength > maxLength.", path);
-//        }
-//    }
-//
-//    /** Ensure that the value of this angle is in radians. */
-//    private void testAngle(ScalableFloat angle, String path) {
-//        if (angle.startVal > 6 || angle.startVal < 0) {
-//            log(low, "Invalid angle @ {}. This value should be in radians (0 - 6).", path);
-//        }
-//    }
-//
-//    /** Verify the ranges of `frequency` and `scale`. */
-//    private void testNoise(NoiseSettings noise, String path) {
-//        testNoiseFrequency(noise.frequency, path);
-//        testNoiseScale(noise.scale, path);
-//    }
-//
-//    /** 2D noise includes an addition `minVal` and `maxVal`. */
-//    private void testNoise(NoiseRegionSettings noise, String path) {
-////        if (noise.min > noise.max) { // this will automatically get corrected
-////            log(high, "Invalid range @ {}. minVal > maxVal.", path);
-////        }
-//        testNoiseFrequency(noise.frequency, path);
-//        testNoiseScale(noise.scale, path);
-//    }
-//
-//    /** Chance should always be between 0 and 1. */
-//    private void testChance(double chance, String path) {
-//        if (chance < 0 || chance > 1) {
-//            log(low, "Poor chance @ {}. Use a value between 0 and 1.", path);
-//        }
-//    }
-//
-//    /** Noise frequency is the same. Include a more helpful message. */
-//    private void testNoiseFrequency(float frequency, String path) {
-//        if (frequency < 0 || frequency > 1) {
-//            log(low, "Poor frequency value @ {}. If you are converting presets from a previous version, " +
-//                "`spacing` can be converted using the formula `frequency = 1 / spacing`.", path);
-//        }
-//    }
-//
-//    /** Scale should always be between 0 and 1. */
-//    private void testNoiseScale(float scale, String path) {
-//        if (scale < 0 || scale > 1) {
-//            log(low, "Poor scale @ {}. Use a number between 0 and 1.", path);
-//        }
-//    }
-//
-//    /** Direction.ALL covers all directions. Others are unnecessary. */
-//    private void testDirections(List<Direction> directions, String path) {
-//        for (Direction d : directions) {
-//            if (d.equals(Direction.ALL) && directions.size() > 1) {
-//                log(low, "Direction array contains unnecessary values @ {}.", path);
-//                return;
-//            }
-//        }
-//    }
+
+    private void testTunnels(List<TunnelSettings> s) {
+        final String path = CavePreset.Fields.tunnels;
+        for (TunnelSettings cfg : s) {
+            this.testTunnel(cfg, path);
+            this.testConditions(cfg.conditions, path);
+            this.testDecorators(cfg.decorators, path);
+        }
+    }
+
+    private void testTunnel(TunnelSettings s, String path) {
+        this.testDistance(s.distance, join(path, TunnelSettings.Fields.distance));
+        this.assertPositive(s.systemDensity, join(path, TunnelSettings.Fields.systemDensity));
+        this.testAngle(s.yaw, join(path, TunnelSettings.Fields.yaw));
+        this.testAngle(s.pitch, join(path, TunnelSettings.Fields.pitch));
+        this.testScale(s.scale, join(path, TunnelSettings.Fields.scale));
+        s.branches.ifPresent(b -> this.testTunnel(b, join(path, TunnelSettings.Fields.branches)));
+    }
+
+    private void testRavines(List<RavineSettings> s) {
+        final String path = CavePreset.Fields.tunnels;
+        for (RavineSettings cfg : s) {
+            this.testRavine(cfg, path);
+            this.testConditions(cfg.conditions, path);
+            this.testDecorators(cfg.decorators, path);
+        }
+    }
+
+    private void testRavine(RavineSettings s, String path) {
+        this.testDistance(s.distance, join(path, RavineSettings.Fields.distance));
+        this.testAngle(s.yaw, join(path, RavineSettings.Fields.yaw));
+        this.testAngle(s.pitch, join(path, RavineSettings.Fields.pitch));
+        this.testScale(s.scale, join(path, RavineSettings.Fields.scale));
+        this.testNoise(s.walls, join(path, RavineSettings.Fields.walls));
+    }
+
+    private void testCaverns(List<CavernSettings> s) {
+        final String path = CavePreset.Fields.caverns;
+        for (CavernSettings cfg : s) {
+            this.testCavern(cfg, path);
+            this.testConditions(cfg.conditions, path);
+            this.testDecorators(cfg.decorators, path);
+        }
+    }
+
+    private void testCavern(CavernSettings s, String path) {
+        final String fullPath = join(path, CavernSettings.Fields.generators);
+        for (int i = 0; i < s.generators.size(); i++) {
+            this.testNoise(s.generators.get(i), fullPath + "[" + i + "]");
+        }
+        if (s.wallInterpolation) {
+            log.log(low, "{} is experimental. There may be bugs.", join(path, CavernSettings.Fields.wallInterpolation));
+        }
+        if (s.wallCurveRatio > 2.0) {
+            log.log(low, "{} is a little high. You may see borders.", join(path, CavernSettings.Fields.wallCurveRatio));
+        }
+        this.testNoise(s.walls, join(path, CavernSettings.Fields.walls));
+        this.testNoise(s.wallOffset, join(path, CavernSettings.Fields.wallOffset));
+    }
+
+    private void testStructures(List<StructureSettings> s) {
+        final String path = CavePreset.Fields.structures;
+        for (StructureSettings cfg : s) {
+            this.testStructure(cfg, path);
+            this.testConditions(cfg.conditions, path);
+        }
+    }
+
+    private void testStructure(StructureSettings s, String path) {
+        final String fullPath = path + "[name=" + s.name + "]";
+        if (s.placement.getIntegrity() < 0 || s.placement.getIntegrity() > 1) {
+            log.log(high, "Invalid integrity @ {}. Use a number between 0 and 1.", fullPath);
+        }
+        if (s.count > 100) {
+            log.log(low, "Unusually high count @ {}. Consider a dedicated mod.", fullPath);
+        }
+        int checks = s.airChecks.size() + s.waterChecks.size() + s.nonSolidChecks.size() + s.solidChecks.size();
+        if (checks > 25) {
+            log.log(low, "Unusually high number of checks @ {}. Try to optimize.", fullPath);
+        }
+        testChance(s.chance, fullPath);
+    }
+
+    private void testClusters(List<ClusterSettings> clusters) {
+        final String path = CavePreset.Fields.clusters;
+        for (ClusterSettings cfg : clusters) {
+            final String fullPath = path + "[states=" + cfg.states.get(0) + "...]";
+            this.testCluster(cfg, fullPath);
+            this.testConditions(cfg.conditions, fullPath);
+        }
+    }
+
+    private void testCluster(ClusterSettings s, String path) {
+        final Range height = s.conditions.height;
+        if (!height.contains(s.centerHeight.min) || height.contains(s.centerHeight.max)) {
+            final String center = ClusterSettings.Fields.centerHeight;
+            log.log(low, "Invalid heights @ {}. {} does not contain {}", path, height, center);
+        }
+        this.testChance(s.chance, path);
+    }
+
+    private void testLayers(List<LayerSettings> s) {
+        final String path = CavePreset.Fields.layers;
+        int previousHeight = -1;
+
+        for (LayerSettings l : s) {
+            final String fullPath = path + "[state=" + l.state + "]";
+            final int maxRange = l.conditions.ceiling.map(c -> c.range.max).orElse(0);
+            final int max = l.conditions.height.max + maxRange;
+            // Check height order.
+            if (max <= previousHeight) { // Need to think about the level used here.
+                log.log(low, "Unclear Layer height settings. The array is not sorted in ascending order.");
+            }
+            previousHeight = max;
+            this.testConditions(l.conditions, fullPath);
+        }
+    }
+
+
+    private void testStalactites(List<StalactiteSettings> s) {
+        final String path = CavePreset.Fields.stalactites;
+        for (StalactiteSettings cfg : s) {
+            final String fullPath = path + "[state" + cfg.state + "]";
+            this.testStalactite(cfg, fullPath);
+            this.testConditions(cfg.conditions, fullPath);
+        }
+    }
+
+    private void testStalactite(StalactiteSettings s, String path) {
+        this.testChance(s.chance, path);
+    }
+
+    private void testPillars(List<PillarSettings> s) {
+        final String path = CavePreset.Fields.pillars;
+        for (PillarSettings cfg : s) {
+            final String fullPath = path + "[state=" + cfg.state + "]";
+            this.testConditions(cfg.conditions, fullPath);
+        }
+    }
+
+    /** In general, it doesn't sense for distance to be < 0. */
+    private void testDistance(int distance, String path) {
+        if (distance < 0) {
+            log.log(low, "Negative value @ {}. This will have no effect.", path);
+        }
+    }
+
+    private void testConditions(ConditionSettings s, String path) {
+        this.testDimensionList(s.dimensions, s.blacklistDimensions, path);
+        this.testBiomeList(s.biomes, s.blacklistBiomes, path);
+        s.noise.ifPresent(n -> this.testNoise(n, path));
+        s.ceiling.ifPresent(n -> this.testNoise(n, path));
+        s.floor.ifPresent(n -> this.testNoise(n, path));
+        s.region.ifPresent(n -> this.testNoise(n, path));
+    }
+
+    private void testDecorators(DecoratorSettings s, String path) {
+        this.testCaveBlocks(s.caveBlocks, path);
+        this.testWallDecorators(s.wallDecorators, path);
+        this.testShell(s.shell, path);
+    }
+
+    private void testCaveBlocks(List<CaveBlockSettings> caveBlocks, String path) {
+        int lastMinHeight = -1, lastMaxHeight = -1;
+        boolean foundGuaranteed = false;
+
+        for (CaveBlockSettings c : caveBlocks) {
+            final String fullPath = path + ".caveBlocks[states=" + c.states + "...]";
+            // Check for unreachable objects.
+            if (foundGuaranteed) {
+                log.log(high, "Additional CaveBlock objects found despite an earlier object where `chance=1`. " +
+                    "{} will have no effect.", fullPath);
+            }
+            final int minY = c.height.min;
+            final int maxY = c.height.max;
+            final boolean hasNoise = c.noise.isPresent();
+            if (c.chance == 1.0 && !hasNoise && lastMinHeight == minY && lastMaxHeight == maxY) {
+                foundGuaranteed = true;
+            }
+            lastMinHeight = minY;
+            lastMaxHeight = maxY;
+            // Normal tests.
+            this.testChance(c.chance, fullPath);
+            c.noise.ifPresent(n -> this.testNoise(n, fullPath));
+        }
+    }
+
+    private void testWallDecorators(List<WallDecoratorSettings> wallDecorators, String path) {
+        int lastMinHeight = -1, lastMaxHeight = -1;
+        boolean foundGuaranteed = false;
+
+        for (WallDecoratorSettings d : wallDecorators) {
+            final String fullPath = path + ".wallDecorators[states=" + d.states.get(0) + "...]";
+            // Check for unreachable objects.
+            if (foundGuaranteed) {
+                log.log(high, "Additional WallDecorator objects found despite an earlier object where `chance=1`. " +
+                    "{} will have no effect.", fullPath);
+            }
+            final int minY = d.height.min;
+            final int maxY = d.height.max;
+            final boolean hasNoise = d.noise.isPresent();
+            if (d.chance == 1.0 && !hasNoise && lastMinHeight == minY && lastMaxHeight == maxY) {
+                log.log(low, "{} uses full coverage. It may be better to use Shells or Clusters.", fullPath);
+                foundGuaranteed = true;
+            }
+            lastMinHeight = minY;
+            lastMaxHeight = maxY;
+            // Normal tests.
+            this.testChance(d.chance, fullPath);
+            this.testDirections(d.directions, fullPath);
+            d.noise.ifPresent(s -> testNoise(s, fullPath));
+        }
+    }
+
+    private void testShell(ShellSettings shell, String path) {
+        final String decoratorPath = join(path, DecoratorSettings.Fields.shell, ShellSettings.Fields.decorators);
+        for (int i = 0; i < shell.decorators.size(); i++) {
+            final ShellSettings.Decorator d = shell.decorators.get(i);
+            final String fullPath = decoratorPath + "[" + i + "]";
+            this.testChance(d.chance, fullPath);
+            d.noise.ifPresent(n -> this.testNoise(n, fullPath));
+        }
+    }
+
+    private void testDimensionList(List<Integer> dims, boolean blacklist, String path) {
+        if (dims.size() > 8) {
+            log.log(low, "High number of dimensions in the dimension list @ {}. Consider " +
+                "{} `blacklistDimensions`.", path, (blacklist ? "disabling" : "enabling"));
+            log.log(low, "If you want this feature to spawn anywhere, you can leave the list empty.");
+        }
+    }
+
+    private void testBiomeList(List<Biome> biomes, boolean blacklist, String path) {
+        if (biomes.size() > ForgeRegistries.BIOMES.getValuesCollection().size() / 2) {
+            log.log(low, "High number of dimensions in the dimension list @ {}. Consider " +
+                "{} `blacklistBiomes`.", path, (blacklist ? "disabling" : "enabling"));
+            log.log(low, "If you want this feature to spawn anywhere, you can leave the list empty.");
+        }
+    }
+
+    /** Ensures that val > ref */
+    private void assertPositive(int val, String path) {
+        if (val <= 0) {
+            log.log(high, "Invalid number # {}. It must be > 0", path);
+        }
+    }
+
+    /** Ensure that the value of this angle is in radians. */
+    private void testAngle(ScalableFloat angle, String path) {
+        if (angle.startVal > 6.0 || angle.startVal < 0.0) {
+            log.log(low, "Invalid angle @ {}. This value should be in radians (0 - 6).", path);
+        }
+    }
+
+    private void testScale(ScalableFloat scale, String path) {
+        if (scale.factor > 2.0 || scale.factor < -2.0) {
+            log.log(low, "Potentially dangerous factor @ {}. This object will be very large.", path);
+        }
+        if (scale.exponent > 1.5) {
+            log.log(low, "potentially dangerous exponent @ {}. This object will be extremely large.", path);
+        }
+    }
+
+    /** Verify the ranges of `frequency` and `scale`. */
+    private void testNoise(NoiseSettings noise, String path) {
+        testNoiseFrequency(noise.frequency, path);
+        testNoiseThreshold(noise.threshold, path);
+        testNoiseOctaves(noise.octaves, path);
+    }
+
+    /** 2D noise includes an addition `minVal` and `maxVal`. */
+    private void testNoise(NoiseRegionSettings noise, String path) {
+        testNoiseFrequency(noise.frequency, path);
+        testNoiseThreshold(noise.threshold, path);
+    }
+
+    private void testNoise(NoiseMapSettings noise, String path) {
+        testNoiseFrequency(noise.frequency, path);
+        testNoiseOctaves(noise.octaves, path);
+    }
+
+    /** Chance should always be between 0 and 1. */
+    private void testChance(double chance, String path) {
+        if (chance < 0 || chance > 1) {
+            log.log(low, "Poor chance @ {}. Use a value between 0 and 1.", path);
+        }
+    }
+
+    /** Noise frequency is the same. Include a more helpful message. */
+    private void testNoiseFrequency(float frequency, String path) {
+        if (frequency < 0 || frequency > 1) {
+            log.log(low, "Poor frequency value @ {}. If you are converting presets from a previous version, " +
+                "`spacing` can be converted using the formula `frequency = 1 / spacing`.", path);
+        }
+    }
+
+    /** Thresholds should always be between -1 and 1. */
+    private void testNoiseThreshold(FloatRange threshold, String path) {
+        if (threshold.min < -1.0 || threshold.max > 1.0) {
+            log.log(low, "Poor threshold @ {}. Use a range between -1 and 1.", path);
+        }
+    }
+
+    /** Octaves <= 0 is is impossible. Octaves > 5 is unnecessary. */
+    private void testNoiseOctaves(int octaves, String path) {
+        if (octaves < 0) {
+            log.log(low, "Octaves are < 0 @ {}. Octaves is a count and should be > 0.", path);
+        } else if (octaves == 0) {
+            log.log(low, "Octaves are == 0 @ {}. Set dummy: true if you want this generator to have no effect.", path);
+        } else if (octaves > 5) {
+            log.log(low, "Unusually high octave count @ {}. This is expensive and may have no effect.", path);
+        }
+    }
+
+    /** Direction.ALL covers all directions. Others are unnecessary. */
+    private void testDirections(List<Direction> directions, String path) {
+        final boolean containsSide = directions.contains(Direction.SIDE);
+        for (Direction d : directions) {
+            if ((d.equals(Direction.ALL) && directions.size() > 1) || (containsSide && isSide(d))) {
+                log.log(low, "Direction array contains unnecessary values @ {}.", path);
+                return;
+            }
+        }
+    }
+
+    private static boolean isSide(Direction d) {
+        return d == Direction.NORTH || d == Direction.SOUTH || d == Direction.EAST || d == Direction.WEST;
+    }
+
+    private static String join(String... path) {
+        return String.join(".", path);
+    }
 }
