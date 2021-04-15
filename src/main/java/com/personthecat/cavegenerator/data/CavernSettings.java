@@ -73,11 +73,6 @@ public class CavernSettings {
     /** Whether to interpolate biome borders for smoother walls. */
     @Default boolean wallInterpolation = false;
 
-    /** The threshold offset used to determine a shell for this feature. */
-    @Default float shellDistance = 0.2F;
-
-    @Default IBlockState shellState = Blocks.BONE_BLOCK.getDefaultState();
-
     /** A list of noise generators to produce the shape of these caverns. */
     @Default List<NoiseSettings> generators = Collections.singletonList(DEFAULT_GENERATOR);
 
@@ -101,8 +96,6 @@ public class CavernSettings {
             .mapObject(Fields.wallOffset, o -> builder.wallOffset(NoiseMapSettings.from(o, DEFAULT_WALL_OFFSET)))
             .mapFloat(Fields.wallCurveRatio, builder::wallCurveRatio)
             .mapBool(Fields.wallInterpolation, builder::wallInterpolation)
-            .mapFloat(Fields.shellDistance, builder::shellDistance)
-            .mapState(Fields.shellState, builder::shellState)
             .mapArray(Fields.generators, CavernSettings::createNoise, builder::generators);
 
         return builder.build();

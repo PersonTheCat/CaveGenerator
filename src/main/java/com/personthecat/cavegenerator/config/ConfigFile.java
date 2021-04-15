@@ -79,6 +79,12 @@ public class ConfigFile {
         "presets."})
     public static boolean autoGenerate = true;
 
+    @Comment({
+        "Whether to automatically update import files, as much",
+        "as possible. Note that compatibility updates will still",
+        "occur."})
+    public static boolean updateImports = true;
+
     @SubscribeEvent
     public static void onConfigChanged(ConfigChangedEvent.OnConfigChangedEvent event) {
         if (event.getModID().equals(Main.MODID)) {

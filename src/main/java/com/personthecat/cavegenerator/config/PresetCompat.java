@@ -74,6 +74,7 @@ class PresetCompat {
     private static final String RADIUS_VARIANCE = "radiusVariance";
     private static final String START_HEIGHT = "startHeight";
     private static final String HEIGHT_VARIANCE = "heightVariance";
+    private static final String WIDE = "wide";
 
     // Other field names needed for performing updates.
     private static final String IMPORTS = PresetExpander.IMPORTS;
@@ -279,7 +280,9 @@ class PresetCompat {
         condenseStalactites(json);
         FieldHistory.withPath(CavePreset.Fields.stalactites)
             .toRange(MIN_HEIGHT, 11, MAX_HEIGHT, 55, ConditionSettings.Fields.height)
+            .toRange(MIN_LENGTH, 1, MAX_LENGTH, 3, StalactiteSettings.Fields.length)
             .history(NOISE_2D, ConditionSettings.Fields.region)
+            .transform(WIDE, PresetCompat::transformSize)
             .updateAll(json);
     }
 
@@ -429,6 +432,13 @@ class PresetCompat {
         final double scale = value.asDouble();
         final double threshold = (2.0 * scale) - 1.0; // Convert to range down.
         return Pair.of(NoiseSettings.Fields.threshold, JsonValue.valueOf(threshold));
+    }
+
+    private static Pair<String, JsonValue> transformSize(String name, JsonValue value) {
+        final String size = value.isBoolean() && value.asBoolean()
+            ? StalactiteSettings.Size.WIDE.name()
+            : StalactiteSettings.Size.SMALL.name();
+        return Pair.of(StalactiteSettings.Fields.size, JsonValue.valueOf(size));
     }
 
     /**

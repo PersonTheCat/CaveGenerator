@@ -1,18 +1,14 @@
 package com.personthecat.cavegenerator.config;
 
 import com.personthecat.cavegenerator.util.Calculator;
-import lombok.AllArgsConstructor;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
 import java.io.File;
 import java.util.*;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 import static com.personthecat.cavegenerator.util.HjsonTools.asOrToArray;
-import static com.personthecat.cavegenerator.util.HjsonTools.NO_COMMENTS;
 import static com.personthecat.cavegenerator.util.HjsonTools.getArray;
 import static com.personthecat.cavegenerator.util.HjsonTools.getObject;
 import static com.personthecat.cavegenerator.util.HjsonTools.getObjectOrNew;
@@ -216,7 +212,7 @@ public class PresetExpander {
             clone.add(name, value);
             // Substitute recursively.
             if (value.isString()) {
-                trySubstitute(from, value.asString()).ifPresent(val -> clone.set(name, val));
+                ReferenceHelper.trySubstitute(from, value.asString()).ifPresent(val -> clone.set(name, val));
             } else if (value.isArray()) {
                 copyArray(from, value.asArray());
             } else if (value.isObject()) {
@@ -241,7 +237,7 @@ public class PresetExpander {
             clone.add(value);
             // Substitute recursively.
             if (value.isString()) {
-                final Optional<JsonValue> variable = trySubstitute(from, value.asString());
+                final Optional<JsonValue> variable = ReferenceHelper.trySubstitute(from, value.asString());
                 if (variable.isPresent()) { // i is not effectively final.
                     clone.set(i, variable.get());
                 }
@@ -255,27 +251,6 @@ public class PresetExpander {
     }
 
     /**
-     * If <code>val</code> contains references, the values will be copied from <code>from</code>.
-     *
-     * @param from The source where variables are defined.
-     * @param s A string which may or may not contain references.
-     * @return The substituted value, if necessary.
-     */
-    private static Optional<JsonValue> trySubstitute(JsonObject from, String s) {
-        if (!Reference.containsReferences(s)) {
-            return empty();
-        }
-        String ret = s;
-        do {
-            for (Reference r : Reference.getAll(ret)) {
-                ret = ret.replace(r.raw, substitute(from, r));
-            }
-        } while (Reference.containsReferences(ret));
-        // Convert to and from a JSON value to allow in-place substitutions.
-        return full(JsonValue.readHjson(ret));
-    }
-
-    /**
      * Copies a value by key from a JSON object, asserting that one must exist.
      *
      * @throws RuntimeException If the JSON does not contain the expected key.
@@ -283,26 +258,11 @@ public class PresetExpander {
      * @param ref A string which is known to be a reference.
      * @return The value contained within <code>from</code>.
      */
-    private static JsonValue readValue(JsonObject from, String ref) {
+    public static JsonValue readValue(JsonObject from, String ref) {
         if (from.has(ref)) {
             return from.get(ref);
         }
         throw runExF("Use of undeclared variable: {}", ref);
-    }
-
-    /**
-     * Generates the raw string value of a variable reference with support for arguments.
-     *
-     * @param from The source where variables are defined.
-     * @param ref The parsed reference containing a key and arguments.
-     * @return The raw generated string after processing variable substitution.
-     */
-    private static String substitute(JsonObject from, Reference ref) {
-        String buffer = readValue(from, ref.key).toString(NO_COMMENTS);
-        for (int i = 0; i < ref.args.size(); i++) {
-            buffer = buffer.replaceAll("@" + (i + 1) + "(?!\\d)", Matcher.quoteReplacement(ref.args.get(i)));
-        }
-        return buffer;
     }
 
     /**
@@ -381,7 +341,7 @@ public class PresetExpander {
      * @return Whether a merge took place.
      */
     private static boolean tryMerge(JsonObject from, JsonObject to, String key, JsonValue value) {
-        final Optional<JsonValue> r = trySubstitute(from, key);
+        final Optional<JsonValue> r = ReferenceHelper.trySubstitute(from, key);
         r.ifPresent(ref -> {
             if (!ref.isObject()) {
                 throw runExF("Only objects can be merged: {}", key);
@@ -527,35 +487,6 @@ public class PresetExpander {
             filename = splitVar[0];
             variable = splitVar.length > 1 ? full(splitVar[1]) : empty();
             as = splitAs.length > 1 ? full(splitAs[1]) : empty();
-        }
-    }
-
-    @AllArgsConstructor
-    private static class Reference {
-        /** A pattern used for testing whether a string contains arguments. */
-        static final Pattern REFERENCE_PATTERN = Pattern.compile("\\$(\\w+)(?:\\((.*)\\))?");
-
-        final String raw;
-        final String key;
-        final List<String> args;
-
-        static boolean containsReferences(String val) {
-            return val.contains("$");
-        }
-
-        static List<Reference> getAll(String val) {
-            final Matcher matcher = REFERENCE_PATTERN.matcher(val);
-            final List<Reference> references = new ArrayList<>();
-            while (matcher.find()) {
-                final String key = matcher.group(1);
-                final String rawArgs = matcher.group(2);
-                final List<String> args = new ArrayList<>();
-                if (rawArgs != null && !rawArgs.isEmpty()) {
-                    Collections.addAll(args, rawArgs.split("\\s*,\\s*"));
-                }
-                references.add(new Reference(matcher.group(0), key, args));
-            }
-            return references;
         }
     }
 }

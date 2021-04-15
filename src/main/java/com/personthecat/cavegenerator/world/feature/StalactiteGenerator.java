@@ -3,7 +3,6 @@ package com.personthecat.cavegenerator.world.feature;
 import com.personthecat.cavegenerator.data.StalactiteSettings;
 import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.util.XoRoShiRo;
-import net.minecraft.init.Blocks;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
@@ -84,10 +83,10 @@ public class StalactiteGenerator extends FeatureGenerator {
         int length = cfg.length.rand(rand);
         if (hasEnoughSpace(world, pos, length + cfg.space)) {
             this.place(world, pos, length);
-            if (length > 2 && cfg.wide) {
+            if (length > 2 && cfg.size != StalactiteSettings.Size.SMALL) {
                 this.placeAll(world, rand, length * 2 / 3, sidePositions(pos));
                 this.placeAll(world, rand, length / 4, cornerPositions(pos));
-                if (length > 5 && cfg.giant) {
+                if (length > 5 && cfg.size == StalactiteSettings.Size.GIANT) {
                      this.placeAll(world, rand, length / 4, outerSidePositions(pos));
                      this.placeAll(world, rand, length / 6, outerCornerPositions(pos));
                 }

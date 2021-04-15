@@ -30,5 +30,17 @@
     factor: 1
     randFactor: 0
     exponent: 1
-  } 
+  }
+  # This function is useful for other functions
+  # that have nested arguments which need to be
+  # coerced into numbers. It just performs some
+  # basic math on a string, which coerces it
+  # into a number. Literally speaking, this has
+  # the effect of removing double quotes from a
+  # given value.
+  # Parameters:
+  #  @1 -> number
+  # Examples:
+  #  FUNCTION: { number: $NUM(@1) }
+  NUM: (@1) + 0
 }

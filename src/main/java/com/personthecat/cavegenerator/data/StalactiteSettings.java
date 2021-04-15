@@ -39,11 +39,8 @@ public class StalactiteSettings {
     /** Whether this structure should spawn upward or downward, i.e. stalagmite or stalactite. */
     @Default Type type = Type.STALACTITE;
 
-    /** Whether to spawn a stalactite with sides and corners. */
-    @Default boolean wide = true;
-
-    /** Whether to spawn an additional layer of blocks around the sides and corners. */
-    @Default boolean giant = false;
+    /** The general width of this structure. */
+    @Default Size size = Size.WIDE;
 
     /** The 0-1 chance that this spawner should run in any given chunk. */
     @Default double chance = 0.167F;
@@ -78,8 +75,7 @@ public class StalactiteSettings {
             .mapRequiredState(Fields.state, FEATURE_NAME, builder::state)
             .mapSelf(o -> builder.conditions(ConditionSettings.from(o, builder.conditions$value)))
             .mapEnum(Fields.type, Type.class, builder::type)
-            .mapBool(Fields.wide, builder::wide)
-            .mapBool(Fields.giant, g -> copyGiant(g, builder))
+            .mapEnum(Fields.size, Size.class, builder::size)
             .mapFloat(Fields.chance, builder::chance)
             .mapRange(Fields.length, builder::length)
             .mapInt(Fields.space, builder::space)
@@ -88,16 +84,14 @@ public class StalactiteSettings {
             .release(builder::build);
     }
 
-    // Giant stalactites should automatically be large.
-    private static void copyGiant(boolean giant, StalactiteSettingsBuilder builder) {
-        builder.giant(giant);
-        if (giant) {
-            builder.wide(true);
-        }
-    }
-
     public enum Type {
         STALAGMITE,
         STALACTITE
+    }
+
+    public enum Size {
+        SMALL,
+        WIDE,
+        GIANT
     }
 }
