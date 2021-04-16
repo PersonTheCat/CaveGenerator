@@ -5,6 +5,7 @@ import com.personthecat.cavegenerator.data.CavernSettings;
 import com.personthecat.cavegenerator.data.NoiseMapSettings;
 import com.personthecat.cavegenerator.data.NoiseSettings;
 import com.personthecat.cavegenerator.model.Range;
+import com.personthecat.cavegenerator.noise.DummyGenerator;
 import com.personthecat.cavegenerator.util.PositionFlags;
 import com.personthecat.cavegenerator.util.Stretcher;
 import com.personthecat.cavegenerator.world.BiomeSearch;
@@ -24,6 +25,7 @@ public class CavernGenerator extends WorldCarver {
     private final double[] wallNoise = new double[256];
     private final List<FastNoise> generators;
     private final FastNoise wallOffset;
+    private final FastNoise heightOffset;
     private final PositionFlags caverns;
     private final Stretcher stretcher;
     private final double wallCurveRatio;
@@ -37,6 +39,7 @@ public class CavernGenerator extends WorldCarver {
         super(cfg.conditions, cfg.decorators, world);
         this.generators = createGenerators(cfg.generators, world);
         this.wallOffset = cfg.wallOffset.getGenerator(world);
+        this.heightOffset = cfg.offset.map(n -> n.getGenerator(world)).orElse(new DummyGenerator(0F));
         this.stretcher = Stretcher.withSize(0);
         this.wallCurveRatio = cfg.wallCurveRatio;
         this.wallInterpolated = cfg.wallInterpolation;
@@ -200,7 +203,8 @@ public class CavernGenerator extends WorldCarver {
         this.stretcher.reset();
 
         for (int y = min; y < max; y++) {
-            if (this.conditions.noise.GetBoolean(actualX, y, actualZ)) {
+            final int yO = y + (int) this.heightOffset.GetAdjustedNoise(actualX, actualZ);
+            if (this.conditions.noise.GetBoolean(actualX, yO, actualZ)) {
                 final double relY = this.curveOffset + this.maxY - y;
                 final double curve = distance - ((relY * relY) / this.diffY * this.wallCurveRatio);
 

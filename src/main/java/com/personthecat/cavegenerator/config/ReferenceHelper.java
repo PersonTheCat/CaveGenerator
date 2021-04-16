@@ -11,8 +11,7 @@ import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import static com.personthecat.cavegenerator.util.CommonMethods.empty;
-import static com.personthecat.cavegenerator.util.CommonMethods.full;
+import static com.personthecat.cavegenerator.util.CommonMethods.*;
 import static com.personthecat.cavegenerator.util.HjsonTools.NO_COMMENTS;
 
 public class ReferenceHelper {
@@ -29,6 +28,25 @@ public class ReferenceHelper {
             return empty();
         }
         return full(Reference.replaceAll(from, s));
+    }
+
+    /**
+     * Copies a value by key from a JSON object, asserting that one must exist.
+     *
+     * @throws RuntimeException If the JSON does not contain the expected key.
+     * @param from The source where variables are defined.
+     * @param ref A string which is known to be a reference.
+     * @return The value contained within <code>from</code>.
+     */
+    public static JsonValue readValue(JsonObject from, String ref) {
+        if (from.has(ref)) {
+            return from.get(ref);
+        }
+        final String asFunction = ref + "()";
+        if (from.has(asFunction)) {
+            return from.get(asFunction);
+        }
+        throw runExF("Use of undeclared variable: {}", ref);
     }
 
     @AllArgsConstructor
@@ -141,7 +159,7 @@ public class ReferenceHelper {
          * @return The raw generated string after processing variable substitution.
          */
         static String generateValue(JsonObject json, Reference r) {
-            JsonValue value = PresetExpander.readValue(json, r.key);
+            JsonValue value = readValue(json, r.key);
             if (value.isString()) {
                 return validate(replaceString(value.asString(), r));
             } else if (value.isObject()) {

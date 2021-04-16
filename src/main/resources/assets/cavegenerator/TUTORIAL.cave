@@ -703,6 +703,13 @@ caverns: [
       range: [ 0, 8 ]
     }
 
+    # How much to offset the y-coordinate when given (x, z).
+    # ABSENT BY DEFAULT
+    offset: {
+      frequency: 0.005
+      range: [ 0, 50 ]
+    }
+
     # Wall noise that gets mixed in with biome borders.
     walls: {
       frequency: 0.02

@@ -8,18 +8,19 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import org.hjson.JsonObject;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 
+import static com.personthecat.cavegenerator.util.CommonMethods.empty;
 import static com.personthecat.cavegenerator.util.CommonMethods.full;
 
 @FieldNameConstants
 @Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
+@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class CavernSettings {
 
     /** The name of this feature to be used globally in serialization. */
@@ -36,6 +37,9 @@ public class CavernSettings {
     /** The default floor noise parameters used by caverns, if absent. */
     private static final NoiseMapSettings DEFAULT_FLOOR_NOISE =
         NoiseMapSettings.builder().frequency(0.02F).range(Range.of(0, 8)).build();
+
+    private static final NoiseMapSettings DEFAULT_HEIGHT_OFFSET =
+        NoiseMapSettings.builder().frequency(0.005F).range(Range.of(0, 50)).build();
 
     /** The default wall noise used at biome borders. */
     private static final NoiseMapSettings DEFAULT_WALL_NOISE =
@@ -60,6 +64,9 @@ public class CavernSettings {
 
     /** The number of blocks to iterate and interpolate between when generating. */
     @Default int resolution = 1;
+
+    /** How much to offset the y-value input to the generator based on (x, z). */
+    @Default Optional<NoiseMapSettings> offset = empty();
 
     /** Settings for how to generate these walls, if applicable. */
     @Default NoiseMapSettings walls = DEFAULT_WALL_NOISE;
@@ -92,6 +99,7 @@ public class CavernSettings {
             .mapSelf(o -> builder.conditions(ConditionSettings.from(o, original.conditions)))
             .mapSelf(o -> builder.decorators(DecoratorSettings.from(o, original.decorators)))
             .mapInt(Fields.resolution, builder::resolution)
+            .mapObject(Fields.offset, o -> builder.offset(full(NoiseMapSettings.from(o, DEFAULT_HEIGHT_OFFSET))))
             .mapObject(Fields.walls, o -> builder.walls(NoiseMapSettings.from(o, DEFAULT_WALL_NOISE)))
             .mapObject(Fields.wallOffset, o -> builder.wallOffset(NoiseMapSettings.from(o, DEFAULT_WALL_OFFSET)))
             .mapFloat(Fields.wallCurveRatio, builder::wallCurveRatio)

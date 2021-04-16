@@ -251,21 +251,6 @@ public class PresetExpander {
     }
 
     /**
-     * Copies a value by key from a JSON object, asserting that one must exist.
-     *
-     * @throws RuntimeException If the JSON does not contain the expected key.
-     * @param from The source where variables are defined.
-     * @param ref A string which is known to be a reference.
-     * @return The value contained within <code>from</code>.
-     */
-    public static JsonValue readValue(JsonObject from, String ref) {
-        if (from.has(ref)) {
-            return from.get(ref);
-        }
-        throw runExF("Use of undeclared variable: {}", ref);
-    }
-
-    /**
      *  Applies the merge operation to every JSON key in <code>to</code>. The "merge"
      * operation accepts a variable name as a JSON key with a value being an array
      * of strings indicating which fields to merge, or else <code>ALL</code>.
@@ -372,7 +357,7 @@ public class PresetExpander {
             }
             final String key = v.asString();
             // If the value exists, override it.
-            setOrAdd(to, key, readValue(from, key));
+            setOrAdd(to, key, ReferenceHelper.readValue(from, key));
         }
     }
 
