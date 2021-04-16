@@ -8,6 +8,7 @@
 {
   imports: blocks.cave
   enabled: false
+  replaceDecorators: true
   pillars: [
     # Quartz columns
     {
@@ -64,7 +65,6 @@
   ]
   # Relatively small and short caverns.
   caverns: {
-    enabled: true
     height: [ 6, 50 ]
     generators: {
       frequency: 0.0167
@@ -172,7 +172,7 @@
     }
   ]
   # Some hanging features.
-  largeStalactites: [
+  stalactites: [
     # Rare glowstone in the ceiling.
     {
       type: stalactite
@@ -202,7 +202,7 @@
       type: stalactite
       state: stone
       size: wide
-      length: [ 6, 8 ]
+      length: [ 4, 8 ]
       height: [ 15, 50 ]
       chance: 0.01
       matchers: stone

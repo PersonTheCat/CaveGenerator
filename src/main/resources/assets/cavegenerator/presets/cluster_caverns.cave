@@ -7,7 +7,7 @@
 # biome-restricted caverns.                                   #
 # ----------------------------------------------------------- #
 {
-  enabled: true
+  enabled: false
   biomes: {
     types: HILLS
   }

@@ -34,5 +34,5 @@
     }
   ]
   # These fit better in caverns or at least larger tunnels.
-  caverns: { enabled: true }
+  caverns: { generators: {} }
 }

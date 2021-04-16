@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.config;
 
 import lombok.AllArgsConstructor;
+import org.hjson.HjsonOptions;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
@@ -12,9 +13,18 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
-import static com.personthecat.cavegenerator.util.HjsonTools.NO_COMMENTS;
 
 public class ReferenceHelper {
+
+    /** An equivalent formatter used for parsing functions without comments. */
+    public static final HjsonOptions FORMATTER = new HjsonOptions()
+        .setParseLegacyRoot(false)
+        .setOutputComments(false)
+        .setAllowCondense(true)
+        .setAllowMultiVal(true)
+        .setCommentSpace(0)
+        .setSpace(2)
+        .setBracesSameLine(true);
 
     /**
      * If <code>val</code> contains references, the values will be copied out of <code>from</code>.
@@ -78,7 +88,7 @@ public class ReferenceHelper {
                 final String sub = Argument.generateValue(json, r);
                 ret = ret.substring(0, r.start) + sub + ret.substring(r.end);
             } while (containsReferences(ret));
-            return JsonValue.readHjson(ret);
+            return JsonValue.readHjson(ret, FORMATTER);
         }
 
         static Reference create(String val) {
@@ -161,13 +171,13 @@ public class ReferenceHelper {
         static String generateValue(JsonObject json, Reference r) {
             JsonValue value = readValue(json, r.key);
             if (value.isString()) {
-                return validate(replaceString(value.asString(), r));
+                return replaceString(value.asString(), r);
             } else if (value.isObject()) {
                 value = replaceObject(value.asObject(), r);
             } else if (value.isArray()) {
                 value = replaceArray(value.asArray(), r);
             }
-            return validate(value.toString(NO_COMMENTS));
+            return value.toString(FORMATTER);
         }
 
         static String replaceString(String val, Reference r) {
@@ -200,7 +210,7 @@ public class ReferenceHelper {
                 if (value.isString()) {
                     final String s = replaceString(value.asString(), r);
                     if (s.isEmpty()) continue;
-                    clone.add(name, JsonValue.readHjson(s));
+                    clone.add(name, JsonValue.readHjson(s, FORMATTER));
                 } else if (value.isObject()) {
                     clone.add(name, replaceObject(value.asObject(), r));
                 } else if (value.isArray()) {
@@ -228,10 +238,6 @@ public class ReferenceHelper {
                 }
             }
             return clone;
-        }
-
-        static String validate(String val) {
-            return val;
         }
 
         static Argument create(String val) {
