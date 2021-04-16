@@ -21,7 +21,6 @@ import static com.personthecat.cavegenerator.util.CommonMethods.full;
 
 @Builder
 @FieldNameConstants
-@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ShellSettings {

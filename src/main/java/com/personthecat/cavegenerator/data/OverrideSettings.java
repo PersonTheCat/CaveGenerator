@@ -27,7 +27,6 @@ import static com.personthecat.cavegenerator.util.CommonMethods.full;
 /** Any settings that can be written at the top level to serve as default values. */
 @Builder
 @FieldNameConstants
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class OverrideSettings {

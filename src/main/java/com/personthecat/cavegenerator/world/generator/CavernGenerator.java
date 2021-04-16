@@ -7,7 +7,6 @@ import com.personthecat.cavegenerator.data.NoiseSettings;
 import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.noise.DummyGenerator;
 import com.personthecat.cavegenerator.util.PositionFlags;
-import com.personthecat.cavegenerator.util.Stretcher;
 import com.personthecat.cavegenerator.world.BiomeSearch;
 import fastnoise.FastNoise;
 import lombok.AllArgsConstructor;
@@ -27,7 +26,6 @@ public class CavernGenerator extends WorldCarver {
     private final FastNoise wallOffset;
     private final FastNoise heightOffset;
     private final PositionFlags caverns;
-    private final Stretcher stretcher;
     private final double wallCurveRatio;
     private final boolean wallInterpolated;
     private final boolean hasShell;
@@ -40,7 +38,6 @@ public class CavernGenerator extends WorldCarver {
         this.generators = createGenerators(cfg.generators, world);
         this.wallOffset = cfg.wallOffset.getGenerator(world);
         this.heightOffset = cfg.offset.map(n -> n.getGenerator(world)).orElse(new DummyGenerator(0F));
-        this.stretcher = Stretcher.withSize(0);
         this.wallCurveRatio = cfg.wallCurveRatio;
         this.wallInterpolated = cfg.wallInterpolation;
         this.hasShell = !this.decorators.shell.decorators.isEmpty();
@@ -200,7 +197,6 @@ public class CavernGenerator extends WorldCarver {
         final int d = (int) decorators.shell.sphereRadius;
         final int min = Math.max(1, height.min - d);
         final int max = Math.min(255, height.max + d);
-        this.stretcher.reset();
 
         for (int y = min; y < max; y++) {
             final int yO = y + (int) this.heightOffset.GetAdjustedNoise(actualX, actualZ);
@@ -215,16 +211,13 @@ public class CavernGenerator extends WorldCarver {
                     this.generateShell(rand, primer, x, y, z, y, chunkX, chunkZ);
                 }
             }
-            this.stretcher.shift();
         }
     }
 
     private void place(Random rand, ChunkPrimer primer, Range height, int x, int y, int z, int chunkX, int chunkZ, int actualX, int actualZ) {
         for (FastNoise noise : this.generators) {
-            this.stretcher.set(noise.GetNoise(actualX, y, actualZ));
-            final float sum = this.stretcher.sum();
-
-            if (noise.IsInThreshold(sum)) {
+            final float value = noise.GetNoise(actualX, y, actualZ);
+            if (noise.IsInThreshold(value)) {
                 if (height.contains(y)) {
                     this.replaceBlock(rand, primer, x, y, z, chunkX, chunkZ);
                     this.caverns.add(x, y, z);
@@ -232,7 +225,7 @@ public class CavernGenerator extends WorldCarver {
                     this.generateShell(rand, primer, x, y, z, y, chunkX, chunkZ);
                 }
                 return;
-            } else if (noise.IsOuter(sum, decorators.shell.noiseThreshold)) {
+            } else if (noise.IsOuter(value, decorators.shell.noiseThreshold)) {
                 this.generateShell(rand, primer, x, y, z, y, chunkX, chunkZ);
             }
         }

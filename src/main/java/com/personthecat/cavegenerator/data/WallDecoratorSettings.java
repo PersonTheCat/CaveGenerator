@@ -22,7 +22,6 @@ import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
 
 @Builder
 @FieldNameConstants
-@AllArgsConstructor
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class WallDecoratorSettings {

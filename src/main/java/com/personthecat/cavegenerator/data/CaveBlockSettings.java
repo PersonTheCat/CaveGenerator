@@ -22,7 +22,6 @@ import static com.personthecat.cavegenerator.util.CommonMethods.full;
 /** Contains all of the data needed for spawning alternative blocks in caves. */
 @Builder
 @FieldNameConstants
-@RequiredArgsConstructor
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class CaveBlockSettings {
