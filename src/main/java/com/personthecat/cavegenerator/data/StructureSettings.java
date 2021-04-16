@@ -18,8 +18,8 @@ import org.hjson.JsonObject;
 import java.util.Collections;
 import java.util.List;
 
+@Builder
 @FieldNameConstants
-@Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 public class StructureSettings {
 

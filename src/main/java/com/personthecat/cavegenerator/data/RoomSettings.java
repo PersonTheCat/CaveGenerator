@@ -10,8 +10,8 @@ import org.hjson.JsonObject;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.invert;
 
+@Builder
 @FieldNameConstants
-@Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 public class RoomSettings {
 

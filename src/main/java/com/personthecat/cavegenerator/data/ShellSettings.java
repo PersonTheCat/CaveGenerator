@@ -19,9 +19,9 @@ import java.util.Optional;
 import static com.personthecat.cavegenerator.util.CommonMethods.empty;
 import static com.personthecat.cavegenerator.util.CommonMethods.full;
 
+@Builder
 @FieldNameConstants
 @RequiredArgsConstructor
-@Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class ShellSettings {
@@ -48,9 +48,9 @@ public class ShellSettings {
             .release(builder::build);
     }
 
+    @Builder
     @FieldNameConstants
     @RequiredArgsConstructor
-    @Builder(toBuilder = true)
     @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
     public static class Decorator {
 

@@ -20,9 +20,9 @@ import static com.personthecat.cavegenerator.util.CommonMethods.empty;
 import static com.personthecat.cavegenerator.util.CommonMethods.full;
 
 /** Contains all of the data needed for spawning alternative blocks in caves. */
+@Builder
 @FieldNameConstants
 @RequiredArgsConstructor
-@Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class CaveBlockSettings {

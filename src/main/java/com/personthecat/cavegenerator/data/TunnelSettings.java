@@ -17,8 +17,8 @@ import static com.personthecat.cavegenerator.util.CommonMethods.empty;
 import static com.personthecat.cavegenerator.util.CommonMethods.full;
 import static com.personthecat.cavegenerator.util.CommonMethods.invert;
 
+@Builder
 @FieldNameConstants
-@Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class TunnelSettings {

@@ -20,9 +20,9 @@ import static com.personthecat.cavegenerator.util.CommonMethods.find;
 import static com.personthecat.cavegenerator.util.CommonMethods.full;
 import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
 
+@Builder
 @FieldNameConstants
 @AllArgsConstructor
-@Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class WallDecoratorSettings {

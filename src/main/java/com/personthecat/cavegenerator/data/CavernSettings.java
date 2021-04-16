@@ -17,8 +17,8 @@ import java.util.Optional;
 import static com.personthecat.cavegenerator.util.CommonMethods.empty;
 import static com.personthecat.cavegenerator.util.CommonMethods.full;
 
+@Builder
 @FieldNameConstants
-@Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class CavernSettings {

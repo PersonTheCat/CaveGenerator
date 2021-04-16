@@ -19,8 +19,8 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 /** Data used for spawning giant clusters of stone through ChunkPrimer. */
+@Builder
 @FieldNameConstants
-@Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 public class ClusterSettings {
 

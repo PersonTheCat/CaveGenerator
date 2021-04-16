@@ -18,8 +18,8 @@ import java.util.Optional;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
 
+@Builder
 @FieldNameConstants
-@Builder(toBuilder = true)
 @ParametersAreNonnullByDefault
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 @SuppressWarnings("OptionalUsedAsFieldOrParameterType")

@@ -13,8 +13,8 @@ import org.hjson.JsonObject;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.full;
 
+@Builder
 @FieldNameConstants
-@Builder(toBuilder = true)
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 public class LayerSettings {
 

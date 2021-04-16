@@ -41,7 +41,7 @@ public class DecoratorSettings {
     /** A variant of wall decorators that can spawn multiple layers deep without directionality. */
     @Default ShellSettings shell = ShellSettings.builder().build();
 
-    /** An internal-only list decorators from <em>everywhere else</em>. */
+    /** An internal-only list of decorators from <em>everywhere else</em>. */
     @Default List<IBlockState> globalDecorators = Collections.emptyList();
 
     public static DecoratorSettings from(JsonObject json, DecoratorSettings defaults) {
