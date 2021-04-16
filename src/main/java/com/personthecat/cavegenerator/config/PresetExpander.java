@@ -140,8 +140,6 @@ public class PresetExpander {
      * object inside of <code>forest.cave</code> into a variable called <code>FOREST</code>.
      * </p>
      *
-     * Todo: Make it to where you can use a path instead.
-     *
      * @throws RuntimeException If the import does not exist.
      * @throws NullPointerException If filename is null.
      *
@@ -154,8 +152,7 @@ public class PresetExpander {
         Objects.requireNonNull(filename, "Imports may not be null.");
         final Import helper = new Import(filename);
         // Get the JSON object by filename.
-        final JsonObject json = find(definitions.entrySet(), e -> helper.filename.equals(e.getKey().getName()))
-            .map(Map.Entry::getValue)
+        final JsonObject json = helper.locate(definitions)
             .orElseThrow(() -> runExF("Use of undeclared import: {}", filename));
         // No specific variable && AS statement -> name the object itself.
         if (helper.as.isPresent() && !helper.variable.isPresent()) {
@@ -472,6 +469,19 @@ public class PresetExpander {
             filename = splitVar[0];
             variable = splitVar.length > 1 ? full(splitVar[1]) : empty();
             as = splitAs.length > 1 ? full(splitAs[1]) : empty();
+        }
+
+        Optional<JsonObject> locate(Map<File, JsonObject> defs) {
+            return find(defs.entrySet(), e -> this.matches(e.getKey()))
+                .map(Map.Entry::getValue);
+        }
+
+        boolean matches(File f) {
+            if (this.filename.equals(f.getName())) {
+                return true;
+            }
+            // Users can essentially be as specific as they like.
+            return f.getPath().replace("\\", "/").endsWith(filename);
         }
     }
 }

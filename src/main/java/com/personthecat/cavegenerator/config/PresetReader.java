@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.config;
 
+import com.personthecat.cavegenerator.CaveInit;
 import lombok.extern.log4j.Log4j2;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
@@ -59,11 +60,20 @@ public class PresetReader {
     /** Loads and updates every JSON file in a directory. */
     private static Map<File, JsonObject> loadJsons(File dir) {
         final Map<File, JsonObject> jsons = new HashMap<>();
-        for (File file : listFiles(dir).orElse(new File[0])) {
-            log.info("Parsing preset file: {}", file.getName());
-            jsons.put(file, loadJson(file).asObject());
-        }
+        loadInto(jsons, dir);
         return jsons;
+    }
+
+    /** Recursively loads all presets in the directory. */
+    private static void loadInto(Map<File, JsonObject> jsons, File dir) {
+        for (File file : listFiles(dir).orElse(new File[0])) {
+            if (file.isDirectory()) {
+                loadInto(jsons, file);
+            } else if (CaveInit.validExtension(file)) {
+                log.info("Parsing preset file: {}", file.getName());
+                jsons.put(file, loadJson(file).asObject());
+            }
+        }
     }
 
     /** Converts a map of (file -> json) to (filename -> POJO)  */
