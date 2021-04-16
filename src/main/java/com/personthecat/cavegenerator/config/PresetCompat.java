@@ -167,13 +167,18 @@ class PresetCompat {
     }
 
     private static void updateImports(JsonObject json) {
-        if (json.has(IMPORTS)) {
-            final JsonArray imports = HjsonTools.asOrToArray(json.get(IMPORTS));
+        final JsonValue rawImports = json.get(IMPORTS);
+        if (rawImports != null) {
+            final JsonArray imports = HjsonTools.asOrToArray(rawImports);
             final JsonArray clone = new JsonArray();
             for (JsonValue value : imports) {
                 clone.add(replaceImportVal(value.asString()));
             }
-            json.set(IMPORTS, clone.setCondensed(imports.isCondensed()));
+            if (!rawImports.isArray()) {
+                json.set(IMPORTS, clone.get(0));
+            } else {
+                json.set(IMPORTS, clone.setCondensed(imports.isCondensed()));
+            }
         }
     }
 
