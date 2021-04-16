@@ -11,7 +11,7 @@
   enabled: false
   rooms: {
     scale: 7
-    scaleY: 0.6
+    stretch: 0.6
   }
   tunnels: {
     # Use consistent scale values.
@@ -20,7 +20,7 @@
       startVal: 2.5
       startValRandFactor: 0.9
     }
-    scaleY: {
+    stretch: {
       randFactor: 0.05
       startVal: 0.7
     }

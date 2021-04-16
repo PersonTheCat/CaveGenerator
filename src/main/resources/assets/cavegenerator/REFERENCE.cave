@@ -368,6 +368,7 @@
       nonSolidChecks: []
       waterChecks: []
       debugSpawns: false
+      command: ""
       rotateRandomly: false
       
       biomes: {}

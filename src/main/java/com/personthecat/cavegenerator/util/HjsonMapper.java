@@ -51,6 +51,11 @@ public class HjsonMapper {
         return this;
     }
 
+    public HjsonMapper mapString(String field, Consumer<String> ifPresent) {
+        HjsonTools.getString(json, field).ifPresent(ifPresent);
+        return this;
+    }
+
     public HjsonMapper mapRequiredString(String field, String parent, Consumer<String> mapper) {
         mapper.accept(HjsonTools.getString(json, field).orElseThrow(() -> runExF("{}.{} is required", parent, field)));
         return this;

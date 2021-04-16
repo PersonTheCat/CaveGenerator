@@ -11,12 +11,11 @@
   enabled: false
   caverns: {
     enabled: true
-    minHeight: 7
-    maxHeight: 50
-    noise3D: {
+    height: [ 7, 50 ]
+    generators: {
       frequency: 0.02
       scale: 0.25
-      scaleY: 0.5
+      stretch: 0.5
     }
   }
   tunnels: {
@@ -34,7 +33,7 @@
       startVal: 4.5
       startValRandFactor: 0
     }
-    scaleY: {
+    stretch: {
       randFactor: 0
       startVal: 0.6
     }

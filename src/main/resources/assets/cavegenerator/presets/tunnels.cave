@@ -13,32 +13,29 @@
     {
       states: dirt
       chance: 0.15
-      minHeight: 20
-      maxHeight: 40
+      height: [ 20, 40 ]
       matchers: stone
       directions: down
-      preference: replace_match
+      placement: embed
     }
     {
       states: gravel
       chance: 0.15
-      minHeight: 20
-      maxHeight: 40
+      height: [ 20, 40 ]
       matchers: [ "stone", "dirt" ]
       directions: down
-      preference: replace_match
+      placement: embed
     }
   ]
-  rooms: {
-    scale: 7
-    scaleY: 0.6
-  }
   tunnels: {
-    minHeight: 27
-    maxHeight: 33
+    originHeight: [ 27, 33 ]
      # Most tunnels spawn alone.
     systemChance: 0.001
     noiseYReduction: false
+    rooms: {
+      scale: 7
+      stretch: 0.6
+    }
     dYaw: {
       factor: 0.9
       randFactor: 0.3

@@ -14,19 +14,17 @@
     # Fills y=(12-45) with water.
     {
       states: water
-      minHeight: 12
-      maxHeight: 45
+      height: [ 12, 45 ]
     }
     # Manually places obsidian above lava.
     {
       states: obsidian
-      minHeight: 11
-      maxHeight: 11
+      height: 11
     }
     # Imitates the normal lava placement behavior.
     {
       states: lava
-      maxHeight: 10
+      height: [ 0, 10 ]
     }
   ]
   wallDecorators: [
@@ -34,8 +32,7 @@
     {
       states: gravel
       chance: 0.25
-      minHeight: 0
-      maxHeight: 63
+      originHeight: [ 0, 63 ]
       matchers: [ "stone", "dirt" ]
       directions: down
     }

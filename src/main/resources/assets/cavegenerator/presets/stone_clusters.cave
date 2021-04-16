@@ -9,36 +9,31 @@
 # it.                                                         #
 # ----------------------------------------------------------- #
 {
+  imports: blocks.cave
   $VANILLA: "ALL" # Default ravines and lava settings.
   enabled: false
   clusters: [
     {
-      states: "stone:5" # anesite
+      states: $ANDESITE
       chance: 0.15
-      radiusX: 19
-      radiusY: 14
-      radiusZ: 19
-      radiusVariance: 7
-      startHeight: 26
-      heightVariance: 12
+      radiusX: [ 16, 23 ]
+      radiusY: [ 11, 18 ]
+      radiusZ: [ 16, 23 ]
+      centerHeight: [ 20, 32 ]
     }
     {
-      states: "stone:3" # diorite
+      states: $DIORITE
       chance: 0.25
-      radiusVariance: 5
-      startHeight: 53
-      heightVariance: 9
+      centerHeight: [ 49, 58 ]
     }
     {
-      states: "stone:1" # granite
+      states: $GRANITE
       chance: 0.3
-      radiusX: 19
-      radiusY: 14
-      radiusZ: 19
-      radiusVariance: 7
+      radiusX: [ 16, 23 ]
+      radiusY: [ 11, 18 ]
+      radiusZ: [ 16, 23 ]
       # Center height can be negative.
-      startHeight: 0
-      heightVariance: 6
+      centerHeight: [ -3, 3 ]
     }
   ]
 }

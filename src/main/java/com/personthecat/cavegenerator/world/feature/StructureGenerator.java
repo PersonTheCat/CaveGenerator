@@ -3,6 +3,7 @@ package com.personthecat.cavegenerator.world.feature;
 import com.personthecat.cavegenerator.data.StructureSettings;
 import com.personthecat.cavegenerator.model.Range;
 import lombok.extern.log4j.Log4j2;
+import net.minecraft.server.MinecraftServer;
 import net.minecraft.util.Rotation;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.World;
@@ -317,6 +318,14 @@ public class StructureGenerator extends FeatureGenerator {
         if (cfg.debugSpawns) {
             log.info("Spawning {} at {}", cfg.name, pos);
         }
+        if (!cfg.command.isEmpty()) {
+            final MinecraftServer server = info.world.getMinecraftServer();
+            final String interpolated = cfg.command
+                .replace("{x}", String.valueOf(pos.getX()))
+                .replace("{y}", String.valueOf(pos.getY()))
+                .replace("{z}", String.valueOf(pos.getZ()));
+            server.commandManager.executeCommand(server, interpolated);
+        }
     }
 
     /**
@@ -324,7 +333,6 @@ public class StructureGenerator extends FeatureGenerator {
      * a structure is started at this coordinate, the other end cannot exceed chunk bounds.
      */
     private static int cornerInsideChunkBounds(Random rand, int size) {
-        // Todo: better testing for cascading generation lag
         final int min = size / 2;
         return rand.nextInt(16 - min) + min;
     }

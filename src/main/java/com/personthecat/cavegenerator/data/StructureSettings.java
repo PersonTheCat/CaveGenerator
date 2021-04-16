@@ -69,6 +69,9 @@ public class StructureSettings {
     /** Whether to display the spawn coordinates of this structure in the log. */
     @Default boolean debugSpawns = false;
 
+    /** A command to run whenever this feature is spawned in the world. */
+    @Default String command = "";
+
     /** Whether to rotate this structure randomly. */
     @Default boolean rotateRandomly = false;
 
@@ -97,6 +100,7 @@ public class StructureSettings {
             .mapFloat(Fields.chance, builder::chance)
             .mapInt(Fields.count, builder::count)
             .mapBool(Fields.debugSpawns, builder::debugSpawns)
+            .mapString(Fields.command, builder::command)
             .mapBool(Fields.rotateRandomly, builder::rotateRandomly)
             .release(builder::build);
     }

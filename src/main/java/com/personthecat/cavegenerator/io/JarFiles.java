@@ -41,7 +41,7 @@ public class JarFiles {
         "tunnels", "caverns", "stone_layers", "stalactites",
         "ravines", "stone_clusters", "large_stalactites",
         "vanilla", "underground_forest", "euclids_tunnels",
-        "lower_caves"
+        "lower_caves", "cluster_caverns"
     };
 
     /** A couple of structure NBTs to be copied from the jar. */

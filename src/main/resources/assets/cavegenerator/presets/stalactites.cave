@@ -11,7 +11,6 @@
 {
   $VANILLA: "ALL" # Default tunnels, ravines, etc.
   enabled: false
-  blankSlate: false 
   wallDecorators: [
     # Direction#DOWN -> stalagmites
     {
@@ -19,21 +18,19 @@
       # in vanilla. This will have to do.
       states: cobblestone_wall
       chance: 0.15
-      minHeight: 10
-      maxHeight: 55
+      height: [ 10, 55 ]
       matchers: stone
       directions: down
-      preference: replace_original
+      placement: overlay
     }
     # Direction#UP -> stalactites
     {
       states: cobblestone_wall
       chance: 0.15
-      minHeight: 10
-      maxHeight: 55
+      height: [ 10, 55 ]
       matchers: stone
       directions: up
-      preference: replace_original
+      placement: overlay
     }
   ]
 }

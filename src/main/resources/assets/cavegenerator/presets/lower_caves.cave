@@ -1,7 +1,7 @@
 # Spawns additional tunnels at the bottom of the world.
 {
   imports: [
-    defaults.cave::LAVA_CAVE_BLOCK
+    defaults.cave::caveBlocks as LAVA_CAVE_BLOCK
   ]
   # Whether the preset is enabled globally.
   enabled: false
@@ -10,14 +10,13 @@
     # Spawn less frequencly than in vanilla.
     frequency: 8
     # Use a lower height range.
-    minHeight: 6
-    maxHeight: 20
+    height: [ 6, 20 ]
     # Less likely to spawn systems -> more even distribution.
     systemChance: 0.005
     # Less likely to skip some origin points.
-    isolatedChance: 0.2
+    chance: 0.2
     # Reduce the overall verticality of lower caves.
-    dPitch: { "factor": 0.5 }
+    dPitch: { factor: 0.5 }
   }
   # Make sure the new caves are also filled with lava.
   caveBlocks: $LAVA_CAVE_BLOCK

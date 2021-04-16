@@ -9,30 +9,28 @@
 # ----------------------------------------------------------- #
 {
   imports: [
-    defaults.cave::LAVA_CAVE_BLOCK
+    defaults.cave::caveBlocks as LAVA_CAVE_BLOCK
   ]
   enabled: false
-  # Default lava.
-  caveBlocks: $LAVA_CAVE_BLOCK
-  largeStalactites: [
+  caveBlocks: "$LAVA_CAVE_BLOCK" # Defalt lava.
+  stalactites: [
     {
+      type: stalactite
       state: stone
       chance: 0.075
-      maxLength: 6
-      minHeight: 15
-      maxHeight: 50
+      length: [ 4, 6 ]
+      height: [ 15, 50 ]
       matchers: stone
     }
-  ]
-  largeStalagmites: [
     {
+      type: stalagmite
       state: stone
       chance: 0.05
-      minHeight: 10
-      maxHeight: 50
+      height: [ 10, 50 ]
+      matchers: stone
       # Spawn this decorator according to its default
       # noise settings.
-      noise2D: {}
+      region: {}
     }
   ]
   # These fit better in caverns or at least larger tunnels.
