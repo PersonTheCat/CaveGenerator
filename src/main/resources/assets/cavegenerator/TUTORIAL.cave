@@ -63,12 +63,29 @@
 #     # Alters the distance between peaks of values.                        #
 #     frequency: floating-point value                                       #
 #                                                                           #
+#     # The number of generation passes. This effectively increases the     #
+#     # resolution of clusters (makes them *less* smooth) at the cost of    #
+#     # performance.                                                        #
+#     # default: 1                                                          #
+#     octaves: integer value                                                #
+#                                                                           #
 #     # The minimum *and* maximum possible values produced by this          #
 #     # generator.                                                          #
 #     range: [ integer, integer ]                                           #
 #                                                                           #
 #     # Used to produce a common output between multiple noise generators.  #
 #     seed: integer                                                         #
+#                                                                           #
+#     # Will transform this generator into a dummy which always produces    #
+#     # the same value. This is good for performance.                       #
+#     dummy: boolean                                                        #
+#                                                                           #
+#     # Whether to cache and reuse the values output by this generator      #
+#     # every chunk. Use any time you have multiple, very similar settings  #
+#     # being reused every chunk. Threshold and range values are ignored    #
+#     # when caching, and so two generators with different ranges and       #
+#     # thresholds can still be cached.                                     #
+#     cache: boolean                                                        #
 #                                                                           #
 #   }                                                                       #
 #                                                                           #
@@ -105,6 +122,18 @@
 #                                                                           #
 #     # Used to produce a common output between multiple noise generators.  #
 #     seed: integer                                                         #
+#                                                                           #
+#     # Will transform this generator into a dummy which always produces    #
+#     # the same value. This is good for performance.                       #
+#     dummy: boolean                                                        #
+#                                                                           #
+#     # Whether to cache and reuse the values output by this generator      #
+#     # every chunk. Use any time you have multiple, very similar settings  #
+#     # being reused every chunk. Threshold and range values are ignored    #
+#     # when caching, and so two generators with different ranges and       #
+#     # thresholds can still be cached.                                     #
+#     cache: boolean                                                        #
+#                                                                           #
 #   }                                                                       #
 #                                                                           #
 #   # Noise generators produce values in full 3-dimensional space.          #
@@ -213,6 +242,18 @@
 #                                                                           #
 #     # Used to produce a common output between multiple noise generators.  #
 #     seed: integer                                                         #
+#                                                                           #
+#     # Will transform this generator into a dummy which always produces    #
+#     # the same value. This is good for performance.                       #
+#     dummy: boolean                                                        #
+#                                                                           #
+#     # Whether to cache and reuse the values output by this generator      #
+#     # every chunk. Use any time you have multiple, very similar settings  #
+#     # being reused every chunk. Threshold and range values are ignored    #
+#     # when caching, and so two generators with different ranges and       #
+#     # thresholds can still be cached.                                     #
+#     cache: boolean                                                        #
+#                                                                           #
 #   }                                                                       #
 #                                                                           #
 #   The majority of all noise parameters above have equivalent counterparts #
@@ -278,7 +319,7 @@
 #   # Note: this may be removed at some point.                              #
 #   identical: [ 1.0, 2.0, 3.0, 4.0, 5.0 ]                                  #
 # ------------------------------------------------------------------------- #
-
+{
 # ------------------------------------------------------------------------- #
 # ######################################################################### #
 #                        ### Global Conditions ###                          #
@@ -402,6 +443,36 @@ wallDecorators: [
   }
 ]
 
+# Variant of wall decorators which can place blocks multiple layers
+# deep. The caveat is that all of your shell decorators must be the
+# same thickness and cannot directional.
+shell: {
+    # Affects all spheres and cavern floors, ceilings, and biome walls.
+    radius: 0.0
+
+    # The 1 / X chance that a sphere will have a shell. Larger shells
+    # may not need the same resolution to get roughly full coverage.
+    sphereResolution: 2
+    
+    # The distance above and below a generator threshold which will be
+    # considered the shell. The default is radius / 10, but this value
+    # should be balanced manually and carefully. 
+    noiseThreshold: 0.0
+    
+    decorators: [
+      {
+        # **This value may not be null or empty**.
+        states: []
+        # **This value may not be null or empty**.
+        matchers: []
+        height: [ 0, 63 ]
+        chance: 1.0
+        # ABSENT BY DEFAULT
+        noise: {}
+      }
+    ]
+  }
+
 # ------------------------------------------------------------------------- #
 # ######################################################################### #
 #                     ### Tunnel Setting Overrides ###                      #
@@ -457,10 +528,14 @@ tunnels: [
     frequency: 15
     height: [ 8, 128 ]
     systemChance: 0.25
-    isolatedChance: 0.142
+    chance: 0.142
     systemDensity: 4
     noiseYReduction: true
     
+    # The height at which these ravines can start. If this
+    # value is not set, it will default to the value of height.
+    originHeight: [ 8, 128 ]
+
     # One in this many spheres will be skipped for performance.
     resolution: 4
 
@@ -481,7 +556,7 @@ tunnels: [
     }
 
     # Vertical ratio of `scale`.
-    skew: {
+    stretch: {
       startVal: 1
       factor: 1
       randFactor: 0
@@ -541,8 +616,7 @@ tunnels: [
 ravines: [
   {
     chance: 0.02
-    minHeight: 20
-    maxHeight: 66
+    height: [ 20, 66 ]
     distance: 0
     resolution: 4
     dYaw: {
@@ -564,7 +638,7 @@ ravines: [
       randFactor: 0
       exponent: 1
     }
-    skew: {
+    stretch: {
       startVal: 3
       factor: 1
       randFactor: 0
@@ -578,6 +652,13 @@ ravines: [
       startVal: 0
       startValRandFactor: 0.25
     }
+
+    # The height at which these ravines can start. If this
+    # value is not set, it will default to the value of height.
+    originHeight: [ 20, 66 ]
+
+    # A ratio of how much to flatten the top and bottom of this feature.
+    cutoffStrength: 5.0 
 
     # Similar to noiseYReduction, but not as random.
     noiseYFactor: 0.7
@@ -594,39 +675,60 @@ ravines: [
 # of noise3D blocks to create the main caverns, and then two noise2D blocks which
 # close the caverns off with a ceiling and floor. Whatever value is yielded from
 # the ceiling and floor generators gets added to minHeight or maxHeight.
-caverns: {
-  height: [ 10, 50 ]
+caverns: [
+  {
+    height: [ 10, 50 ]
   
-  # The number of blocks between noise checks.
-  # Must be a power of 2 and <= 16;
-  resolution: 1
+    # The number of blocks between noise checks.
+    # Must be a power of 2 and <= 16;
+    resolution: 1
 
-  generators: [
-    {
-      frequency: 0.0143
-      scale: 0.2
-      skew: 0.5
+    generators: [
+      {
+        frequency: 0.0143
+        scale: 0.2
+        stretch: 0.5
+      }
+    ]
+
+    # Defaults that apply to caverns only.
+    ceiling: {
+      frequency: 0.02
+      range: [ -17, -3 ]
     }
-  ]
 
-  # Defaults that apply to caverns only.
-  ceiling: {
-    frequency: 0.02
-    range: [ -17, -3 ]
-  }
+    # Defaults that apply to caverns only.
+    floor: { 
+      frequency: 0.02
+      range: [ 0, 8 ]
+    }
 
-  # Defaults that apply to caverns only.
-  floor: {
-    frequency: 0.02
-    range: [ 0, 8 ]
+    # Wall noise that gets mixed in with biome borders.
+    walls: {
+      frequency: 0.02
+      range: [ 9, 15 ]
+    }
+
+    # Determines how much to shift the walls up and down
+    # At any location. Makes the walls a bit more unique.
+    # Set dummy: true if you don't need it.
+    wallOffset: {
+      frequency: 0.05
+      range: [ 0, 255 ]
+    }
+
+    wallCurveRatio: 1.0
+
+    # Experimental feature to increase wall resolution.
+    wallInterpolation: false
+    
+    # Caverns do not have default region values.
+    region: {}
+    
+    # Caverns do not have default noise values.
+    noise: {}
   }
-  
-  # Caverns do not have default region values.
-  region: {}
-  
-  # Caverns do not have default noise values.
-  noise: {}
-}
+]
 
 # ------------------------------------------------------------------------- #
 # ######################################################################### #
@@ -664,6 +766,10 @@ clusters: [
     radiusZ: [ 13, 19 ]
     centerHeight: [ 24, 40 ]
 
+    # Can be used instead of radiusX, radiusY, and radiuZ to provide
+    # default for each of those fields.
+    radius: null
+
     # Optional blocks to compare against. Leave this empty
     # if you don't need it and all stone types will be matched.
     matchers: []
@@ -677,12 +783,14 @@ stalactites: [
     # **This value may not be null**.
     state: null
     
-    # Type may be `stalactite` or `stalagmite`
+    # Type may be `stalactite` or `stalagmite`.
     type: stalactite
 
-    # Whether the stalactite should be full-sized.
-    wide: true
-    maxLength: 3
+    # The width of this feature.
+    # Possible options are: `small`, `wide`, and `giant`.
+    size: wide
+
+    length: [ 1, 3 ]
     chance: 0.167
     height: [ 11, 55 ]
 
@@ -724,43 +832,44 @@ pillars: [
 # See underground_forest.cave for a better example. These are just the default
 # values.
 structures: [
-   {
-     # **This value may not be null**
-     # this refers to either a resource location or file name.
-     name: null
+  {
+    # **This value may not be null**
+    # this refers to either a resource location or file name.
+    name: null
      
-     height: [ 10, 50 ]
+    height: [ 10, 50 ]
 
-     # The 0-1 ratio of blocks to be retained when spawning.
-     integrity: 1.0
+    # The 0-1 ratio of blocks to be retained when spawning.
+    integrity: 1.0
 
-     # X, Y, Z spawn offset.
-     offset: [0, 0, 0]
+    # X, Y, Z spawn offset.
+    offset: [ 0, 0, 0 ]
 
-     # Number of tries per chunk. Should be low.
-     count: 1
+    # Number of tries per chunk. Should be low.
+    count: 1
 
-     # The 0 - 1 chance any try will succeed.
-     chance: 0.05
+    # The 0 - 1 chance any try will succeed.
+    chance: 0.05
 
-     # A list of source blocks to match.
-     matchers: []
+    # A list of source blocks to match.
+    matchers: []
 
-     # Any relative coordinates that must be non-solid.
-     # Example:
-     # airMatchers: [
-     #  [0, 1, 0],
-     #  [0, 3, 0]
-     # ]
-     airChecks: []
-     solidChecks: []
-     nonSolidChecks: []
-     waterChecks: []
+    # Any relative coordinates that must be non-solid.
+    # Example:
+    # airMatchers: [
+    #  [ 0, 1, 0 ],
+    #  [ 0, 3, 0 ]
+    # ]
+    airChecks: []
+    solidChecks: []
+    nonSolidChecks: []
+    waterChecks: []
 
-     # Whether to log the coordinates every time this structure spawns.
-     debugSpawns: false
+    # Whether to log the coordinates every time this structure spawns.
+    debugSpawns: false
 
-     # Whether to reorient this structure every time it spawns.
-     rotateRandomly: false
-   }
+    # Whether to reorient this structure every time it spawns.
+    rotateRandomly: false
+  }
 ]
+}

@@ -11,9 +11,9 @@
   #  @1  -> threshold
   #  @2? -> type
   # Examples:
-  #  $SIMPLE_GENERATOR(-0.5, simplex)
-  #  $SIMPLE_GENERATOR(-0.2)
-  SIMPLE_GENERATOR: {
+  #  $simple_generator(-0.5, simplex)
+  #  $simple_generator(-0.2)
+  simple_generator(): {
     threshold: @1
     type: @2?(simplex)
   }
@@ -24,23 +24,11 @@
   #  @1 -> startVal
   # Examples:
   #  $CONSTANT(2)
-  CONSTANT: {
+  constant(): {
     startVal: @1
     startValRandFactor: 0
     factor: 1
     randFactor: 0
     exponent: 1
   }
-  # This function is useful for other functions
-  # that have nested arguments which need to be
-  # coerced into numbers. It just performs some
-  # basic math on a string, which coerces it
-  # into a number. Literally speaking, this has
-  # the effect of removing double quotes from a
-  # given value.
-  # Parameters:
-  #  @1 -> number
-  # Examples:
-  #  FUNCTION: { number: $NUM(@1) }
-  NUM: (@1) + 0
 }

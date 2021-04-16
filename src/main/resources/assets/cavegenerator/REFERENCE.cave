@@ -33,7 +33,7 @@
   floor: {}
   region: {}
   noise: {}
-  replaceableBlocks: [ "stone", "dirt", "grass" ]
+  replaceableBlocks: [ "stone", "dirt", "grass", "hardened_clay" ]
   replaceDecorators: true
   caveBlocks: [
     {
@@ -56,10 +56,27 @@
       noise: {}
     }
   ]
+  shell: {
+    radius: 0.0
+    sphereResolution: 2
+    noiseThreshold: 0.0
+    decorators: [
+      {
+        # **This value may not be null or empty**.
+        states: []
+        # **This value may not be null or empty**.
+        matchers: []
+        height: [ 0, 63 ]
+        chance: 1.0
+        # ABSENT BY DEFAULT
+        noise: {}
+      }
+    ]
+  }
   rooms: {
     scale: 6
     chance: 0.1
-    skew: 0.5
+    stretch: 0.5
     
     replaceableBlocks: [ "stone", "dirt", "grass" ]
     replaceDecorators: true
@@ -86,7 +103,7 @@
         randFactor: 0
         exponent: 1
       }
-      skew: {
+      stretch: {
         startVal: 1
         factor: 1
         randFactor: 0
@@ -126,10 +143,11 @@
       region: {}
       noise: {}
       
-      replaceableBlocks: [ "stone", "dirt", "grass" ]
+      replaceableBlocks: [ "stone", "dirt", "grass", "hardened_clay" ]
       replaceDecorators: true
       caveBlocks: []
       wallDecorators: []
+      shell: {}
     }
   ]
   ravines: [
@@ -157,7 +175,7 @@
         randFactor: 0
         exponent: 1
       }
-      skew: {
+      stretch: {
         startVal: 3
         factor: 1
         randFactor: 0
@@ -187,10 +205,11 @@
       region: {}
       noise: {}
       
-      replaceableBlocks: [ "stone", "dirt", "grass" ]
+      replaceableBlocks: [ "stone", "dirt", "grass", "hardened_clay" ]
       replaceDecorators: true
       caveBlocks: []
       wallDecorators: []
+      shell: {}
     }
   ]
   caverns: {
@@ -199,7 +218,7 @@
       {
         frequency: 0.0143
         scale: 0.2
-        skew: 0.5
+        stretch: 0.5
       }
     ]
     ceiling: {
@@ -210,6 +229,20 @@
       frequency: 0.02
       range: [ 0, 8 ]
     }
+
+    walls: {
+      frequency: 0.02
+      range: [ 9, 15 ]
+    }
+
+    wallOffset: {
+      frequency: 0.05
+      range: [ 0, 255 ]
+    }
+
+    wallCurveRatio: 1.0
+    wallInterpolation: false
+
     region: {}
     noise: {}
     
@@ -218,10 +251,11 @@
     dimensions: []
     blacklistDimensions: false
     
-    replaceableBlocks: [ "stone", "dirt", "grass" ]
+    replaceableBlocks: [ "stone", "dirt", "grass", "hardened_clay" ]
     replaceDecorators: true
     caveBlocks: []
     wallDecorators: []
+    shell: {}
   }
   layers: [
     {
@@ -246,6 +280,7 @@
   ]
   clusters: [
     {
+      # **This value may not be null or empty**.
       states: []
       chance: 0.15
       radiusX: [ 13, 19 ]
@@ -270,8 +305,8 @@
       # **This value may not be null**.
       state: null
       type: stalactite
-      wide: true
-      maxLength: 3
+      side: wide
+      length: [ 1, 3 ]
       chance: 0.167
       height: [ 11, 55 ]
       matchers: []
@@ -316,7 +351,7 @@
       # this refers to either a resource location or file name.
       name: null
       integrity: 1.0
-      offset: [0, 0, 0]
+      offset: [ 0, 0, 0 ]
       count: 1
       chance: 0.05
       minHeight: 10
