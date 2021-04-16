@@ -7,11 +7,8 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import net.minecraft.block.state.IBlockState;
-import org.apache.commons.lang3.tuple.Pair;
 import org.hjson.JsonObject;
 
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -50,8 +47,6 @@ public class CavePreset {
     /** Regular NBT structures which can be placed throughout the world. */
     @Default List<StructureSettings> structures = Collections.emptyList();
 
-    List<IBlockState> decoratorBlocks;
-
     JsonObject raw;
 
     public static CavePreset from(JsonObject json) {
@@ -69,19 +64,4 @@ public class CavePreset {
             .mapArray(Fields.structures, o -> StructureSettings.from(o, overrides), builder::structures)
             .release(builder::build);
     }
-
-    // Unused. Debating whether we need to tally *all blocks* for each `replaceableBlocks`
-    private static List<IBlockState> getAllDecorators(CavePresetBuilder builder) {
-        final List<IBlockState> decorators = new ArrayList<>();
-        for (LayerSettings layer : builder.layers$value) {
-            decorators.add(layer.state);
-        }
-        for (ClusterSettings cluster : builder.clusters$value) {
-            for (Pair<IBlockState, Integer> pair : cluster.states) {
-                decorators.add(pair.getLeft());
-            }
-        }
-        return decorators;
-    }
-
 }

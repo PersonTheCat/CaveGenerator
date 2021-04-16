@@ -16,7 +16,7 @@ public abstract class WorldCarver extends BasicGenerator {
 
     public WorldCarver(ConditionSettings conditions, DecoratorSettings decorators, World world) {
         super(conditions, world);
-        this.decorators = Decorators.compile(decorators, Collections.emptyList(), world);
+        this.decorators = Decorators.compile(decorators, world);
     }
 
     /** Returns whether the generator has any surface decorators. */

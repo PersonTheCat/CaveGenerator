@@ -1,7 +1,10 @@
 package com.personthecat.cavegenerator.data;
 
+import com.personthecat.cavegenerator.config.CavePreset;
+import com.personthecat.cavegenerator.config.FieldHistory;
 import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.util.HjsonMapper;
+import com.personthecat.cavegenerator.util.HjsonTools;
 import lombok.AccessLevel;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,8 +13,11 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.world.biome.Biome;
+import org.apache.commons.lang3.ArrayUtils;
 import org.hjson.JsonObject;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -74,6 +80,9 @@ public class OverrideSettings {
     /** Optional room overrides for all tunnels. For backwards compatibility. */
     @Default Optional<RoomSettings> rooms = empty();
 
+    /** An internal-only list of decorator blocks at <em>every level</em>. */
+    @Default List<IBlockState> globalDecorators = Collections.emptyList();
+
     public static OverrideSettings from(JsonObject json) {
         final OverrideSettingsBuilder builder = builder();
         return new HjsonMapper(json)
@@ -86,13 +95,20 @@ public class OverrideSettings {
             .mapObject(Fields.ceiling, o -> builder.ceiling(full(NoiseMapSettings.from(o))))
             .mapObject(Fields.noise, o -> builder.noise(full(NoiseSettings.from(o))))
             .mapStateList(Fields.replaceableBlocks, l -> builder.replaceableBlocks(full(l)))
-            .mapBool(Fields.replaceDecorators, b -> builder.replaceDecorators(full(b)))
+            .mapBool(Fields.replaceDecorators, b -> copyReplaceDecorators(b, json, builder))
             .mapArray(Fields.caveBlocks, CaveBlockSettings::from, l -> builder.caveBlocks(full(l)))
             .mapArray(Fields.wallDecorators, WallDecoratorSettings::from, l -> builder.wallDecorators(full(l)))
             .mapObject(Fields.shell, s -> builder.shell(full(ShellSettings.from(s))))
             .mapObject(Fields.branches, b -> builder.branches(full(TunnelSettings.from(b))))
             .mapObject(Fields.rooms, r -> builder.rooms(full(RoomSettings.from(r))))
             .release(builder::build);
+    }
+
+    private static void copyReplaceDecorators(boolean replaceDecorators, JsonObject json, OverrideSettingsBuilder builder) {
+        if (replaceDecorators) {
+            builder.globalDecorators(getAllDecorators(json));
+        }
+        builder.replaceDecorators(full(replaceDecorators));
     }
 
     public ConditionSettings.ConditionSettingsBuilder apply(ConditionSettings.ConditionSettingsBuilder builder) {
@@ -109,6 +125,7 @@ public class OverrideSettings {
     }
 
     public DecoratorSettings.DecoratorSettingsBuilder apply(DecoratorSettings.DecoratorSettingsBuilder builder) {
+        this.replaceDecorators.ifPresent(b -> this.copyReplaceDecorators(b, builder));
         this.replaceableBlocks.ifPresent(builder::replaceableBlocks);
         this.replaceDecorators.ifPresent(builder::replaceDecorators);
         this.caveBlocks.ifPresent(builder::caveBlocks);
@@ -117,10 +134,45 @@ public class OverrideSettings {
         return builder;
     }
 
+    private void copyReplaceDecorators(boolean replaceDecorators, DecoratorSettings.DecoratorSettingsBuilder builder) {
+        if (replaceDecorators) {
+            builder.globalDecorators(this.globalDecorators);
+        }
+        builder.replaceDecorators(replaceDecorators);
+    }
+
     public TunnelSettings.TunnelSettingsBuilder apply(TunnelSettings.TunnelSettingsBuilder builder) {
         this.branches.ifPresent(b -> builder.branches(full(b)));
         this.rooms.ifPresent(r -> builder.rooms(full(r)));
         return builder;
+    }
+
+    private static List<IBlockState> getAllDecorators(JsonObject json) {
+        final List<IBlockState> decorators = new ArrayList<>();
+        addAllDecorators(decorators, json); // Top-level overrides
+        addAllDecorators(decorators, json, Fields.branches);
+        addAllDecorators(decorators, json, Fields.rooms);
+        addAllDecorators(decorators, json, CavePreset.Fields.tunnels);
+        addAllDecorators(decorators, json, CavePreset.Fields.tunnels, TunnelSettings.Fields.branches);
+        addAllDecorators(decorators, json, CavePreset.Fields.ravines);
+        addAllDecorators(decorators, json, CavePreset.Fields.caverns);
+        addAll(decorators, json, ClusterSettings.Fields.states, CavePreset.Fields.clusters);
+        addAll(decorators, json, LayerSettings.Fields.state, CavePreset.Fields.layers);
+        return decorators;
+    }
+
+    private static void addAllDecorators(List<IBlockState> decorators, JsonObject json, String... path) {
+        FieldHistory.withPath(ArrayUtils.add(path, DecoratorSettings.Fields.wallDecorators))
+            .forEach(json, j -> addAll(decorators, j, WallDecoratorSettings.Fields.states));
+        FieldHistory.withPath(ArrayUtils.add(path, DecoratorSettings.Fields.caveBlocks))
+            .forEach(json, j -> addAll(decorators, j, CaveBlockSettings.Fields.states));
+        FieldHistory.withPath(ArrayUtils.addAll(path, DecoratorSettings.Fields.shell, ShellSettings.Fields.decorators))
+            .forEach(json, j -> addAll(decorators, j, ShellSettings.Decorator.Fields.states));
+    }
+
+    private static void addAll(List<IBlockState> decorators, JsonObject json, String field, String... path) {
+        FieldHistory.withPath(path).forEach(json, j ->
+            HjsonTools.getStateList(j, field).ifPresent(decorators::addAll));
     }
 
 }

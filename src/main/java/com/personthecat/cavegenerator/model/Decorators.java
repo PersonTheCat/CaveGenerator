@@ -30,9 +30,9 @@ public class Decorators {
     /** Determines which blocks to place surrounding the current feature. */
     @Default ConfiguredShell shell = ConfiguredShell.EMPTY_SHELL;
 
-    public static Decorators compile(DecoratorSettings settings, List<IBlockState> featureBlocks, World world) {
+    public static Decorators compile(DecoratorSettings settings, World world) {
         return builder()
-            .canReplace(compileCanReplace(settings, featureBlocks))
+            .canReplace(compileCanReplace(settings))
             .caveBlocks(map(settings.caveBlocks, b -> new ConfiguredCaveBlock(b, world)))
             .wallMap(WallDecoratorMap.sort(settings.wallDecorators, world))
             .shell(new ConfiguredShell(settings.shell, world))
@@ -40,14 +40,14 @@ public class Decorators {
     }
 
     // This would ideally be adapted to check for other *kinds* of block features.
-    private static Predicate<IBlockState> compileCanReplace(DecoratorSettings settings, List<IBlockState> featureBlocks) {
+    private static Predicate<IBlockState> compileCanReplace(DecoratorSettings settings) {
         final Set<IBlockState> replaceable = new HashSet<>(settings.replaceableBlocks);
         if (replaceable.isEmpty()) {
             return s -> !s.getBlock().equals(Blocks.BEDROCK);
         } else if (settings.replaceSolidBlocks) {
             return s -> s.isOpaqueCube() && !s.getBlock().equals(Blocks.BEDROCK) ;
         } else if (settings.replaceDecorators) {
-            replaceable.addAll(featureBlocks);
+            replaceable.addAll(settings.globalDecorators);
             settings.caveBlocks.forEach(c -> replaceable.addAll(c.states));
             settings.wallDecorators.forEach(w -> replaceable.addAll(w.states));
             settings.shell.decorators.forEach(s -> replaceable.addAll(s.states));

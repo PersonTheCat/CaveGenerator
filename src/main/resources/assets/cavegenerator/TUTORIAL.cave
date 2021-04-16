@@ -683,6 +683,7 @@ caverns: [
     # Must be a power of 2 and <= 16;
     resolution: 1
 
+    # Complete noise generator
     generators: [
       {
         frequency: 0.0143
@@ -692,12 +693,14 @@ caverns: [
     ]
 
     # Defaults that apply to caverns only.
+    # Map generator
     ceiling: {
       frequency: 0.02
       range: [ -17, -3 ]
     }
 
     # Defaults that apply to caverns only.
+    # Map generator
     floor: { 
       frequency: 0.02
       range: [ 0, 8 ]
@@ -705,12 +708,14 @@ caverns: [
 
     # How much to offset the y-coordinate when given (x, z).
     # ABSENT BY DEFAULT
+    # Map generator
     offset: {
       frequency: 0.005
       range: [ 0, 50 ]
     }
 
     # Wall noise that gets mixed in with biome borders.
+    # Map generator
     walls: {
       frequency: 0.02
       range: [ 9, 15 ]
@@ -719,6 +724,7 @@ caverns: [
     # Determines how much to shift the walls up and down
     # At any location. Makes the walls a bit more unique.
     # Set dummy: true if you don't need it.
+    # Map generator
     wallOffset: {
       frequency: 0.05
       range: [ 0, 255 ]
@@ -730,9 +736,11 @@ caverns: [
     wallInterpolation: false
     
     # Caverns do not have default region values.
+    # Region generator
     region: {}
     
     # Caverns do not have default noise values.
+    # Complete noise generator
     noise: {}
   }
 ]
