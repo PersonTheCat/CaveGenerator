@@ -100,7 +100,7 @@ public class StructureSettings {
             .mapBlockPosList(Fields.solidChecks, builder::solidChecks)
             .mapBlockPosList(Fields.nonSolidChecks, builder::nonSolidChecks)
             .mapBlockPosList(Fields.waterChecks, builder::waterChecks)
-            .mapArray(Fields.blockChecks, BlockCheck::from, builder::blockChecks)
+            .mapValueArray(Fields.blockChecks, BlockCheck::fromValue, builder::blockChecks)
             .mapBlockPos(Fields.offset, builder::offset)
             .mapFloat(Fields.chance, builder::chance)
             .mapInt(Fields.count, builder::count)

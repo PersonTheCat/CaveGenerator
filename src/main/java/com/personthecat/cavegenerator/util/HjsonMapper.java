@@ -15,8 +15,11 @@ import net.minecraft.block.state.IBlockState;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
+import org.hjson.JsonArray;
 import org.hjson.JsonObject;
+import org.hjson.JsonValue;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
@@ -186,6 +189,18 @@ public class HjsonMapper {
             final List<T> list = HjsonTools.getObjectArray(json, field).stream()
                 .map(mapper)
                 .collect(Collectors.toList());
+            ifPresent.accept(list);
+        }
+        return this;
+    }
+
+    public <T> HjsonMapper mapValueArray(String field, Function<JsonValue, T> mapper, Consumer<List<T>> ifPresent) {
+        final JsonValue value = json.get(field);
+        if (value != null) {
+            final List<T> list = new ArrayList<>();
+            for (JsonValue inner : HjsonTools.asOrToArray(value)) {
+                list.add(mapper.apply(inner));
+            }
             ifPresent.accept(list);
         }
         return this;

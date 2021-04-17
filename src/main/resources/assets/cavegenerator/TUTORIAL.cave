@@ -884,8 +884,11 @@ structures: [
     # A list of blocks and relative locations where those blocks should exist.
     # Example:
     # blockChecks: [
-    #   { positions: [[1, 0, 1], [-1, 0, -1]], matchers: ["grass", "mycelium"]}
-    #   { positions: [[0, -1, 0], [0, -2, 0]], matchers: ["dirt", "gravel"]}
+    #   # verbose syntax
+    #   { positions: [[1, 0, 1], [-1, 0, -1]], matchers: ["grass", "mycelium"] }
+    #   { positions: [[0, -1, 0], [0, -2, 0]], matchers: ["dirt", "gravel"] }
+    #   # implicit syntax
+    #   [ [0, 1, 0], [0, 2, 0], "grass", "gravel" ]
     # ]
     # This feature is expensive. Be careful to not check every single position
     # and try to optimize by using the fewest checks possible.
