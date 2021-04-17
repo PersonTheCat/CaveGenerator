@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.config;
 
+import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.util.Calculator;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
@@ -472,14 +473,15 @@ public class PresetExpander {
         }
 
         Optional<JsonObject> locate(Map<File, JsonObject> defs) {
+            final JsonObject root = defs.get(new File(CaveInit.IMPORT_DIR, this.filename));
+            if (root != null) {
+                return full(root);
+            }
             return find(defs.entrySet(), e -> this.matches(e.getKey()))
                 .map(Map.Entry::getValue);
         }
 
         boolean matches(File f) {
-            if (this.filename.equals(f.getName())) {
-                return true;
-            }
             // Users can essentially be as specific as they like.
             return f.getPath().replace("\\", "/").endsWith(filename);
         }
