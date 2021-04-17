@@ -146,8 +146,9 @@ public class PresetTester {
         if (s.wallCurveRatio > 2.0) {
             log.log(low, "{} is a little high. You may see borders.", join(path, CavernSettings.Fields.wallCurveRatio));
         }
-        this.testNoise(s.walls, join(path, CavernSettings.Fields.walls));
-        this.testNoise(s.wallOffset, join(path, CavernSettings.Fields.wallOffset));
+        s.walls.ifPresent(n -> this.testNoise(n, join(path, CavernSettings.Fields.walls)));
+        s.offset.ifPresent(n -> this.testNoise(n, join(path, CavernSettings.Fields.offset)));
+        s.wallOffset.ifPresent(n -> this.testNoise(n, join(path, CavernSettings.Fields.wallOffset)));
     }
 
     private void testStructures(List<StructureSettings> s) {

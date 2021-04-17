@@ -36,7 +36,7 @@ public class CavernGenerator extends WorldCarver {
     public CavernGenerator(CavernSettings cfg, World world) {
         super(cfg.conditions, cfg.decorators, world);
         this.generators = createGenerators(cfg.generators, world);
-        this.wallOffset = cfg.wallOffset.getGenerator(world);
+        this.wallOffset = cfg.wallOffset.map(n -> n.getGenerator(world)).orElse(new DummyGenerator(0F));
         this.heightOffset = cfg.offset.map(n -> n.getGenerator(world)).orElse(new DummyGenerator(0F));
         this.wallCurveRatio = cfg.wallCurveRatio;
         this.wallInterpolated = cfg.wallInterpolation;
@@ -50,7 +50,7 @@ public class CavernGenerator extends WorldCarver {
 
         final int r = BiomeSearch.size();
         this.invalidBiomes = new ArrayList<>(this.wallInterpolated ? (r * 2 + 1) * 2 - 1 : r);
-        this.setupWallNoise(cfg.walls, world);
+        cfg.walls.ifPresent(n -> this.setupWallNoise(n, world));
     }
 
     private static List<FastNoise> createGenerators(List<NoiseSettings> settings, World world) {

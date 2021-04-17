@@ -69,10 +69,10 @@ public class CavernSettings {
     @Default Optional<NoiseMapSettings> offset = empty();
 
     /** Settings for how to generate these walls, if applicable. */
-    @Default NoiseMapSettings walls = DEFAULT_WALL_NOISE;
+    @Default Optional<NoiseMapSettings> walls = empty();
 
     /** Settings for translating wall noise up and down to obscure repetition. */
-    @Default NoiseMapSettings wallOffset = DEFAULT_WALL_OFFSET;
+    @Default Optional<NoiseMapSettings> wallOffset = empty();
 
     /** Modifies the ceiling and floor curve around biome borders. */
     @Default float wallCurveRatio = 1.0f;
@@ -100,8 +100,8 @@ public class CavernSettings {
             .mapSelf(o -> builder.decorators(DecoratorSettings.from(o, original.decorators)))
             .mapInt(Fields.resolution, builder::resolution)
             .mapObject(Fields.offset, o -> builder.offset(full(NoiseMapSettings.from(o, DEFAULT_HEIGHT_OFFSET))))
-            .mapObject(Fields.walls, o -> builder.walls(NoiseMapSettings.from(o, DEFAULT_WALL_NOISE)))
-            .mapObject(Fields.wallOffset, o -> builder.wallOffset(NoiseMapSettings.from(o, DEFAULT_WALL_OFFSET)))
+            .mapObject(Fields.walls, o -> builder.walls(full(NoiseMapSettings.from(o, DEFAULT_WALL_NOISE))))
+            .mapObject(Fields.wallOffset, o -> builder.wallOffset(full(NoiseMapSettings.from(o, DEFAULT_WALL_OFFSET))))
             .mapFloat(Fields.wallCurveRatio, builder::wallCurveRatio)
             .mapBool(Fields.wallInterpolation, builder::wallInterpolation)
             .mapArray(Fields.generators, CavernSettings::createNoise, builder::generators);

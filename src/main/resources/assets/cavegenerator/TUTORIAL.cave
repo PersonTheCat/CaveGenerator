@@ -715,6 +715,7 @@ caverns: [
     }
 
     # Wall noise that gets mixed in with biome borders.
+    # ABSENT BY DEFAULT
     # Map generator
     walls: {
       frequency: 0.02
@@ -723,7 +724,7 @@ caverns: [
 
     # Determines how much to shift the walls up and down
     # At any location. Makes the walls a bit more unique.
-    # Set dummy: true if you don't need it.
+    # ABSENT BY DEFAULT
     # Map generator
     wallOffset: {
       frequency: 0.05

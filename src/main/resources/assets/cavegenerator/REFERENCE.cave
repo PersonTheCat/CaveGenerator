@@ -238,11 +238,13 @@
         frequency: 0.005
         range: [ 0, 50 ]
       }
-
+      
+      # ABSENT BY DEFAULT
       walls: {
         frequency: 0.02
         range: [ 9, 15 ]
       }
+      # ABSENT BY DEFAULT
       wallOffset: {
         frequency: 0.05
         range: [ 0, 255 ]
