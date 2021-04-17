@@ -40,7 +40,7 @@ public class StalactiteSettings {
     @Default Type type = Type.STALACTITE;
 
     /** The general width of this structure. */
-    @Default Size size = Size.WIDE;
+    @Default Size size = Size.MEDIUM;
 
     /** The 0-1 chance that this spawner should run in any given chunk. */
     @Default double chance = 0.167F;
@@ -92,7 +92,7 @@ public class StalactiteSettings {
 
     public enum Size {
         SMALL,
-        WIDE,
+        MEDIUM,
         LARGE,
         GIANT
     }

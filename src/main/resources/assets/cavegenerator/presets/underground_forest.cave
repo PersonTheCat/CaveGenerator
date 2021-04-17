@@ -8,7 +8,6 @@
 {
   imports: blocks.cave
   enabled: false
-  replaceDecorators: true
   pillars: [
     # Quartz columns
     {
@@ -201,7 +200,7 @@
     {
       type: stalactite
       state: stone
-      size: wide
+      size: medium
       length: [ 4, 8 ]
       height: [ 15, 50 ]
       chance: 0.01
@@ -211,7 +210,7 @@
     {
       type: stalagmite
       state: stone
-      size: wide
+      size: medium
       symmetrical: false
       length: [ 1, 3 ]
       height: [ 15, 50 ]

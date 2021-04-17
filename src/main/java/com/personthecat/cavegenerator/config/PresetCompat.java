@@ -441,7 +441,7 @@ class PresetCompat {
 
     private static Pair<String, JsonValue> transformSize(String name, JsonValue value) {
         final String size = value.isBoolean() && value.asBoolean()
-            ? StalactiteSettings.Size.WIDE.name()
+            ? StalactiteSettings.Size.MEDIUM.name()
             : StalactiteSettings.Size.SMALL.name();
         return Pair.of(StalactiteSettings.Fields.size, JsonValue.valueOf(size));
     }

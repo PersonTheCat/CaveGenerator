@@ -100,13 +100,13 @@ public class StalactiteGenerator extends FeatureGenerator {
         if (length > 2 && cfg.size != StalactiteSettings.Size.SMALL) {
             this.placeAll(world, rand, length * 2 / 3, up, sidePositions(pos));
             this.placeAll(world, rand, length / 4, up, cornerPositions(pos));
-            if (length > 5 && cfg.size.ordinal() > StalactiteSettings.Size.WIDE.ordinal()) {
+            if (length > 5 && cfg.size.ordinal() > StalactiteSettings.Size.MEDIUM.ordinal()) {
                 this.placeAll(world, rand, length / 4, up, middleSidePositions(pos));
                 this.placeAll(world, rand, length / 6, up, middleCornerPositions(pos));
                 if (length > 9 && cfg.size.ordinal() > StalactiteSettings.Size.LARGE.ordinal()) {
-                    this.placeAll(world, rand, length / 9, up, outerSidePositions(pos));
-                    this.placeAll(world, rand, length / 12, up, outerCornerPositions(pos));
-                    this.placeAll(world, rand, length / 9, up, outerBetweenPositions(pos));
+                    this.placeAll(world, rand, length / 8, up, outerSidePositions(pos));
+                    this.placeAll(world, rand, length / 11, up, outerCornerPositions(pos));
+                    this.placeAll(world, rand, length / 8, up, outerBetweenPositions(pos));
                 }
             }
         }
@@ -133,7 +133,7 @@ public class StalactiteGenerator extends FeatureGenerator {
     private void placeAll(World world, Random rand, int length, boolean up, BlockPos[] positions) {
         for (BlockPos pos : positions) {
             if (!cfg.symmetrical) {
-                final int min = length * 3 / 4;
+                final int min = length * 9 / 11;
                 length = rand.nextInt(length - min + 1) + min;
             }
             this.findPlace(world, pos, length, up);

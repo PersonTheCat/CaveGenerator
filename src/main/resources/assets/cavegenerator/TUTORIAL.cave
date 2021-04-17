@@ -526,13 +526,13 @@ branches: {}
 tunnels: [
   {
     frequency: 15
-    height: [ 8, 128 ]
+    height: [ 8, 255 ]
     systemChance: 0.25
     chance: 0.142
     systemDensity: 4
     noiseYReduction: true
     
-    # The height at which these ravines can start. If this
+    # The height at which these tunnels can start. If this
     # value is not set, it will default to the value of height.
     originHeight: [ 8, 128 ]
 
@@ -600,7 +600,7 @@ tunnels: [
       chance: 0.1
 
       # Vertical ratio of `scale` (i.e. 1/2)
-      scaleY: 0.5
+      stretch: 0.5
     }
     
     branches: {}
@@ -608,7 +608,7 @@ tunnels: [
 ]
 
 # This is a modified `tunnels` generator. There are two important differences:
-# * scaleY.startVal is three times as high
+# * stretch.startVal is three times as high
 # * scale is affected by noise.
 #
 # You can change this noise by adding a noise2D block, but be aware that you
@@ -616,7 +616,7 @@ tunnels: [
 ravines: [
   {
     chance: 0.02
-    height: [ 20, 66 ]
+    height: [ 8, 128 ]
     distance: 0
     resolution: 4
     dYaw: {
@@ -802,8 +802,8 @@ stalactites: [
     type: stalactite
 
     # The width of this feature.
-    # Possible options are: `small`, `wide`, `large`, and `giant`.
-    size: wide
+    # Possible options are: `small`, `medium`, `large`, and `giant`.
+    size: medium
 
     length: [ 1, 3 ]
     chance: 0.167
