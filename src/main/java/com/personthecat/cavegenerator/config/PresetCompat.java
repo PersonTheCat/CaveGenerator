@@ -174,10 +174,10 @@ class PresetCompat {
             for (JsonValue value : imports) {
                 clone.add(replaceImportVal(value.asString()));
             }
-            if (!rawImports.isArray()) {
-                json.set(IMPORTS, clone.get(0));
-            } else {
+            if (rawImports.isArray()) {
                 json.set(IMPORTS, clone.setCondensed(imports.isCondensed()));
+            } else {
+                json.set(IMPORTS, clone.get(0));
             }
         }
     }

@@ -83,7 +83,7 @@ public class OverrideSettings {
     @Default List<IBlockState> globalDecorators = Collections.emptyList();
 
     public static OverrideSettings from(JsonObject json) {
-        final OverrideSettingsBuilder builder = builder();
+        final OverrideSettingsBuilder builder = builder().globalDecorators(getAllDecorators(json));
         return new HjsonMapper(json)
             .mapBool(Fields.blacklistBiomes, b -> builder.blacklistBiomes(full(b)))
             .mapBiomes(Fields.biomes, l -> builder.biomes(full(l)))
@@ -94,20 +94,13 @@ public class OverrideSettings {
             .mapObject(Fields.ceiling, o -> builder.ceiling(full(NoiseMapSettings.from(o))))
             .mapObject(Fields.noise, o -> builder.noise(full(NoiseSettings.from(o))))
             .mapStateList(Fields.replaceableBlocks, l -> builder.replaceableBlocks(full(l)))
-            .mapBool(Fields.replaceDecorators, b -> copyReplaceDecorators(b, json, builder))
+            .mapBool(Fields.replaceDecorators, b -> builder.replaceDecorators(full(b)))
             .mapArray(Fields.caveBlocks, CaveBlockSettings::from, l -> builder.caveBlocks(full(l)))
             .mapArray(Fields.wallDecorators, WallDecoratorSettings::from, l -> builder.wallDecorators(full(l)))
             .mapObject(Fields.shell, s -> builder.shell(full(ShellSettings.from(s))))
             .mapObject(Fields.branches, b -> builder.branches(full(TunnelSettings.from(b))))
             .mapObject(Fields.rooms, r -> builder.rooms(full(RoomSettings.from(r))))
             .release(builder::build);
-    }
-
-    private static void copyReplaceDecorators(boolean replaceDecorators, JsonObject json, OverrideSettingsBuilder builder) {
-        if (replaceDecorators) {
-            builder.globalDecorators(getAllDecorators(json));
-        }
-        builder.replaceDecorators(full(replaceDecorators));
     }
 
     public ConditionSettings.ConditionSettingsBuilder apply(ConditionSettings.ConditionSettingsBuilder builder) {
@@ -124,20 +117,13 @@ public class OverrideSettings {
     }
 
     public DecoratorSettings.DecoratorSettingsBuilder apply(DecoratorSettings.DecoratorSettingsBuilder builder) {
-        this.replaceDecorators.ifPresent(b -> this.copyReplaceDecorators(b, builder));
+        builder.globalDecorators(this.globalDecorators);
         this.replaceableBlocks.ifPresent(builder::replaceableBlocks);
         this.replaceDecorators.ifPresent(builder::replaceDecorators);
         this.caveBlocks.ifPresent(builder::caveBlocks);
         this.wallDecorators.ifPresent(builder::wallDecorators);
         this.shell.ifPresent(builder::shell);
         return builder;
-    }
-
-    private void copyReplaceDecorators(boolean replaceDecorators, DecoratorSettings.DecoratorSettingsBuilder builder) {
-        if (replaceDecorators) {
-            builder.globalDecorators(this.globalDecorators);
-        }
-        builder.replaceDecorators(replaceDecorators);
     }
 
     public TunnelSettings.TunnelSettingsBuilder apply(TunnelSettings.TunnelSettingsBuilder builder) {

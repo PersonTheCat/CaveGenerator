@@ -798,11 +798,11 @@ stalactites: [
     # **This value may not be null**.
     state: null
     
-    # Type may be `stalactite` or `stalagmite`.
+    # Type may be `stalactite`, `stalagmite`, or `speleothem`.
     type: stalactite
 
     # The width of this feature.
-    # Possible options are: `small`, `wide`, and `giant`.
+    # Possible options are: `small`, `wide`, `large`, and `giant`.
     size: wide
 
     length: [ 1, 3 ]

@@ -86,12 +86,14 @@ public class StalactiteSettings {
 
     public enum Type {
         STALAGMITE,
-        STALACTITE
+        STALACTITE,
+        SPELEOTHEM
     }
 
     public enum Size {
         SMALL,
         WIDE,
+        LARGE,
         GIANT
     }
 }

@@ -15,11 +15,16 @@ public class StalactiteGenerator extends FeatureGenerator {
 
     private final StalactiteSettings cfg;
     private final int resolution;
+    private final boolean stalactite;
+    private final boolean stalagmite;
 
     public StalactiteGenerator(StalactiteSettings cfg, World world) {
         super(cfg.conditions, world);
         this.cfg = cfg;
         this.resolution = calculateResolution(cfg.chance);
+        final boolean speleothem = cfg.type.equals(StalactiteSettings.Type.SPELEOTHEM);
+        this.stalactite = speleothem || cfg.type.equals(StalactiteSettings.Type.STALACTITE);
+        this.stalagmite = speleothem || cfg.type.equals(StalactiteSettings.Type.STALAGMITE);
     }
 
     /**
@@ -64,14 +69,13 @@ public class StalactiteGenerator extends FeatureGenerator {
                     final int maxY = Math.min(info.heightmap[dx & 15][dz & 15] - SURFACE_ROOM, height.max);
                     if (maxY <= height.min) continue;
 
-                    final int y = StalactiteSettings.Type.STALACTITE.equals(cfg.type) ?
-                        this.findCeiling(info.world, dx, height.min, dz, maxY):
-                        this.findFloor(info.world, dx, maxY, dz, height.min);
+                    final int y = this.stalactite ? this.findCeiling(info.world, dx, height.min, dz, maxY)
+                        : this.findFloor(info.world, dx, maxY, dz, height.min);
 
                     if (y != NONE_FOUND && conditions.noise.GetBoolean(dx, y, dz)) {
                         final BlockPos pos = new BlockPos(dx, y, dz);
                         if (checkSources(cfg.matchers, info.world, pos)) {
-                            this.generateSingle(info.world, rand, pos);
+                            this.checkSpace(info.world, rand, pos);
                         }
                     }
                 }
@@ -79,55 +83,70 @@ public class StalactiteGenerator extends FeatureGenerator {
         }
     }
 
-    private void generateSingle(World world, Random rand, BlockPos pos) {
-        int length = cfg.length.rand(rand);
-        if (hasEnoughSpace(world, pos, length + cfg.space)) {
-            this.place(world, pos, length);
-            if (length > 2 && cfg.size != StalactiteSettings.Size.SMALL) {
-                this.placeAll(world, rand, length * 2 / 3, sidePositions(pos));
-                this.placeAll(world, rand, length / 4, cornerPositions(pos));
-                if (length > 5 && cfg.size == StalactiteSettings.Size.GIANT) {
-                     this.placeAll(world, rand, length / 4, outerSidePositions(pos));
-                     this.placeAll(world, rand, length / 6, outerCornerPositions(pos));
+    private void checkSpace(World world, Random rand, BlockPos pos) {
+        final int length = this.cfg.length.rand(rand);
+        final int needed = this.cfg.space + length * (this.stalactite && this.stalagmite ? 2 : 1);
+        final int space = this.getSpace(world, pos, needed);
+        if (space >= length) {
+            this.generateSingle(world, rand, pos, length, !this.stalactite);
+            if (this.stalactite && this.stalagmite) {
+                this.generateSingle(world, rand, pos.down(space), length, true);
+            }
+        }
+    }
+
+    private void generateSingle(World world, Random rand, BlockPos pos, int length, boolean up) {
+        this.place(world, pos, length, up);
+        if (length > 2 && cfg.size != StalactiteSettings.Size.SMALL) {
+            this.placeAll(world, rand, length * 2 / 3, up, sidePositions(pos));
+            this.placeAll(world, rand, length / 4, up, cornerPositions(pos));
+            if (length > 5 && cfg.size.ordinal() > StalactiteSettings.Size.WIDE.ordinal()) {
+                this.placeAll(world, rand, length / 4, up, middleSidePositions(pos));
+                this.placeAll(world, rand, length / 6, up, middleCornerPositions(pos));
+                if (length > 9 && cfg.size.ordinal() > StalactiteSettings.Size.LARGE.ordinal()) {
+                    this.placeAll(world, rand, length / 9, up, outerSidePositions(pos));
+                    this.placeAll(world, rand, length / 12, up, outerCornerPositions(pos));
+                    this.placeAll(world, rand, length / 9, up, outerBetweenPositions(pos));
                 }
             }
         }
     }
 
-    private boolean hasEnoughSpace(World world, BlockPos pos, int space) {
-        for (int i = 0; i < space; i++) {
-            pos = StalactiteSettings.Type.STALACTITE.equals(cfg.type) ? pos.down() : pos.up();
+    private int getSpace(World world, BlockPos pos, int max) {
+        for (int i = 0; i < max; i++) {
+            // We will be at the top and need to look down.
+            pos = this.stalactite ? pos.down() : pos.up();
             if (world.getBlockState(pos).isOpaqueCube()) {
-                return false;
+                return i;
             }
         }
-        return true;
+        return max;
     }
 
-    private void place(World world, BlockPos pos, int length) {
+    private void place(World world, BlockPos pos, int length, boolean up) {
         for (int i = 0; i < length; i++) {
-            pos = StalactiteSettings.Type.STALACTITE.equals(cfg.type) ? pos.down() : pos.up();
+            pos = up ? pos.up() : pos.down();
             world.setBlockState(pos, cfg.state, 16);
         }
     }
 
-    private void placeAll(World world, Random rand, int length, BlockPos[] positions) {
+    private void placeAll(World world, Random rand, int length, boolean up, BlockPos[] positions) {
         for (BlockPos pos : positions) {
             if (!cfg.symmetrical) {
                 final int min = length * 3 / 4;
                 length = rand.nextInt(length - min + 1) + min;
             }
-            this.findPlace(world, pos, length);
+            this.findPlace(world, pos, length, up);
         }
     }
 
-    private void findPlace(World world, BlockPos pos, int length) {
+    private void findPlace(World world, BlockPos pos, int length, boolean up) {
         for (int i = 0; i < 3; i++) {
             if (world.getBlockState(pos).isOpaqueCube()) {
-                this.place(world, pos, length);
+                this.place(world, pos, length, up);
                 return;
             } // Go in the opposite direction and find a surface.
-            pos = StalactiteSettings.Type.STALACTITE.equals(cfg.type) ? pos.up() : pos.down();
+            pos = up ? pos.down() : pos.up();
         }
     }
 
@@ -151,7 +170,7 @@ public class StalactiteGenerator extends FeatureGenerator {
         };
     }
 
-    private static BlockPos[] outerSidePositions(BlockPos pos) {
+    private static BlockPos[] middleSidePositions(BlockPos pos) {
         final int x = pos.getX(), y = pos.getY(), z = pos.getZ();
         return new BlockPos[] {
             new BlockPos(x, y, z - 2), // North
@@ -161,7 +180,7 @@ public class StalactiteGenerator extends FeatureGenerator {
         };
     }
 
-    private static BlockPos[] outerCornerPositions(BlockPos pos) {
+    private static BlockPos[] middleCornerPositions(BlockPos pos) {
         final int x = pos.getX(), y = pos.getY(), z = pos.getZ();
         return new BlockPos[] {
             new BlockPos(x + 2, y, z + 1),
@@ -172,6 +191,40 @@ public class StalactiteGenerator extends FeatureGenerator {
             new BlockPos(x - 1, y, z + 2),
             new BlockPos(x + 1, y, z - 2),
             new BlockPos(x - 1, y, z - 2)
+        };
+    }
+
+    private static BlockPos[] outerSidePositions(BlockPos pos) {
+        final int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        return new BlockPos[] {
+            new BlockPos(x, y, z - 3), // North
+            new BlockPos(x, y, z + 3), // South
+            new BlockPos(x + 3, y, z), // East
+            new BlockPos(x - 3, y, z)  // West
+        };
+    }
+
+    private static BlockPos[] outerBetweenPositions(BlockPos pos) {
+        final int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        return new BlockPos[] {
+            new BlockPos(x + 2, y, z - 2), // Northeast
+            new BlockPos(x + 2, y, z + 2), // Southeast
+            new BlockPos(x - 2, y, z + 2), // Southwest
+            new BlockPos(x - 2, y, z - 2)  // Northwest
+        };
+    }
+
+    private static BlockPos[] outerCornerPositions(BlockPos pos) {
+        final int x = pos.getX(), y = pos.getY(), z = pos.getZ();
+        return new BlockPos[] {
+            new BlockPos(x + 1, y, z + 3),
+            new BlockPos(x + 3, y, z + 1),
+            new BlockPos(x + 3, y, z - 1),
+            new BlockPos(x + 1, y, z - 3),
+            new BlockPos(x - 1, y, z - 3),
+            new BlockPos(x - 3, y, z - 1),
+            new BlockPos(x - 3, y, z + 1),
+            new BlockPos(x - 1, y, z + 3)
         };
     }
 }
