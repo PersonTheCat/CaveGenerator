@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.data;
 
 import com.personthecat.cavegenerator.config.CavePreset;
+import com.personthecat.cavegenerator.model.BlockCheck;
 import com.personthecat.cavegenerator.model.Direction;
 import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.util.HjsonMapper;
@@ -57,6 +58,9 @@ public class StructureSettings {
     /** A list of relative coordinates which must be water. */
     @Default List<BlockPos> waterChecks = Collections.emptyList();
 
+    /** A list of relative positions and the blocks that should be found at each one. */
+    @Default List<BlockCheck> blockChecks = Collections.emptyList();
+
     /** A 3-dimensional offset for when structure spawns. */
     @Default BlockPos offset = BlockPos.ORIGIN;
 
@@ -96,6 +100,7 @@ public class StructureSettings {
             .mapBlockPosList(Fields.solidChecks, builder::solidChecks)
             .mapBlockPosList(Fields.nonSolidChecks, builder::nonSolidChecks)
             .mapBlockPosList(Fields.waterChecks, builder::waterChecks)
+            .mapArray(Fields.blockChecks, BlockCheck::from, builder::blockChecks)
             .mapBlockPos(Fields.offset, builder::offset)
             .mapFloat(Fields.chance, builder::chance)
             .mapInt(Fields.count, builder::count)

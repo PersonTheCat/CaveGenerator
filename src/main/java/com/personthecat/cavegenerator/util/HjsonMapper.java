@@ -157,6 +157,13 @@ public class HjsonMapper {
         return this;
     }
 
+    public HjsonMapper mapRequiredBlockPosList(String field, String parent, Consumer<List<BlockPos>> mapper) {
+        final List<BlockPos> positions = HjsonTools.getPositionList(json, field)
+            .orElseThrow(() -> runExF("{}.{} is required", parent, field));
+        mapper.accept(positions);
+        return this;
+    }
+
     public HjsonMapper mapScalableFloat(String field, ScalableFloat defaults, Consumer<ScalableFloat> ifPresent) {
         if (json.has(field)) {
             ifPresent.accept(HjsonTools.getScalableFloatOr(json, field, defaults));

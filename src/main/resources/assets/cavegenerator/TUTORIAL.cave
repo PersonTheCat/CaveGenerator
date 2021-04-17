@@ -873,13 +873,23 @@ structures: [
     # Any relative coordinates that must be non-solid.
     # Example:
     # airMatchers: [
-    #  [ 0, 1, 0 ],
+    #  [ 0, 1, 0 ]
     #  [ 0, 3, 0 ]
     # ]
     airChecks: []
     solidChecks: []
     nonSolidChecks: []
     waterChecks: []
+
+    # A list of blocks and relative locations where those blocks should exist.
+    # Example:
+    # blockChecks: [
+    #   { positions: [[1, 0, 1], [-1, 0, -1]], matchers: ["grass", "mycelium"]}
+    #   { positions: [[0, -1, 0], [0, -2, 0]], matchers: ["dirt", "gravel"]}
+    # ]
+    # This feature is expensive. Be careful to not check every single position
+    # and try to optimize by using the fewest checks possible.
+    blockChecks: []
 
     # Whether to log the coordinates every time this structure spawns.
     debugSpawns: false

@@ -57,7 +57,8 @@ public class StructureGenerator extends FeatureGenerator {
             && checkNonSolid(cfg.nonSolidChecks, world, pos)
             && checkSolid(cfg.solidChecks, world, pos)
             && checkAir(cfg.airChecks, world, pos)
-            && checkWater(cfg.waterChecks, world, pos);
+            && checkWater(cfg.waterChecks, world, pos)
+            && checkBlocks(cfg.blockChecks, world, pos);
     }
 
     /** Attempts to determine a suitable spawn point in the current location. */

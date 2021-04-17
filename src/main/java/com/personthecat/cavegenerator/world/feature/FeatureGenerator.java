@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.world.feature;
 
 import com.personthecat.cavegenerator.data.ConditionSettings;
+import com.personthecat.cavegenerator.model.BlockCheck;
 import com.personthecat.cavegenerator.model.Conditions;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
@@ -288,6 +289,19 @@ public abstract class FeatureGenerator {
         for (BlockPos p : relative) {
             if (!world.getBlockState(origin.add(p.getX(), p.getY(), p.getZ())).equals(Blocks.WATER.getDefaultState())) {
                 return false;
+            }
+        }
+        return true;
+    }
+
+    /** Determines whether specific blocks exists at each of the relative coordinates. */
+    protected final boolean checkBlocks(List<BlockCheck> checks, World world, BlockPos origin) {
+        for (BlockCheck c : checks) {
+            for (BlockPos p : c.positions) {
+                final IBlockState state = world.getBlockState(origin.add(p.getX(), p.getY(), p.getZ()));
+                if (!c.matchers.contains(state)) {
+                    return false;
+                }
             }
         }
         return true;
