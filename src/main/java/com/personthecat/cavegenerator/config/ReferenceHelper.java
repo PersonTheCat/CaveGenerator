@@ -86,7 +86,9 @@ public class ReferenceHelper {
             do {
                 final Reference r = create(ret);
                 final String sub = Argument.generateValue(json, r);
-                ret = ret.substring(0, r.start) + sub + ret.substring(r.end);
+                final String updated = ret.substring(0, r.start) + sub + ret.substring(r.end);
+                if (ret.equals(updated)) throw runExF("Self reference: {}", sub);
+                ret = updated;
             } while (containsReferences(ret));
             return JsonValue.readHjson(ret, FORMATTER);
         }

@@ -26,7 +26,7 @@ public abstract class MapGenerator extends WorldCarver {
     /** The vertical distance to the nearest water source block that can be ignored. */
     private static final int WATER_WIGGLE_ROOM = 7;
 
-    protected final List<BlockPos> invalidBiomes = new ArrayList<>(BiomeSearch.size());
+    protected final List<BlockPos> invalidChunks = new ArrayList<>(BiomeSearch.size());
     private final SphereData sphere = new SphereData();
     protected final Random rand = new XoRoShiRo(0L);
     private final boolean testWater;
@@ -41,9 +41,15 @@ public abstract class MapGenerator extends WorldCarver {
         if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
             if (conditions.hasBiomes) {
                 if (ctx.biomes.anyMatches(conditions.biomes)) {
-                    this.fillInvalidBiomes(ctx.biomes);
+                    this.fillInvalidChunks(ctx.biomes);
                     this.generateChecked(ctx);
-                    this.invalidBiomes.clear();
+                    this.invalidChunks.clear();
+                }
+            } else if (conditions.hasRegion) {
+                if (conditions.region.GetBoolean(ctx.offsetX, ctx.offsetZ)) {
+                    this.fillInvalidChunks(ctx.chunkX, ctx.chunkZ);
+                    this.generateChecked(ctx);
+                    this.invalidChunks.clear();
                 }
             } else {
                 this.generateChecked(ctx);
@@ -51,10 +57,23 @@ public abstract class MapGenerator extends WorldCarver {
         }
     }
 
-    private void fillInvalidBiomes(BiomeSearch biomes) {
+    private void fillInvalidChunks(BiomeSearch biomes) {
         for (BiomeSearch.Data d : biomes.surrounding.get()) {
             if (!(conditions.biomes.test(d.biome) && conditions.region.GetBoolean(d.centerX, d.centerZ))) {
-                this.invalidBiomes.add(new BlockPos(d.centerX, 0, d.centerZ));
+                this.invalidChunks.add(new BlockPos(d.centerX, 0, d.centerZ));
+            }
+        }
+    }
+
+    private void fillInvalidChunks(int chunkX, int chunkZ) {
+        final int range = ConfigFile.biomeRange;
+        for (int cX = chunkX - range; cX <= chunkX + range; cX++) {
+            for (int cZ = chunkZ - range; cZ < chunkZ + range; cZ++) {
+                final int centerX = cX * 16 + 8;
+                final int centerZ = cZ * 16 + 8;
+                if (!conditions.region.GetBoolean(centerX, centerZ)) {
+                    this.invalidChunks.add(new BlockPos(centerX, 0, centerZ));
+                }
             }
         }
     }
@@ -81,7 +100,7 @@ public abstract class MapGenerator extends WorldCarver {
     protected double getNearestBorder(int x, int z) {
         double shortestDistance = Double.MAX_VALUE;
 
-        for (BlockPos invalid : invalidBiomes) {
+        for (BlockPos invalid : invalidChunks) {
             final double sum = Math.pow(x - invalid.getX(), 2) + Math.pow(z - invalid.getZ(), 2);
             final double distance = Math.sqrt(sum);
 

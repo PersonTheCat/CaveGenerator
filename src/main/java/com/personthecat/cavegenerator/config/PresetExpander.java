@@ -41,10 +41,12 @@ public class PresetExpander {
      * @param definitions A map of all JSON objects in the imports folder.
      */
     public static void expandAll(Map<File, JsonObject> presets, Map<File, JsonObject> definitions) {
+        // Enable imports to uniquely import each other. This is checked later.
+        definitions.forEach((f, json) -> copyImports(definitions, json, true));
         // Expand any variables used inside of each import.
         definitions.forEach((f, json) -> expand(json));
         // Copy all of the imports directly into each json.
-        presets.forEach((f, json) -> copyImports(definitions, json));
+        presets.forEach((f, json) -> copyImports(definitions, json, false));
         // Copy defaults.cave as VANILLA implicitly, if absent.
         copyVanilla(presets, definitions);
         // Expand the variables now inside of each json.
@@ -102,7 +104,7 @@ public class PresetExpander {
      * @param definitions A map of all JSON objects in the imports folder.
      * @param json The current JSON object being copied into.
      */
-    private static void copyImports(Map<File, JsonObject> definitions, JsonObject json) {
+    private static void copyImports(Map<File, JsonObject> definitions, JsonObject json, boolean root) {
         final Set<JsonObject> imports = new HashSet<>();
         // Copy by reference all of the required jsons into a set.
         getArray(json, IMPORTS).ifPresent(arr -> {
@@ -114,10 +116,8 @@ public class PresetExpander {
             }
         });
         // copy the contents of each import into variables.
-        final JsonObject variables = getObjectOrNew(json, VARIABLES);
-        for (JsonObject o : imports) {
-            variables.addAll(o);
-        }
+        final JsonObject variables = root ? json : getObjectOrNew(json, VARIABLES);
+        imports.forEach(variables::addAll);
     }
 
     /**

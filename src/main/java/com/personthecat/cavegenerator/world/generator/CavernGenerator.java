@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 
 public class CavernGenerator extends WorldCarver {
 
-    private final List<BiomeTestData> invalidBiomes;
+    private final List<ChunkTestData> invalidChunks;
     private final double[] wallNoise = new double[256];
     private final List<FastNoise> generators;
     private final FastNoise wallOffset;
@@ -49,7 +49,7 @@ public class CavernGenerator extends WorldCarver {
         this.curveOffset = (this.diffY + 1) / -2;
 
         final int r = BiomeSearch.size();
-        this.invalidBiomes = new ArrayList<>(this.wallInterpolated ? (r * 2 + 1) * 2 - 1 : r);
+        this.invalidChunks = new ArrayList<>(this.wallInterpolated ? (r * 2 + 1) * 2 - 1 : r);
         cfg.walls.ifPresent(n -> this.setupWallNoise(n, world));
     }
 
@@ -77,9 +77,15 @@ public class CavernGenerator extends WorldCarver {
         if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
             if (conditions.hasBiomes) {
                 if (ctx.biomes.anyMatches(conditions.biomes)) {
-                    this.fillInvalidBiomes(ctx.biomes, ctx.chunkX, ctx.chunkZ);
+                    this.fillInvalidChunks(ctx.biomes, ctx.chunkX, ctx.chunkZ);
                     this.generateChecked(ctx);
-                    this.invalidBiomes.clear();
+                    this.invalidChunks.clear();
+                }
+            } else if (conditions.hasRegion) {
+                if (conditions.region.GetBoolean(ctx.offsetX, ctx.offsetZ)) {
+                    this.fillInvalidChunks(ctx.chunkX, ctx.chunkZ);
+                    this.generateChecked(ctx);
+                    this.invalidChunks.clear();
                 }
             } else {
                 this.generateChecked(ctx);
@@ -88,7 +94,7 @@ public class CavernGenerator extends WorldCarver {
         }
     }
 
-    private void fillInvalidBiomes(BiomeSearch biomes, int x, int z) {
+    private void fillInvalidChunks(BiomeSearch biomes, int x, int z) {
         if (this.wallInterpolated) {
             this.fillInterpolated(biomes, x, z);
         } else {
@@ -101,7 +107,7 @@ public class CavernGenerator extends WorldCarver {
             if (!(conditions.biomes.test(d.biome) && conditions.region.GetBoolean(d.centerX, d.centerZ))) {
                 // Translate the noise randomly for each chunk to minimize repetition.
                 final int translateY = (int) wallOffset.GetAdjustedNoise(d.centerX, d.centerZ);
-                this.invalidBiomes.add(new BiomeTestData(d.centerX, d.centerZ, translateY));
+                this.invalidChunks.add(new ChunkTestData(d.centerX, d.centerZ, translateY));
             }
         }
     }
@@ -111,7 +117,7 @@ public class CavernGenerator extends WorldCarver {
         final boolean[][] points = getBorderMatrix(biomes, r, x, z);
         interpolate(points);
         interpolate(points);
-        createBorder(this.invalidBiomes, points, wallOffset, r, x, z);
+        createBorder(this.invalidChunks, points, wallOffset, r, x, z);
     }
 
     private boolean[][] getBorderMatrix(BiomeSearch biomes, int r, int x, int z) {
@@ -152,7 +158,7 @@ public class CavernGenerator extends WorldCarver {
         }
     }
 
-    private static void createBorder(List<BiomeTestData> border, boolean[][] f, FastNoise noise, int r, int x, int z) {
+    private static void createBorder(List<ChunkTestData> border, boolean[][] f, FastNoise noise, int r, int x, int z) {
         final int len = f.length;
         for (int i = 0; i < len; i++) {
             for (int j = 0; j < len; j++) {
@@ -163,7 +169,21 @@ public class CavernGenerator extends WorldCarver {
                 final int aX = ((int) cX * 16 + 8) + (cX % 1 == 0 ? 8 : 0);
                 final int aZ = ((int) cZ * 16 + 8) + (cZ % 1 == 0 ? 8 : 0);
                 final int translateY = (int) noise.GetAdjustedNoise(aX, aZ);
-                border.add(new BiomeTestData(aX, aZ, translateY));
+                border.add(new ChunkTestData(aX, aZ, translateY));
+            }
+        }
+    }
+
+    private void fillInvalidChunks(int chunkX, int chunkZ) {
+        final int range = ConfigFile.biomeRange;
+        for (int cX = chunkX - range; cX <= chunkX + range; cX++) {
+            for (int cZ = chunkZ - range; cZ < chunkZ + range; cZ++) {
+                final int centerX = cX * 16 + 8;
+                final int centerZ = cZ * 16 + 8;
+                if (!conditions.region.GetBoolean(centerX, centerZ)) {
+                    final int translateY = (int) wallOffset.GetAdjustedNoise(centerX, centerZ);
+                    this.invalidChunks.add(new ChunkTestData(centerX, centerZ, translateY));
+                }
             }
         }
     }
@@ -235,7 +255,7 @@ public class CavernGenerator extends WorldCarver {
         double shortestDistance = Double.MAX_VALUE;
         int offset = 0;
 
-        for (final BiomeTestData invalid : this.invalidBiomes) {
+        for (final ChunkTestData invalid : this.invalidChunks) {
             final double sum = Math.pow(x - invalid.x, 2) + Math.pow(z - invalid.z, 2);
             final double distance = Math.sqrt(sum);
 
@@ -259,7 +279,7 @@ public class CavernGenerator extends WorldCarver {
     }
 
     @AllArgsConstructor
-    private static class BiomeTestData {
+    private static class ChunkTestData {
         final int x;
         final int z;
         final int offset;

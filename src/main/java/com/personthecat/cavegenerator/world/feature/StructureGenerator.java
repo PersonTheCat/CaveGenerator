@@ -98,7 +98,9 @@ public class StructureGenerator extends FeatureGenerator {
             final int x = xz.getX();
             final int z = xz.getZ();
             final Range height = conditions.getColumn(x, z);
-            final int maxY = Math.min(info.heightmap[x & 15][z & 15] - SURFACE_ROOM, height.max);
+            final int maxY = cfg.checkSurface
+                ? Math.min(info.heightmap[x & 15][z & 15] - SURFACE_ROOM, height.max)
+                : info.world.getActualHeight();
             final int minY = height.min;
             if (minY >= maxY || !conditions.region.GetBoolean(x, z)) continue;
 

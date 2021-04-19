@@ -87,11 +87,11 @@
   branches: {}
   tunnels: [
     {
-      frequency: 15
+      count: 15
       originHeight: [ 8, 128 ]
       resolution: 4
       systemChance: 0.25
-      isolatedChance: 0.142
+      chance: 0.142
       systemDensity: 4
       noiseYReduction: true
       distance: 0
@@ -157,6 +157,7 @@
       originHeight: [ 20, 66 ]
       resolution: 4
       distance: 0
+      cutoffStrength: 5.0 
       dYaw: {
         startVal: 0
         factor: 0.5

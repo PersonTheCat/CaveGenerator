@@ -61,6 +61,9 @@ public class StructureSettings {
     /** A list of relative positions and the blocks that should be found at each one. */
     @Default List<BlockCheck> blockChecks = Collections.emptyList();
 
+    /** Whether this should always spawn below the surface. */
+    @Default boolean checkSurface = true;
+
     /** A 3-dimensional offset for when structure spawns. */
     @Default BlockPos offset = BlockPos.ORIGIN;
 
@@ -101,6 +104,7 @@ public class StructureSettings {
             .mapBlockPosList(Fields.nonSolidChecks, builder::nonSolidChecks)
             .mapBlockPosList(Fields.waterChecks, builder::waterChecks)
             .mapValueArray(Fields.blockChecks, BlockCheck::fromValue, builder::blockChecks)
+            .mapBool(Fields.checkSurface, builder::checkSurface)
             .mapBlockPos(Fields.offset, builder::offset)
             .mapFloat(Fields.chance, builder::chance)
             .mapInt(Fields.count, builder::count)

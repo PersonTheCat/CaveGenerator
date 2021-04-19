@@ -72,7 +72,7 @@ public abstract class WorldCarver extends BasicGenerator {
         if (y > 0 && decorate(this.decorators.wallMap.down, primer, rand, x, y, z, x, y - 1, z, cX, cZ)) {
             return;
         }
-        if (y < 15 && decorate(this.decorators.wallMap.up, primer, rand, x, y, z, x, y + 1, z, cX, cZ)) {
+        if (y < 255 && decorate(this.decorators.wallMap.up, primer, rand, x, y, z, x, y + 1, z, cX, cZ)) {
             return;
         }
         if (x > 0 && decorate(this.decorators.wallMap.west, primer, rand, x, y, z, x - 1, y, z, cX, cZ)) {
