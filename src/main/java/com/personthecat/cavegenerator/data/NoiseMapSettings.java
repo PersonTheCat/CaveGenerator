@@ -49,6 +49,9 @@ public class NoiseMapSettings {
     /** The range of values produced by the generator */
     @Default Range range = Range.of(-1, 1);
 
+    /** Whether to invert the output of this generator. */
+    @Default boolean invert = false;
+
     /** Whether to cache the output for equivalent generators in the current chunk. */
     @Default boolean cache = false;
 
@@ -69,6 +72,7 @@ public class NoiseMapSettings {
             .mapFloat(Fields.frequency, builder::frequency)
             .mapNoiseType(Fields.type, builder::type)
             .mapRange(Fields.range, builder::range)
+            .mapBool(Fields.invert, builder::invert)
             .mapBool(Fields.cache, builder::cache)
             .mapBool(Fields.dummy, builder::dummy)
             .release(builder::build);
@@ -83,7 +87,8 @@ public class NoiseMapSettings {
             .SetFrequency(frequency)
             .SetFractalOctaves(octaves)
             .SetRange(range.min, range.max)
-            .SetInterp(FastNoise.Interp.Hermite);
+            .SetInterp(FastNoise.Interp.Hermite)
+            .SetInvert(invert);
         return cache ? new CachedNoiseGenerator(noise) : noise;
     }
 

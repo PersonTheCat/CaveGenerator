@@ -220,6 +220,7 @@
       height: [ 10, 50 ]
       generators: [
         {
+          threshold: [ -1, -0.6 ]
           frequency: 0.0143
           scale: 0.2
           stretch: 0.5

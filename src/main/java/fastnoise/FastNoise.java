@@ -70,11 +70,12 @@ public class FastNoise {
 	public float m_gradientPerturbFrequency = 0.1f;
 	public float m_stretch = 1.0f;
 	public int m_offset = 0;
-	public boolean m_invert = false;
 
 	// These values are ignored because they don't
 	// directly contribute to the noise output.
 
+	@EqualsAndHashCode.Exclude
+	public boolean m_invert = false;
 	@EqualsAndHashCode.Exclude
 	public float m_multiple = 1.0f;
 	@EqualsAndHashCode.Exclude
