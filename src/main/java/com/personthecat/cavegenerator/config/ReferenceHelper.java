@@ -127,6 +127,10 @@ public class ReferenceHelper {
                             final int bc = findClosing(val, i, '{', '}');
                             closing = read = findNext(val, bc,',', false);
                             break;
+                        case '(' :
+                            final int pr = findClosing(val, i, '(', ')');
+                            closing = read = findNext(val, pr,',', false);
+                            break;
                         case '"' :
                             i++;
                             read = findNext(val, i, '"', true);
@@ -212,7 +216,7 @@ public class ReferenceHelper {
                 if (value.isString()) {
                     final String s = replaceString(value.asString(), r);
                     if (s.isEmpty()) continue;
-                    clone.add(name, JsonValue.readHjson(s, FORMATTER));
+                    clone.add(name, JsonValue.readHjson(quote(s), FORMATTER));
                 } else if (value.isObject()) {
                     clone.add(name, replaceObject(value.asObject(), r));
                 } else if (value.isArray()) {
@@ -355,18 +359,54 @@ public class ReferenceHelper {
      */
     private static int findNext(String val, int index, char f, boolean required) {
         boolean esc = false;
-        for (int i = index; i < val.length(); i++) {
+        int i = index;
+        while(i < val.length()) {
             if (esc) {
                 esc = false;
+                i++;
                 continue;
             }
             final char c = val.charAt(i);
             if (c == '\\') esc = true;
             else if (c == f) return i;
+
+            if (f == '\"' || f == '\'') {
+                i++;
+                continue;
+            }
+            if (c == '(') i = findClosing(val, i, '(', ')');
+            else if (c == '[') i = findClosing(val, i, '[', ']');
+            else if (c == '{') i = findClosing(val, i, '{', '}');
+            else i++;
         }
         if (required) {
             throw new IllegalStateException("Missing " + f + " in function");
         }
         return val.length();
+    }
+
+
+    /**
+     * Determines whether the input text is string data and should be quoted.
+     * If it is, returns the text in quotes.
+     *
+     * @param s The raw parameter value input to the template
+     * @return The quoted text, else the original text.
+     */
+    private static String quote(String s) {
+        final char first = s.charAt(0);
+        final char last = s.charAt(s.length() - 1);
+        if (Character.isWhitespace(first)) {
+            // Only possible if the input was already quoted.
+            return '"' + s + '"';
+        } else if ((first == '{' && last == '}') || (first == '[' && last == ']')) {
+            return s;
+        }
+        for (char c : s.toCharArray()) {
+            if (Character.isWhitespace(c)) {
+                return '"' + s + '"';
+            }
+        }
+        return s;
     }
 }

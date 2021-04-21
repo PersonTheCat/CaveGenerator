@@ -18,7 +18,7 @@ public class ConfigFile {
         "Whether vanilla stone clusters--including andesite,",
         "diorite, and granite--should spawn in the world."})
     @RequiresMcRestart
-    public static boolean enableVanillaStoneClusters = true;
+    public static boolean enableVanillaStoneClusters = false;
 
     @Comment("Whether to enable vanilla water lakes underground.")
     @RequiresMcRestart
