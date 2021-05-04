@@ -47,22 +47,28 @@ public class BurrowSettings {
     /** The output of this generator offsets the map values up and down over time. */
     @Default NoiseMapSettings offset = DEFAULT_OFFSET;
 
+    /** The exact radius of these tunnels in blocks. */
     @Default float radius = 4.5F;
 
-    @Default float compression = 1.0F;
-
+    /** The target noise threshold for this generator to trace. */
     @Default float target = 0.1F;
 
+    /** A vertical ratio that scales radius. */
     @Default float stretch = 1.0F;
 
+    /** The shape of the curve used by this generator. */
     @Default float exponent = 4.0F;
 
+    /** Shifts the output of the generator up and down, transforming tunnels into blobs. */
     @Default float shift = 0.0F;
 
+    /** The minimum distance from biome borders allowed by this generator. */
     @Default float wallDistance = 18.0F;
 
+    /** The shape of the curve on biome borders. */
     @Default float wallExponent = 2.0F;
 
+    /** An optional set of regular tunnels to spawn branching from this feature. */
     @Default Optional<TunnelSettings> branches = empty();
 
     public static BurrowSettings from(JsonObject json, OverrideSettings overrides) {
@@ -79,7 +85,6 @@ public class BurrowSettings {
             .mapObject(Fields.map, o -> builder.map(NoiseMapSettings.from(o, DEFAULT_MAP)))
             .mapObject(Fields.offset, o -> builder.offset(NoiseMapSettings.from(o, DEFAULT_OFFSET)))
             .mapFloat(Fields.radius, builder::radius)
-            .mapFloat(Fields.compression, builder::compression)
             .mapFloat(Fields.target, builder::target)
             .mapFloat(Fields.stretch, builder::stretch)
             .mapFloat(Fields.exponent, builder::exponent)

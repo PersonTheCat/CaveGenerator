@@ -13,7 +13,6 @@ import static com.personthecat.cavegenerator.util.CommonMethods.*;
 public enum Direction {
     UP,
     DOWN,
-    DOWN_ONLY,
     NORTH,
     SOUTH,
     EAST,
@@ -50,7 +49,6 @@ public enum Direction {
             // Directions are assumed to be non-redundant from preset tester.
             for (Direction direction : directions) {
                 switch (direction) {
-                    case DOWN_ONLY : throw new UnsupportedOperationException("Use block checks for feature generators.");
                     case UP : up = true; break;
                     case DOWN : down = true; break;
                     case SIDE : side = true; break;

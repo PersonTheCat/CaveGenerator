@@ -1,7 +1,6 @@
 package com.personthecat.cavegenerator.config;
 
 import com.personthecat.cavegenerator.CaveInit;
-import com.personthecat.cavegenerator.util.DualHashMap;
 import com.personthecat.cavegenerator.util.HjsonTools;
 import lombok.extern.log4j.Log4j2;
 import org.hjson.JsonObject;

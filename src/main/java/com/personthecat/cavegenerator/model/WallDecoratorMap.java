@@ -17,7 +17,6 @@ public class WallDecoratorMap {
     @Singular("side") List<ConfiguredWallDecorator> side;
     @Singular("up") List<ConfiguredWallDecorator> up;
     @Singular("down") List<ConfiguredWallDecorator> down;
-    @Singular("downOnly") List<ConfiguredWallDecorator> downOnly;
     @Singular("north") List<ConfiguredWallDecorator> north;
     @Singular("south") List<ConfiguredWallDecorator> south;
     @Singular("east") List<ConfiguredWallDecorator> east;
@@ -34,7 +33,6 @@ public class WallDecoratorMap {
                     case SIDE: builder.side(wall); break;
                     case UP: builder.up(wall); break;
                     case DOWN: builder.down(wall); break;
-                    case DOWN_ONLY: builder.downOnly(wall); break;
                     case NORTH: builder.north(wall); break;
                     case SOUTH: builder.south(wall); break;
                     case EAST: builder.east(wall); break;

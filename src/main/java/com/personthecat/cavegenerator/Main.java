@@ -34,7 +34,6 @@ import java.util.TreeMap;
     acceptableRemoteVersions = "*"
 )
 @Log4j2
-@Mod.EventBusSubscriber
 public class Main {
 
     /** The main instance of this mod, as required by Forge. */
