@@ -16,20 +16,20 @@ public class ConfiguredShell {
     public static final ConfiguredShell EMPTY_SHELL = new ConfiguredShell();
 
     public final ShellSettings cfg;
-    public final double sphereRadius;
+    public final double radius;
     public final float noiseThreshold;
     public final List<Decorator> decorators;
 
     public ConfiguredShell(ShellSettings cfg, World world) {
         this.cfg = cfg;
-        this.sphereRadius = cfg.radius;
+        this.radius = cfg.radius;
         this.noiseThreshold = cfg.noiseThreshold.orElse(((float) cfg.radius + 0.0001F) / 10.0F);
         this.decorators = map(cfg.decorators, d -> new Decorator(d, world));
     }
 
     private ConfiguredShell() {
         this.cfg = ShellSettings.builder().build();
-        this.sphereRadius = 0.0;
+        this.radius = 0.0;
         this.noiseThreshold = 0.0F;
         this.decorators = Collections.emptyList();
     }

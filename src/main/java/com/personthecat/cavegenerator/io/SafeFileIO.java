@@ -6,6 +6,7 @@ import com.personthecat.cavegenerator.util.Result;
 import javax.annotation.CheckReturnValue;
 import java.io.*;
 import java.nio.file.Files;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
@@ -109,6 +110,29 @@ public class SafeFileIO {
     @CheckReturnValue
     public static Optional<File[]> listFiles(File dir) {
         return Optional.ofNullable(dir.listFiles());
+    }
+
+    @CheckReturnValue
+    public static Optional<File[]> listFiles(File dir, FileFilter filter) {
+        return Optional.ofNullable(dir.listFiles(filter));
+    }
+
+    @CheckReturnValue
+    public static Optional<File> getFileRecursive(File dir, FileFilter filter) {
+        final File[] inDir = dir.listFiles();
+        if (inDir != null) {
+            for (File f : inDir) {
+                if (f.isDirectory()) {
+                    final Optional<File> found = getFileRecursive(f, filter);
+                    if (found.isPresent()) {
+                        return found;
+                    }
+                } else if (filter.accept(f)) {
+                    return full(f);
+                }
+            }
+        }
+        return empty();
     }
 
     /** Attempts to retrieve the contents of the input file. */

@@ -31,7 +31,7 @@ import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
 public class HjsonTools {
 
     /** The settings to be used when outputting JsonObjects to the disk. */
-    private static final HjsonOptions FORMATTER = new HjsonOptions()
+    public static final HjsonOptions FORMATTER = new HjsonOptions()
         .setAllowCondense(true)
         .setAllowMultiVal(true)
         .setCommentSpace(0)
@@ -261,14 +261,21 @@ public class HjsonTools {
     public static List<JsonObject> getRegularObjects(JsonObject json, String field) {
         final List<JsonObject> list = new ArrayList<>();
         final JsonArray array = HjsonTools.getValue(json, field)
-                .map(HjsonTools::asOrToArray)
-                .orElseGet(JsonArray::new);
-        for (JsonValue value : array) {
-            if (value.isObject()) { // Ignore values that don't belong.
-                list.add(value.asObject());
+            .map(HjsonTools::asOrToArray)
+            .orElseGet(JsonArray::new);
+        flattenRegularObjects(list, array);
+        return list;
+    }
+
+    /** Variant of {@link #flatten} which does not coerce values into objects. */
+    private static void flattenRegularObjects(List<JsonObject> array, JsonArray source) {
+        for (JsonValue value: source) {
+            if (value.isArray()) {
+                flattenRegularObjects(array, value.asArray());
+            } else if (value.isObject()) {
+                array.add(value.asObject());
             }
         }
-        return list;
     }
 
     public static Optional<List<Integer>> getIntList(JsonObject json, String field) {

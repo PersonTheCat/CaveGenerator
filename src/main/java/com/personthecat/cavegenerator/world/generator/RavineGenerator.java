@@ -19,7 +19,7 @@ public class RavineGenerator extends MapGenerator {
     private final double cutoff;
 
     public RavineGenerator(RavineSettings cfg, World world) {
-        super(cfg.conditions, cfg.decorators, world, true);
+        super(cfg.conditions, cfg.decorators, world, cfg.testForWater);
         this.cfg = cfg;
         this.wallNoise = cfg.walls.getGenerator(world);
         this.cutoff = 1.0 + cfg.cutoffStrength;
@@ -28,7 +28,7 @@ public class RavineGenerator extends MapGenerator {
     @Override
     protected void mapGenerate(MapGenerationContext ctx) {
         if (ctx.rand.nextInt(cfg.chance) == 0) {
-            this.startRavine(ctx.rand.nextLong(), ctx.destChunkX, ctx.destChunkZ, ctx.chunkX, ctx.chunkZ, ctx.primer);
+            this.startRavine(ctx.world, ctx.rand.nextLong(), ctx.destChunkX, ctx.destChunkZ, ctx.chunkX, ctx.chunkZ, ctx.primer);
         }
     }
 
@@ -105,16 +105,16 @@ public class RavineGenerator extends MapGenerator {
     }
 
     /** Starts a ravine between the input chunk coordinates. */
-    private void startRavine(long seed, int destX, int destZ, int x, int z, ChunkPrimer primer) {
+    private void startRavine(World world, long seed, int destX, int destZ, int x, int z, ChunkPrimer primer) {
         final Random rand = new XoRoShiRo(seed);
         final int distance = cfg.distance;
         final PrimerData data = new PrimerData(primer, x, z);
         final TunnelPathInfo path = new TunnelPathInfo(cfg, rand, destX, destZ);
 
         // Todo: verify that we need to check this outside of the current chunk.
-        if (conditions.getColumn((int) path.getX(), (int) path.getZ()).contains((int) path.getY())) {
-            if (conditions.noise.GetBoolean(path.getX(), path.getY(), path.getZ())) {
-                this.addRavine(rand.nextLong(), data, path, distance);
+        if (this.conditions.getColumn((int) path.getX(), (int) path.getZ()).contains((int) path.getY())) {
+            if (this.conditions.noise.GetBoolean(path.getX(), path.getY(), path.getZ())) {
+                this.addRavine(world, rand.nextLong(), data, path, distance);
             }
         }
     }
@@ -125,7 +125,7 @@ public class RavineGenerator extends MapGenerator {
      * values between 1-4, stored above. The difference in scale typically observed in
      * ravines is the result of arguments input to this function.
      */
-    private void addRavine(long seed, PrimerData data, TunnelPathInfo path, int distance) {
+    private void addRavine(World world, long seed, PrimerData data, TunnelPathInfo path, int distance) {
         // Master RNG for this tunnel.
         final Random mast = new XoRoShiRo(seed);
         // Avoid issues with inconsistent Random calls.
@@ -142,9 +142,9 @@ public class RavineGenerator extends MapGenerator {
             final double roXZ = rXZ + d;
             final double roY = rY + d;
 
-            path.update(mast, true, cfg.noiseYFactor, 0.05F);
+            path.update(mast, true, this.cfg.noiseYFactor, 0.05F);
 
-            if (mast.nextInt(cfg.resolution) == 0) {
+            if (mast.nextInt(this.cfg.resolution) == 0) {
                 continue;
             }
             // Make sure we haven't travelled too far?
@@ -157,16 +157,16 @@ public class RavineGenerator extends MapGenerator {
             if (getNearestBorder((int) path.getX(), (int) path.getZ()) < roXZ + 9) {
                 continue;
             }
-            if (!conditions.height.contains((int) path.getY())) {
+            if (!this.conditions.height.contains((int) path.getY())) {
                 continue;
             }
-            this.generateSphere(data, dec, path.getX(), path.getY(), path.getZ(), rXZ, rY, roXZ, roY);
+            this.generateSphere(data, world, dec, path.getX(), path.getY(), path.getZ(), rXZ, rY, roXZ, roY);
         }
     }
 
     /** Used to produce the variations in horizontal scale seen in ravines. */
     private void fillMutations(Random rand) {
-        if (cfg.useWallNoise) {
+        if (this.cfg.useWallNoise) {
             this.fillMutationsWithNoise();
         } else {
             this.fillMutationsVanilla(rand);
@@ -180,14 +180,14 @@ public class RavineGenerator extends MapGenerator {
             if (i == 0 || rand.nextInt(3) == 0) {
                 val = rand.nextFloat() * rand.nextFloat() + 1.0f;
             }
-            mut[i] = val * val;
+            this.mut[i] = val * val;
         }
     }
 
     /** Variant of getMutations() which produces aberrations using a noise generator. */
     private void fillMutationsWithNoise() {
         for (int i = 0; i < mut.length; i++) {
-            mut[i] = wallNoise.GetAdjustedNoise(0, i);
+            this.mut[i] = wallNoise.GetAdjustedNoise(0, i);
         }
     }
 }

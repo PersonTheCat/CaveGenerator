@@ -38,7 +38,7 @@
   caveBlocks: [
     {
       states: []
-      chance: 1.0
+      integrity: 1.0
       height: [ 0, 50 ]
       # ABSENT BY DEFAULT
       noise: {}
@@ -47,11 +47,22 @@
   wallDecorators: [
     {
       states: []
-      chance: 1.0
+      integrity: 1.0
       height: [ 0, 50 ]
       directions: []
       matchers: []
       placement: embed
+      # ABSENT BY DEFAULT
+      noise: {}
+    }
+  ]
+  ponds: [
+    {
+      states: []
+      integrity: 1.0
+      height: [ 0, 50 ]
+      depth: 2
+      matchers: []
       # ABSENT BY DEFAULT
       noise: {}
     }
@@ -67,7 +78,7 @@
         # **This value may not be null or empty**.
         matchers: []
         height: [ 0, 63 ]
-        chance: 1.0
+        integrity: 1.0
         # ABSENT BY DEFAULT
         noise: {}
       }
@@ -78,7 +89,7 @@
     chance: 0.1
     stretch: 0.5
     
-    replaceableBlocks: [ "stone", "dirt", "grass" ]
+    replaceableBlocks: [ "stone", "dirt", "grass", "hardened_clay" ]
     replaceDecorators: true
     caveBlocks: []
     wallDecorators: []
@@ -95,7 +106,10 @@
       systemDensity: 4
       noiseYReduction: true
       distance: 0
+      seed: null
+      reseedBranches: true
       resizeBranches: true
+      checkForWater: true
       scale: {
         startVal: 0
         startValRandFactor: 1
@@ -148,6 +162,7 @@
       replaceDecorators: true
       caveBlocks: []
       wallDecorators: []
+      ponds: []
       shell: {}
     }
   ]
@@ -158,6 +173,7 @@
       resolution: 4
       distance: 0
       cutoffStrength: 5.0 
+      checkForWater: true
       dYaw: {
         startVal: 0
         factor: 0.5
@@ -212,6 +228,7 @@
       replaceDecorators: true
       caveBlocks: []
       wallDecorators: []
+      ponds: []
       shell: {}
     }
   ]
@@ -222,7 +239,6 @@
         {
           threshold: [ -1, -0.6 ]
           frequency: 0.0143
-          scale: 0.2
           stretch: 0.5
         }
       ]
@@ -266,6 +282,44 @@
       replaceDecorators: true
       caveBlocks: []
       wallDecorators: []
+      ponds: []
+      shell: {}
+    }
+  ]
+  burrows: [
+    {
+      radius: 4.5
+      target: 0.1
+      stretch: 1.0
+      exponent: 4.0
+      shift: 0.0
+      wallDistance: 18.0
+      wallExponent: 2.0
+
+      map: {
+        perturb: true
+        perturbAmp: 0.1
+        perturbFreq: 2.5
+        frequency: 0.005
+      }
+      offset: {
+        range: [ 10, 30 ]
+        frequency: 0.01
+      }
+
+      region: {}
+      noise: {}
+      
+      biomes: {}
+      blacklistBiomes: false
+      dimensions: []
+      blacklistDimensions: false
+      
+      replaceableBlocks: [ "stone", "dirt", "grass", "hardened_clay" ]
+      replaceDecorators: true
+      caveBlocks: []
+      wallDecorators: []
+      ponds: []
       shell: {}
     }
   ]
@@ -295,6 +349,7 @@
       # **This value may not be null or empty**.
       states: []
       chance: 0.15
+      integrity: 1.0
       radiusX: [ 13, 19 ]
       radiusY: [ 9, 15 ]
       radiusZ: [ 13, 19 ]

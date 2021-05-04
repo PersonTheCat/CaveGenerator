@@ -65,6 +65,27 @@ public class PositionFlags {
     }
 
     /**
+     * Completes an operation for each position currently stored in the data.
+     * When the process has completed, only the conditions which passed will
+     * remain in the array.
+     *
+     * @param predicate A condition to test at each position.
+     */
+    public void filter(PositionPredicate predicate) {
+        final int end = index;
+        index = 0;
+        for (int i = 0; i < end; i++) {
+            final int data = positions[i];
+            final int x = data >> 12;
+            final int y = data & Y_MASK;
+            final int z = data >> 8 & Z_MASK;
+            if (predicate.test(x, y, z)) {
+                positions[index++] = data;
+            }
+        }
+    }
+
+    /**
      * Runs a test on each of the positions in the array.
      *
      * @param predicate A condition to test at each position.

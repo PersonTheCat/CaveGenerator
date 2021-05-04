@@ -18,8 +18,8 @@
     height: [ 5, 75 ]
     generators: {
       frequency: 0.02
-      scale: 0.4
-      scaleY: 0.75
+      threshold: -0.2
+      stretch: 0.75
       type: Cellular
       returnType: Distance3Div
       jitter: 1

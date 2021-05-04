@@ -3,16 +3,15 @@ package com.personthecat.cavegenerator.world.generator;
 import com.personthecat.cavegenerator.data.ConditionSettings;
 import com.personthecat.cavegenerator.model.Conditions;
 import net.minecraft.world.World;
-import net.minecraft.world.chunk.ChunkPrimer;
 import org.apache.commons.lang3.tuple.Pair;
 
 import java.lang.ref.WeakReference;
 import java.util.List;
 import java.util.Objects;
-import java.util.Random;
 import java.util.function.BiConsumer;
 import java.util.function.Function;
-import java.util.stream.Collectors;
+
+import static com.personthecat.cavegenerator.util.CommonMethods.map;
 
 public abstract class ListGenerator<T> {
 
@@ -22,9 +21,7 @@ public abstract class ListGenerator<T> {
     public ListGenerator(List<T> features, Function<T, ConditionSettings> getter, World world) {
         Objects.requireNonNull(world, "Nullable world types are not yet supported.");
         this.world = new WeakReference<>(world);
-        this.features = features.stream()
-            .map(t -> Pair.of(t, Conditions.compile(getter.apply(t), world)))
-            .collect(Collectors.toList());
+        this.features = map(features, f -> Pair.of(f, Conditions.compile(getter.apply(f), world)));
     }
 
     protected final World getWorld() {
@@ -33,7 +30,7 @@ public abstract class ListGenerator<T> {
 
     public void generate(PrimerContext ctx) {
         // Stubbed for other global conditions.
-        generateChecked(ctx);
+        this.generateChecked(ctx);
     }
 
     protected abstract void generateChecked(PrimerContext ctx);

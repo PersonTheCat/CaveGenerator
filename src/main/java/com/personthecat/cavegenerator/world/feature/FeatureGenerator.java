@@ -44,7 +44,7 @@ public abstract class FeatureGenerator {
 
     public final void generate(WorldContext ctx) {
         final int dim = ctx.world.provider.getDimension();
-        if (conditions.dimensions.test(dim)) {
+        if (this.conditions.dimensions.test(dim)) {
             doGenerate(ctx);
         }
     }
@@ -74,6 +74,10 @@ public abstract class FeatureGenerator {
             }
             previouslySolid = currentlySolid;
         }
+        return NONE_FOUND;
+    }
+
+    protected final int findFloorOnly(World world, int x, int y, int z, int minY) {
         return NONE_FOUND;
     }
 

@@ -38,6 +38,9 @@ public class DecoratorSettings {
     /** A list of blocks to replace the walls of this carver with. */
     @Default List<WallDecoratorSettings> wallDecorators = Collections.emptyList();
 
+    /** A variant of wall decorators which can spawn multiple layers deep on the floor only. */
+    @Default List<PondSettings> ponds = Collections.emptyList();
+
     /** A variant of wall decorators that can spawn multiple layers deep without directionality. */
     @Default ShellSettings shell = ShellSettings.builder().build();
 
@@ -59,6 +62,7 @@ public class DecoratorSettings {
             .mapBool(Fields.replaceSolidBlocks, builder::replaceSolidBlocks)
             .mapArray(Fields.caveBlocks, CaveBlockSettings::from, builder::caveBlocks)
             .mapArray(Fields.wallDecorators, WallDecoratorSettings::from, builder::wallDecorators)
+            .mapObject(Fields.shell, o -> builder.shell(ShellSettings.from(o)))
             .release(builder::build);
     }
 }

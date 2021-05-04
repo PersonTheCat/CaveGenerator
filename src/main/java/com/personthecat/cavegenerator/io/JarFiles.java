@@ -3,7 +3,6 @@ package com.personthecat.cavegenerator.io;
 import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.Main;
 import com.personthecat.cavegenerator.config.PresetExpander;
-import com.personthecat.cavegenerator.config.PresetReader;
 import com.personthecat.cavegenerator.world.feature.StructureSpawner;
 import lombok.extern.log4j.Log4j2;
 import org.hjson.JsonObject;
@@ -17,23 +16,26 @@ import static com.personthecat.cavegenerator.util.CommonMethods.runEx;
 @Log4j2
 public class JarFiles {
 
-    /** A setting indicating the parent folder of all presets. */
-    private static final File ROOT_DIR = CaveInit.CG_DIR;
-
-    /** The actual folder containing the example presets. */
-    private static final File EXAMPLE_DIR = CaveInit.EXAMPLE_DIR;
-
     /** The path where all of this mod's assets are stored. */
     private static final String ASSETS_PATH = "assets/" + Main.MODID;
 
-    /** The name of the vanilla preset file. */
-    private static final String VANILLA_NAME = "vanilla.cave";
+    /** The name of the default preset file. */
+    private static final String CAT_NAME = "cat.cave";
+
+    /** The name of the folder containing cat presets.  */
+    private static final String CAT_FOLDER_NAME = "cat";
+
+    /** The name of the default ore_veins preset. */
+    private static final String ORE_VEINS_NAME = "ore_veins.cave";
 
     /** The name of the tutorial file. */
     private static final String TUTORIAL_NAME = "TUTORIAL.cave";
 
     /** The name of the stripped tutorial file. */
     private static final String REFERENCE_NAME = "REFERENCE.cave";
+
+    /** The actual folder containing the default cat imports. */
+    private static final File CAT_DIR = new File(CaveInit.IMPORT_DIR, CAT_FOLDER_NAME);
 
     /** All of the <b>example</b> presets to be copied from the jar. */
     private static final String[] PRESETS = {
@@ -42,6 +44,12 @@ public class JarFiles {
         "ravines", "stone_clusters", "large_stalactites",
         "vanilla", "underground_forest", "euclids_tunnels",
         "lower_caves", "cluster_caverns"
+    };
+
+    private static final String[] CAT_IMPORTS = {
+        "common", "desert_carvers", "generic_carvers",
+        "generic_features", "lava_aquifers", "maze",
+        "snow_carvers", "snow_features", "water_decorators"
     };
 
     /** A couple of structure NBTs to be copied from the jar. */
@@ -57,14 +65,15 @@ public class JarFiles {
     /** Copies the example presets from the jar to the disk. */
     public static void copyFiles() {
         // Verify the folders' integrity before proceeding.
-        ensureDirExists(EXAMPLE_DIR)
-            .expect("Error: Unable to create the example preset directory.");
+        ensureDirExists(CaveInit.EXAMPLE_DIR)
+            .expect("Error: Unable to create the example preset directory");
         ensureDirExists(CaveInit.IMPORT_DIR)
-            .expect("Error: Unable to create the import directory.");
+            .expect("Error: Unable to create the import directory");
 
         copyExamples();
-        copyVanilla();
+        copyDefaults();
         copyImports();
+        copyCatImports();
         copyStructures();
         copyTutorial();
     }
@@ -92,27 +101,30 @@ public class JarFiles {
     private static void copyExamples() {
         for (String fileName : PRESETS) {
             final String fromLocation = ASSETS_PATH + "/presets/" + fileName + ".cave";
-            final String toLocation = EXAMPLE_DIR + "/" + fileName + ".cave";
+            final String toLocation = CaveInit.EXAMPLE_DIR + "/" + fileName + ".cave";
             if (!fileExists(new File(toLocation), "Security error on " + toLocation)) {
                 copyFile(fromLocation, toLocation);
             }
         }
     }
 
-    private static void copyVanilla() {
-        if (!fileExists(CaveInit.PRESET_DIR, "Error: Unable to read from preset directory.")) {
+    private static void copyDefaults() {
+        if (!fileExists(CaveInit.PRESET_DIR, "Error: Unable to read from preset directory")) {
             // The directory doesn't exist. Create it.
-            mkdirs(CaveInit.PRESET_DIR)
-                .expect("Error: Unable to create preset directory.");
-            // Copy only the vanilla preset. The others should be modifiable.
-            // To-do: There was talk about changing this.
-            final String fromLocation = ASSETS_PATH + "/presets/" + VANILLA_NAME;
-            final String toLocation = CaveInit.PRESET_DIR + "/" + VANILLA_NAME;
-            copyFile(fromLocation, toLocation);
+            mkdirs(CaveInit.PRESET_DIR).expect("Error: Unable to create preset directory");
+            copyDefault(CAT_NAME);
+            copyDefault(ORE_VEINS_NAME);
         }
     }
 
+    private static void copyDefault(String name) {
+        final String fromLocation = ASSETS_PATH + "/presets/" + name;
+        final String toLocation = CaveInit.PRESET_DIR + "/" + name;
+        copyFile(fromLocation, toLocation);
+    }
+
     private static void copyImports() {
+        ensureDirExists(CaveInit.IMPORT_DIR).expect("Error creating import directory");
         for (String i : IMPORTS) {
             final String fromLocation = ASSETS_PATH + "/imports/" + i + ".cave";
             final String toLocation = CaveInit.IMPORT_DIR + "/" + i + ".cave";
@@ -123,9 +135,20 @@ public class JarFiles {
         }
     }
 
+    private static void copyCatImports() {
+        ensureDirExists(new File(CaveInit.IMPORT_DIR, CAT_FOLDER_NAME)).expect("Error creating cat directory");
+        for (String i : CAT_IMPORTS) {
+            final String fromLocation = ASSETS_PATH + "/imports/cat/" + i + ".cave";
+            final String toLocation = CAT_DIR + "/" + i + ".cave";
+            if (!fileExists(new File(toLocation), "Unable to check + " + toLocation)) {
+                copyFile(fromLocation, toLocation);
+            }
+        }
+    }
+
     /** Copies the example structures from the jar to the disk. */
     private static void copyStructures() {
-        if (!fileExists(StructureSpawner.DIR, "Error: Unable to read from structure directory.")) {
+        if (!fileExists(StructureSpawner.DIR, "Error: Unable to read from structure directory")) {
             // The directory doesn't exist. Create it.
             mkdirs(StructureSpawner.DIR)
                 .expect("Error: Unable to create structure directory.");
@@ -142,13 +165,13 @@ public class JarFiles {
     private static void copyTutorial() {
         // Copy the regular tutorial file.
         final String fromLocation = ASSETS_PATH + "/" + TUTORIAL_NAME;
-        final String toLocation = ROOT_DIR + "/" + TUTORIAL_NAME;
+        final String toLocation = CaveInit.CG_DIR + "/" + TUTORIAL_NAME;
         copyFile(fromLocation, toLocation);
 
         // Copy the condensed version.
         // Todo: Generate this file.
         final String fromLocation2 = ASSETS_PATH + "/" + REFERENCE_NAME;
-        final String toLocation2 = ROOT_DIR + "/" + REFERENCE_NAME;
+        final String toLocation2 = CaveInit.CG_DIR + "/" + REFERENCE_NAME;
         copyFile(fromLocation2, toLocation2);
     }
 
@@ -164,9 +187,9 @@ public class JarFiles {
                 .expect("Error copying file data. Perhaps the jar is corrupt.");
             output.close();
         } catch (FileNotFoundException e) {
-            throw new RuntimeException("Unable to open FileOutputStream.", e);
+            throw new RuntimeException("Unable to open FileOutputStream", e);
         } catch (IOException e) {
-            throw new RuntimeException("Error closing FileOutputStream.", e);
+            throw new RuntimeException("Error closing FileOutputStream", e);
         }
     }
 }

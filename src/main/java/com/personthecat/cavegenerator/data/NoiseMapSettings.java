@@ -43,11 +43,20 @@ public class NoiseMapSettings {
     /** The type of noise generator to run. */
     @Default NoiseType type = NoiseType.SimplexFractal;
 
+    /** The maximum amount to warp coordinates when perturb is enabled. */
+    @Default float perturbAmp = 1.0F;
+
+    /** The frequency used in warping input coordinates. */
+    @Default float perturbFreq = 1.0F;
+
     /** The number of fractal generation passes. */
     @Default int octaves = 1;
 
     /** The range of values produced by the generator */
     @Default Range range = Range.of(-1, 1);
+
+    /** Whether to apply a gradient perturb function. */
+    @Default boolean perturb = false;
 
     /** Whether to invert the output of this generator. */
     @Default boolean invert = false;
@@ -57,6 +66,9 @@ public class NoiseMapSettings {
 
     /** Whether to treat this noise generator as a single value, improving performance. */
     @Default boolean dummy = false;
+
+    /** The output to use if this generator is a dummy. */
+    @Default Optional<Float> dummyOutput = empty();
 
     public static NoiseMapSettings from(JsonObject json, NoiseMapSettings defaults) {
         return copyInto(json, defaults.toBuilder());
@@ -71,22 +83,30 @@ public class NoiseMapSettings {
             .mapInt(Fields.seed, i -> builder.seed(full(i)))
             .mapFloat(Fields.frequency, builder::frequency)
             .mapNoiseType(Fields.type, builder::type)
+            .mapFloat(Fields.perturbAmp, builder::perturbAmp)
+            .mapFloat(Fields.perturbFreq, builder::perturbFreq)
+            .mapInt(Fields.octaves, builder::octaves)
             .mapRange(Fields.range, builder::range)
+            .mapBool(Fields.perturb, builder::perturb)
             .mapBool(Fields.invert, builder::invert)
             .mapBool(Fields.cache, builder::cache)
             .mapBool(Fields.dummy, builder::dummy)
+            .mapFloat(Fields.dummyOutput, f -> builder.dummyOutput(full(f)))
             .release(builder::build);
     }
 
     public FastNoise getGenerator(World world) {
         if (dummy) {
-            return new DummyGenerator((range.min + range.max) / 2.0F);
+            return new DummyGenerator(dummyOutput.orElseGet(() -> (range.min + range.max) / 2.0F));
         }
         final FastNoise noise = new FastNoise(getSeed(world))
             .SetNoiseType(type)
             .SetFrequency(frequency)
             .SetFractalOctaves(octaves)
             .SetRange(range.min, range.max)
+            .SetGradientPerturb(perturb)
+            .SetGradientPerturbAmp(perturbAmp)
+            .SetGradientPerturbFrequency(perturbFreq)
             .SetInterp(FastNoise.Interp.Hermite)
             .SetInvert(invert);
         return cache ? new CachedNoiseGenerator(noise) : noise;

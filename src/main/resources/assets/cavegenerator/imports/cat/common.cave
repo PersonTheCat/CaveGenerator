@@ -1,0 +1,45 @@
+{
+  # Represents the sea level for the
+  # default cat presets. Most other
+  # height values are relative to this.
+  SEA_LEVEL: 63
+  # The top of the regular world for
+  # these presets. Almost nothing will
+  # generate above this point.
+  TOP: 128
+  # The bottom of the world. Use a
+  # lower value if you have a deeper
+  # world.
+  BOTTOM: 0
+  # The heighest coordinate where
+  # bedrock can be found undergound.
+  BEDROCK: 5
+  # Represents that a feature can spawn
+  # anywhere in the world, even above
+  # sea level.
+  FULL_HEIGHT: [ "$BEDROCK", "$TOP" ] 
+  # Represents that a feature can spawn
+  # anywhere up to sea level.
+  HALF_HEIGHT: [ "$BEDROCK", "$SEA_LEVEL" ]
+  # A template for generating relative
+  # coordinates based on percentages.
+  full_height_pct(): [ "$TOP * @1", "$TOP * @2" ]
+  # A template for generating relative
+  # coordinates based on offsets from
+  # bedrock and top.
+  full_height_ost(): [ "$BEDROCK + @1", "$TOP - @2" ]
+  # A template for generating percentage
+  # coordinates up to sea level.
+  half_height_pct(): [ "$SEA_LEVEL * @1", "$SEA_LEVEL * @2" ]
+  # A template for generating offset
+  # coordinates up to sea level.
+  half_height_ost(): [ "$BEDROCK + @1", "$SEA_LEVEL - @2" ]
+  # A list of all biomes that have been
+  # decorated by the presets and thus
+  # which biomes should be blacklisted
+  # by generic features.
+  DECORATED_BIOMES: { 
+    types: [ "SNOWY", "SANDY", "JUNGLE", "OCEAN", "MUSHROOM" ] 
+    names: [ "roofed_forest" ]
+  }
+}

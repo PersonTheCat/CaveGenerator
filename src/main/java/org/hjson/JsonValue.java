@@ -87,7 +87,7 @@ public abstract class JsonValue implements Serializable {
   public static String getEol() { return eol; }
 
   /**
-   * Sets the newline charater(s).
+   * Sets the newline character(s).
    *
    * @param value the eol value
    */

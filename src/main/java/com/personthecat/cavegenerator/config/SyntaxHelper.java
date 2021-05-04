@@ -5,6 +5,7 @@ import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
 import java.io.File;
+import java.util.List;
 import java.util.regex.Pattern;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.*;
@@ -28,7 +29,7 @@ public class SyntaxHelper {
 
     /** Detects comments at the ends of strings.  */
     private static final Pattern COMMENT_PATTERN = Pattern.compile("#|//|/\\*");
-
+    
     /**
      * Recursively checks for a series of common syntax errors in presets.
      * This class is designed to provide more helpful crashes / error logs

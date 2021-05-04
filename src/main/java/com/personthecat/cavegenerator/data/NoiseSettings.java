@@ -84,6 +84,9 @@ public class NoiseSettings {
     /** Whether to treat this noise generator as a single value, improving performance. */
     @Default boolean dummy = false;
 
+    /** The output to use if this generator is a dummy. */
+    @Default float dummyOutput = 1.0F;
+
     /** The type of interpolation to use. */
     @Default Interp interp = Interp.Hermite;
 
@@ -130,6 +133,7 @@ public class NoiseSettings {
             .mapBool(Fields.invert, builder::invert)
             .mapBool(Fields.cache, builder::cache)
             .mapBool(Fields.dummy, builder::dummy)
+            .mapFloat(Fields.dummyOutput, builder::dummyOutput)
             .mapInterp(Fields.interp, builder::interp)
             .mapNoiseType(Fields.type, builder::type)
             .mapFractalType(Fields.fractal, builder::fractal)
@@ -142,7 +146,7 @@ public class NoiseSettings {
     /** Converts these settings into a regular {@link FastNoise} object. */
     public FastNoise getGenerator(World world) {
         if (dummy) {
-            return new DummyGenerator(0F);
+            return new DummyGenerator(dummyOutput);
         }
         final FastNoise noise = new FastNoise(getSeed(world))
             .SetNoiseType(type)

@@ -1,0 +1,25 @@
+{
+  imports: cat/common.cave::half_height_pct()
+  enabled: true
+  caverns: {
+    height: $half_height_pct(0.15, 0.7)
+    generators: [
+      {
+        threshold: [ -1, -0.8 ]
+        frequency: 0.01
+        stretch: 0.4
+      }
+    ]
+    shell: {
+      radius: 2
+      decorators: {
+        states: magma
+        matchers: air
+      }
+    }
+    caveBlocks: {
+      states: lava
+      height: $half_height_pct(0.15, 0.7)
+    }
+  }
+}

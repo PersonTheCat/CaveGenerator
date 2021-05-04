@@ -33,8 +33,9 @@
 #                                                                           #
 #   These are some of the keywords that get reused throughout the preset:   #
 #   * factor: Multiplies a value.                                           #
-#   * chance: 0.0-1.0% probability.                                         #
+#   * chance: 0.0-1.0% chance per feature.                                  #
 #   * count: Relative # of tries.                                           #
+#   * integrity: 0.0-1.0% chance per block.                                 #
 #                                                                           #
 # ######################################################################### #
 #                           ### Noise Blocks ###                            #
@@ -68,6 +69,20 @@
 #     # performance.                                                        #
 #     # default: 1                                                          #
 #     octaves: integer value                                                #
+#                                                                           #
+#     # Whether to apply a gradient perturb all values input to the noise   #
+#     # generator, warping the output.                                      #
+#     # default: false                                                      #
+#     perturb: boolean value                                                #
+#                                                                           #
+#     # Sets the maximum amount to warp coordinates when perturb is         #
+#     # enabled.                                                            #
+#     # default: 1.0                                                        #
+#     perturbAmp: floating-point value                                      #
+#                                                                           #
+#     # The frequency used in warping input coordinates.                    #
+#     # default: 0.1                                                        #
+#     perturbFreq: floating-point value                                     #
 #                                                                           #
 #     # The minimum *and* maximum possible values produced by this          #
 #     # generator.                                                          #
@@ -155,7 +170,7 @@
 #                                                                           #
 #     # Stretches and skews the scale on the vertical axis. Literally means #
 #     # that clusters generated will either be shorter or taller.           #
-#     skew: floating-point value                                            #
+#     stretch: floating-point value                                         #
 #                                                                           #
 #     # The octave lacunarity of fractal noise types. Higher values produce #
 #     # deeper and more precise fractals.                                   #
@@ -347,8 +362,8 @@ enabled: true
 #                                                                           #
 #   Any of these values can be placed in *any* generator to restrict where  #
 # that generator can spawn. This can be used to manipulate which biomes,    #
-# dimensions, and noise values are reuquired at given location for a        #
-# feature to be valid.                                                      #
+# dimensions, and noise values are required at given location for a feature #
+# to be valid.                                                              #
 # ------------------------------------------------------------------------- #
 
 biomes: {
@@ -393,12 +408,13 @@ noise: {}
 # elsewhere.                                                                #
 #                                                                           #
 #    This section contains all of the generic settings that apply to your   #
-# world carvers. These include: tunnels, ravines, rooms, and caverns.       #
+# world carvers. These include: tunnels, ravines, rooms, caverns, and       #
+# burrows.                                                                  #
 #                                                                           #
 # ------------------------------------------------------------------------- #
 
 # For standard carvers: tunnels, ravines, rooms, and caverns.
-replaceableBlocks: [ "stone", "dirt", "grass" ]
+replaceableBlocks: [ "stone", "dirt", "grass", "hardened_clay" ]
 
 # Put your decorator blocks in this list automatically.
 replaceDecorators: true
@@ -412,8 +428,9 @@ replaceDecorators: true
 # placed at the top level to provide a common default which will be used    #
 # elsewhere.                                                                #
 #                                                                           #
-#    This section contains all of the decorations that apply exclusively to #
-# your block carvers. These include: tunnels, ravines, rooms, and caverns.  #
+#   This section contains all of the decorations that apply exclusively to  #
+# your block carvers. These include: tunnels, ravines, rooms, caverns, and  #
+# burrows.                                                                  #
 #                                                                           #
 # ------------------------------------------------------------------------- #
 
@@ -421,7 +438,7 @@ replaceDecorators: true
 caveBlocks: [
   {
     states: []
-    chance: 1.0
+    integrity: 1.0
     height: [ 0, 50 ]
 
     # ABSENT BY DEFAULT
@@ -433,15 +450,29 @@ caveBlocks: [
 wallDecorators: [
   {
     states: []
-    chance: 1.0
+    integrity: 1.0
     height: [ 0, 50 ]
 
     # Block states to place on or in.
-    matchers: [  ]
+    matchers: []
 
     # Either 'embed' or 'overlay.'
     placement: embed
 
+    # ABSENT BY DEFAULT
+    noise: {}
+  }
+]
+
+# Variant of wall decoraotors which can place blocks multiple layers
+# deep on the floor only. It will ignore edge blocks, creating a terrace.
+ponds: [
+  {
+    states: []
+    integrity: 1.0
+    height: [ 0, 50 ]
+    matchers: []
+    depth: 2
     # ABSENT BY DEFAULT
     noise: {}
   }
@@ -470,7 +501,7 @@ shell: {
         # **This value may not be null or empty**.
         matchers: []
         height: [ 0, 63 ]
-        chance: 1.0
+        integrity: 1.0
         # ABSENT BY DEFAULT
         noise: {}
       }
@@ -546,8 +577,18 @@ tunnels: [
     # The length in blocks of this tunnel. 0 is a wildcard (132-176).
     distance: 0
 
+    # Constant seed to use for this tunnel or branch.
+    seed: null
+
+    # Whether to generate a new seed for each branch.
+    # leaving this false means that branches will be symmetrical.
+    reseedBranches: true
+
     # When branches are created in vanilla, they shrink. You can disable that.
     resizeBranches: true
+    
+    # Whether to test for water before generating to avoid water walls.
+    checkForWater: true
 
     # Radius in blocks.
     scale: {
@@ -623,6 +664,7 @@ ravines: [
     height: [ 8, 128 ]
     distance: 0
     resolution: 4
+    checkForWater: true
     dYaw: {
       startVal: 0
       factor: 0.5
@@ -692,7 +734,6 @@ caverns: [
       {
         threshold: [ -1, -0.6 ]
         frequency: 0.0143
-        scale: 0.2
         stretch: 0.5
       }
     ]
@@ -751,6 +792,56 @@ caverns: [
   }
 ]
 
+# This generator works by tracing the output of a 2-dimensional noise function
+# where threshold = 1, drawing a sphere around it, and then shifting it vertically
+# based on the output of a second 2-dimensional noise function. It is similar to
+# the official spaghetti generator featured in 1.17.
+burrows: [
+  {
+    # The height and width of this generator in blocks.
+    radius: 4.5
+
+    # The target threshold being traced by the generator.
+    # Use a higher value (-1~1) to generate wider tunnels.
+    # Values closer to zero will generate narrow tunnels.
+    target: 0.1
+
+    # Vertical multiple of radius
+    stretch: 1.0
+
+    # Determines the shape of the curve that makes up the
+    # the tunnels produced by this generator.
+    exponent: 4.0
+
+    # Shifts the range of values accepted by the generator.
+    # By default, the accepted value is 0.1 ( + 0.0 = 0.1 ).
+    shift: 0.0
+
+    # The minimum distance from invalid chunk origins
+    wallDistance: 18.0
+
+    # The exponent used to produce biome walls.
+    wallExponent: 2.0
+
+    # The map used to produce the position of the tunnels
+    # generated by this feature.
+    # Map generator
+    map: {
+      perturb: true
+      perturbAmp: 0.1
+      perturbFreq: 2.5
+      frequency: 0.005
+    }
+
+    # How much to offset the y-coordinate when given (x, z).
+    # Map generator
+    offset: {
+      range: [ 10, 30 ]
+      frequency: 0.01
+    }
+  }
+]
+
 # ------------------------------------------------------------------------- #
 # ######################################################################### #
 #                        ### Global Decorators ###                          #
@@ -782,6 +873,7 @@ clusters: [
   {
     states: []
     chance: 0.15
+    integrity: 1.0
     radiusX: [ 13, 19 ]
     radiusY: [ 9, 15  ]
     radiusZ: [ 13, 19 ]

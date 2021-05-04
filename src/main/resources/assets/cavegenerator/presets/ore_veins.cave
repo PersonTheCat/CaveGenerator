@@ -1,0 +1,46 @@
+{
+  imports: [
+    blocks.cave::ANDESITE
+    blocks.cave::GRANITE
+  ]
+  variables: {
+    # Noise parameters detailing the
+    # shape of these veins when they
+    # spawn in the world.
+    vein_shape(): {
+      frequency: 0.02
+      threshold: -0.2
+      stretch: 0.75
+      type: Cellular
+      returnType: Distance3Div
+      jitter: 1
+      perturb: true
+      perturbAmp: 10
+      perturbFreq: 0.025
+      invert: true
+      cache: true
+      seed: @1
+    }
+    # Generates a new cluster settings
+    # object when given a few parameters.
+    # Parameters: 
+    #  @1 -> ore block
+    #  @2 -> secondary block
+    #  @3 -> spawn chance
+    #  @4 -> seed
+    ore_vein(): {
+      states: [ "@2", "@1" ]
+      chance: @3
+      integrity: 0.4
+      radius: [ 35, 50 ]
+      seed: @4
+      noise: $vein_shape(@4)
+    }
+  }
+  enabled: false
+  clusters: [
+    $ore_vein(coal_ore, gravel, 0.005, 5784)
+    $ore_vein(iron_ore, $ANDESITE, 0.004, 1905)
+    $ore_vein(gold_ore, $GRANITE, 0.0003, 3219)
+  ]
+}

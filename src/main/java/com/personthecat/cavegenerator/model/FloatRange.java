@@ -11,14 +11,9 @@ import static com.personthecat.cavegenerator.util.CommonMethods.numBetween;
 public class FloatRange {
     public final float min, max;
 
-    public FloatRange(float a, float b) {
-        if (a > b) {
-            this.min = a;
-            this.max = b;
-        } else {
-            this.max = b;
-            this.min = a;
-        }
+    public FloatRange(float min, float max) {
+        this.min = min;
+        this.max = max;
     }
 
     public FloatRange(float a) {
@@ -35,6 +30,6 @@ public class FloatRange {
 
     @Override
     public String toString() {
-        return f("Range[{}-{}]", min, max);
+        return f("Range[{}~{}]", min, max);
     }
 }

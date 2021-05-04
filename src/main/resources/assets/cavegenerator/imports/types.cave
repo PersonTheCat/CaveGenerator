@@ -1,8 +1,15 @@
 {
-  # Simple settings for any noise generator
-  # that will produce a dummy generator.
-  DUMMY_GENERATOR: {
+  # A function that produces a dummy noise
+  # generator when optionally provided a
+  # constant output to use.
+  # Parameters: 
+  #  @1? -> constant output
+  # Examples:
+  #  $dummy_generator()
+  #  $dummy_generator(2.0)
+  dummy_generator(): {
     dummy: true
+    dummyOutput: @1?
   }
   # A function that produces a simple noise
   # generator when given a threshold and an
@@ -23,7 +30,7 @@
   # Parameters: 
   #  @1 -> startVal
   # Examples:
-  #  $CONSTANT(2)
+  #  $constant(2)
   constant(): {
     startVal: @1
     startValRandFactor: 0

@@ -65,29 +65,30 @@ public class PresetTester {
 
     /** Inform the user of which fields were successfully parsed. */
     private void debugExistingFields(JsonObject json) {
+        final List<String> used = json.getUsedPaths();
+        if (used.isEmpty()) {
+            log.info("No fields were detected in {}. If you were expecting fields, "
+                + "you may have commented it out.", name);
+            return;
+        }
         log.info("The following fields were found in {}. If you do not see one, "
             + "you may have accidentally commented it out.", name);
-        for (JsonObject.Member m : json) {
-            final JsonValue v = m.getValue();
-            if (v.isArray()) {
-                log.info(" * {} ({})", m.getName(), v.asArray().size());
-            } else {
-                log.info(" * {}", m.getName());
-            }
+        for (String s : used) {
+            log.info(" + {} ", s);
         }
     }
 
     /** Inform the user of which fields were never accessed by PresetReader. */
     private void debugUnusedFields(JsonObject json) {
         final List<String> unused = json.getUnusedPaths();
-        if (unused.size() == 0) {
+        if (unused.isEmpty()) {
             log.info("No unused fields were detected inside of {}", name);
             return;
         }
         log.info("The following fields were never used by {}. Any field listed " +
             "below has no effect whatsoever.", name);
         for (String s : unused) {
-            log.log(low, " * {}", s);
+            log.log(low, " - {}", s);
         }
     }
 
@@ -267,13 +268,13 @@ public class PresetTester {
             final int minY = c.height.min;
             final int maxY = c.height.max;
             final boolean hasNoise = c.noise.isPresent();
-            if (c.chance == 1.0 && !hasNoise && lastMinHeight == minY && lastMaxHeight == maxY) {
+            if (c.integrity == 1.0 && !hasNoise && lastMinHeight == minY && lastMaxHeight == maxY) {
                 foundGuaranteed = true;
             }
             lastMinHeight = minY;
             lastMaxHeight = maxY;
             // Normal tests.
-            this.testChance(c.chance, fullPath);
+            this.testChance(c.integrity, fullPath);
             c.noise.ifPresent(n -> this.testNoise(n, fullPath));
         }
     }
@@ -292,14 +293,14 @@ public class PresetTester {
             final int minY = d.height.min;
             final int maxY = d.height.max;
             final boolean hasNoise = d.noise.isPresent();
-            if (d.chance == 1.0 && !hasNoise && lastMinHeight == minY && lastMaxHeight == maxY) {
+            if (d.integrity == 1.0 && !hasNoise && lastMinHeight == minY && lastMaxHeight == maxY) {
                 log.log(low, "{} uses full coverage. It may be better to use Shells or Clusters.", fullPath);
                 foundGuaranteed = true;
             }
             lastMinHeight = minY;
             lastMaxHeight = maxY;
             // Normal tests.
-            this.testChance(d.chance, fullPath);
+            this.testChance(d.integrity, fullPath);
             this.testDirections(d.directions, fullPath);
             d.noise.ifPresent(s -> testNoise(s, fullPath));
         }

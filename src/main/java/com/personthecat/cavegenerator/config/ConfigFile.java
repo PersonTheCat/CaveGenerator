@@ -26,7 +26,7 @@ public class ConfigFile {
 
     @Comment("Whether to enable vanilla lava lakes underground.")
     @RequiresMcRestart
-    public static boolean enableLavaLakes = true;
+    public static boolean enableLavaLakes = false;
 
     @Comment("Whether to enable vanilla mineshafts underground.")
     @RequiresMcRestart

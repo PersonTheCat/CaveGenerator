@@ -1,0 +1,14 @@
+{
+  # Todo: not much here yet.
+  # Maybe there should be other common decorations.
+  stalactites: [
+    {
+      type: speleothem
+      state: stone
+      length: [ 7, 10 ]
+      space: 3
+      size: large
+      chance: 0.008
+    }
+  ]
+}

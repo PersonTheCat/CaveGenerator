@@ -13,13 +13,13 @@
     height: [ 7, 50 ]
     generators: {
       frequency: 0.02
-      scale: 0.25
+      threshold: -0.5
       stretch: 0.5
     }
   }
   tunnels: {
     # Spawn rate roughly in half.
-    frequency: 7
+    count: 7
     # Most tunnels will spawn alone.
     systemChance: 0.0005
     noiseYReduction: false

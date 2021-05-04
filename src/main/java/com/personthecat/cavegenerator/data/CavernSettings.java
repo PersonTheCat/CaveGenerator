@@ -83,6 +83,9 @@ public class CavernSettings {
     /** A list of noise generators to produce the shape of these caverns. */
     @Default List<NoiseSettings> generators = Collections.singletonList(DEFAULT_GENERATOR);
 
+    /** A list of tunnels that will spawn connected to these caverns. */
+    @Default Optional<TunnelSettings> branches = empty();
+
     public static CavernSettings from(JsonObject json, OverrideSettings overrides) {
         final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();
         final DecoratorSettings decorators = overrides.apply(DEFAULT_DECORATORS.toBuilder()).build();
@@ -95,7 +98,7 @@ public class CavernSettings {
 
     private static CavernSettings copyInto(JsonObject json, CavernSettingsBuilder builder) {
         final CavernSettings original = builder.build();
-        new HjsonMapper(json)
+        return new HjsonMapper(json)
             .mapSelf(o -> builder.conditions(ConditionSettings.from(o, original.conditions)))
             .mapSelf(o -> builder.decorators(DecoratorSettings.from(o, original.decorators)))
             .mapInt(Fields.resolution, builder::resolution)
@@ -104,13 +107,18 @@ public class CavernSettings {
             .mapObject(Fields.wallOffset, o -> builder.wallOffset(full(NoiseMapSettings.from(o, DEFAULT_WALL_OFFSET))))
             .mapFloat(Fields.wallCurveRatio, builder::wallCurveRatio)
             .mapBool(Fields.wallInterpolation, builder::wallInterpolation)
-            .mapArray(Fields.generators, CavernSettings::createNoise, builder::generators);
-
-        return builder.build();
+            .mapArray(Fields.generators, CavernSettings::createNoise, builder::generators)
+            .mapObject(Fields.branches, o -> copyBranches(builder, o))
+            .release(builder::build);
     }
 
     private static NoiseSettings createNoise(JsonObject json) {
         return NoiseSettings.from(json, DEFAULT_GENERATOR);
     }
 
+    private static void copyBranches(CavernSettingsBuilder builder, JsonObject branches) {
+        // Includes overrides and settings from the caverns object.
+        final CavernSettings updated = builder.build();
+        builder.branches(full(TunnelSettings.from(branches, updated.conditions, updated.decorators)));
+    }
 }

@@ -14,11 +14,12 @@ import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkPrimer;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
 import java.util.stream.Collectors;
 
-public class CavernGenerator extends WorldCarver {
+public class CavernGenerator extends WorldCarver implements TunnelSocket {
 
     private final List<ChunkTestData> invalidChunks;
     private final double[] wallNoise = new double[256];
@@ -28,10 +29,10 @@ public class CavernGenerator extends WorldCarver {
     private final PositionFlags caverns;
     private final double wallCurveRatio;
     private final boolean wallInterpolated;
-    private final boolean hasShell;
     private final int maxY;
     private final int diffY;
     private final int curveOffset;
+    protected final CavernSettings cfg;
 
     public CavernGenerator(CavernSettings cfg, World world) {
         super(cfg.conditions, cfg.decorators, world);
@@ -40,7 +41,6 @@ public class CavernGenerator extends WorldCarver {
         this.heightOffset = cfg.offset.map(n -> n.getGenerator(world)).orElse(new DummyGenerator(0F));
         this.wallCurveRatio = cfg.wallCurveRatio;
         this.wallInterpolated = cfg.wallInterpolation;
-        this.hasShell = !this.decorators.shell.decorators.isEmpty();
 
         final int minY = conditions.height.min + cfg.conditions.floor.map(n -> n.range.min).orElse(0);
         this.maxY = conditions.height.max + cfg.conditions.ceiling.map(n -> n.range.max).orElse(0);
@@ -50,7 +50,12 @@ public class CavernGenerator extends WorldCarver {
 
         final int r = BiomeSearch.size();
         this.invalidChunks = new ArrayList<>(this.wallInterpolated ? (r * 2 + 1) * 2 - 1 : r);
-        cfg.walls.ifPresent(n -> this.setupWallNoise(n, world));
+        if (cfg.walls.isPresent()) {
+            this.setupWallNoise(cfg.walls.get(), world);
+        } else {
+            Arrays.fill(wallNoise, 15);
+        }
+        this.cfg = cfg;
     }
 
     private static List<FastNoise> createGenerators(List<NoiseSettings> settings, World world) {
@@ -74,15 +79,15 @@ public class CavernGenerator extends WorldCarver {
 
     @Override
     public void generate(PrimerContext ctx) {
-        if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
-            if (conditions.hasBiomes) {
-                if (ctx.biomes.anyMatches(conditions.biomes)) {
+        if (this.conditions.dimensions.test(ctx.world.provider.getDimension())) {
+            if (this.conditions.hasBiomes) {
+                if (ctx.biomes.anyMatches(this.conditions.biomes)) {
                     this.fillInvalidChunks(ctx.biomes, ctx.chunkX, ctx.chunkZ);
                     this.generateChecked(ctx);
                     this.invalidChunks.clear();
                 }
-            } else if (conditions.hasRegion) {
-                if (conditions.region.GetBoolean(ctx.offsetX, ctx.offsetZ)) {
+            } else if (this.conditions.hasRegion) {
+                if (this.conditions.region.GetBoolean(ctx.offsetX, ctx.offsetZ)) {
                     this.fillInvalidChunks(ctx.chunkX, ctx.chunkZ);
                     this.generateChecked(ctx);
                     this.invalidChunks.clear();
@@ -104,7 +109,7 @@ public class CavernGenerator extends WorldCarver {
 
     private void fillBorder(BiomeSearch biomes) {
         for (BiomeSearch.Data d : biomes.surrounding.get()) {
-            if (!(conditions.biomes.test(d.biome) && conditions.region.GetBoolean(d.centerX, d.centerZ))) {
+            if (!(this.conditions.biomes.test(d.biome) && this.conditions.region.GetBoolean(d.centerX, d.centerZ))) {
                 // Translate the noise randomly for each chunk to minimize repetition.
                 final int translateY = (int) wallOffset.GetAdjustedNoise(d.centerX, d.centerZ);
                 this.invalidChunks.add(new ChunkTestData(d.centerX, d.centerZ, translateY));
@@ -126,7 +131,7 @@ public class CavernGenerator extends WorldCarver {
         final boolean[][] points = new boolean[interpolated][interpolated];
 
         for (BiomeSearch.Data d : biomes.surrounding.get()) {
-            if (!(conditions.biomes.test(d.biome) && conditions.region.GetBoolean(d.centerX, d.centerZ))) {
+            if (!(this.conditions.biomes.test(d.biome) && this.conditions.region.GetBoolean(d.centerX, d.centerZ))) {
                 final int relX = d.chunkX - x;
                 final int relZ = d.chunkZ - z;
                 points[(relX + r) * 2][(relZ + r) * 2] = true;
@@ -180,7 +185,7 @@ public class CavernGenerator extends WorldCarver {
             for (int cZ = chunkZ - range; cZ < chunkZ + range; cZ++) {
                 final int centerX = cX * 16 + 8;
                 final int centerZ = cZ * 16 + 8;
-                if (!conditions.region.GetBoolean(centerX, centerZ)) {
+                if (!this.conditions.region.GetBoolean(centerX, centerZ)) {
                     final int translateY = (int) wallOffset.GetAdjustedNoise(centerX, centerZ);
                     this.invalidChunks.add(new ChunkTestData(centerX, centerZ, translateY));
                 }
@@ -190,11 +195,11 @@ public class CavernGenerator extends WorldCarver {
 
     @Override
     protected void generateChecked(PrimerContext ctx) {
-        this.generateCaverns(ctx.heightmap, ctx.rand, ctx.primer, ctx.chunkX, ctx.chunkZ);
+        this.generateCaverns(ctx.heightmap, ctx.rand, ctx.world, ctx.primer, ctx.chunkX, ctx.chunkZ);
     }
 
     /** Generates giant air pockets in this chunk using a series of 3D noise generators. */
-    private void generateCaverns(int[][] heightmap, Random rand, ChunkPrimer primer, int chunkX, int chunkZ) {
+    private void generateCaverns(int[][] heightmap, Random rand, World world, ChunkPrimer primer, int chunkX, int chunkZ) {
         for (int x = 0; x < 16; x++) {
             final int actualX = x + (chunkX * 16);
             for (int z = 0; z < 16; z++) {
@@ -203,8 +208,11 @@ public class CavernGenerator extends WorldCarver {
             }
         }
         // Caverns must be completely generated before decorating.
-        if (this.hasLocalDecorators()) {
+        if (this.hasWallDecorators()) {
             this.decorateCaverns(rand, primer, chunkX, chunkZ);
+        }
+        if (this.hasPonds()) {
+            this.generatePond(this.caverns, rand, world, primer, chunkX, chunkZ);
         }
     }
 
@@ -214,7 +222,7 @@ public class CavernGenerator extends WorldCarver {
         final int offset = border.offset;
         final Range height = this.conditions.getColumn(heightmap, actualX, actualZ);
         // Adjust the height to accommodate the shell.
-        final int d = (int) decorators.shell.sphereRadius;
+        final int d = (int) this.decorators.shell.radius;
         final int min = Math.max(1, height.min - d);
         final int max = Math.min(255, height.max + d);
 
@@ -245,7 +253,7 @@ public class CavernGenerator extends WorldCarver {
                     this.generateShell(rand, primer, x, y, z, y, chunkX, chunkZ);
                 }
                 return;
-            } else if (noise.IsOuter(value, decorators.shell.noiseThreshold)) {
+            } else if (noise.IsOuter(value, this.decorators.shell.noiseThreshold)) {
                 this.generateShell(rand, primer, x, y, z, y, chunkX, chunkZ);
             }
         }
@@ -273,9 +281,42 @@ public class CavernGenerator extends WorldCarver {
 
     @Override
     protected void generateShell(Random rand, ChunkPrimer primer, int x, int y, int z, int cY, int chunkX, int chunkZ) {
-        if (this.hasShell) {
+        if (this.hasShell()) {
             super.generateShell(rand, primer, x, y, z, cY, chunkX, chunkZ);
         }
+    }
+
+    @Override
+    public int getTunnelHeight(int[][] heightmap, Random rand, int x, int z, int chunkX, int chunkZ) {
+        // Currently ignores offset and general noise
+        final Range height = this.conditions.getColumn(x, z);
+        if (height.isEmpty()) {
+            return CANNOT_SPAWN;
+        }
+        final int center = height.rand(rand);
+        if (rand.nextBoolean()) {
+            for (int y = center; y < height.max; y += this.cfg.resolution) {
+                if (this.checkSingle(x, y, z)) {
+                    return y;
+                }
+            }
+        } else {
+            for (int y = center; y > height.min; y -= this.cfg.resolution) {
+                if (this.checkSingle(x, y, z)) {
+                    return y;
+                }
+            }
+        }
+        return CANNOT_SPAWN;
+    }
+
+    private boolean checkSingle(int actualX, int y, int actualZ) {
+        for (FastNoise generator : this.generators) {
+            if (generator.GetBoolean(actualX, y, actualZ)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     @AllArgsConstructor

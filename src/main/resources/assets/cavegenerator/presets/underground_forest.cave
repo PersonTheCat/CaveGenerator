@@ -45,7 +45,7 @@
       offset: [ 0, 1, 0 ]
       matchers: [ "stone", "$ANDESITE", "grass", "gravel" ]
       directions: down
-      frequency: 2
+      count: 2
       chance: 0.09
       height: [ 18, 40 ]
     }

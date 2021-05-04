@@ -27,6 +27,9 @@ public class Decorators {
     /** Determines which blocks to place to the side of the given coordinates. */
     @Default WallDecoratorMap wallMap = WallDecoratorMap.builder().build();
 
+    /** Determines which blocks to place in the shape of a pond below this feature. */
+    @Default List<ConfiguredPond> ponds = Collections.emptyList();
+
     /** Determines which blocks to place surrounding the current feature. */
     @Default ConfiguredShell shell = ConfiguredShell.EMPTY_SHELL;
 
@@ -35,6 +38,7 @@ public class Decorators {
             .canReplace(compileCanReplace(settings))
             .caveBlocks(map(settings.caveBlocks, b -> new ConfiguredCaveBlock(b, world)))
             .wallMap(WallDecoratorMap.sort(settings.wallDecorators, world))
+            .ponds(map(settings.ponds, p -> new ConfiguredPond(p, world)))
             .shell(new ConfiguredShell(settings.shell, world))
             .build();
     }
@@ -50,6 +54,7 @@ public class Decorators {
             replaceable.addAll(settings.globalDecorators);
             settings.caveBlocks.forEach(c -> replaceable.addAll(c.states));
             settings.wallDecorators.forEach(w -> replaceable.addAll(w.states));
+            settings.ponds.forEach(p -> replaceable.addAll(p.states));
             settings.shell.decorators.forEach(s -> replaceable.addAll(s.states));
         }
         if (replaceable.size() == 1) {

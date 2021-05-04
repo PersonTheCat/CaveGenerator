@@ -142,6 +142,10 @@ public class TunnelPathInfo {
         return z;
     }
 
+    public void setY(float y) {
+        this.y = y;
+    }
+
     public void update(Random rand, boolean noiseYReduction, float angleYFactor, float twistPotential) {
         // Find the next position on a curvilinear path.
         nextPos();

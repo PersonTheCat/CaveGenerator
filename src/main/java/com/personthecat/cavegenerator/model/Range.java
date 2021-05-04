@@ -13,14 +13,9 @@ import static com.personthecat.cavegenerator.util.CommonMethods.numBetween;
 public class Range implements Iterable<Integer> {
     public final int min, max;
 
-    public Range(int a, int b) {
-        if (b > a) {
-            min = a;
-            max = b;
-        } else {
-            min = b;
-            max = a;
-        }
+    public Range(int min, int max) {
+        this.min = min;
+        this.max = max;
     }
 
     public Range(int max) {
@@ -28,7 +23,7 @@ public class Range implements Iterable<Integer> {
     }
 
     public static Range of(int a, int b) {
-        return new Range(a, b);
+        return a > b ? new Range(b, a) : new Range(a, b);
     }
 
     public static Range of(int max) {
@@ -36,11 +31,19 @@ public class Range implements Iterable<Integer> {
     }
 
     public static FloatRange of(float a, float b) {
-        return new FloatRange(a, b);
+        return a > b ? new FloatRange(b, a) : new FloatRange(a, b);
     }
 
     public static FloatRange of(float a) {
         return new FloatRange(a);
+    }
+
+    public static Range checkedOrEmpty(int min, int max) {
+        return max > min ? new Range(min, max) : EmptyRange.get();
+    }
+
+    public static EmptyRange empty() {
+        return EmptyRange.get();
     }
 
     public int rand(Random rand) {
@@ -53,6 +56,10 @@ public class Range implements Iterable<Integer> {
 
     public int diff() {
         return max - min;
+    }
+
+    public boolean isEmpty() {
+        return false;
     }
 
     @NotNull
@@ -75,6 +82,6 @@ public class Range implements Iterable<Integer> {
 
     @Override
     public String toString() {
-        return f("Range[{}-{}]", min, max);
+        return f("Range[{}~{}]", min, max);
     }
 }

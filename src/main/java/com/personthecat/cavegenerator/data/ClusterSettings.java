@@ -18,6 +18,8 @@ import org.hjson.JsonObject;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static com.personthecat.cavegenerator.util.CommonMethods.map;
+
 /** Data used for spawning giant clusters of stone through ChunkPrimer. */
 @Builder
 @FieldNameConstants
@@ -41,6 +43,9 @@ public class ClusterSettings {
 
     /** The original value used for indicating spawn rates. */
     @Default double chance = 0.15;
+
+    /** The chance that any individual block will spawn in this cluster. */
+    @Default double integrity = 1.0;
 
     /** Radius on the x-axis. */
     @Default Range radiusX = Range.of(13, 19);
@@ -76,12 +81,14 @@ public class ClusterSettings {
             .mapRequiredStateList(Fields.states, FEATURE_NAME, l -> copyStates(builder, l))
             .mapSelf(o -> builder.conditions(ConditionSettings.from(o, original.conditions)))
             .mapFloat(Fields.chance, f -> copyChance(builder, f))
+            .mapFloat(Fields.integrity, builder::integrity)
             .mapRange("radius", r -> copyRadius(builder, r))
             .mapRange(Fields.radiusX, builder::radiusX)
             .mapRange(Fields.radiusY, builder::radiusY)
             .mapRange(Fields.radiusZ, builder::radiusZ)
             .mapRange(Fields.centerHeight, builder::centerHeight)
             .mapStateList(Fields.matchers, builder::matchers)
+            .mapInt("seed", i -> copySeed(builder, i))
             .release(builder::build);
     }
 
@@ -95,6 +102,12 @@ public class ClusterSettings {
 
     private static void copyRadius(ClusterSettingsBuilder builder, Range radius) {
         builder.radiusX(radius).radiusY(radius).radiusZ(radius);
+    }
+
+    private static void copySeed(ClusterSettingsBuilder builder, int seed) {
+        // Seed must already be set at this point. The order matters here.
+        final List<Pair<IBlockState, Integer>> states = Objects.requireNonNull(builder.states, "Out of order");
+        builder.states(map(states, p -> Pair.of(p.getLeft(), seed)));
     }
 
     /** Returns whether this cluster is valid at these coordinates. */

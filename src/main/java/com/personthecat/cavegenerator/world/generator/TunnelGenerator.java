@@ -15,12 +15,12 @@ public class TunnelGenerator extends MapGenerator {
 
     private static final float PI_OVER_2 = (float) (Math.PI / 2);
 
-    private final TunnelSettings cfg;
+    protected final TunnelSettings cfg;
     @Nullable private final RoomSettings rooms;
     @Nullable private final TunnelGenerator branches;
 
     public TunnelGenerator(TunnelSettings cfg, World world) {
-        super(cfg.conditions, cfg.decorators, world, true);
+        super(cfg.conditions, cfg.decorators, world, cfg.testForWater);
         this.cfg = cfg;
         this.rooms = cfg.rooms.orElse(null);
         this.branches = cfg.branches.map(b -> new TunnelGenerator(b, world)).orElse(null);
@@ -28,7 +28,7 @@ public class TunnelGenerator extends MapGenerator {
 
     @Override
     protected void mapGenerate(MapGenerationContext ctx) {
-        createSystem(ctx.world, ctx.rand.nextLong(), ctx.destChunkX, ctx.destChunkZ, ctx.chunkX, ctx.chunkZ, ctx.primer);
+        this.createSystem(ctx.world, ctx.rand.nextLong(), ctx.destChunkX, ctx.destChunkZ, ctx.chunkX, ctx.chunkZ, ctx.primer);
     }
 
     @Override
@@ -86,27 +86,24 @@ public class TunnelGenerator extends MapGenerator {
     }
 
     /** Starts a tunnel system between the input chunk coordinates. */
-    private void createSystem(World world, long seed, int destX, int destZ, int x, int z, ChunkPrimer primer) {
+    protected void createSystem(World world, long seed, int destX, int destZ, int x, int z, ChunkPrimer primer) {
         final Random rand = new XoRoShiRo(seed);
-        final int frequency = this.getTunnelFrequency(rand);
+        final int frequency = this.getTunnelCount(rand);
         for (int i = 0; i < frequency; i++) {
-            int branches = 1;
-            if (rand.nextInt(cfg.systemChance) == 0) {
-                branches += rand.nextInt(cfg.systemDensity);
-            }
-            final int distance = cfg.distance;
+            final int distance = this.cfg.distance;
             final PrimerData data = new PrimerData(primer, x, z);
 
-            for (int j = 0; j < branches; j++) {
-                final TunnelPathInfo path = new TunnelPathInfo(cfg, rand, destX, destZ);
-                if (conditions.getColumn((int) path.getX(), (int) path.getZ()).contains((int) path.getY())) {
-                    if (conditions.noise.GetBoolean(path.getX(), path.getY(), path.getZ())) {
-                        if (rooms != null && rand.nextInt(rooms.chance) == 0) {
-                            this.addRoom(rand, data, rooms.scale, rooms.stretch, path.getX(), path.getY(), path.getZ());
+            for (int j = 0; j < this.getBranchCount(rand); j++) {
+                final TunnelPathInfo path = new TunnelPathInfo(this.cfg, rand, destX, destZ);
+                if (this.conditions.getColumn((int) path.getX(), (int) path.getZ()).contains((int) path.getY())) {
+                    if (this.conditions.noise.GetBoolean(path.getX(), path.getY(), path.getZ())) {
+                        if (this.rooms != null && rand.nextInt(this.rooms.chance) == 0) {
+                            this.addRoom(world, rand, data, this.rooms.scale, this.rooms.stretch, path.getX(), path.getY(), path.getZ());
                             // From vanilla: alters the scale each time a room spawns. Remove this?
                             path.multiplyScale(rand.nextFloat() * rand.nextFloat() * 3.00F + 1.00F);
                         }
-                        this.addTunnel(world, rand.nextLong(), data, path,0, distance);
+                        final long tunnelSeed = this.cfg.seed.orElseGet(rand::nextLong);
+                        this.addTunnel(world, tunnelSeed, data, path,0, distance);
                     }
                 }
             }
@@ -114,15 +111,22 @@ public class TunnelGenerator extends MapGenerator {
     }
 
     /** Determines the number of cave systems to try and spawn. */
-    private int getTunnelFrequency(Random rand) {
+    protected int getTunnelCount(Random rand) {
         final int frequency = rand.nextInt(rand.nextInt(rand.nextInt(cfg.count) + 1) + 1);
         // The order is important for seeds
-        if (rand.nextInt(cfg.chance) != 0) {
+        if (rand.nextInt(this.cfg.chance) != 0) {
             // Usually set frequency to 0, causing the systems to be
             // isolated from one another.
             return 0;
         }
         return frequency;
+    }
+
+    protected int getBranchCount(Random rand) {
+        if (rand.nextInt(this.cfg.systemChance) == 0) {
+            return 1 + rand.nextInt(this.cfg.systemDensity);
+        }
+        return 1;
     }
 
     /**
@@ -139,7 +143,7 @@ public class TunnelGenerator extends MapGenerator {
      * @param position  A measure of progress until `distance`.
      * @param distance  The length of the tunnel. 0 -> # ( 132 to 176 ).
      */
-    private void addTunnel(World world, long seed, PrimerData data, TunnelPathInfo path, int position, int distance) {
+    protected void addTunnel(World world, long seed, PrimerData data, TunnelPathInfo path, int position, int distance) {
         // Main RNG for this tunnel.
         final Random rand = new XoRoShiRo(seed);
         distance = this.getDistance(rand, distance);
@@ -155,15 +159,15 @@ public class TunnelGenerator extends MapGenerator {
             final double roXZ = rXZ + d;
             final double roY = rY + d;
 
-            path.update(rand, cfg.noiseYReduction, randomNoiseCorrection ? 0.92F : 0.70F, 0.1F);
+            path.update(rand, this.cfg.noiseYReduction, randomNoiseCorrection ? 0.92F : 0.70F, 0.1F);
 
-            if (path.getScale() > 1.00F && distance > 0 && currentPos == randomBranchIndex) {
-                this.addBranches(world, rand, data, path, currentPos, distance);
+            if (path.getScale() > 1.00F && distance > 0 && currentPos == randomBranchIndex && currentPos != position) {
+                this.addBranches(world, rand, seed, data, path, currentPos, distance);
                 return;
             }
             // Effectively sets the tunnel resolution by randomly skipping
             // tunnel segments, increasing performance.
-            if (rand.nextInt(cfg.resolution) == 0) {
+            if (rand.nextInt(this.cfg.resolution) == 0) {
                 continue;
             }
             // Make sure we haven't travelled too far?
@@ -178,10 +182,10 @@ public class TunnelGenerator extends MapGenerator {
             if (this.getNearestBorder((int) path.getX(), (int) path.getZ()) < roXZ + 9) {
                 continue;
             }
-            if (!conditions.height.contains((int) path.getY())) {
+            if (!this.conditions.height.contains((int) path.getY())) {
                 continue;
             }
-            this.generateSphere(data, new XoRoShiRo(decSeed), path.getX(), path.getY(), path.getZ(), rXZ, rY, roXZ, roY);
+            this.generateSphere(data, world, new XoRoShiRo(decSeed), path.getX(), path.getY(), path.getZ(), rXZ, rY, roXZ, roY);
         }
     }
 
@@ -190,7 +194,7 @@ public class TunnelGenerator extends MapGenerator {
      * single, symmetrical spheres, known internally as "rooms." This may be
      * slightly more redundant, but it should increase the algorithm's readability.
      */
-    private void addRoom(Random main, PrimerData data, float scale, float stretch, double x, double y, double z) {
+    private void addRoom(World world, Random main, PrimerData data, float scale, float stretch, double x, double y, double z) {
         // Construct these initial values using `rand`, consistent
         // with the vanilla setup.
         final long seed = main.nextLong();
@@ -204,29 +208,32 @@ public class TunnelGenerator extends MapGenerator {
         final double rXZ = 1.5D + (MathHelper.sin(position * (float) Math.PI / distance) * scale);
         final double rY = rXZ * stretch;
         final double d = this.decorators.shell.cfg.radius;
-        this.generateSphere(data, local, x, y, z, rXZ, rY, rXZ + d, rY + d);
+        this.generateSphere(data, world, local, x, y, z, rXZ, rY, rXZ + d, rY + d);
     }
 
-    private void addBranches(World world, Random rand, PrimerData data, TunnelPathInfo path, int currentPos, int distance) {
+    private void addBranches(World world, Random rand, long seed, PrimerData data, TunnelPathInfo path, int currentPos, int distance) {
         final float yaw1 = path.getYaw() - PI_OVER_2;
         final float yaw2 = path.getYaw() + PI_OVER_2;
         final float pitch = path.getPitch() / 3.0F;
         final TunnelPathInfo reset1, reset2;
 
-        if (cfg.resizeBranches) { // In vanilla, tunnels are resized when branching.
+        if (this.cfg.resizeBranches) { // In vanilla, tunnels are resized when branching.
             reset1 = path.reset(yaw1, pitch, rand.nextFloat() * 0.5F + 0.5F, 1.00F);
             reset2 = path.reset(yaw2, pitch, rand.nextFloat() * 0.5F + 0.5F, 1.00F);
         } else { // Continue with the same size (not vanilla).
             reset1 = path.reset(yaw1, pitch, path.getScale(), path.getStretch());
             reset2 = path.reset(yaw2, pitch, path.getScale(), path.getStretch());
         }
-        // Todo: add control over using new seeds.
-        if (branches != null) {
-            branches.addTunnel(world, rand.nextLong(), data, reset1, currentPos, distance);
-            branches.addTunnel(world, rand.nextLong(), data, reset2, currentPos, distance);
+        if (this.branches != null) {
+            final long seedA = this.branches.cfg.seed.orElse(this.cfg.reseedBranches ? rand.nextLong() : seed);
+            this.branches.addTunnel(world, seedA, data, reset1, currentPos, distance);
+            final long seedB = this.branches.cfg.seed.orElse(this.cfg.reseedBranches ? rand.nextLong() : seed);
+            this.branches.addTunnel(world, seedB, data, reset2, currentPos, distance);
         } else {
-            this.addTunnel(world, rand.nextLong(), data, reset1, currentPos, distance);
-            this.addTunnel(world, rand.nextLong(), data, reset2, currentPos, distance);
+            final long seedA = this.cfg.seed.orElse(this.cfg.reseedBranches ? rand.nextLong() : seed);
+            this.addTunnel(world, seedA, data, reset1, currentPos, distance);
+            final long seedB = this.cfg.seed.orElse(this.cfg.reseedBranches ? rand.nextLong() : seed);
+            this.addTunnel(world, seedB, data, reset2, currentPos, distance);
         }
     }
 }

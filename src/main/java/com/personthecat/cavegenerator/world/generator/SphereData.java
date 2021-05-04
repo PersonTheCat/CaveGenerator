@@ -7,6 +7,7 @@ public class SphereData {
     /** The inner sphere being carved out by the generator. */
     public final PositionFlags inner = new PositionFlags(256);
 
+    // Todo: this is redundant now
     /** A ring around the inner sphere being used as a shell. */
     public final PositionFlags shell = new PositionFlags(128);
 

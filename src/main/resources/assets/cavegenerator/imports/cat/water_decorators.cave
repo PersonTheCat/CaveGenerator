@@ -1,0 +1,36 @@
+# Todo: this was copied from flooded_vanilla.cave.
+# It should be updated to use relative heights.
+{
+  caveBlocks: [
+    # Fills y=(12-45) with water.
+    {
+      states: water
+      height: [ 12, 63 ]
+    }
+    {
+      states: magma
+      height: 11
+      integrity: 0.025
+    }
+    # Manually places obsidian above lava.
+    {
+      states: obsidian
+      height: 11
+    }
+    # Imitates the normal lava placement behavior.
+    {
+      states: lava
+      height: [ 0, 10 ]
+    }
+  ]
+  wallDecorators: [
+    # Spawns gravel on the floor.
+    {
+      states: gravel
+      height: [ 0, 63 ]
+      matchers: [ "stone", "dirt" ]
+      directions: down
+      integrity: 0.25
+    }
+  ]
+}

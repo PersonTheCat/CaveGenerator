@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.data;
 
+import com.personthecat.cavegenerator.config.PresetTester;
 import com.personthecat.cavegenerator.model.FloatRange;
 import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.noise.CachedNoiseGenerator;
@@ -23,13 +24,11 @@ import static com.personthecat.cavegenerator.util.CommonMethods.empty;
 import static com.personthecat.cavegenerator.util.CommonMethods.full;
 
 /**
- * Contains all of the generic info related to spawning noise-based features in the
- * world. This is applicable for 2-dimensional noise only. With most of these parameters
- * now being merged directly into FastNoise, this class should soon be obsolete. The only
- * holdup is that it facilitates retrieving values from a preset in that it contains only
- * the values we need.
- *
- * Todo: update and say "this is separate from noise settings because it allows us to create an interface..."
+ * This class contains all of the information needed specifically for spawning features in
+ * noise-based regions in the world. It is separate from regular {@link NoiseSettings}
+ * essentially because it defines an interface which outlines exactly which fields will get
+ * used in <code>region</code> objects. This way, users can be notified of the exact settings
+ * getting used in their presets via {@link PresetTester}.
  */
 @FieldNameConstants
 @Builder(toBuilder = true)
@@ -55,6 +54,9 @@ public class NoiseRegionSettings {
     /** Whether to treat this noise generator as a single value, improving performance. */
     @Default boolean dummy = false;
 
+    /** The output to use if this generator is a dummy. */
+    @Default float dummyOutput = 1.0F;
+
     /** The type of noise generator to run. */
     @Default NoiseType type = NoiseType.SimplexFractal;
 
@@ -73,13 +75,14 @@ public class NoiseRegionSettings {
             .mapFloatRange(Fields.threshold, builder::threshold)
             .mapBool(Fields.cache, builder::cache)
             .mapBool(Fields.dummy, builder::dummy)
+            .mapFloat(Fields.dummyOutput, builder::dummyOutput)
             .mapNoiseType(Fields.type, builder::type)
             .release(builder::build);
     }
 
     public FastNoise getGenerator(World world) {
         if (dummy) {
-            return new DummyGenerator(0F);
+            return new DummyGenerator(dummyOutput);
         }
         final FastNoise noise = new FastNoise(getSeed(world))
             .SetNoiseType(type)

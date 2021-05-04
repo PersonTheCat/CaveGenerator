@@ -75,6 +75,7 @@ class PresetCompat {
     private static final String START_HEIGHT = "startHeight";
     private static final String HEIGHT_VARIANCE = "heightVariance";
     private static final String WIDE = "wide";
+    private static final String CHANCE = "chance";
 
     // Other field names needed for performing updates.
     private static final String IMPORTS = PresetExpander.IMPORTS;
@@ -126,6 +127,7 @@ class PresetCompat {
     }
 
     private static void updateRegularValues(JsonObject json) {
+        updateInner(json);
         updateRoot(json);
         updateImports(json);
         updateCaveBlocks(json);
@@ -153,6 +155,12 @@ class PresetCompat {
             .remove(VANILLA_RAVINES)
             .remove(VANILLA_TUNNELS)
             .addAll(JarFiles.getDefaults());
+    }
+
+    private static void updateInner(JsonObject json) {
+        for (JsonObject inner : HjsonTools.getRegularObjects(json, PresetReader.INNER_KEY)) {
+            updateRegularValues(inner);
+        }
     }
 
     private static void updateRoot(JsonObject json) {
@@ -197,6 +205,7 @@ class PresetCompat {
         FieldHistory.withPath(OverrideSettings.Fields.caveBlocks)
             .toRange(MIN_HEIGHT, 0, MAX_HEIGHT, 50, CaveBlockSettings.Fields.height)
             .history(NOISE_3D, CaveBlockSettings.Fields.noise)
+            .history(CHANCE, CaveBlockSettings.Fields.integrity)
             .updateAll(json);
     }
 
@@ -204,6 +213,7 @@ class PresetCompat {
         FieldHistory.withPath(OverrideSettings.Fields.wallDecorators)
             .toRange(MIN_HEIGHT, 10, MAX_HEIGHT, 50, WallDecoratorSettings.Fields.height)
             .history(NOISE_3D, WallDecoratorSettings.Fields.noise)
+            .history(CHANCE, WallDecoratorSettings.Fields.integrity)
             .updateAll(json);
     }
 

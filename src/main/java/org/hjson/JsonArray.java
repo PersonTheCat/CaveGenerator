@@ -781,11 +781,29 @@ public class JsonArray extends JsonValue implements Iterable<JsonValue> {
    * @return the list of unused paths.
    */
   public List<String> getUnusedPaths() {
-    List<String> paths=new ArrayList<String>();
+    return this.getUsedPaths(false);
+  }
+
+  /**
+   * Generates a list of paths that <em>have</em> been accessed in-code.
+   * @return the list of unused paths.
+   */
+  public List<String> getUsedPaths() {
+    return this.getUsedPaths(true);
+  }
+
+  /**
+   * Generates a list of paths that either have or have not been accessed in-code.
+   *
+   * @param used whether the value should have been accessed.
+   * @return the list of unused paths.
+   */
+  public List<String> getUsedPaths(boolean used) {
+    final List<String> paths=new ArrayList<String>();
     int index=0;
     for (JsonValue v : this) {
       if (v.isObject()) {
-        for (String s : v.asObject().getUnusedPaths()) {
+        for (String s : v.asObject().getUsedPaths(used)) {
           paths.add("["+index+"]."+s);
         }
       }

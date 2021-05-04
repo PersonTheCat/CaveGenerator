@@ -25,7 +25,6 @@ public class ConfiguredWallDecorator {
 
     public boolean canGenerate(Random rand, int x, int y, int z, int chunkX, int chunkZ) {
         return y >= cfg.height.min && y <= cfg.height.max// Height bounds
-            && rand.nextDouble() <= cfg.chance // Probability
             && testNoise(x, y, z, chunkX, chunkZ); // Noise
     }
 

@@ -1,13 +1,14 @@
 package com.personthecat.cavegenerator.config;
 
-import com.personthecat.cavegenerator.CaveInit;
 import com.personthecat.cavegenerator.util.Calculator;
+import com.personthecat.cavegenerator.util.HjsonTools;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
 import java.io.File;
 import java.util.*;
+import java.util.regex.Pattern;
 
 import static com.personthecat.cavegenerator.util.HjsonTools.asOrToArray;
 import static com.personthecat.cavegenerator.util.HjsonTools.getArray;
@@ -15,7 +16,6 @@ import static com.personthecat.cavegenerator.util.HjsonTools.getObject;
 import static com.personthecat.cavegenerator.util.HjsonTools.getObjectOrNew;
 import static com.personthecat.cavegenerator.util.HjsonTools.setOrAdd;
 import static com.personthecat.cavegenerator.util.CommonMethods.empty;
-import static com.personthecat.cavegenerator.util.CommonMethods.find;
 import static com.personthecat.cavegenerator.util.CommonMethods.full;
 import static com.personthecat.cavegenerator.util.CommonMethods.runEx;
 import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
@@ -34,6 +34,9 @@ public class PresetExpander {
     /** The name of the implicit variable holding all of the default settings. */
     public static final String VANILLA = "VANILLA";
 
+    /** The keyword used for merging every field in an object. */
+    public static final Pattern MERGE_ALL = Pattern.compile("all", Pattern.CASE_INSENSITIVE);
+
     /**
      * Expands all of the variable definitions and imports into concrete data.
      *
@@ -41,10 +44,16 @@ public class PresetExpander {
      * @param definitions A map of all JSON objects in the imports folder.
      */
     public static void expandAll(Map<File, JsonObject> presets, Map<File, JsonObject> definitions) {
+        // Automatically copy variables to the root level in imports.
+        definitions.forEach((f, json) -> variablesToRoot(json));
+        // Replace inner references so that invalid keys do not get copied out.
+        definitions.forEach((f, json) -> { if (!json.has(IMPORTS)) expand(json); });
         // Enable imports to uniquely import each other. This is checked later.
         definitions.forEach((f, json) -> copyImports(definitions, json, true));
         // Expand any variables used inside of each import.
         definitions.forEach((f, json) -> expand(json));
+        // Strip unused variables so they don't cause issues later.
+        definitions.forEach((f, json) -> stripPrivateValues(definitions, json));
         // Copy all of the imports directly into each json.
         presets.forEach((f, json) -> copyImports(definitions, json, false));
         // Copy defaults.cave as VANILLA implicitly, if absent.
@@ -52,9 +61,92 @@ public class PresetExpander {
         // Expand the variables now inside of each json.
         presets.forEach((f, json) -> expandVariables(json));
         // Evaluate any arithmetic expressions in all presets.
-        presets.forEach((f, json) -> evaluateAll(json));
+        presets.forEach((f, json) -> calculateAll(json));
         // Delete all of the now unneeded imports and variables.
         presets.forEach((f, json) -> deleteUnused(json));
+    }
+
+    /**
+     * Copies all of the variable definitions in <code>root.variables</code> to the
+     * root level. This is used in import files to provide backward compatibility
+     * with regular presets while also enabling them to read variables from the root
+     * object.
+     *
+     * @param json The current JSON object being copied out of.
+     */
+    private static void variablesToRoot(JsonObject json) {
+        final JsonValue variables = json.get(VARIABLES);
+        if (variables != null) {
+            if (!variables.isObject()) {
+                throw runExF("\"{}\" is reserved for definitions and must be an object.", VARIABLES);
+            }
+            json.addAll(variables.asObject());
+        }
+    }
+
+    /**
+     * Copies all of the imports declared in the current preset directly into it.
+     * They will be stored inside of <code>root.variables</code>
+     *
+     * @param definitions A map of all JSON objects in the imports folder.
+     * @param json The current JSON object being copied into.
+     */
+    private static void copyImports(Map<File, JsonObject> definitions, JsonObject json, boolean root) {
+        final Set<JsonObject> imports = new HashSet<>();
+        // Copy by reference all of the required jsons into a set.
+        getArray(json, IMPORTS).ifPresent(arr -> {
+            for (JsonValue value : arr) {
+                if (!value.isString()) {
+                    throw runExF("Invalid data type in imports: {}", value.toString());
+                }
+                imports.add(ImportHelper.getRequiredImport(definitions, value.asString()));
+            }
+        });
+        // copy the contents of each import into variables.
+        final JsonObject variables = root ? json : getObjectOrNew(json, VARIABLES);
+        imports.forEach(variables::addAll);
+    }
+
+    /**
+     * Expands all of the variables in this object, using itself as a source.
+     *
+     * @param json The JSON object to be expanded.
+     */
+    private static void expand(JsonObject json) {
+        copyObject(json, json);
+        mergeObject(json, json);
+    }
+
+    /**
+     * Removes all imported variables and functions from an import file so that
+     * the file can be re-exported only with the symbols it started with.
+     *
+     * @param definitions A map of all JSON objects in the imports folder.
+     * @param json The JSON object to be stripped.
+     */
+    private static void stripPrivateValues(Map<File, JsonObject> definitions, JsonObject json) {
+        // Imported variables are implicitly private.
+        final JsonValue imports = json.get(IMPORTS);
+        if (imports != null) {
+            for (String exp : HjsonTools.toStringArray(HjsonTools.asOrToArray(imports))) {
+                for (String key : ImportHelper.getKeys(definitions, exp)) {
+                    json.remove(key);
+                }
+            }
+            json.remove(IMPORTS);
+        }
+        // Variables in the `variables` object are also private.
+        final JsonValue variables = json.get(VARIABLES);
+        if (variables != null) {
+            if (!variables.isObject()) {
+                throw runEx("<variables> must be an object");
+            }
+            for (JsonObject.Member variable : variables.asObject()) {
+                // This will have been copied to the root level.
+                json.remove(variable.getName());
+            }
+            json.remove(VARIABLES);
+        }
     }
 
     /**
@@ -95,90 +187,6 @@ public class PresetExpander {
             }
         }
         return empty();
-    }
-
-    /**
-     * Copies all of the imports declared in the current preset directly into it.
-     * They will be stored inside of <code>root.variables</code>
-     *
-     * @param definitions A map of all JSON objects in the imports folder.
-     * @param json The current JSON object being copied into.
-     */
-    private static void copyImports(Map<File, JsonObject> definitions, JsonObject json, boolean root) {
-        final Set<JsonObject> imports = new HashSet<>();
-        // Copy by reference all of the required jsons into a set.
-        getArray(json, IMPORTS).ifPresent(arr -> {
-            for (JsonValue value : arr) {
-                if (!value.isString()) {
-                    throw runExF("Invalid data type in imports: {}", value.toString());
-                }
-                imports.add(getRequiredImport(definitions, value.asString()));
-            }
-        });
-        // copy the contents of each import into variables.
-        final JsonObject variables = root ? json : getObjectOrNew(json, VARIABLES);
-        imports.forEach(variables::addAll);
-    }
-
-    /**
-     * Gets a JSON from the map by filename. A variable name may optionally be appended
-     * to the filename to indicate a specific variable to include from this JSON.
-     *
-     * <p>
-     * For example, you can write <code>defaults.cave::VANILLA</code> to import only
-     * the variable <code>VANILLA</code> from <code>defaults.cave</code>.
-     *
-     * In addition, users may append an <code>as</code> operator to rename whichever variable
-     * they are importing.
-     *
-     * For example, you can write <code>forest.cave::BIOME as FOREST_BIOME</code> to import
-     * <code>BIOME</code> from <code>forest.cave</code> renamed to <code>FOREST_BIOME</code>.
-     *
-     * If they are not importing a specific variable, they can instead use
-     * the <code>as</code> operator to import the entire file into a single variable.
-     *
-     * For example, you can write <code>forest.cave as FOREST</code> to import the entire
-     * object inside of <code>forest.cave</code> into a variable called <code>FOREST</code>.
-     * </p>
-     *
-     * @throws RuntimeException If the import does not exist.
-     * @throws NullPointerException If filename is null.
-     *
-     * @param definitions A map of all JSON objects in the imports folder.
-     * @param filename The name of the file (w/wo variable) to get from definitions.
-     *
-     * @return The located JsonObject, if present.
-     */
-    private static JsonObject getRequiredImport(Map<File, JsonObject> definitions, String filename) {
-        Objects.requireNonNull(filename, "Imports may not be null.");
-        final Import helper = new Import(filename);
-        // Get the JSON object by filename.
-        final JsonObject json = helper.locate(definitions)
-            .orElseThrow(() -> runExF("Use of undeclared import: {}", filename));
-        // No specific variable && AS statement -> name the object itself.
-        if (helper.as.isPresent() && !helper.variable.isPresent()) {
-            return new JsonObject().add(helper.as.get(), json);
-        } else if (helper.variable.isPresent()) {
-            final String key = helper.variable.get();
-            // Make sure the variable exists, then copy it only.
-           if (!json.has(key)) {
-               throw runExF("Import refers to unknown key: {}", key);
-           }
-           final String name = helper.as.orElse(key);
-           return new JsonObject().add(name, json.get(key));
-        }
-        // The user wants to include the entire file.
-        return json;
-    }
-
-    /**
-     * Expands all of the variables in this object, using itself as a source.
-     *
-     * @param json The JSON object to be expanded.
-     */
-    private static void expand(JsonObject json) {
-        copyObject(json, json);
-        mergeObject(json, json);
     }
 
     /**
@@ -329,11 +337,10 @@ public class PresetExpander {
             if (!ref.isObject()) {
                 throw runExF("Only objects can be merged: {}", key);
             }
-            final JsonArray arr = asOrToArray(value);
-            if (arr.contains("ALL")) {
+            if (value.isString() && MERGE_ALL.matcher(value.asString()).matches()) {
                 to.addAll(ref.asObject());
             } else {
-                addAllReferences(ref.asObject(), to, arr);
+                addAllReferences(ref.asObject(), to, asOrToArray(value));
             }
             // Remove the original key which has now been expanded.
             to.remove(key);
@@ -380,7 +387,7 @@ public class PresetExpander {
      *
      * @param json An object which may or may not contain expressions.
      */
-    private static void evaluateAll(JsonObject json) {
+    public static void calculateAll(JsonObject json) {
         final JsonObject clone = new JsonObject();
         for (JsonObject.Member member : json) {
             final String name = member.getName();
@@ -392,9 +399,9 @@ public class PresetExpander {
                     continue;
                 }
             } else if (value.isObject()) {
-                evaluateAll(value.asObject());
+                calculateAll(value.asObject());
             } else if (value.isArray()) {
-                evaluateAll(value.asArray());
+                calculateAll(value.asArray());
             }
             clone.add(name, value);
         }
@@ -406,7 +413,7 @@ public class PresetExpander {
      *
      * @param json An array which may or may not contain expressions.
      */
-    private static void evaluateAll(JsonArray json) {
+    public static void calculateAll(JsonArray json) {
         final JsonArray clone = new JsonArray();
         for (JsonValue value : json) {
             if (value.isString()) {
@@ -416,9 +423,9 @@ public class PresetExpander {
                     continue;
                 }
             } else if (value.isObject()) {
-                evaluateAll(value.asObject());
+                calculateAll(value.asObject());
             } else if (value.isArray()) {
-                evaluateAll(value.asArray());
+                calculateAll(value.asArray());
             }
             clone.add(value);
         }
@@ -455,35 +462,5 @@ public class PresetExpander {
     private static void deleteUnused(JsonObject json) {
         json.remove(IMPORTS);
         json.remove(VARIABLES);
-    }
-
-    /** Splits an import statement into its tokens. */
-    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private static class Import {
-        final String filename;
-        final Optional<String> variable;
-        final Optional<String> as;
-
-        Import(String statement) {
-            final String[] splitAs = statement.split("\\s*(as|AS|As)\\s*");
-            final String[] splitVar = splitAs[0].split("\\s*::\\s*");
-            filename = splitVar[0];
-            variable = splitVar.length > 1 ? full(splitVar[1]) : empty();
-            as = splitAs.length > 1 ? full(splitAs[1]) : empty();
-        }
-
-        Optional<JsonObject> locate(Map<File, JsonObject> defs) {
-            final JsonObject root = defs.get(new File(CaveInit.IMPORT_DIR, this.filename));
-            if (root != null) {
-                return full(root);
-            }
-            return find(defs.entrySet(), e -> this.matches(e.getKey()))
-                .map(Map.Entry::getValue);
-        }
-
-        boolean matches(File f) {
-            // Users can essentially be as specific as they like.
-            return f.getPath().replace("\\", "/").endsWith(filename);
-        }
     }
 }

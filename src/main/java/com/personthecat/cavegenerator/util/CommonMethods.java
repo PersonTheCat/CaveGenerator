@@ -9,7 +9,6 @@ import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import net.minecraft.block.Block;
-import net.minecraft.block.properties.IProperty;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
 import net.minecraft.util.ResourceLocation;
@@ -109,7 +108,11 @@ public class CommonMethods {
 
     /** Determines the extension of the input `file`. */
     public static String extension(final File file) {
-        final String[] split = file.getName().split(Pattern.quote("."));
+        return extension(file.getName());
+    }
+
+    public static String extension(final String filename) {
+        final String[] split = filename.split(Pattern.quote("."));
         return split.length == 1 ? "" : split[split.length - 1];
     }
 
@@ -202,7 +205,7 @@ public class CommonMethods {
 
         // Ensure the number of segments to be valid.
         if (!(split.length > 0 && split.length < 4)) {
-            throw runExF("Syntax error: could not determine blockstate from {}", registryName);
+            throw runExF("Syntax error: could not determine block state from {}", registryName);
         }
 
         // Use the end section to determine the format.
@@ -235,10 +238,5 @@ public class CommonMethods {
             return full(block.getStateFromMeta(meta));
         }
         return empty();
-    }
-
-    /** Shorthand for retrieving state variants directly from a block. */
-    public static <T extends Comparable<T>, V extends T> IBlockState getVariant(Block block, IProperty<T> property, V value) {
-        return block.getDefaultState().withProperty(property, value);
     }
 }

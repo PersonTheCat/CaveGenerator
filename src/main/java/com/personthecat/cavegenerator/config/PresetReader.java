@@ -1,6 +1,8 @@
 package com.personthecat.cavegenerator.config;
 
 import com.personthecat.cavegenerator.CaveInit;
+import com.personthecat.cavegenerator.util.DualHashMap;
+import com.personthecat.cavegenerator.util.HjsonTools;
 import lombok.extern.log4j.Log4j2;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
@@ -26,6 +28,9 @@ import static com.personthecat.cavegenerator.io.SafeFileIO.listFiles;
  */
 @Log4j2
 public class PresetReader {
+
+    /** The key where inner presets are stored recursively. */
+    public static final String INNER_KEY = "inner";
 
     /**
      * Reads a series of {@link CavePreset} objects from a directory.
@@ -79,10 +84,28 @@ public class PresetReader {
     /** Converts a map of (file -> json) to (filename -> POJO)  */
     private static Map<String, CavePreset> toSettings(Map<File, JsonObject> jsons) {
         final Map<String, CavePreset> settings = new HashMap<>();
-        for (Map.Entry<File, JsonObject> entry : jsons.entrySet()) {
-            settings.put(noExtension(entry.getKey()), CavePreset.from(entry.getValue()));
-        }
+        extractInner(jsons).forEach((name, json) -> settings.put(name, CavePreset.from(json)));
         return settings;
+    }
+
+    private static Map<String, JsonObject> extractInner(Map<File, JsonObject> jsons) {
+        final Map<String, JsonObject> extracted = new HashMap<>();
+        jsons.forEach((file, json) -> extractRecursive(extracted, noExtension(file), json));
+        return extracted;
+    }
+
+    private static void extractRecursive(Map<String, JsonObject> data, String name, JsonObject parent) {
+        final List<JsonObject> inner = HjsonTools.getRegularObjects(parent, INNER_KEY);
+        for (int i = 0; i < inner.size(); i++) {
+            final JsonObject child = inner.get(i);
+            final JsonObject clone = new JsonObject().addAll(parent).remove(INNER_KEY);
+            for (JsonObject.Member member : child) {
+                clone.set(member.getName(), member.getValue());
+            }
+            final String innerName = f("{}[{}]", name, i);
+            extractRecursive(data, innerName, clone);
+        }
+        data.put(name, parent);
     }
 
     /**

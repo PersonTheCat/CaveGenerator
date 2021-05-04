@@ -25,10 +25,12 @@
   # Indicates that a feature should only spawn
   # in a specific biome type.
   OCEAN_BIOMES: { types: [ "OCEAN" ] }
-  WATER_BIOMES: { types: [ "OCEAN", "RIVER" ] }
+  WET_BIOMES: { types: [ "OCEAN", "RIVER", "SWAMP" ] }
   RARE_BIOMES: { types: [ "RARE" ] }
   HILL_BIOMES: { types: [ "HILLS" ] }
   FOREST_BIOMES: { types: [ "FOREST" ] }
   COLD_BIOMES: { types: [ "COLD" ] }
   HOT_BIOMES: { types: [ "HOT" ] }
+  SNOWY_BIOMES: { types: [ "SNOWY" ] }
+  SANDY_BIOMES: { types: [ "SANDY" ] }
 }

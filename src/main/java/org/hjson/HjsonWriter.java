@@ -65,7 +65,7 @@ class HjsonWriter {
   }
 
   public HjsonWriter(HjsonOptions options, boolean outputComments) {
-    this(options.setOutputComments(outputComments));
+    this((options==null?new HjsonOptions():options).setOutputComments(outputComments));
   }
 
   private void nl(Writer tw, int level) throws IOException {
@@ -163,18 +163,20 @@ class HjsonWriter {
       }
 
       handleContainerLines(tw, obj.isCondensed(), index, level, obj.getLineLength());
-      tw.write(escapeName(pair.getName(), forceQuoteObject(obj)));
+      tw.write(escapeName(pair.getName()));
       tw.write(":");
       boolean forceQuoteValue = forceQuoteValue(pair.getValue(), obj, outputComments);
       save(pair.getValue(), tw, level+1, " ", false, forceQuoteValue);
       index++;
     }
+    boolean forceNl=false;
     // Put interior comments at the bottom.
     if (outputComments && obj.hasInteriorComment()) {
       writeInteriorComment(tw, obj, level);
+      forceNl=true;
     }
     // We've reached the end of the container. Close it off.
-    if (!emitBraces) closeContainer(tw, obj.isCondensed(), obj.size(), level, '}');
+    if (!emitBraces) closeContainer(tw, forceNl, obj.isCondensed(), obj.size(), level, '}');
   }
 
   private void writeArray(JsonArray arr, Writer tw, int level, String separator, boolean noIndent) throws IOException {
@@ -197,12 +199,14 @@ class HjsonWriter {
       boolean forceQuoteArray = forceQuoteArray(element, arr, outputComments);
       save(element, tw, level+1, "", true, forceQuoteArray);
     }
+    boolean forceNl=false;
     // Put the interior comments at the bottom.
     if (outputComments && arr.hasInteriorComment()) {
       writeInteriorComment(tw, arr, level);
+      forceNl=true;
     }
     // We've reached the end of the container. Close it off.
-    closeContainer(tw, arr.isCondensed(), n, level, ']');
+    closeContainer(tw, forceNl, arr.isCondensed(), n, level, ']');
   }
 
   private boolean emitBraces(JsonObject obj, int level) {
@@ -258,16 +262,18 @@ class HjsonWriter {
     }
   }
 
-  private void closeContainer(Writer tw, boolean compact, int size, int level, char closeWith) throws IOException {
-    if (size>0) {
+  private void closeContainer(Writer tw, boolean forceNl, boolean compact, int size, int level, char closeWith) throws IOException {
+    if (forceNl) {
+      nl(tw, level);
+    } else if (size>0) {
       if (compact && allowCondense && allowMultiVal) tw.write(' ');
       else nl(tw, level);
     }
     tw.write(closeWith);
   }
 
-  private static String escapeName(String name, boolean force) {
-    if (force || name.length()==0 || NEEDS_ESCAPE_NAME.matcher(name).find())
+  private static String escapeName(String name) {
+    if (name.length()==0 || NEEDS_ESCAPE_NAME.matcher(name).find())
       return "\""+JsonWriter.escapeString(name)+"\"";
     else
       return name;
@@ -373,10 +379,6 @@ class HjsonWriter {
   // Technically different methods.
   private static boolean forceQuoteValue(JsonValue value, JsonObject object, boolean outputComments) {
     return value.isString() && (object.isCondensed() || object.getLineLength()>1 || (outputComments && value.hasEOLComment()));
-  }
-
-  private static boolean forceQuoteObject(JsonObject object) {
-    return object.isCondensed() || object.getLineLength()>1;
   }
 
   private static boolean needsQuotes(char c) {

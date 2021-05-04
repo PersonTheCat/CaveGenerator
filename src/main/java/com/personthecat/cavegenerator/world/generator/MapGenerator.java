@@ -38,15 +38,15 @@ public abstract class MapGenerator extends WorldCarver {
 
     @Override
     public final void generate(PrimerContext ctx) {
-        if (conditions.dimensions.test(ctx.world.provider.getDimension())) {
-            if (conditions.hasBiomes) {
-                if (ctx.biomes.anyMatches(conditions.biomes)) {
+        if (this.conditions.dimensions.test(ctx.world.provider.getDimension())) {
+            if (this.conditions.hasBiomes) {
+                if (ctx.biomes.anyMatches(this.conditions.biomes)) {
                     this.fillInvalidChunks(ctx.biomes);
                     this.generateChecked(ctx);
                     this.invalidChunks.clear();
                 }
-            } else if (conditions.hasRegion) {
-                if (conditions.region.GetBoolean(ctx.offsetX, ctx.offsetZ)) {
+            } else if (this.conditions.hasRegion) {
+                if (this.conditions.region.GetBoolean(ctx.offsetX, ctx.offsetZ)) {
                     this.fillInvalidChunks(ctx.chunkX, ctx.chunkZ);
                     this.generateChecked(ctx);
                     this.invalidChunks.clear();
@@ -59,7 +59,7 @@ public abstract class MapGenerator extends WorldCarver {
 
     private void fillInvalidChunks(BiomeSearch biomes) {
         for (BiomeSearch.Data d : biomes.surrounding.get()) {
-            if (!(conditions.biomes.test(d.biome) && conditions.region.GetBoolean(d.centerX, d.centerZ))) {
+            if (!(this.conditions.biomes.test(d.biome) && this.conditions.region.GetBoolean(d.centerX, d.centerZ))) {
                 this.invalidChunks.add(new BlockPos(d.centerX, 0, d.centerZ));
             }
         }
@@ -71,7 +71,7 @@ public abstract class MapGenerator extends WorldCarver {
             for (int cZ = chunkZ - range; cZ < chunkZ + range; cZ++) {
                 final int centerX = cX * 16 + 8;
                 final int centerZ = cZ * 16 + 8;
-                if (!conditions.region.GetBoolean(centerX, centerZ)) {
+                if (!this.conditions.region.GetBoolean(centerX, centerZ)) {
                     this.invalidChunks.add(new BlockPos(centerX, 0, centerZ));
                 }
             }
@@ -100,7 +100,7 @@ public abstract class MapGenerator extends WorldCarver {
     protected double getNearestBorder(int x, int z) {
         double shortestDistance = Double.MAX_VALUE;
 
-        for (BlockPos invalid : invalidChunks) {
+        for (BlockPos invalid : this.invalidChunks) {
             final double sum = Math.pow(x - invalid.getX(), 2) + Math.pow(z - invalid.getZ(), 2);
             final double distance = Math.sqrt(sum);
 
@@ -109,7 +109,7 @@ public abstract class MapGenerator extends WorldCarver {
         return shortestDistance;
     }
 
-    protected final void generateSphere(PrimerData data, Random rand, double x, double y, double z,
+    protected final void generateSphere(PrimerData data, World world, Random rand, double x, double y, double z,
             double rXZ, double rY, double roXZ, double roY) {
         final int miX = limitXZ(MathHelper.floor(x - roXZ) - data.absX - 1);
         final int maX = limitXZ(MathHelper.floor(x + roXZ) - data.absX + 1);
@@ -131,8 +131,11 @@ public abstract class MapGenerator extends WorldCarver {
         if (!(this.shouldTestForWater(miY, maY) && this.testForWater(data.p, this.sphere.inner))) {
             this.generateShell(data, rand, this.sphere.shell, (int) y);
             this.replaceSphere(data, rand, this.sphere.inner);
-            if (this.hasLocalDecorators()) {
+            if (this.hasWallDecorators()) {
                 this.decorateSphere(data, rand, this.sphere.inner);
+            }
+            if (this.hasPonds()) {
+                this.generatePond(this.sphere.inner, rand, world, data.p, data.chunkX, data.chunkZ);
             }
         }
     }
@@ -149,11 +152,11 @@ public abstract class MapGenerator extends WorldCarver {
 
     /** Provides reusable instructions on where to place and decorate blocks. */
     protected abstract void fillSphere(SphereData sphere, double cX, double cY, double cZ, int absX, int absZ,
-            double rXZ, double rY, int miX, int maX, int miY, int maY, int miZ, int maZ);
+        double rXZ, double rY, int miX, int maX, int miY, int maY, int miZ, int maZ);
 
     /** Variant of #fillSphere which includes an outer shell. This is more expensive. */
     protected abstract void fillDouble(SphereData sphere, double cX, double cY, double cZ, int absX, int absZ,
-            double rXZ, double rY, double roXZ, double roY, int miX, int maX, int miY, int maY, int miZ, int maZ);
+        double rXZ, double rY, double roXZ, double roY, int miX, int maX, int miY, int maY, int miZ, int maZ);
 
     /** Calculates the maximum distance for this tunnel, if needed. */
     protected int getDistance(Random rand, int input) {

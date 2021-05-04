@@ -5,14 +5,11 @@ import com.personthecat.cavegenerator.util.HjsonMapper;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
-import lombok.RequiredArgsConstructor;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.block.state.IBlockState;
-import net.minecraft.init.Blocks;
 import org.hjson.JsonObject;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -33,7 +30,7 @@ public class CaveBlockSettings {
     List<IBlockState> states;
 
     /** 0-1 spawn chance. */
-    @Default double chance = 1.0;
+    @Default double integrity = 1.0;
 
     /** Height bounds for this decorator. */
     @Default Range height = Range.of(0, 50);
@@ -50,7 +47,7 @@ public class CaveBlockSettings {
         return new HjsonMapper(json)
             .mapRequiredStateList(Fields.states, FEATURE_NAME, builder::states)
             .mapObject(Fields.noise, o -> copyNoise(o, builder))
-            .mapFloat(Fields.chance, builder::chance)
+            .mapFloat(Fields.integrity, builder::integrity)
             .mapRange(Fields.height, builder::height)
             .release(builder::build);
     }

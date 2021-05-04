@@ -2,7 +2,7 @@ package com.personthecat.cavegenerator.world.generator;
 
 import com.personthecat.cavegenerator.data.ClusterSettings;
 import com.personthecat.cavegenerator.model.Conditions;
-import com.personthecat.cavegenerator.util.IdentityMultiValueMap;
+import com.personthecat.cavegenerator.util.MultiValueIdentityMap;
 import com.personthecat.cavegenerator.util.XoRoShiRo;
 import com.personthecat.cavegenerator.world.RandomChunkSelector;
 import net.minecraft.block.state.IBlockState;
@@ -19,7 +19,7 @@ import java.util.Random;
 
 public class ClusterGenerator extends ListGenerator<ClusterSettings> {
 
-    private final IdentityMultiValueMap<Conditions, ClusterInfo> clusterMap = new IdentityMultiValueMap<>();
+    private final MultiValueIdentityMap<Conditions, ClusterInfo> clusterMap = new MultiValueIdentityMap<>();
     private final RandomChunkSelector selector;
 
     public ClusterGenerator(List<ClusterSettings> cfg, World world) {
@@ -38,9 +38,9 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
     protected void generateChecked(PrimerContext ctx) {
         // Always reset the seed for clusters.
         ctx.rand.setSeed(ctx.world.getSeed());
-        clusterMap.clear();
-        locateFinalClusters(ctx.world, ctx.rand, ctx.chunkX, ctx.chunkZ);
-        generateClusters(ctx.primer, ctx.chunkX, ctx.chunkZ);
+        this.clusterMap.clear();
+        this.locateFinalClusters(ctx.world, ctx.rand, ctx.chunkX, ctx.chunkZ);
+        this.generateClusters(ctx.primer, ctx.rand, ctx.chunkX, ctx.chunkZ);
     }
 
     private void locateFinalClusters(World world, Random rand, int chunkX, int chunkZ) {
@@ -71,7 +71,7 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
                                 final int radY = cfg.radiusY.rand(localRand) - (cfg.radiusY.diff() / 2);
                                 final int radZ = cfg.radiusZ.rand(localRand) - (cfg.radiusZ.diff() / 2);
                                 // Add the new information to be returned.
-                                clusterMap.add(conditions, new ClusterInfo(cfg, state, id, origin, radX, radY, radZ));
+                                this.clusterMap.add(conditions, new ClusterInfo(cfg, state, id, origin, radX, radY, radZ));
                             }
                         }
                     }
@@ -91,29 +91,29 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
         return provider.getBiomesForGeneration(null, x / 4, z / 4, 1, 1)[0];
     }
 
-    private void generateClusters(ChunkPrimer primer, int chunkX, int chunkZ) {
+    private void generateClusters(ChunkPrimer primer, Random rand, int chunkX, int chunkZ) {
         for (int x = 0; x < 16; x++) {
             final int actualX = x + (chunkX * 16);
             for (int z = 0; z < 16; z++) {
                 final int actualZ = z + (chunkZ * 16);
-                spawnColumn(primer, x, z, actualX, actualZ);
+                this.spawnColumn(primer, rand, x, z, actualX, actualZ);
             }
         }
     }
 
-    private void spawnColumn(ChunkPrimer primer, int x, int z, int actualX, int actualZ) {
+    private void spawnColumn(ChunkPrimer primer, Random rand, int x, int z, int actualX, int actualZ) {
         for (Map.Entry<Conditions, List<ClusterInfo>> entry : clusterMap.entrySet()) {
             final Conditions conditions = entry.getKey();
 
             for (int y : conditions.getColumn(actualX, actualZ)) {
                 if (conditions.noise.GetBoolean(actualX, y, actualZ)) {
-                    spawnCluster(entry.getValue(), primer, x, y, z, actualX, actualZ);
+                    spawnCluster(entry.getValue(), primer, rand, x, y, z, actualX, actualZ);
                 }
             }
         }
     }
 
-    private static void spawnCluster(List<ClusterInfo> clusters, ChunkPrimer primer, int x, int y, int z, int actualX, int actualZ) {
+    private static void spawnCluster(List<ClusterInfo> clusters, ChunkPrimer primer, Random rand, int x, int y, int z, int actualX, int actualZ) {
         final IBlockState state = primer.getBlockState(x, y, z);
         for (ClusterInfo info : clusters) {
             if (info.cluster.canSpawn(state)) {
@@ -127,8 +127,11 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
 
                 // Ensure that we're within the sphere. Note: wall blocks could be && sum >= 0.9
                 if (distX2 / info.radX2 + distY2 / info.radY2 + distZ2 / info.radZ2 <= 1) {
-                    primer.setBlockState(x, y, z, info.state);
-                    return; // Already placed. Don't continue.
+                    final double chance = info.cluster.integrity;
+                    if (chance == 1.0 || rand.nextFloat() <= chance) {
+                        primer.setBlockState(x, y, z, info.state);
+                        return; // Already placed. Don't continue.
+                    }
                 }
             }
         }

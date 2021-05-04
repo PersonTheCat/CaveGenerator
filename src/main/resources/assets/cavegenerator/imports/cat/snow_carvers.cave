@@ -1,0 +1,101 @@
+{
+  imports: [
+    conditions.cave::SNOWY_BIOMES
+    cat/common.cave::half_height_pct()
+  ]
+  variables: {
+    # Noise is shared between the upper
+    # burrows and the ice aquifers. This
+    # forces most aquifers to spawn
+    # above the upper burrows.
+    UPPER_OFFSET_SEED: 2249
+    # A reusable function for creating
+    # snow patches on the ground. This
+    # lets us taper the snow off as it
+    # goes deeper underground.
+    snow_floor():{
+      states: snow
+      directions: down
+      height: $half_height_pct(@1, @2)
+      integrity: @3
+    }
+  }
+  wallDecorators: [
+    $snow_floor(0.55, 1.2, 1.0)
+    $snow_floor(0.475, 0.55, 0.75)
+    $snow_floor(0.45, 0.475, 0.45)
+  ]
+  tunnels: [
+    {
+      count: 4
+      chance: 0.7
+      systemChance: 0.5
+      systemDensity: 3
+      reseedBranches: false
+    }
+  ]
+  burrows: [
+    {
+      height: $half_height_pct(0.2, 1.3)
+      offset: {
+        range: $half_height_pct(0.3, 1.2)
+        frequency: 0.006
+        seed: $UPPER_OFFSET_SEED
+        cache: true
+      }
+    }
+    {
+      height: $half_height_pct(0.2, 0.6)
+      # Doubling the target doubles the
+      # width of these caves to accommodate
+      # the higher map frequency.
+      target: 0.2
+      # Frequency is doubled in the lower
+      # burrows (0.01 vs 0.005).
+      map: {
+        perturb: true
+        perturbAmp: 0.1
+        perturbFreq: 2.5
+        frequency: 0.01
+      }
+      offset: {
+        range: $half_height_pct(0.3, 0.5)
+        frequency: 0.01
+      }
+    }
+  ]
+  caverns: [
+    # Ice aquifers.
+    {
+      # Let the actual height be determined
+      # by ceiling and floor noise.
+      height: $half_height_pct(0.0, 1.4)
+      generators: {
+        threshold: [ -1, -0.4 ]
+        frequency: 0.01
+      }
+      ceiling: {
+        range: [ -20, -10 ]
+      }
+      # This floor has the exact same shape
+      # of the upper burrows, shifted up.
+      floor: {
+        range: $half_height_pct(0.5, 1.4)
+        frequency: 0.006
+        seed: $UPPER_OFFSET_SEED
+        cache: true
+      }
+      caveBlocks: {
+        states: packed_ice
+        height: $half_height_pct(0.5, 0.9)
+      }
+      # Don't let the snow spawn under ice.
+      wallDecorators: $snow_floor(0.92, 1.2, 1.0)
+    }
+    # Encourages more lava openings near
+    # the bottom of the world.
+    {
+      height: $half_height_pct(0.0, 0.4)
+    }
+  ]
+}

@@ -9,11 +9,11 @@ import static com.personthecat.cavegenerator.util.CommonMethods.runExF;
 /** An expression evaluator used for generating numeric field data in presets. */
 public class Calculator {
 
-    /** A pattern used for testing whether a string is or is not a supported expression. */
-    private static final Pattern EXPRESSION_PATTERN = Pattern.compile(".*\\d+\\.?\\s*\\)*\\s*[()*/^+-]\\s*\\(*\\s*\\d+.*");
+    /** Determines whether a string contains numbers and operations. */
+    private static final Pattern IS_EXP = Pattern.compile("[\\d.]*\\s*([-+/*()^]\\s*[\\d.]*\\s*)*");
 
     public static boolean isExpression(String exp) {
-        return EXPRESSION_PATTERN.matcher(exp).find();
+        return IS_EXP.matcher(exp).matches();
     }
 
     public static double evaluate(String exp) {
@@ -28,12 +28,15 @@ public class Calculator {
         final char[] tokens = exp.toCharArray();
         final Stack<Double> values = new Stack<>();
         final Stack<Character> ops = new Stack<>();
+        boolean lastIsNumber = false;
+        int sign = 1;
 
         for (int i = 0; i < tokens.length; i++) {
             final char token = tokens[i];
             if (token == ' ') continue;
+            final boolean number = isNumeric(token);
 
-            if (isNumeric(token)) {
+            if (number) {
                 final StringBuilder buffer = new StringBuilder();
 
                 while(i < tokens.length && isNumeric(tokens[i])) {
@@ -43,9 +46,13 @@ public class Calculator {
                     }
                     buffer.append(c);
                 }
-                values.push(Double.parseDouble(buffer.toString()));
+                values.push(sign * Double.parseDouble(buffer.toString()));
+                sign = 1;
                 i--;
             } else if (token == '(') {
+                if (lastIsNumber) {
+                    ops.push('*');
+                }
                 ops.push(token);
             } else if (token == ')') {
                 while (ops.peek() != '(') {
@@ -53,11 +60,20 @@ public class Calculator {
                 }
                 ops.pop();
             } else if (isOperator(token)) {
+                if (!lastIsNumber) {
+                    if (token == '-') {
+                        sign = -sign;
+                        continue;
+                    } else if (token == '+') {
+                        continue;
+                    }
+                }
                 while (!ops.isEmpty() && hasPrecedence(token, ops.peek())) {
                     values.push(applyOp(ops.pop(), values.pop(), values.pop()));
                 }
                 ops.push(token);
             }
+            lastIsNumber = number;
         }
         while (!ops.isEmpty()) {
             values.push(applyOp(ops.pop(), values.pop(), values.pop()));

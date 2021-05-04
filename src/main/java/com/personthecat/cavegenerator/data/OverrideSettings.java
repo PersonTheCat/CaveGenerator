@@ -6,7 +6,6 @@ import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.util.HjsonMapper;
 import com.personthecat.cavegenerator.util.HjsonTools;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
@@ -70,6 +69,9 @@ public class OverrideSettings {
     /** A list of blocks to replace the walls of this carver with. */
     @Default Optional<List<WallDecoratorSettings>> wallDecorators = empty();
 
+    /** A variant of wall decorators which can spawn multiple levels deep in the ground only. */
+    @Default Optional<List<PondSettings>> ponds = empty();
+
     /** Variant of wall decorators which can spawn multiple levels deep without directionality. */
     @Default Optional<ShellSettings> shell = empty();
 
@@ -97,6 +99,7 @@ public class OverrideSettings {
             .mapBool(Fields.replaceDecorators, b -> builder.replaceDecorators(full(b)))
             .mapArray(Fields.caveBlocks, CaveBlockSettings::from, l -> builder.caveBlocks(full(l)))
             .mapArray(Fields.wallDecorators, WallDecoratorSettings::from, l -> builder.wallDecorators(full(l)))
+            .mapArray(Fields.ponds, PondSettings::from, l -> builder.ponds(full(l)))
             .mapObject(Fields.shell, s -> builder.shell(full(ShellSettings.from(s))))
             .mapObject(Fields.branches, b -> builder.branches(full(TunnelSettings.from(b))))
             .mapObject(Fields.rooms, r -> builder.rooms(full(RoomSettings.from(r))))
@@ -122,6 +125,7 @@ public class OverrideSettings {
         this.replaceDecorators.ifPresent(builder::replaceDecorators);
         this.caveBlocks.ifPresent(builder::caveBlocks);
         this.wallDecorators.ifPresent(builder::wallDecorators);
+        this.ponds.ifPresent(builder::ponds);
         this.shell.ifPresent(builder::shell);
         return builder;
     }
@@ -151,6 +155,8 @@ public class OverrideSettings {
             .forEach(json, j -> addAll(decorators, j, WallDecoratorSettings.Fields.states));
         FieldHistory.withPath(ArrayUtils.add(path, DecoratorSettings.Fields.caveBlocks))
             .forEach(json, j -> addAll(decorators, j, CaveBlockSettings.Fields.states));
+        FieldHistory.withPath(ArrayUtils.add(path, DecoratorSettings.Fields.ponds))
+            .forEach(json, j -> addAll(decorators, j, PondSettings.Fields.states));
         FieldHistory.withPath(ArrayUtils.addAll(path, DecoratorSettings.Fields.shell, ShellSettings.Fields.decorators))
             .forEach(json, j -> addAll(decorators, j, ShellSettings.Decorator.Fields.states));
     }

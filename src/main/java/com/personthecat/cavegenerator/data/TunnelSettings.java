@@ -90,11 +90,24 @@ public class TunnelSettings {
     /** The 1/x chance of tunnel segments being skipped. */
     @Default int resolution = 4;
 
+    /** A constant seed to use for these tunnels. */
+    @Default Optional<Long> seed = empty();
+
+    /** Whether to generate a fresh seed for tunnel branches. */
+    @Default boolean reseedBranches = true;
+
+    /** Whether to test for water before spawning to avoid water walls. */
+    @Default boolean testForWater = true;
+
     public static TunnelSettings from(JsonObject json, OverrideSettings overrides) {
         final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();
         final DecoratorSettings decorators = overrides.apply(DEFAULT_DECORATORS.toBuilder()).build();
         final TunnelSettingsBuilder builder = overrides.apply(builder());
         return copyInto(json, builder.conditions(conditions).decorators(decorators));
+    }
+
+    public static TunnelSettings from(JsonObject json, ConditionSettings conditions, DecoratorSettings decorators) {
+        return copyInto(json, builder().conditions(conditions).decorators(decorators));
     }
 
     public static TunnelSettings from(JsonObject json) {
@@ -123,6 +136,9 @@ public class TunnelSettings {
             .mapInt(Fields.distance, builder::distance)
             .mapInt(Fields.count, builder::count)
             .mapInt(Fields.resolution, builder::resolution)
+            .mapInt(Fields.seed, i -> builder.seed(full((long) i)))
+            .mapBool(Fields.reseedBranches, builder::reseedBranches)
+            .mapBool(Fields.testForWater, builder::testForWater)
             .release(builder::build);
     }
 }

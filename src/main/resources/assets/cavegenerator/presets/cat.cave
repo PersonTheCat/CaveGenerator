@@ -1,0 +1,92 @@
+{
+  imports: [
+    cat/generic_carvers.cave::tunnels      as GENERIC_TUNNELS
+    cat/generic_carvers.cave::ravines      as GENERIC_RAVINES
+    cat/generic_carvers.cave::caverns      as GENERIC_CAVERNS
+    cat/generic_carvers.cave::burrows      as GENERIC_BURROWS
+    cat/generic_features.cave::stalactites as GENERIC_STALACTITES
+    cat/maze.cave::tunnels                 as MAZE_TUNNELS
+    cat/water_decorators.cave              as WATER_DECORATORS
+    cat/snow_carvers.cave                  as SNOW_CARVERS
+    cat/snow_features.cave                 as SNOW_FEATURES
+    cat/common.cave                        :: DECORATED_BIOMES
+    conditions.cave                        :: SNOWY_BIOMES
+    conditions.cave                        :: OCEAN_BIOMES
+    defaults.cave::caveBlocks              as LAVA_CAVE_BLOCK
+  ]
+  enabled: true
+  inner: [
+    {
+      # Copy snow_carvers and snow_features
+      # into this inner preset.
+      # Todo: merge everything or merge nothing.
+      $SNOW_CARVERS: ALL
+      $SNOW_FEATURES: ALL
+      biomes: $SNOWY_BIOMES
+      ravines: [
+        $GENERIC_RAVINES
+      ]
+    }
+    {
+      # Todo: sandy features here
+    }
+    {
+      # Todo: underground forest in mushroom islands?
+    }
+    {
+      # Todo: leafy features in jungles and roofed forest
+    }
+    {
+      # Todo: large caverns in mountain biomes
+    }
+    {
+      # Generic features with water-themed
+      # decorators in ocean biomes.
+      $WATER_DECORATORS: ALL
+      biomes: $OCEAN_BIOMES
+      # Todo: find a clean way to set testForWater: false
+      # for both of these features.
+      tunnels: [
+        $GENERIC_TUNNELS
+      ]
+      ravines: [
+        $GENERIC_RAVINES
+        $GENERIC_RAVINES
+      ]
+      caverns: [
+        $GENERIC_CAVERNS
+      ]
+      burrows: [
+        $GENERIC_BURROWS
+      ]
+    }
+    {
+      # Spawn the generic tunnels in every
+      # other biome without applying those
+      # decorations elsewhere.
+      blacklistBiomes: true
+      biomes: $DECORATED_BIOMES
+      tunnels: [
+        $GENERIC_TUNNELS
+        $MAZE_TUNNELS
+      ]
+      ravines: [
+        $GENERIC_RAVINES
+      ]
+      caverns: [
+        $GENERIC_CAVERNS
+      ]
+      burrows: [
+        $GENERIC_BURROWS
+      ]
+      stalactites: [
+        $GENERIC_STALACTITES
+      ]
+    }
+  ]
+  # All of these features should be spawned
+  # in all of the inner presets.
+  caveBlocks: [
+    $LAVA_CAVE_BLOCK
+  ]
+}

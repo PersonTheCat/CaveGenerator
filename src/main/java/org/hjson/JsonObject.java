@@ -129,6 +129,15 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
   }
 
   /**
+   * Returns the list of keys contained within this object.
+   *
+   * @return the every name defined in the object.
+   */
+  public List<String> getNames() {
+    return names;
+  }
+
+  /**
    * Returns whether the input key is contained within this object.
    *
    * @param name The name of the key to search for.
@@ -1056,17 +1065,35 @@ public class JsonObject extends JsonValue implements Iterable<Member> {
    * @return the list of unused paths.
    */
   public List<String> getUnusedPaths() {
-    List<String> paths=new ArrayList<String>();
+    return this.getUsedPaths(false);
+  }
+
+  /**
+   * Generates a list of paths that <em>have</em> been accessed in-code.
+   * @return the list of used paths.
+   */
+  public List<String> getUsedPaths() {
+    return this.getUsedPaths(true);
+  }
+
+  /**
+   * Generates a list of paths that either have or have not been accessed in-code.
+   *
+   * @param used whether the path should have been accessed.
+   * @return the list of used paths.
+   */
+  public List<String> getUsedPaths(boolean used) {
+    final List<String> paths=new ArrayList<String>();
     for (Member m : this) {
-      if (!m.value.isAccessed()) {
+      if (used == m.value.isAccessed()) {
         paths.add(m.name);
       } //else {paths.add("*"+m.name);}
       if (m.value.isObject()) {
-        for (String s : m.value.asObject().getUnusedPaths()) {
+        for (String s : m.value.asObject().getUsedPaths(used)) {
           paths.add(m.name+"."+s);
         }
       } else if (m.value.isArray()) {
-        for (String s : m.value.asArray().getUnusedPaths()) {
+        for (String s : m.value.asArray().getUsedPaths(used)) {
           paths.add(m.name+s);
         }
       }

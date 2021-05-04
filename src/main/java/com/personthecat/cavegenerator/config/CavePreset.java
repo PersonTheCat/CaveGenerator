@@ -32,6 +32,9 @@ public class CavePreset {
     /** Various noise generators which can be configured in extensively. */
     @Default List<CavernSettings> caverns = Collections.emptyList();
 
+    /** Map generator pairs used to produce a sort of noise-based tunnels. */
+    @Default List<BurrowSettings> burrows = Collections.emptyList();
+
     /** A series of layers designed to spawn upward throughout the world in sequence. */
     @Default List<LayerSettings> layers = Collections.emptyList();
 
@@ -57,6 +60,7 @@ public class CavePreset {
             .mapArray(Fields.tunnels, o -> TunnelSettings.from(o, overrides), builder::tunnels)
             .mapArray(Fields.ravines, o -> RavineSettings.from(o, overrides), builder::ravines)
             .mapArray(Fields.caverns, o -> CavernSettings.from(o, overrides), builder::caverns)
+            .mapArray(Fields.burrows, o -> BurrowSettings.from(o, overrides), builder::burrows)
             .mapArray(Fields.layers, o -> LayerSettings.from(o, overrides), builder::layers)
             .mapArray(Fields.clusters, o -> ClusterSettings.from(o, overrides), builder::clusters)
             .mapArray(Fields.stalactites, o -> StalactiteSettings.from(o, overrides), builder::stalactites)

@@ -4,7 +4,6 @@ import com.personthecat.cavegenerator.model.Direction;
 import com.personthecat.cavegenerator.model.Range;
 import com.personthecat.cavegenerator.util.HjsonMapper;
 import lombok.AccessLevel;
-import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
@@ -33,7 +32,7 @@ public class WallDecoratorSettings {
     List<IBlockState> states;
 
     /** The 0-1 chance that any block will be placed. */
-    @Default double chance = 1.0;
+    @Default double integrity = 1.0;
 
     /** Height bounds for this decorator. */
     @Default Range height = Range.of(10, 50);
@@ -59,7 +58,7 @@ public class WallDecoratorSettings {
         return new HjsonMapper(json)
             .mapRequiredStateList(Fields.states, FEATURE_NAME, builder::states)
             .mapObject(Fields.noise, o -> copyNoise(o, builder))
-            .mapFloat(Fields.chance, builder::chance)
+            .mapFloat(Fields.integrity, builder::integrity)
             .mapRange(Fields.height, builder::height)
             .mapDirectionList(Fields.directions, builder::directions)
             .mapStateList(Fields.matchers, builder::matchers)
