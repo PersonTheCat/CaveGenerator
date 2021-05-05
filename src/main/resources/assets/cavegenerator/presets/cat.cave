@@ -1,92 +1,58 @@
 {
   imports: [
-    cat/generic_carvers.cave::tunnels      as GENERIC_TUNNELS
-    cat/generic_carvers.cave::ravines      as GENERIC_RAVINES
-    cat/generic_carvers.cave::caverns      as GENERIC_CAVERNS
-    cat/generic_carvers.cave::burrows      as GENERIC_BURROWS
-    cat/generic_features.cave::stalactites as GENERIC_STALACTITES
-    cat/maze.cave::tunnels                 as MAZE_TUNNELS
-    cat/water_decorators.cave              as WATER_DECORATORS
-    cat/snow_carvers.cave                  as SNOW_CARVERS
-    cat/snow_features.cave                 as SNOW_FEATURES
-    cat/common.cave                        :: DECORATED_BIOMES
-    conditions.cave                        :: SNOWY_BIOMES
-    conditions.cave                        :: OCEAN_BIOMES
-    defaults.cave::caveBlocks              as LAVA_CAVE_BLOCK
+    cat/generic.cave          as GENERIC_FEATURES
+    cat/generic.cave::tunnels as GENERIC_TUNNELS
+    cat/generic.cave::ravines as GENERIC_RAVINES
+    cat/maze.cave::tunnels    as MAZE_TUNNELS
+    cat/water.cave            as WATER_DECORATORS
+    cat/snow.cave             as SNOW_FEATURES
+    cat/common.cave           :: DECORATED_BIOMES
+    conditions.cave           :: SNOWY_BIOMES
+    conditions.cave           :: OCEAN_BIOMES
+    defaults.cave::caveBlocks as LAVA_CAVE_BLOCK
   ]
   enabled: true
   inner: [
+    # Snowy biomes and features
     {
-      # Copy snow_carvers and snow_features
-      # into this inner preset.
-      # Todo: merge everything or merge nothing.
-      $SNOW_CARVERS: ALL
       $SNOW_FEATURES: ALL
       biomes: $SNOWY_BIOMES
-      ravines: [
-        $GENERIC_RAVINES
-      ]
+      ravines: $GENERIC_RAVINES
     }
+    # Todo: sandy features
     {
-      # Todo: sandy features here
     }
+    # Todo: underground forest in mushroom islands?
     {
-      # Todo: underground forest in mushroom islands?
     }
+    # Todo: leafy features in jungles and roofed forest
     {
-      # Todo: leafy features in jungles and roofed forest
     }
+    # Todo: large caverns in mountain biomes
     {
-      # Todo: large caverns in mountain biomes
     }
+    # Apply underwater decorations to generic features.
     {
-      # Generic features with water-themed
-      # decorators in ocean biomes.
       $WATER_DECORATORS: ALL
-      biomes: $OCEAN_BIOMES
       # Todo: find a clean way to set testForWater: false
-      # for both of these features.
-      tunnels: [
-        $GENERIC_TUNNELS
-      ]
-      ravines: [
-        $GENERIC_RAVINES
-        $GENERIC_RAVINES
-      ]
-      caverns: [
-        $GENERIC_CAVERNS
-      ]
-      burrows: [
-        $GENERIC_BURROWS
-      ]
+      $GENERIC_FEATURES: ALL
+      biomes: $OCEAN_BIOMES
+      # Disable stalactites in ocean biomes.
+      stalactites: []
     }
+    # Generic features and mazes in most biomes.
     {
-      # Spawn the generic tunnels in every
-      # other biome without applying those
-      # decorations elsewhere.
+      $GENERIC_FEATURES: ALL
       blacklistBiomes: true
       biomes: $DECORATED_BIOMES
+      # Override tunnels to include mazes.
       tunnels: [
         $GENERIC_TUNNELS
         $MAZE_TUNNELS
       ]
-      ravines: [
-        $GENERIC_RAVINES
-      ]
-      caverns: [
-        $GENERIC_CAVERNS
-      ]
-      burrows: [
-        $GENERIC_BURROWS
-      ]
-      stalactites: [
-        $GENERIC_STALACTITES
-      ]
     }
   ]
-  # All of these features should be spawned
+  # This feature should be spawned
   # in all of the inner presets.
-  caveBlocks: [
-    $LAVA_CAVE_BLOCK
-  ]
+  caveBlocks: $LAVA_CAVE_BLOCK
 }

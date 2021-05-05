@@ -47,9 +47,8 @@ public class JarFiles {
     };
 
     private static final String[] CAT_IMPORTS = {
-        "common", "desert_carvers", "generic_carvers",
-        "generic_features", "lava_aquifers", "maze",
-        "snow_carvers", "snow_features", "water_decorators"
+        "common", "desert", "generic",
+        "lava_aquifers", "maze", "snow", "water"
     };
 
     /** A couple of structure NBTs to be copied from the jar. */
