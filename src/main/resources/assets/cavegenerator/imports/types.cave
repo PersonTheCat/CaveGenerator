@@ -38,4 +38,38 @@
     randFactor: 0
     exponent: 1
   }
+  # Produces vine decorators on each axis when
+  # given a height range, integrity, and region
+  # parameters.
+  # Parameters:
+  #  @1  -> height
+  #  @2  -> integrity
+  #  @3? -> region
+  # Examples:
+  #  $vines([10, 30], 0.1)
+  #  $vines([20, 40], 0.2, $MY_NOISE)
+  vines(): [
+    $single_vine(vine:1, south, @1, @2, @3?)
+    $single_vine(vine:2, west, @1, @2, @3?)
+    $single_vine(vine:4, north, @1, @2, @3?)
+    $single_vine(vine:8, east, @1, @2, @3?)
+  ]
+  # Private values that will not get exported.
+  variables: {
+    # Yields a vine block for a single direction.
+    # Parameters: 
+    #  @1 -> block
+    #  @2 -> direction
+    #  @3  -> height
+    #  @4  -> integrity
+    #  @5? -> region
+    single_vine(): {
+      placement: overlay
+      states: @1
+      direction: @2
+      height: @3
+      integrity: @4
+      region: @5?
+    }
+  }
 }
