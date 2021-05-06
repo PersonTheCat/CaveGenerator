@@ -28,6 +28,7 @@ public class PillarGenerator extends FeatureGenerator {
         this.cfg = cfg;
     }
 
+    @Override
     protected void doGenerate(WorldContext ctx) {
         final Random rand = ctx.rand;
         for (int i = 0; i < rand.nextInt(cfg.count + 1); i++) {
@@ -39,11 +40,11 @@ public class PillarGenerator extends FeatureGenerator {
             if (conditions.biomes.test(biome)) {
                 final Range height = conditions.getColumn(x, z);
 
-                if (height.diff() != 0 && conditions.region.GetBoolean(x, z)) {
+                if (!height.isEmpty() && conditions.region.GetBoolean(x, z)) {
                     final int y = height.rand(rand);
                     final int opening = findCeiling(ctx.world, x, y, z, height.max);
                     if (opening != NONE_FOUND && conditions.noise.GetBoolean(x, opening, z)) {
-                        generateSingle(ctx.world, ctx.rand, new BlockPos(x, opening, z));
+                        this.generateSingle(ctx.world, ctx.rand, new BlockPos(x, opening, z));
                     }
                 }
             }
@@ -69,9 +70,9 @@ public class PillarGenerator extends FeatureGenerator {
             // Handle stair blocks, if applicable.
             if (cfg.stairBlock.isPresent()) {
                 if (y == actualMax) { // We're at the top. Place stairs upward.
-                    testPlaceStairs(world, cfg.stairBlock.get(), rand, pos, EnumHalf.TOP);
+                    this.testPlaceStairs(world, cfg.stairBlock.get(), rand, pos, EnumHalf.TOP);
                 } else if (y == actualMin) { // We're at the bottom. Place stairs downward.
-                    testPlaceStairs(world, cfg.stairBlock.get(), rand, current, EnumHalf.BOTTOM);
+                    this.testPlaceStairs(world, cfg.stairBlock.get(), rand, current, EnumHalf.BOTTOM);
                 }
             }
         }
@@ -93,15 +94,15 @@ public class PillarGenerator extends FeatureGenerator {
     /** Tries to randomly place stair blocks around the pillar in all 4 directions. */
     private void testPlaceStairs(World world, BlockStairs stairs, Random rand, BlockPos pos, EnumHalf topOrBottom) {
         if (topOrBottom.equals(EnumHalf.TOP)) {
-            testPlaceUp(stairs, pos.north(), EnumFacing.SOUTH, rand, world, topOrBottom);
-            testPlaceUp(stairs, pos.south(), EnumFacing.NORTH, rand, world, topOrBottom);
-            testPlaceUp(stairs, pos.east(), EnumFacing.WEST, rand, world, topOrBottom);
-            testPlaceUp(stairs, pos.west(), EnumFacing.EAST, rand, world, topOrBottom);
+            this.testPlaceUp(stairs, pos.north(), EnumFacing.SOUTH, rand, world, topOrBottom);
+            this.testPlaceUp(stairs, pos.south(), EnumFacing.NORTH, rand, world, topOrBottom);
+            this.testPlaceUp(stairs, pos.east(), EnumFacing.WEST, rand, world, topOrBottom);
+            this.testPlaceUp(stairs, pos.west(), EnumFacing.EAST, rand, world, topOrBottom);
         } else {
-            testPlaceDown(stairs, pos.north(), EnumFacing.SOUTH, rand, world, topOrBottom);
-            testPlaceDown(stairs, pos.south(), EnumFacing.NORTH, rand, world, topOrBottom);
-            testPlaceDown(stairs, pos.east(), EnumFacing.WEST, rand, world, topOrBottom);
-            testPlaceDown(stairs, pos.west(), EnumFacing.EAST, rand, world, topOrBottom);
+            this.testPlaceDown(stairs, pos.north(), EnumFacing.SOUTH, rand, world, topOrBottom);
+            this.testPlaceDown(stairs, pos.south(), EnumFacing.NORTH, rand, world, topOrBottom);
+            this.testPlaceDown(stairs, pos.east(), EnumFacing.WEST, rand, world, topOrBottom);
+            this.testPlaceDown(stairs, pos.west(), EnumFacing.EAST, rand, world, topOrBottom);
         }
     }
 

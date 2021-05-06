@@ -96,6 +96,9 @@ public class TunnelSettings {
     /** Whether to generate a fresh seed for tunnel branches. */
     @Default boolean reseedBranches = true;
 
+    /** Whether this feature should have any branches at all. */
+    @Default boolean hasBranches = true;
+
     /** Whether to test for water before spawning to avoid water walls. */
     @Default boolean testForWater = true;
 
@@ -138,6 +141,7 @@ public class TunnelSettings {
             .mapInt(Fields.resolution, builder::resolution)
             .mapInt(Fields.seed, i -> builder.seed(full((long) i)))
             .mapBool(Fields.reseedBranches, builder::reseedBranches)
+            .mapBool(Fields.hasBranches, builder::hasBranches)
             .mapBool(Fields.testForWater, builder::testForWater)
             .release(builder::build);
     }

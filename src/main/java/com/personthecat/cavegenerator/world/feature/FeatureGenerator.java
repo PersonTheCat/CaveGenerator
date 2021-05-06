@@ -77,10 +77,6 @@ public abstract class FeatureGenerator {
         return NONE_FOUND;
     }
 
-    protected final int findFloorOnly(World world, int x, int y, int z, int minY) {
-        return NONE_FOUND;
-    }
-
     /**
      * Locates the first cave opening from below within the specified range.
      * Returns NONE_FOUND when no opening is found.

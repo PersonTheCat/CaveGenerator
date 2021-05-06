@@ -27,7 +27,7 @@ public class CaveInit {
     private static final String BACKUPS = Main.MODID + "/backup";
 
     /** A setting indicating the location where example presets will be kept. */
-    private static final String EXAMPLES = Main.MODID + "/example_presets";
+    private static final String EXAMPLES = Main.MODID + "/examples";
 
     /** A setting indicating the location where presets will be kept. */
     private static final String PRESETS = Main.MODID + "/presets";

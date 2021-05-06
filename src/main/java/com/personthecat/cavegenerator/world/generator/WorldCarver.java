@@ -150,7 +150,7 @@ public abstract class WorldCarver extends BasicGenerator {
                 final IBlockState candidate = primer.getBlockState(x, y, z);
                 if (shell.matches(candidate) && shell.testNoise(x, y, z, chunkX, chunkZ)) {
                     for (IBlockState state : shell.cfg.states) {
-                        if (rand.nextFloat() <= shell.cfg.chance) {
+                        if (rand.nextFloat() <= shell.cfg.integrity) {
                             primer.setBlockState(x, y, z, state);
                             return;
                         }

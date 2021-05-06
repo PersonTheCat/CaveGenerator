@@ -19,14 +19,8 @@ public class JarFiles {
     /** The path where all of this mod's assets are stored. */
     private static final String ASSETS_PATH = "assets/" + Main.MODID;
 
-    /** The name of the default preset file. */
-    private static final String CAT_NAME = "cat.cave";
-
     /** The name of the folder containing cat presets.  */
     private static final String CAT_FOLDER_NAME = "cat";
-
-    /** The name of the default ore_veins preset. */
-    private static final String ORE_VEINS_NAME = "ore_veins.cave";
 
     /** The name of the tutorial file. */
     private static final String TUTORIAL_NAME = "TUTORIAL.cave";
@@ -38,7 +32,7 @@ public class JarFiles {
     private static final File CAT_DIR = new File(CaveInit.IMPORT_DIR, CAT_FOLDER_NAME);
 
     /** All of the <b>example</b> presets to be copied from the jar. */
-    private static final String[] PRESETS = {
+    private static final String[] EXAMPLES = {
         "flooded_vanilla", "large_caves", "spirals",
         "tunnels", "caverns", "stone_layers", "stalactites",
         "ravines", "stone_clusters", "large_stalactites",
@@ -49,6 +43,10 @@ public class JarFiles {
     private static final String[] CAT_IMPORTS = {
         "common", "desert", "generic",
         "lava_aquifers", "maze", "snow", "water"
+    };
+
+    private static final String[] DEFAULTS = {
+        "cat", "ore_veins", "geodes"
     };
 
     /** A couple of structure NBTs to be copied from the jar. */
@@ -98,7 +96,7 @@ public class JarFiles {
     }
 
     private static void copyExamples() {
-        for (String fileName : PRESETS) {
+        for (String fileName : EXAMPLES) {
             final String fromLocation = ASSETS_PATH + "/presets/" + fileName + ".cave";
             final String toLocation = CaveInit.EXAMPLE_DIR + "/" + fileName + ".cave";
             if (!fileExists(new File(toLocation), "Security error on " + toLocation)) {
@@ -111,8 +109,9 @@ public class JarFiles {
         if (!fileExists(CaveInit.PRESET_DIR, "Error: Unable to read from preset directory")) {
             // The directory doesn't exist. Create it.
             mkdirs(CaveInit.PRESET_DIR).expect("Error: Unable to create preset directory");
-            copyDefault(CAT_NAME);
-            copyDefault(ORE_VEINS_NAME);
+            for (String s : DEFAULTS) {
+                copyDefault(s + ".cave");
+            }
         }
     }
 

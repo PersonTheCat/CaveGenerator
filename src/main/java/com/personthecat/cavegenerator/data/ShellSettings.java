@@ -63,7 +63,7 @@ public class ShellSettings {
         @Default Range height = Range.of(0, 63);
 
         /** The 0-1 chance of any single block spawning successfully. */
-        @Default double chance = 1.0;
+        @Default double integrity = 1.0;
 
         /** 3-dimensional noise parameters for spawning this feature. */
         @Default Optional<NoiseSettings> noise = empty();
@@ -78,7 +78,7 @@ public class ShellSettings {
                 .mapRequiredStateList(Fields.states, ShellSettings.Fields.decorators, builder::states)
                 .mapStateList(Fields.matchers, builder::matchers)
                 .mapRange(Fields.height, builder::height)
-                .mapFloat(Fields.chance, builder::chance)
+                .mapFloat(Fields.integrity, builder::integrity)
                 .mapObject(Fields.noise, o -> copyNoise(o, builder))
                 .release(builder::build);
         }

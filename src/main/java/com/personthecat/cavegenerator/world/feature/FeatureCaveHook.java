@@ -1,6 +1,7 @@
 package com.personthecat.cavegenerator.world.feature;
 
 import com.personthecat.cavegenerator.Main;
+import com.personthecat.cavegenerator.data.ConditionSettings;
 import com.personthecat.cavegenerator.noise.CachedNoiseHelper;
 import com.personthecat.cavegenerator.world.GeneratorController;
 import com.personthecat.cavegenerator.world.HeightMapLocator;

@@ -87,6 +87,7 @@ public class StalactiteGenerator extends FeatureGenerator {
         final int length = this.cfg.length.rand(rand);
         final int needed = this.cfg.space + length * (this.stalactite && this.stalagmite ? 2 : 1);
         final int space = this.getSpace(world, pos, needed);
+        // Todo: if speleothem, we must not be > 2 * length + space
         if (space >= length) {
             this.generateSingle(world, rand, pos, length, !this.stalactite);
             if (this.stalactite && this.stalagmite) {

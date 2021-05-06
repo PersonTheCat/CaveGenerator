@@ -10,7 +10,6 @@ import net.minecraft.world.biome.Biome;
 import net.minecraftforge.fml.common.registry.ForgeRegistries;
 import org.apache.logging.log4j.Level;
 import org.hjson.JsonObject;
-import org.hjson.JsonValue;
 
 import java.util.List;
 
@@ -311,7 +310,7 @@ public class PresetTester {
         for (int i = 0; i < shell.decorators.size(); i++) {
             final ShellSettings.Decorator d = shell.decorators.get(i);
             final String fullPath = decoratorPath + "[" + i + "]";
-            this.testChance(d.chance, fullPath);
+            this.testChance(d.integrity, fullPath);
             d.noise.ifPresent(n -> this.testNoise(n, fullPath));
         }
     }

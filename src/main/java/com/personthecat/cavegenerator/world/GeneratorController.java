@@ -4,10 +4,7 @@ import com.personthecat.cavegenerator.config.CavePreset;
 import com.personthecat.cavegenerator.data.BurrowSettings;
 import com.personthecat.cavegenerator.data.CavernSettings;
 import com.personthecat.cavegenerator.data.ClusterSettings;
-import com.personthecat.cavegenerator.world.feature.PillarGenerator;
-import com.personthecat.cavegenerator.world.feature.StalactiteGenerator;
-import com.personthecat.cavegenerator.world.feature.StructureGenerator;
-import com.personthecat.cavegenerator.world.feature.WorldContext;
+import com.personthecat.cavegenerator.world.feature.*;
 import com.personthecat.cavegenerator.world.generator.*;
 import lombok.Builder;
 import net.minecraft.world.World;
@@ -31,6 +28,7 @@ public class GeneratorController {
     private final List<StalactiteGenerator> stalactites;
     private final List<PillarGenerator> pillars;
     private final List<StructureGenerator> structures;
+    private final List<VineGenerator> vines;
 
     public static GeneratorController from(CavePreset preset, World world) {
         final GeneratorControllerBuilder builder = builder()
@@ -39,7 +37,8 @@ public class GeneratorController {
             .layers(map(preset.layers, l -> new LayerGenerator(l, world)))
             .stalactites(map(preset.stalactites, s -> new StalactiteGenerator(s, world)))
             .pillars(map(preset.pillars, p -> new PillarGenerator(p, world)))
-            .structures(map(preset.structures, s -> new StructureGenerator(s, world)));
+            .structures(map(preset.structures, s -> new StructureGenerator(s, world)))
+            .vines(map(preset.vines, v -> new VineGenerator(v, world)));
         sortClusters(preset.clusters, world, builder);
         mapCaverns(preset.caverns, world, builder);
         mapBurrows(preset.burrows, world, builder);
@@ -100,6 +99,7 @@ public class GeneratorController {
         pillars.forEach(p -> p.generate(ctx));
         stalactites.forEach(s -> s.generate(ctx));
         structures.forEach(s -> s.generate(ctx));
+        vines.forEach(v -> v.generate(ctx));
     }
 
 }

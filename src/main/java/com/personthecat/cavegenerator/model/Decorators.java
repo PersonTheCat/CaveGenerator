@@ -49,7 +49,7 @@ public class Decorators {
         if (replaceable.isEmpty()) {
             return s -> !s.getBlock().equals(Blocks.BEDROCK);
         } else if (settings.replaceSolidBlocks) {
-            return s -> s.isOpaqueCube() && !s.getBlock().equals(Blocks.BEDROCK) ;
+            return s -> s.getMaterial().isSolid() && !s.getBlock().equals(Blocks.BEDROCK) ;
         } else if (settings.replaceDecorators) {
             replaceable.addAll(settings.globalDecorators);
             settings.caveBlocks.forEach(c -> replaceable.addAll(c.states));

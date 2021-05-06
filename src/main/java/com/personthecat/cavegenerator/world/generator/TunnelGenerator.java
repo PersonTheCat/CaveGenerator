@@ -212,6 +212,7 @@ public class TunnelGenerator extends MapGenerator {
     }
 
     private void addBranches(World world, Random rand, long seed, PrimerData data, TunnelPathInfo path, int currentPos, int distance) {
+        if (!this.cfg.hasBranches) return;
         final float yaw1 = path.getYaw() - PI_OVER_2;
         final float yaw2 = path.getYaw() + PI_OVER_2;
         final float pitch = path.getPitch() / 3.0F;
