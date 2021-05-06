@@ -47,9 +47,6 @@ public class CavePreset {
     /** Giant pillars with optional corner blocks made from stairs. */
     @Default List<PillarSettings> pillars = Collections.emptyList();
 
-    /** Regular vines that can spawn anywhere underground. */
-    @Default List<VineSettings> vines = Collections.emptyList();
-
     /** Regular NBT structures which can be placed throughout the world. */
     @Default List<StructureSettings> structures = Collections.emptyList();
 
@@ -68,7 +65,6 @@ public class CavePreset {
             .mapArray(Fields.clusters, o -> ClusterSettings.from(o, overrides), builder::clusters)
             .mapArray(Fields.stalactites, o -> StalactiteSettings.from(o, overrides), builder::stalactites)
             .mapArray(Fields.pillars, o -> PillarSettings.from(o, overrides), builder::pillars)
-            .mapArray(Fields.vines, o -> VineSettings.from(o, overrides), builder::vines)
             .mapArray(Fields.structures, o -> StructureSettings.from(o, overrides), builder::structures)
             .release(builder::build);
     }
