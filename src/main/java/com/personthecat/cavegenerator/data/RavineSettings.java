@@ -74,7 +74,7 @@ public class RavineSettings {
     @Default boolean useWallNoise = false;
 
     /** Whether to test for water before spawning to avoid water walls. */
-    @Default boolean testForWater = true;
+    @Default boolean waterChecks = true;
 
     /** Settings for how to generate these walls, if applicable. */
     @Default NoiseMapSettings walls = NoiseMapSettings.builder()
@@ -109,7 +109,7 @@ public class RavineSettings {
             .mapFloat(Fields.cutoffStrength, builder::cutoffStrength)
             .mapObject(Fields.walls, o -> copyWallNoise(o, original, builder))
             .mapBool(Fields.useWallNoise, builder::useWallNoise)
-            .mapBool(Fields.testForWater, builder::testForWater)
+            .mapBool(Fields.waterChecks, builder::waterChecks)
             .release(builder::build);
     }
 

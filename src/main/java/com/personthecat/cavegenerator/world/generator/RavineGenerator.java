@@ -19,7 +19,7 @@ public class RavineGenerator extends MapGenerator {
     private final double cutoff;
 
     public RavineGenerator(RavineSettings cfg, World world) {
-        super(cfg.conditions, cfg.decorators, world, cfg.testForWater);
+        super(cfg.conditions, cfg.decorators, world, cfg.waterChecks);
         this.cfg = cfg;
         this.wallNoise = cfg.walls.getGenerator(world);
         this.cutoff = 1.0 + cfg.cutoffStrength;

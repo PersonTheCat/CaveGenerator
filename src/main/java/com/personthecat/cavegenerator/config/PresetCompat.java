@@ -110,6 +110,7 @@ class PresetCompat {
     static Result<IOException> updatePreset(JsonObject json, File file) {
         final int hash = json.hashCode();
         updateRegularValues(json);
+        enforceValueOrder(json);
         // Only write if changes were made.
         return ConfigFile.autoFormat || json.hashCode() != hash ? writeJson(json, file) : Result.ok();
     }
@@ -143,7 +144,6 @@ class PresetCompat {
         updateStructures(json);
         updateRecursive(json);
         removeBlankSlate(json);
-        enforceValueOrder(json);
     }
 
     private static void updateDefaults(JsonObject json) {

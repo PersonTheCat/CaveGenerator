@@ -588,7 +588,7 @@ tunnels: [
     resizeBranches: true
     
     # Whether to test for water before generating to avoid water walls.
-    checkForWater: true
+    waterChecks: true
 
     # Radius in blocks.
     scale: {
@@ -609,6 +609,7 @@ tunnels: [
     }
 
     # The horizontal angle in radians.
+    # These parameters only control the initial yaw.
     yaw: {
       startVal: 0
 
@@ -617,6 +618,7 @@ tunnels: [
     }
 
     # The vertical angle in radians.
+    # These parameters only control the initial pitch.
     pitch: {
       startVal: 0
       startValRandFactor: 0.25
@@ -626,7 +628,7 @@ tunnels: [
     dYaw: {
       startVal: 0 # Added to current yaw
       factor: 0.75
-      randFactor: 4
+      randFactor: 4 # Size of the random addend
       exponent: 1
     }
 
@@ -664,7 +666,7 @@ ravines: [
     height: [ 8, 128 ]
     distance: 0
     resolution: 4
-    checkForWater: true
+    waterChecks: true
     dYaw: {
       startVal: 0
       factor: 0.5
@@ -1000,6 +1002,16 @@ structures: [
 
     # Whether to reorient this structure every time it spawns.
     rotateRandomly: false
+
+    # Which block (other than air) can be replaced by this structure.
+    replacedBlock: stone
+
+    # How to mirror this structure.
+    # Options are `none`, `left_right`, and `front_back`.
+    mirror: none
+
+    # Whether to omit entity spawns from this structure.
+    ignoreEntities: false
   }
 ]
 }

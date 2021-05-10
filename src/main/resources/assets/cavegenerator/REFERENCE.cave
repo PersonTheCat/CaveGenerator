@@ -109,7 +109,7 @@
       seed: null
       reseedBranches: true
       resizeBranches: true
-      checkForWater: true
+      waterChecks: true
       scale: {
         startVal: 0
         startValRandFactor: 1
@@ -173,7 +173,7 @@
       resolution: 4
       distance: 0
       cutoffStrength: 5.0 
-      checkForWater: true
+      waterChecks: true
       dYaw: {
         startVal: 0
         factor: 0.5
@@ -353,6 +353,8 @@
       radiusX: [ 13, 19 ]
       radiusY: [ 9, 15 ]
       radiusZ: [ 13, 19 ]
+      # This will override the others if absent
+      radius: null
       centerHeight: [ 24, 40 ]
       matchers: []
       
@@ -431,6 +433,9 @@
       debugSpawns: false
       command: ""
       rotateRandomly: false
+      replacedBlock: stone
+      mirror: none
+      ignoreEntities: false
       
       biomes: {}
       blacklistBiomes: false

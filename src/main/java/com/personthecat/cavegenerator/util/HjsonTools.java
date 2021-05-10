@@ -3,6 +3,7 @@ package com.personthecat.cavegenerator.util;
 import com.personthecat.cavegenerator.model.*;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.init.Blocks;
+import net.minecraft.util.Mirror;
 import net.minecraft.util.math.BlockPos;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.gen.structure.template.PlacementSettings;
@@ -177,14 +178,6 @@ public class HjsonTools {
     /** Safely retrieves a boolean from the input json. */
     public static Optional<Float> getFloat(JsonObject json, String field) {
         return getValue(json, field).map(JsonValue::asFloat);
-    }
-
-    /** Shorthand for getFloat(). */
-    public static void getFloat(JsonObject json, String field, Consumer<Float> ifPresent) {
-        JsonValue value = json.get(field);
-        if (value != null) {
-            ifPresent.accept(value.asFloat());
-        }
     }
 
     /** Retrieves a float from the input object. Returns `or` if nothing is found. */
@@ -423,11 +416,12 @@ public class HjsonTools {
      */
     public static PlacementSettings getPlacementSettings(JsonObject json) {
         // Construct the basic placement values to be modified.
-        PlacementSettings settings = new PlacementSettings()
-                .setReplacedBlock(Blocks.STONE);
-
+        PlacementSettings settings = new PlacementSettings().setReplacedBlock(Blocks.STONE);
         // Get the additional values for `placement`.
-        getFloat(json, "integrity", settings::setIntegrity);
+        getFloat(json, "integrity").ifPresent(settings::setIntegrity);
+        getState(json, "replacedBlock").ifPresent(s -> settings.setReplacedBlock(s.getBlock()));
+        getEnumValue(json, "mirror", Mirror.class).ifPresent(settings::setMirror);
+        getBool(json, "ignoreEntities").ifPresent(settings::setIgnoreEntities);
 
         // Return the final value.
         return settings;
