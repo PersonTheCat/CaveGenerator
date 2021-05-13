@@ -62,7 +62,7 @@ public class ReferenceHelper {
     @AllArgsConstructor
     private static class Reference {
         /** A pattern used for testing whether a string contains references. */
-        static final Pattern REFERENCE_PATTERN = Pattern.compile("\\$(\\w+)");
+        static final Pattern REFERENCE_PATTERN = Pattern.compile("(?<!\\\\)\\$(?!\\d)(\\w+)");
 
         final int start;
         final int end;
@@ -70,7 +70,7 @@ public class ReferenceHelper {
         final List<String> args;
 
         static boolean containsReferences(String val) {
-            return val.contains("$");
+            return REFERENCE_PATTERN.matcher(val).find();
         }
 
         /**

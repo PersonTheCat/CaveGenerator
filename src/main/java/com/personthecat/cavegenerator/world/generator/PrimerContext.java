@@ -1,5 +1,6 @@
 package com.personthecat.cavegenerator.world.generator;
 
+import com.personthecat.cavegenerator.util.XoRoShiRo;
 import com.personthecat.cavegenerator.world.BiomeSearch;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.ChunkPrimer;
@@ -10,7 +11,7 @@ public class PrimerContext {
     final BiomeSearch biomes;
     final int[][] heightmap;
     final World world;
-    final Random rand;
+    final Random localRand;
     final int chunkX;
     final int chunkZ;
     final int offsetX;
@@ -21,7 +22,6 @@ public class PrimerContext {
         BiomeSearch biomes,
         int[][] heightmap,
         World world,
-        Random rand,
         int chunkX,
         int chunkZ,
         ChunkPrimer primer
@@ -29,7 +29,7 @@ public class PrimerContext {
         this.biomes = biomes;
         this.heightmap = heightmap;
         this.world = world;
-        this.rand = rand;
+        this.localRand = new XoRoShiRo(world.getSeed() ^ chunkX ^ chunkZ);
         this.chunkX = chunkX;
         this.chunkZ = chunkZ;
         this.offsetX = chunkX * 16;

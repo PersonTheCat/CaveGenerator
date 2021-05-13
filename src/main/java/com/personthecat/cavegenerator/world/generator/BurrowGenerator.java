@@ -91,10 +91,10 @@ public class BurrowGenerator extends WorldCarver implements TunnelSocket {
             this.generateUnShelled(ctx, storePositions ? this::replaceRecord : this::replaceOnly);
         }
         if (this.hasWallDecorators()) {
-            this.decorateCaverns(ctx.rand, ctx.primer, ctx.chunkX, ctx.chunkZ);
+            this.decorateCaverns(ctx.localRand, ctx.primer, ctx.chunkX, ctx.chunkZ);
         }
         if (this.hasPonds()) {
-            this.generatePond(this.caverns, ctx.rand, ctx.world, ctx.primer, ctx.chunkX, ctx.chunkZ);
+            this.generatePond(this.caverns, ctx.localRand, ctx.world, ctx.primer, ctx.chunkX, ctx.chunkZ);
         }
     }
 
@@ -125,7 +125,7 @@ public class BurrowGenerator extends WorldCarver implements TunnelSocket {
                             f.generate(ctx, x, y, z);
                         }
                         else if (curve > this.cfg.wallDistance - this.decorators.shell.radius) {
-                            this.generateShell(ctx.rand, ctx.primer, x, y, z, centerY, ctx.chunkX, ctx.chunkZ);
+                            this.generateShell(ctx.localRand, ctx.primer, x, y, z, centerY, ctx.chunkX, ctx.chunkZ);
                         }
                     }
                 } else if (shell > 0) {
@@ -143,7 +143,7 @@ public class BurrowGenerator extends WorldCarver implements TunnelSocket {
         for (int y = min; y < max + 1; y++) {
             final double curve = distance - this.getBiomeCurve(centerY - y);
             if (curve > this.cfg.wallDistance - this.decorators.shell.radius) {
-                this.generateShell(ctx.rand, ctx.primer, x, y, z, centerY, ctx.chunkX, ctx.chunkZ);
+                this.generateShell(ctx.localRand, ctx.primer, x, y, z, centerY, ctx.chunkX, ctx.chunkZ);
             }
         }
     }
@@ -181,7 +181,7 @@ public class BurrowGenerator extends WorldCarver implements TunnelSocket {
     }
 
     private void replaceOnly(PrimerContext ctx, int x, int y, int z) {
-        this.replaceBlock(ctx.rand, ctx.primer, x, y, z, ctx.chunkX, ctx.chunkZ);
+        this.replaceBlock(ctx.localRand, ctx.primer, x, y, z, ctx.chunkX, ctx.chunkZ);
     }
 
     private void replaceRecord(PrimerContext ctx, int x, int y, int z) {

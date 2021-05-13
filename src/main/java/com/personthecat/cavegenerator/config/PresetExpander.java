@@ -131,6 +131,7 @@ public class PresetExpander {
             for (String exp : HjsonTools.toStringArray(HjsonTools.asOrToArray(imports))) {
                 for (String key : ImportHelper.getKeys(definitions, exp)) {
                     json.remove(key);
+                    json.remove(key + "()"); // unsophisticated for now
                 }
             }
             json.remove(IMPORTS);
@@ -144,6 +145,7 @@ public class PresetExpander {
             for (JsonObject.Member variable : variables.asObject()) {
                 // This will have been copied to the root level.
                 json.remove(variable.getName());
+                json.remove(variable.getName() + "()");
             }
             json.remove(VARIABLES);
         }

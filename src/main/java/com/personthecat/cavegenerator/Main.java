@@ -89,6 +89,7 @@ public class Main {
             for (Map.Entry<String, CavePreset> entry : presets.entrySet()) {
                 final CavePreset preset = entry.getValue();
                 if (preset.enabled) {
+                    world.rand.setSeed(world.getSeed());
                     generators.put(entry.getKey(), GeneratorController.from(preset, world));
                 }
             }

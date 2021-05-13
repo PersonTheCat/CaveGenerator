@@ -15,6 +15,7 @@ public class StalactiteGenerator extends FeatureGenerator {
 
     private final StalactiteSettings cfg;
     private final int resolution;
+    private final boolean speleothem;
     private final boolean stalactite;
     private final boolean stalagmite;
 
@@ -22,9 +23,9 @@ public class StalactiteGenerator extends FeatureGenerator {
         super(cfg.conditions, world);
         this.cfg = cfg;
         this.resolution = calculateResolution(cfg.chance);
-        final boolean speleothem = cfg.type.equals(StalactiteSettings.Type.SPELEOTHEM);
-        this.stalactite = speleothem || cfg.type.equals(StalactiteSettings.Type.STALACTITE);
-        this.stalagmite = speleothem || cfg.type.equals(StalactiteSettings.Type.STALAGMITE);
+        this.speleothem = cfg.type.equals(StalactiteSettings.Type.SPELEOTHEM);
+        this.stalactite = this.speleothem || cfg.type.equals(StalactiteSettings.Type.STALACTITE);
+        this.stalagmite = this.speleothem || cfg.type.equals(StalactiteSettings.Type.STALAGMITE);
     }
 
     /**
@@ -85,12 +86,14 @@ public class StalactiteGenerator extends FeatureGenerator {
 
     private void checkSpace(World world, Random rand, BlockPos pos) {
         final int length = this.cfg.length.rand(rand);
-        final int needed = this.cfg.space + length * (this.stalactite && this.stalagmite ? 2 : 1);
+        final int needed = this.cfg.space + length;
         final int space = this.getSpace(world, pos, needed);
-        // Todo: if speleothem, we must not be > 2 * length + space
-        if (space >= length) {
+        if (this.speleothem && space > 2 * needed) {
+            return;
+        }
+        if (space >= needed) {
             this.generateSingle(world, rand, pos, length, !this.stalactite);
-            if (this.stalactite && this.stalagmite) {
+            if (this.speleothem) {
                 this.generateSingle(world, rand, pos.down(space), length, true);
             }
         }

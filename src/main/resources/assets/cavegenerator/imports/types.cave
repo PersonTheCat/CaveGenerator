@@ -54,8 +54,8 @@
   #  @2  -> height
   #  @3? -> region or none
   # Examples:
-  #  $vines([10, 30], 0.1)
-  #  $vines([20, 40], 0.2, $MY_NOISE)
+  #  $vines(0.1, [10, 30])
+  #  $vines(0.2, [20, 40], $MY_NOISE)
   vines(): [
     $single_vine(vine:1, south, @1, @2, @3?)
     $single_vine(vine:2, west, @1, @2, @3?)
@@ -128,7 +128,7 @@
   #  $roots()
   roots(): {
     height: @2 ? ([ 0, 55 ])
-    replaceableBlocks: @5 ? ([ "stone", "dirt","air" ])
+    replaceableBlocks: @5 ? ([ "stone", "dirt", "air" ])
     count: @1 ? (5)
     chance: 0.4
     systemChance: 0.05

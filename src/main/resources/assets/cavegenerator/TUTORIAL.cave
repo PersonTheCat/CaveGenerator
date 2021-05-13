@@ -969,6 +969,11 @@ structures: [
     # A list of source blocks to match.
     matchers: []
 
+    # A list of directions for this structure to spawn.
+    # Possible values include: `up`, `down`, `side`, `north`, `south`, `east`,
+    # `west`, and `all`.
+    directions: []
+
     # Any relative coordinates that must be non-solid.
     # Example:
     # airMatchers: [

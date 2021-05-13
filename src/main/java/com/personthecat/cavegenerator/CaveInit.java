@@ -64,12 +64,11 @@ public class CaveInit {
         // Go ahead and final File dir = new File(CaveInit.CG_DIR, args[1]);lear this to allow presets to be reloaded.
         presets.clear();
         // Handle all files in the preset directory.
-        final Map<String, CavePreset> loaded = PresetReader.getPresets(PRESET_DIR, IMPORT_DIR);
-        presets.putAll(loaded);
+        presets.putAll(PresetReader.getPresets(PRESET_DIR, IMPORT_DIR));
         // If necessary, automatically write the expanded values.
         if (ConfigFile.autoGenerate) {
             ensureDirExists(GENERATED_DIR).expect(CANT_CREATE);
-            loaded.forEach((name, preset) -> {
+            presets.forEach((name, preset) -> {
                 final File file = new File(GENERATED_DIR, name + ".cave");
                 HjsonTools.writeJson(preset.raw, file).throwIfPresent();
             });

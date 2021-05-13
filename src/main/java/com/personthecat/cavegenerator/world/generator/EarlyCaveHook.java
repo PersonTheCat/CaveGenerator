@@ -26,8 +26,8 @@ public class EarlyCaveHook extends MapGenBase {
 
     @Override
     public void generate(World world, int x, int z, ChunkPrimer primer) {
-        if (ConfigFile.otherGeneratorEnabled && priorCaves != null) {
-            priorCaves.generate(world, x, z, primer);
+        if (ConfigFile.otherGeneratorEnabled && this.priorCaves != null) {
+            this.priorCaves.generate(world, x, z, primer);
         }
         // Don't really have a good way to access this without writing the game myself.
         final Map<String, GeneratorController> generators = Main.instance.loadGenerators(world);
@@ -36,7 +36,8 @@ public class EarlyCaveHook extends MapGenBase {
             : HeightMapLocator.FAUX_MAP;
 
         final BiomeSearch biomes = BiomeSearch.in(world, x, z);
-        final PrimerContext ctx = new PrimerContext(biomes, heightmap, world, world.rand, x, z, primer);
+        final PrimerContext ctx = new PrimerContext(biomes, heightmap, world, x, z, primer);
+        ctx.world.rand.setSeed(ctx.world.getSeed());
         for (GeneratorController generator : generators.values()) {
             generator.earlyGenerate(ctx);
             generator.mapGenerate(ctx);

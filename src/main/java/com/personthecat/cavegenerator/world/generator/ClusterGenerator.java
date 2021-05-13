@@ -37,10 +37,10 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
     @Override
     protected void generateChecked(PrimerContext ctx) {
         // Always reset the seed for clusters.
-        ctx.rand.setSeed(ctx.world.getSeed());
+        ctx.world.rand.setSeed(ctx.world.getSeed());
         this.clusterMap.clear();
-        this.locateFinalClusters(ctx.world, ctx.rand, ctx.chunkX, ctx.chunkZ);
-        this.generateClusters(ctx.primer, ctx.rand, ctx.chunkX, ctx.chunkZ);
+        this.locateFinalClusters(ctx.world, ctx.world.rand, ctx.chunkX, ctx.chunkZ);
+        this.generateClusters(ctx.primer, ctx.localRand, ctx.chunkX, ctx.chunkZ);
     }
 
     private void locateFinalClusters(World world, Random rand, int chunkX, int chunkZ) {

@@ -195,7 +195,7 @@ public class CavernGenerator extends WorldCarver implements TunnelSocket {
 
     @Override
     protected void generateChecked(PrimerContext ctx) {
-        this.generateCaverns(ctx.heightmap, ctx.rand, ctx.world, ctx.primer, ctx.chunkX, ctx.chunkZ);
+        this.generateCaverns(ctx.heightmap, ctx.localRand, ctx.world, ctx.primer, ctx.chunkX, ctx.chunkZ);
     }
 
     /** Generates giant air pockets in this chunk using a series of 3D noise generators. */

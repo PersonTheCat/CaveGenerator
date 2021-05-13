@@ -3,6 +3,9 @@ package com.personthecat.cavegenerator.model;
 import com.personthecat.cavegenerator.data.ConditionSettings;
 import com.personthecat.cavegenerator.noise.DummyGenerator;
 import fastnoise.FastNoise;
+import it.unimi.dsi.fastutil.ints.IntArrayList;
+import it.unimi.dsi.fastutil.ints.IntList;
+import it.unimi.dsi.fastutil.ints.IntLists;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
@@ -10,6 +13,9 @@ import lombok.experimental.FieldDefaults;
 import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -67,7 +73,8 @@ public class Conditions {
             final Biome listed = list.get(0);
             return settings.blacklistBiomes ? b -> !listed.equals(b) : listed::equals;
         }
-        return settings.blacklistBiomes ? b -> !settings.biomes.contains(b) : settings.biomes::contains;
+        final List<Biome> nonRedundant = Collections.unmodifiableList(new ArrayList<>(new HashSet<>(list)));
+        return settings.blacklistBiomes ? b -> !nonRedundant.contains(b) : nonRedundant::contains;
     }
 
     private static Predicate<Integer> compileDimensions(ConditionSettings settings) {
@@ -78,7 +85,8 @@ public class Conditions {
             final int listed = list.get(0);
             return settings.blacklistDimensions ? d -> listed != d : d -> listed == d;
         }
-        return settings.blacklistDimensions ? d -> !list.contains(d) : list::contains;
+        final IntList nonRedundant = IntLists.unmodifiable(new IntArrayList(new HashSet<>(list)));
+        return settings.blacklistDimensions ? d -> !nonRedundant.contains(d) : nonRedundant::contains;
     }
 
     /** Get the current height range when given two absolute coordinates. */
