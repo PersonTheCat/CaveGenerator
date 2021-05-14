@@ -1,11 +1,10 @@
-# Todo: this was copied from flooded_vanilla.cave.
-# It should be updated to use relative heights.
 {
+  imports: cat/common.cave::half_rel()
   caveBlocks: [
     # Fills y=(12-45) with water.
     {
       states: water
-      height: [ 12, 63 ]
+      height: $half_rel(12, 63)
     }
     {
       states: magma
@@ -27,7 +26,7 @@
     # Spawns gravel on the floor.
     {
       states: gravel
-      height: [ 0, 63 ]
+      height: $half_rel(5, 63)
       matchers: [ "stone", "dirt" ]
       directions: down
       integrity: 0.25

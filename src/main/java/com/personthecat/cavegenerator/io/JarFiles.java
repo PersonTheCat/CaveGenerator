@@ -41,8 +41,9 @@ public class JarFiles {
     };
 
     private static final String[] CAT_IMPORTS = {
-        "common", "desert", "generic",
-        "lava_aquifers", "maze", "snow", "water"
+        "common", "crack", "desert", "generic",
+        "jungle", "lava_aquifers", "maze",
+        "mountain", "snow", "water"
     };
 
     private static final String[] DEFAULTS = {

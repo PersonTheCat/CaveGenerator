@@ -637,17 +637,35 @@ public class CommandCave extends CommandBase {
 
     private void importPreset(ICommandSender sender, String[] args) {
         requireArgs(args, 1);
-        final String exp = String.join(" ", args);
-        final JsonObject imported = ImportHelper.getRequiredImport(exp);
-        if (imported.isEmpty()) {
+        final JsonObject data = new JsonObject();
+        expandFauxPreset(data, String.join(" ", args));
+        if (data.isEmpty()) {
             sendMessage(sender, "Nothing to import.");
         } else {
             sendMessage(sender, "Loading...");
-            for (JsonObject.Member member : imported) {
+            for (JsonObject.Member member : data) {
                 this.memory.add(member.getName(), member.getValue());
                 sendMessage(sender, " * " + member.getName());
             }
         }
+    }
+
+    private void expandFauxPreset(JsonObject data, String exp) {
+        // Generate a faux preset containing these data.
+        final JsonObject fauxPreset = new JsonObject()
+            .add(PresetExpander.IMPORTS, exp)
+            .add(PresetExpander.VARIABLES, data);
+        // Generate fake maps containing only this preset
+        // and the required definitions.
+        final Map<File, JsonObject> presets = new HashMap<>();
+        presets.put(CaveInit.PRESET_DIR, fauxPreset);
+        final Map<File, JsonObject> definitions = ImportHelper.locateDefinitions(exp);
+        definitions.putIfAbsent(new File(CaveInit.IMPORT_DIR, PresetExpander.DEFAULTS), new JsonObject());
+        // Expand these data as they are on load.
+        PresetExpander.expandAll(presets, definitions);
+        // The variables object was removed from the faux
+        // preset, but the implicit VANILLA is still there.
+        data.remove(PresetExpander.VANILLA);
     }
 
     private void evaluate(ICommandSender sender, String[] args) {

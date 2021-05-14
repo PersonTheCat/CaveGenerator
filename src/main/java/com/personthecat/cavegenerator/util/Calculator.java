@@ -34,7 +34,7 @@ public class Calculator {
         for (int i = 0; i < tokens.length; i++) {
             final char token = tokens[i];
             if (token == ' ') continue;
-            final boolean number = isNumeric(token);
+            boolean number = isNumeric(token);
 
             if (number) {
                 final StringBuilder buffer = new StringBuilder();
@@ -59,6 +59,8 @@ public class Calculator {
                     values.push(applyOp(ops.pop(), values.pop(), values.pop()));
                 }
                 ops.pop();
+                // A numeric value was extracted
+                number = true;
             } else if (isOperator(token)) {
                 if (!lastIsNumber) {
                     if (token == '-') {

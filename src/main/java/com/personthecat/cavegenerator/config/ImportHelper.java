@@ -1,7 +1,10 @@
 package com.personthecat.cavegenerator.config;
 
 import com.personthecat.cavegenerator.CaveInit;
+import com.personthecat.cavegenerator.util.HjsonTools;
+import org.hjson.JsonArray;
 import org.hjson.JsonObject;
+import org.hjson.JsonValue;
 
 import java.io.File;
 import java.util.*;
@@ -47,7 +50,7 @@ public class ImportHelper {
         Objects.requireNonNull(exp, "Imports may not be null");
         final Import helper = new Import(exp);
         // Get the JSON object by filename.
-        final JsonObject json = helper.locate(definitions)
+        final JsonObject json = helper.loadObject(definitions)
             .orElseThrow(() -> runExF("Use of undeclared import: {}", exp));
         return readImport(json, helper);
     }
@@ -56,9 +59,39 @@ public class ImportHelper {
     public static JsonObject getRequiredImport(String exp) {
         Objects.requireNonNull(exp, "Imports may not be null");
         final Import helper = new Import(exp);
-        final JsonObject json = helper.tryLocate()
+        final JsonObject json = helper.tryLoadObject()
             .orElseThrow(() -> runExF("Invalid import: {}", exp));
         return readImport(json, helper);
+    }
+
+    /** Recursively loads all import definitions required by the expression. */
+    public static Map<File, JsonObject> locateDefinitions(String exp) {
+        Objects.requireNonNull(exp, "Imports may not be null");
+        final Map<File, JsonObject> definitions = new HashMap<>();
+        locateRecursively(definitions, exp);
+        return definitions;
+    }
+
+    private static void locateRecursively(Map<File, JsonObject> definitions, String exp) {
+        final Import helper = new Import(exp);
+        final File file = helper.locateFile()
+            .orElseThrow(() -> runExF("Unable to locate {} in {}", helper.filename, exp));
+        if (definitions.containsKey(file)) {
+            return;
+        }
+        final JsonObject json = PresetReader.getPresetJson(file)
+            .orElseThrow(() -> runExF("Error parsing {}", file));
+        definitions.put(file, json);
+        final JsonValue imports = json.get(PresetExpander.IMPORTS);
+        if (imports != null) {
+            final JsonArray importArray = HjsonTools.asOrToArray(imports);
+            for (JsonValue importExp : importArray) {
+                if (!importExp.isString()) {
+                    throw runExF("Invalid import expression: {}", importExp);
+                }
+                locateRecursively(definitions, importExp.asString());
+            }
+        }
     }
 
     /** Returns the list of keys that were imported by this expression. */
@@ -71,7 +104,7 @@ public class ImportHelper {
         } else if (helper.variable.isPresent()) {
             return Collections.singletonList(helper.variable.get());
         }
-        final JsonObject json = helper.locate(definitions)
+        final JsonObject json = helper.loadObject(definitions)
             .orElseThrow(() -> runExF("Expression not validated in time: {}", exp));
         return json.getNames();
     }
@@ -114,7 +147,7 @@ public class ImportHelper {
             as = splitAs.length > 1 ? full(splitAs[1]) : empty();
         }
 
-        Optional<JsonObject> locate(Map<File, JsonObject> defs) {
+        Optional<JsonObject> loadObject(Map<File, JsonObject> defs) {
             final JsonObject root = defs.get(new File(CaveInit.IMPORT_DIR, this.filename));
             if (root != null) {
                 return full(root);
@@ -123,13 +156,16 @@ public class ImportHelper {
                 .map(Map.Entry::getValue);
         }
 
-        Optional<JsonObject> tryLocate() {
+        Optional<JsonObject> tryLoadObject() {
+            return locateFile().flatMap(PresetReader::getPresetJson);
+        }
+
+        Optional<File> locateFile() {
             final File root = new File(CaveInit.IMPORT_DIR, this.filename);
             if (root.exists()) {
-                return PresetReader.getPresetJson(root);
+                return full(root);
             }
-            return getFileRecursive(CaveInit.IMPORT_DIR, this::matches)
-                .flatMap(PresetReader::getPresetJson);
+            return getFileRecursive(CaveInit.IMPORT_DIR, this::matches);
         }
 
         boolean matches(File f) {

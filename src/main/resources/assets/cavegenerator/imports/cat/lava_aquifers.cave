@@ -1,8 +1,8 @@
 {
-  imports: cat/common.cave::half_height_pct()
+  imports: cat/common.cave::half_rel()
   enabled: true
   caverns: {
-    height: $half_height_pct(0.15, 0.7)
+    height: $half_rel(9, 44)
     generators: [
       {
         threshold: [ -1, -0.8 ]
@@ -19,7 +19,7 @@
     }
     caveBlocks: {
       states: lava
-      height: $half_height_pct(0.15, 0.7)
+      height: $half_rel(9, 44)
     }
   }
 }

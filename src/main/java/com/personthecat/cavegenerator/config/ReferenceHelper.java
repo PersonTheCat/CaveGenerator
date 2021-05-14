@@ -163,8 +163,13 @@ public class ReferenceHelper {
         final boolean optional;
         final String defaultVal;
 
-        static boolean containsArguments(String val) {
-            return val.contains("@");
+        static int countArguments(String val) {
+            final Matcher matcher = ARGUMENT_PATTERN.matcher(val);
+            int count = 0;
+            while (matcher.find()) {
+                count++;
+            }
+            return count;
         }
 
         /**
@@ -187,9 +192,12 @@ public class ReferenceHelper {
         }
 
         static String replaceString(String val, Reference r) {
+            final int numArguments = countArguments(val);
             String buffer = val;
-            while (containsArguments(buffer)) {
-                final Argument a = create(buffer);
+            int skipped = 0;
+
+            for (int i = 0; i < numArguments; i++) {
+                final Argument a = create(buffer, skipped);
                 final String sub;
                 if (r.args.size() <= a.index) {
                     if (!a.optional) {
@@ -200,8 +208,8 @@ public class ReferenceHelper {
                     sub = r.args.get(a.index);
                 }
                 buffer = buffer.substring(0, a.start) + sub + buffer.substring(a.end);
-                // The argument was an argument.
-                if (containsArguments(sub)) return buffer;
+                // Each argument in the substitution is a parameter.
+                skipped += countArguments(sub);
             }
             return buffer;
         }
@@ -246,9 +254,13 @@ public class ReferenceHelper {
             return clone;
         }
 
-        static Argument create(String val) {
+        static Argument create(String val, int skipped) {
             final Matcher matcher = ARGUMENT_PATTERN.matcher(val);
-            if (!matcher.find()) {
+            boolean found = matcher.find();
+            for (int i = 0; i < skipped; i++) {
+                found &= matcher.find();
+            }
+            if (!found) {
                 throw new IllegalStateException("No arguments");
             }
             final int index = Integer.parseInt(matcher.group(1)) - 1;

@@ -1,18 +1,23 @@
 {
   imports: [
-    cat/common.cave::half_height_pct()
-    cat/common.cave::full_height_pct()
+    cat/common.cave::half_rel()
+    cat/common.cave::full_rel()
+    blocks.cave::ANDESITE
+    blocks.cave::DIORITE
+    blocks.cave::GRANITE
   ]
   wallDecorators: [
     {
       states: dirt
+      height: $half_rel(58, 75)
       integrity: 0.5
-      height: $half_height_pct(0.925, 1.075)
+      matchers: [ "stone", "$DIORITE" ]
     }
     {
       states: dirt
+      height: $half_rel(48, 58)
       integrity: 0.25
-      height: $half_height_pct(0.775, 0.925)
+      matchers: [ "stone", "$DIORITE" ]
     }
   ]
   burrows: [
@@ -23,12 +28,12 @@
       radius: 2.5
       target: 0.065
       branches: {
-        count: 9
-        chance: 1.0
-        systemChance: 0.0
+        count: 8
+        chance: 0.8
+        systemChance: 0
       }
       offset: {
-        range: $half_height_pct(0.32, 0.65)
+        range: $half_rel(20, 40)
       }
     }
   ]
@@ -36,10 +41,10 @@
     # Various open spaces near the bottom
     # of the world to expose the lava below.
     {
-      height: $half_height_pct(0.0, 0.4)
+      height: [ 0, 25 ]
       stretch: 0.75
       floor: {
-        range: $half_height_pct(0.085, 0.15)
+        range: [ 1, 9 ]
       }
     }
   ]
@@ -48,9 +53,9 @@
     # straight down. These serve as the
     # main entrances to the cave system.
     {
-      height: $full_height_pct(0.065, 1.0)
+      height: $full_rel(8, 128)
       count: 3
-      chance: 1 / 4
+      chance: 0.25
       systemChance: 0.01
       systemDensity: 2
       noiseYReduction: false
@@ -60,10 +65,11 @@
     # Generic ravines which pitch downward on
     # averange, unlike vanilla ravines.
     {
-      height: $half_height_pct(0.3, 1.1)
-      chance: 1 / 130
+      height: $half_rel(18, 69)
+      chance: 0.0075
       cutoffStrength: 0.3
-      pitch: [ 1.5, 2.5 ]
+      noiseYFactor: 0.8
+      pitch: [ 1.5, 1 ]
       dPitch: [ 0.1, 0, 0.95 ]
       walls: {
         frequency: 0.05
@@ -71,8 +77,8 @@
     }
     # Horizontal variant which rarely spawns.
     {
-      height: $half_height_pct(0.3, 1.1)
-      chance: 1 / 250
+      height: $half_rel(18, 69)
+      chance: 0.0034
       cutoffStrength: 0
       pitch: [ 1.5, 2.5 ]
       dPitch: [ 0.1, 0, 0.95 ]
@@ -80,14 +86,38 @@
       stretch: [ 0.25, 0.15, 1 ]
     }
   ]
+  clusters: [
+    {
+      states: $ANDESITE
+      chance: 0.01
+      radiusX: [ 16, 23 ]
+      radiusY: [ 11, 18 ]
+      radiusZ: [ 16, 23 ]
+      centerHeight: $half_rel(20, 32)
+    }
+    {
+      states: $DIORITE
+      chance: 0.01
+      centerHeight: $half_rel(49, 58)
+    }
+    {
+      states: $GRANITE
+      chance: 0.015
+      radiusX: [ 20, 27 ]
+      radiusY: [ 15, 22 ]
+      radiusZ: [ 20, 27 ]
+      centerHeight: $half_rel(5, 12)
+    }
+  ]
   stalactites: [
     {
       type: speleothem
       state: stone
+      height: [ 0, 25 ]
       length: [ 7, 10 ]
-      space: 3
+      space: 2
       size: large
-      chance: 0.008
+      chance: 0.01
     }
   ]
 }
