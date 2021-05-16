@@ -9,6 +9,10 @@ import net.minecraft.world.World;
 import net.minecraft.world.biome.Biome;
 import net.minecraft.world.biome.BiomeProvider;
 
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Predicate;
 
 @AllArgsConstructor(access = AccessLevel.PRIVATE)
@@ -46,12 +50,14 @@ public class BiomeSearch {
         final int actualZ = z << 4;
         // This is only used for early generators, at which point the current
         // chunk does not yet exist. As a result, this is more direct.
-        return new Biome[] {
+        final List<Biome> biomes = Arrays.asList(
             provider.getBiome(new BlockPos(actualX + 1, 0, actualZ + 1)),
             provider.getBiome(new BlockPos(actualX + 1, 0, actualZ + 14)),
             provider.getBiome(new BlockPos(actualX + 14, 0, actualZ + 1)),
             provider.getBiome(new BlockPos(actualX + 14, 0, actualZ + 14))
-        };
+        );
+        // Remove redundant entries.
+        return new HashSet<>(biomes).toArray(new Biome[0]);
     }
 
     /** Checks outward in a range of <code>r</code> for surrounding center biomes. */

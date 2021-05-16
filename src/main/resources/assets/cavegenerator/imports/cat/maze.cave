@@ -11,13 +11,13 @@
     count: 4
     height: $full_rel(8, 128)
     chance: 0.01
-    systemChance: 1.0
+    systemChance: 1
     systemDensity: 3
     resizeBranches: false
-    yaw: [ 0.0, 0.5, 1.0, 0.0 ]
-    dYaw: [ 0.0, 0.5, 1.0, 0.0 ]
-    pitch: [ 5.5, 0.2, 1.0, 0.0 ]
-    dPitch: [ 0.1, 0.0, 1.0, 0.0 ]
+    yaw: [ 0, 0.5, 1, 0 ]
+    dYaw: [ 0, 0.5, 1, 0 ]
+    pitch: [ 5.5, 0.2, 1, 0 ]
+    dPitch: [ 0.1, 0, 1, 0 ]
     wallDecorators: [
       # Cover the floor with patches of
       # cobblestone, dirt, and gravel.

@@ -10,7 +10,11 @@ import org.hjson.JsonValue;
 
 import java.io.*;
 
-import static com.personthecat.cavegenerator.io.SafeFileIO.*;
+import static com.personthecat.cavegenerator.io.SafeFileIO.copyStream;
+import static com.personthecat.cavegenerator.io.SafeFileIO.ensureDirExists;
+import static com.personthecat.cavegenerator.io.SafeFileIO.fileExists;
+import static com.personthecat.cavegenerator.io.SafeFileIO.getRequiredResource;
+import static com.personthecat.cavegenerator.io.SafeFileIO.mkdirs;
 import static com.personthecat.cavegenerator.util.CommonMethods.runEx;
 
 @Log4j2

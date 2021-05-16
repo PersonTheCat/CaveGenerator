@@ -7,12 +7,14 @@
     cat/crack.cave::ravines   as SURFACE_CRACKS
     cat/water.cave            as WATER_DECORATORS
     cat/snow.cave             as SNOW_FEATURES
+    cat/desert.cave           as DESERT_FEATURES
     cat/jungle.cave           as JUNGLE_FEATURES
     cat/mountain.cave         as MOUNTAIN_FEATURES
     cat/common.cave           :: DECORATED_BIOMES
     cat/common.cave           :: DENSE_CAVE_BIOMES
     cat/common.cave           :: MOUNTAIN_CAVE_BIOMES
     conditions.cave           :: SNOWY_BIOMES
+    conditions.cave           :: SANDY_BIOMES
     conditions.cave           :: OCEAN_BIOMES
     defaults.cave::caveBlocks as LAVA_CAVE_BLOCK
   ]
@@ -23,8 +25,10 @@
       biomes: $SNOWY_BIOMES
       ravines: $GENERIC_RAVINES
     }
-    # Todo: sandy features
-    {}
+    {
+      $DESERT_FEATURES: ALL
+      biomes: $SANDY_BIOMES
+    }
     # Todo: underground forest in mushroom islands?
     {}
     {
