@@ -783,6 +783,15 @@ caverns: [
 
     # Experimental feature to increase wall resolution.
     wallInterpolation: false
+
+    # Sets this generator to run after map generation
+    # occurs. You can use this for example to generate
+    # a shelled body of water (or an aquifer) which
+    # cannot get replaced by other features in the same
+    # preset.
+    # This feature is deprecated, as it will eventually
+    # be replaced by ordered generation.
+    deferred: false
     
     # Caverns do not have default region values.
     # Region generator

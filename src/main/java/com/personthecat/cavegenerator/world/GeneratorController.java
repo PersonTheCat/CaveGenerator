@@ -19,6 +19,7 @@ public class GeneratorController {
     private final List<TunnelGenerator> tunnels;
     private final List<RavineGenerator> ravines;
     private final List<CavernGenerator> caverns;
+    private final List<CavernGenerator> deferredCaverns;
     private final List<BurrowGenerator> burrows;
     private final List<LayerGenerator> layers;
     private final List<TunnelConnector<CavernGenerator>> cavernTunnels;
@@ -53,13 +54,15 @@ public class GeneratorController {
 
     private static void mapCaverns(List<CavernSettings> caverns, World world, GeneratorControllerBuilder builder) {
         final List<CavernGenerator> generators = new ArrayList<>();
+        final List<CavernGenerator> deferred = new ArrayList<>();
         final List<TunnelConnector<CavernGenerator>> connectors = new ArrayList<>();
         for (CavernSettings cavern : caverns) {
             final CavernGenerator generator = new CavernGenerator(cavern, world);
-            generators.add(generator);
+            (cavern.deferred ? deferred : generators).add(generator);
             cavern.branches.ifPresent(b -> connectors.add(new TunnelConnector<>(b, generator, world)));
         }
         builder.caverns(generators);
+        builder.deferredCaverns(deferred);
         builder.cavernTunnels(connectors);
     }
 
@@ -90,6 +93,7 @@ public class GeneratorController {
         ravines.forEach(r -> r.generate(ctx));
         cavernTunnels.forEach(t -> t.generate(ctx));
         burrowTunnels.forEach(t -> t.generate(ctx));
+        deferredCaverns.forEach(c -> c.generate(ctx)); // tmp
     }
 
     /** Spawn all of the superficial decorations that take place later in the chunk generation cycle. */

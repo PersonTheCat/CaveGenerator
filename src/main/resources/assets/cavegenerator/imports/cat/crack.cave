@@ -5,11 +5,11 @@
   ]
   ravines: {
     replaceableBlocks: [ "stone", "dirt", "grass", "sandstone", "sand" ]
-    chance: 0.005
+    chance: 0.0035
     height: $full_rel(8, 128)
     originHeight: $half_rel(67, 69)
     scale: [ -1.5, 0.5 ]
-    stretch: [ 10, 1 ]
+    stretch: [ 10.0, 1.0 ]
     cutoffStrength: 0
   }
 }

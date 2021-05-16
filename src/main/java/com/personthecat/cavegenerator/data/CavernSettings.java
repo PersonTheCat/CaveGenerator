@@ -86,6 +86,9 @@ public class CavernSettings {
     /** A list of tunnels that will spawn connected to these caverns. */
     @Default Optional<TunnelSettings> branches = empty();
 
+    /** Whether to run this generator as a late feature. Will be removed. */
+    @Default boolean deferred = false;
+
     public static CavernSettings from(JsonObject json, OverrideSettings overrides) {
         final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();
         final DecoratorSettings decorators = overrides.apply(DEFAULT_DECORATORS.toBuilder()).build();
@@ -109,6 +112,7 @@ public class CavernSettings {
             .mapBool(Fields.wallInterpolation, builder::wallInterpolation)
             .mapArray(Fields.generators, CavernSettings::createNoise, builder::generators)
             .mapObject(Fields.branches, o -> copyBranches(builder, o))
+            .mapBool(Fields.deferred, builder::deferred)
             .release(builder::build);
     }
 

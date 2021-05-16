@@ -270,6 +270,9 @@
       wallCurveRatio: 1.0
       wallInterpolation: false
 
+      # DEPRECATED
+      deferred: false
+
       region: {}
       noise: {}
       
