@@ -62,6 +62,7 @@ public class DecoratorSettings {
             .mapBool(Fields.replaceSolidBlocks, builder::replaceSolidBlocks)
             .mapArray(Fields.caveBlocks, CaveBlockSettings::from, builder::caveBlocks)
             .mapArray(Fields.wallDecorators, WallDecoratorSettings::from, builder::wallDecorators)
+            .mapArray(Fields.ponds, PondSettings::from, builder::ponds)
             .mapObject(Fields.shell, o -> builder.shell(ShellSettings.from(o)))
             .release(builder::build);
     }
