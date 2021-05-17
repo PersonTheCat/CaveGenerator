@@ -208,11 +208,11 @@ public class CavernGenerator extends WorldCarver implements TunnelSocket {
             }
         }
         // Caverns must be completely generated before decorating.
-        if (this.hasWallDecorators()) {
-            this.decorateCaverns(rand, primer, chunkX, chunkZ);
-        }
         if (this.hasPonds()) {
             this.generatePond(this.caverns, rand, world, primer, chunkX, chunkZ);
+        }
+        if (this.hasWallDecorators()) {
+            this.decorateCaverns(rand, primer, chunkX, chunkZ);
         }
     }
 

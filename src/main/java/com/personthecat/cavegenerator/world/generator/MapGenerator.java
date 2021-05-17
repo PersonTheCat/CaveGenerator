@@ -131,11 +131,11 @@ public abstract class MapGenerator extends WorldCarver {
         if (!(this.shouldTestForWater(miY, maY) && this.testForWater(data.p, this.sphere.inner))) {
             this.generateShell(data, rand, this.sphere.shell, (int) y);
             this.replaceSphere(data, rand, this.sphere.inner);
-            if (this.hasWallDecorators()) {
-                this.decorateSphere(data, rand, this.sphere.inner);
-            }
             if (this.hasPonds()) {
                 this.generatePond(this.sphere.inner, rand, world, data.p, data.chunkX, data.chunkZ);
+            }
+            if (this.hasWallDecorators()) {
+                this.decorateSphere(data, rand, this.sphere.inner);
             }
         }
     }

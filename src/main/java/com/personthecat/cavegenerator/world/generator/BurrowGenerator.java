@@ -90,11 +90,11 @@ public class BurrowGenerator extends WorldCarver implements TunnelSocket {
         } else {
             this.generateUnShelled(ctx, storePositions ? this::replaceRecord : this::replaceOnly);
         }
-        if (this.hasWallDecorators()) {
-            this.decorateCaverns(ctx.localRand, ctx.primer, ctx.chunkX, ctx.chunkZ);
-        }
         if (this.hasPonds()) {
             this.generatePond(this.caverns, ctx.localRand, ctx.world, ctx.primer, ctx.chunkX, ctx.chunkZ);
+        }
+        if (this.hasWallDecorators()) {
+            this.decorateCaverns(ctx.localRand, ctx.primer, ctx.chunkX, ctx.chunkZ);
         }
     }
 
