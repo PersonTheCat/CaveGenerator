@@ -208,12 +208,7 @@ public class CavernGenerator extends WorldCarver implements TunnelSocket {
             }
         }
         // Caverns must be completely generated before decorating.
-        if (this.hasPonds()) {
-            this.generatePond(this.caverns, rand, world, primer, chunkX, chunkZ);
-        }
-        if (this.hasWallDecorators()) {
-            this.decorateCaverns(rand, primer, chunkX, chunkZ);
-        }
+        this.decorateAll(this.caverns, rand, world, primer, chunkX, chunkZ);
     }
 
     private void generateColumn(int[][] heightmap, Random rand, ChunkPrimer primer, int x, int z, int chunkX, int chunkZ, int actualX, int actualZ) {
@@ -225,16 +220,15 @@ public class CavernGenerator extends WorldCarver implements TunnelSocket {
         final int d = (int) this.decorators.shell.radius;
         final int min = Math.max(1, height.min - d);
         final int max = Math.min(255, height.max + d);
-
+        final int yO = (int) this.heightOffset.GetAdjustedNoise(actualX, actualZ);
         for (int y = min; y < max; y++) {
-            final int yO = y + (int) this.heightOffset.GetAdjustedNoise(actualX, actualZ);
-            if (this.conditions.noise.GetBoolean(actualX, yO, actualZ)) {
+            if (this.conditions.noise.GetBoolean(actualX, y + yO, actualZ)) {
                 final double relY = this.curveOffset + this.maxY - y;
                 final double curve = distance - ((relY * relY) / this.diffY * this.wallCurveRatio);
 
                 final double wall = this.wallNoise[(y + offset) & 255];
                 if (curve > wall) {
-                    this.place(rand, primer, height, x, y, z, chunkX, chunkZ, actualX, actualZ);
+                    this.place(rand, primer, height, x, y, z, yO, chunkX, chunkZ, actualX, actualZ);
                 } else if (curve > wall - d) {
                     this.generateShell(rand, primer, x, y, z, y, chunkX, chunkZ);
                 }
@@ -242,9 +236,9 @@ public class CavernGenerator extends WorldCarver implements TunnelSocket {
         }
     }
 
-    private void place(Random rand, ChunkPrimer primer, Range height, int x, int y, int z, int chunkX, int chunkZ, int actualX, int actualZ) {
+    private void place(Random rand, ChunkPrimer primer, Range height, int x, int y, int z, int yO, int chunkX, int chunkZ, int actualX, int actualZ) {
         for (FastNoise noise : this.generators) {
-            final float value = noise.GetNoise(actualX, y, actualZ);
+            final float value = noise.GetNoise(actualX, y + yO, actualZ);
             if (noise.IsInThreshold(value)) {
                 if (height.contains(y)) {
                     this.replaceBlock(rand, primer, x, y, z, chunkX, chunkZ);
@@ -294,15 +288,16 @@ public class CavernGenerator extends WorldCarver implements TunnelSocket {
             return CANNOT_SPAWN;
         }
         final int center = height.rand(rand);
+        final int yO = (int) this.heightOffset.GetAdjustedNoise(x, z);
         if (rand.nextBoolean()) {
             for (int y = center; y < height.max; y += this.cfg.resolution) {
-                if (this.checkSingle(x, y, z)) {
+                if (this.checkSingle(x, y + yO, z)) {
                     return y;
                 }
             }
         } else {
             for (int y = center; y > height.min; y -= this.cfg.resolution) {
-                if (this.checkSingle(x, y, z)) {
+                if (this.checkSingle(x, y + yO, z)) {
                     return y;
                 }
             }
@@ -311,6 +306,9 @@ public class CavernGenerator extends WorldCarver implements TunnelSocket {
     }
 
     private boolean checkSingle(int actualX, int y, int actualZ) {
+        if (!this.conditions.noise.GetBoolean(actualX, y, actualZ)) {
+            return false;
+        }
         for (FastNoise generator : this.generators) {
             if (generator.GetBoolean(actualX, y, actualZ)) {
                 return true;

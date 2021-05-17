@@ -90,12 +90,7 @@ public class BurrowGenerator extends WorldCarver implements TunnelSocket {
         } else {
             this.generateUnShelled(ctx, storePositions ? this::replaceRecord : this::replaceOnly);
         }
-        if (this.hasPonds()) {
-            this.generatePond(this.caverns, ctx.localRand, ctx.world, ctx.primer, ctx.chunkX, ctx.chunkZ);
-        }
-        if (this.hasWallDecorators()) {
-            this.decorateCaverns(ctx.localRand, ctx.primer, ctx.chunkX, ctx.chunkZ);
-        }
+        this.decorateAll(this.caverns, ctx.localRand, ctx.world, ctx.primer, ctx.chunkX, ctx.chunkZ);
     }
 
     private void generateShelled(PrimerContext ctx, GenerationFunction f) {
@@ -212,7 +207,9 @@ public class BurrowGenerator extends WorldCarver implements TunnelSocket {
         if (cap > 0) {
             final int y = (int) this.offset.GetAdjustedNoise(x, z);
             if (this.conditions.getColumn(x, z).contains(y)) {
-                return y;
+                if (this.conditions.noise.GetBoolean(x, y, z)) {
+                    return y;
+                }
             }
         }
         return CANNOT_SPAWN;

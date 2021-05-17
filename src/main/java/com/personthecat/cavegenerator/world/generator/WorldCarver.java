@@ -65,36 +65,37 @@ public abstract class WorldCarver extends BasicGenerator {
         }
     }
 
-    protected void generatePond(PositionFlags positions, Random rand, World world, ChunkPrimer primer, int cX, int cZ) {
-        for (int i = 1; i < this.maxPondDepth + 1; i++) {
-            final int d = i;
-            positions.filter((x, y, z) -> evaluatePond(world, primer, rand, x, y, z, cX, cZ, d));
+    protected void decorateAll(PositionFlags positions, Random rand, World world, ChunkPrimer primer, int cX, int cZ) {
+        if (this.hasPonds()) {
+            this.generatePond(positions, rand, world, primer, cX, cZ);
+        }
+        if (this.hasWallDecorators()) {
+            this.generateWall(positions, rand, primer, cX, cZ);
         }
     }
 
-    private boolean evaluatePond(World world, ChunkPrimer primer, Random rand, int x, int y, int z, int cX, int cZ, int d) {
+    protected void generatePond(PositionFlags positions, Random rand, World world, ChunkPrimer primer, int cX, int cZ) {
+        positions.forEach((x, y, z) -> evaluatePond(world, primer, rand, x, y, z, cX, cZ));
+    }
+
+    private void evaluatePond(World world, ChunkPrimer primer, Random rand, int x, int y, int z, int cX, int cZ) {
         final int aX = cX * 16 + x;
         final int aZ = cZ * 16 + x;
-        final IBlockState candidate = primer.getBlockState(x, y - d, z);
-        if (Blocks.AIR.equals(candidate.getBlock())) return false;
-        final IBlockState[] surrounding = getSurrounding(world, primer, x, y - d + 1, z, aX, aZ);
-        final int solids = numSolid(surrounding);
-        if (d == 1 && solids > 0 || solids > 2) {
-            return false;
+        final IBlockState candidate = primer.getBlockState(x, y, z);
+        if (Blocks.AIR.equals(candidate.getBlock())) {
+            return;
         }
-        final IBlockState[] lower = getSurrounding(world, primer, x, y - d, z, aX, aZ);
-        if (anyAir(lower)) {
-            return false;
+        if (anySolid(getSurrounding(world, primer, x, y, z, aX, aZ))) {
+            return;
         }
+        if (anyAir(getSurrounding(world, primer, x, y - 1, z, aX, aZ))) {
+            return;
+        }
+        int d = 1;
         for (ConfiguredPond pond : this.decorators.ponds) {
-            if (d > pond.cfg.depth) continue;
-            if (pond.canGenerate(rand, candidate, x, y, z, cX, cZ)) {
-                if (placePond(pond, primer, rand, x, y - d, z)) {
-                    return true;
-                }
-            }
+            if (pond.cfg.depth < d) continue;
+            d = placeCountPond(pond, primer, rand, x, y, z);
         }
-        return false;
     }
 
     private static IBlockState[] getSurrounding(World world, ChunkPrimer primer, int x, int y, int z, int aX, int aZ) {
@@ -114,33 +115,37 @@ public abstract class WorldCarver extends BasicGenerator {
         return null;
     }
 
-    private static int numSolid(IBlockState[] states) {
-        int count = 0;
+    private static boolean anySolid(IBlockState[] states) {
         for (IBlockState state : states) {
-            if (state != null && state.isOpaqueCube()) {
-                count++;
+            if (state != null && state.getMaterial().isSolid()) {
+                return true;
             }
         }
-        return count;
+        return false;
     }
 
     private static boolean anyAir(IBlockState[] states) {
         for (IBlockState state : states) {
-            if (state != null && state.getBlock().equals(Blocks.AIR)) {
+            if (state != null && Blocks.AIR.equals(state.getBlock())) {
                 return true;
             }
         }
         return false;
     }
 
-    private static boolean placePond(ConfiguredPond pond, ChunkPrimer primer, Random rand, int x, int y, int z) {
-        for (IBlockState state : pond.cfg.states) {
-            if (pond.cfg.integrity == 0 || rand.nextFloat() <= pond.cfg.integrity) {
-                primer.setBlockState(x, y, z, state);
-                return true;
+    private static int placeCountPond(ConfiguredPond pond, ChunkPrimer primer, Random rand, int x, int y, int z) {
+        int yO = y;
+        for (int i = 1; i < pond.cfg.depth + 1; i++) {
+            yO = y - i;
+            for (IBlockState state : pond.cfg.states) {
+                if (pond.cfg.integrity == 0 || rand.nextFloat() <= pond.cfg.integrity) {
+                    primer.setBlockState(x, y, z, state);
+                } else {
+                    return yO + 1;
+                }
             }
         }
-        return false;
+        return yO;
     }
 
     /** Spawns blocks from the shell decorator settings for a single coordinate. */
@@ -158,6 +163,10 @@ public abstract class WorldCarver extends BasicGenerator {
                 }
             }
         }
+    }
+
+    protected void generateWall(PositionFlags positions, Random rand, ChunkPrimer primer, int cX, int cZ) {
+        positions.forEach((x, y, z) -> this.decorateBlock(rand, primer, x, y, z, cX, cZ));
     }
 
     /** Conditionally replaces the current block with blocks from this generator's WallDecorators. */
