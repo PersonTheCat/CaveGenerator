@@ -140,7 +140,7 @@ public class ImportHelper {
         final Optional<String> as;
 
         Import(String statement) {
-            final String[] splitAs = statement.split("\\s*(as|AS|As)\\s*");
+            final String[] splitAs = statement.split("\\s+(as|AS|As)\\s+");
             final String[] splitVar = splitAs[0].split("\\s*::\\s*");
             filename = splitVar[0];
             variable = splitVar.length > 1 ? full(splitVar[1]) : empty();
