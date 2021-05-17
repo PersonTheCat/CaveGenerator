@@ -202,6 +202,9 @@ public class CommandCave extends CommandBase {
             this.handle(server, sender, args[0], slice);
         } catch (RuntimeException e) {
             sendError(sender, e.getMessage());
+            if (e.getCause() != null) {
+                sendError(sender, f("Cause: ", e.getCause().getMessage()));
+            }
         }
     }
 
