@@ -18,7 +18,7 @@
     conditions.cave           :: OCEAN_BIOMES
     defaults.cave::caveBlocks as LAVA_CAVE_BLOCK
   ]
-  enabled: false
+  enabled: true
   inner: [
     {
       $SNOW_FEATURES: ALL

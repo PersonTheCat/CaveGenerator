@@ -56,7 +56,8 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
 
                     // Get absolute coordinates, generate in the center.
                     final int x = (cX * 16) + 8, z = (cZ * 16) + 8;
-                    if (conditions.biomes.test(getPredictBiome(world, x, z))) {
+                    final Biome b = world.getBiomeProvider().getBiome(new BlockPos(x, 0, z));
+                    if (conditions.biomes.test(b)) {
                         for (Pair<IBlockState, Integer> pair : cfg.states) {
                             final IBlockState state = pair.getLeft();
                             final int id = pair.getRight();
@@ -78,17 +79,6 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
                 }
             }
         });
-    }
-
-    private static Biome getPredictBiome(World world, int x, int z) {
-        final BlockPos pos = new BlockPos(x + 2, 0, z + 2);
-        final BiomeProvider provider = world.getBiomeProvider();
-        // Unlike the original, this does not contain a try-catch.
-        // May have to add that...
-        if (world.isBlockLoaded(pos)) {
-            return world.getChunk(pos).getBiome(pos, provider);
-        }
-        return provider.getBiomesForGeneration(null, x / 4, z / 4, 1, 1)[0];
     }
 
     private void generateClusters(ChunkPrimer primer, Random rand, int chunkX, int chunkZ) {

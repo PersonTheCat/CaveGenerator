@@ -9,7 +9,7 @@
     conditions.cave           :: OCEAN_BIOMES
     defaults.cave::caveBlocks as LAVA_CAVE_BLOCK
   ]
-  enabled: true
+  enabled: false
   inner: [
     {
       blacklistBiomes: true
