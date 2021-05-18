@@ -5,12 +5,17 @@
     cat/maze.cave::tunnels    as MAZE_TUNNELS
     cat/crack.cave::ravines   as SURFACE_CRACKS
     cat/water.cave            as WATER_DECORATORS
+    cat/mountain.cave         as MOUNTAIN_FEATURES
     cat/common.cave           :: MOUNTAIN_CAVE_BIOMES
     conditions.cave           :: OCEAN_BIOMES
     defaults.cave::caveBlocks as LAVA_CAVE_BLOCK
   ]
   enabled: false
   inner: [
+    {
+      $MOUNTAIN_FEATURES: ALL
+      biomes: $MOUNTAIN_CAVE_BIOMES
+    }
     {
       blacklistBiomes: true
       biomes: $MOUNTAIN_CAVE_BIOMES

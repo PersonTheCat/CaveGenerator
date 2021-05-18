@@ -27,6 +27,7 @@
   OCEAN_BIOMES: { types: [ "OCEAN" ] }
   WET_BIOMES: { types: [ "OCEAN", "RIVER", "SWAMP" ] }
   RARE_BIOMES: { types: [ "RARE" ] }
+  MUSHROOM_BIOMES: { types: [ "MUSHROOM" ] }
   HILL_BIOMES: { types: [ "HILLS" ] }
   FOREST_BIOMES: { types: [ "FOREST" ] }
   COLD_BIOMES: { types: [ "COLD" ] }
