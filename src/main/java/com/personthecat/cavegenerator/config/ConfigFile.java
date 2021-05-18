@@ -48,6 +48,13 @@ public class ConfigFile {
     public static boolean strictPresets = false;
 
     @Comment({
+        "When this field is set to true, PresetReader will skip over",
+        "any invalid presets and simply not load them. Make sure to",
+        "check your log to determine if any preset erred."
+    })
+    public static boolean ignoreInvalidPresets = false;
+
+    @Comment({
         "A list of dimensions where HeightMapLocator will check for the",
         "surface to avoid spawning caverns in water. Disable this in your",
         "dimension if you don't have regular oceans spawning."

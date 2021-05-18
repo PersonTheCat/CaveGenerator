@@ -30,11 +30,20 @@
     {
       type: speleothem
       state: stone
-      length: [ 8, 15 ]
+      length: [ 8, 14 ]
       height: $full_rel(45, 83)
       space: 8
       size: giant
       chance: 0.016
+    }
+    {
+      type: speleothem
+      state: stone
+      length: [ 6, 8 ]
+      height: $full_rel(45, 83)
+      space: 5
+      size: giant
+      chance: 0.004
     }
   ]
 }

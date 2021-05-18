@@ -163,6 +163,10 @@ public class ReferenceHelper {
         final boolean optional;
         final String defaultVal;
 
+        static boolean containsArgument(String val) {
+            return ARGUMENT_PATTERN.matcher(val).find();
+        }
+
         static int countArguments(String val) {
             final Matcher matcher = ARGUMENT_PATTERN.matcher(val);
             int count = 0;
@@ -198,7 +202,7 @@ public class ReferenceHelper {
 
             for (int i = 0; i < numArguments; i++) {
                 final Argument a = create(buffer, skipped);
-                final String sub;
+                String sub;
                 if (r.args.size() <= a.index) {
                     if (!a.optional) {
                         throw new IllegalStateException("Missing argument: " + (a.index + 1));
@@ -207,9 +211,17 @@ public class ReferenceHelper {
                 } else {
                     sub = r.args.get(a.index);
                 }
+                final int numParams = countArguments(sub);
+                if (numParams == 1) {
+                    // Export the default argument for this parameter.
+                    final Argument param = create(sub, 0);
+                    if (!a.defaultVal.isEmpty() && param.defaultVal.isEmpty()) {
+                        sub += "(" + a.defaultVal + ")";
+                    }
+                }
                 buffer = buffer.substring(0, a.start) + sub + buffer.substring(a.end);
                 // Each argument in the substitution is a parameter.
-                skipped += countArguments(sub);
+                skipped += numParams;
             }
             return buffer;
         }
@@ -272,14 +284,14 @@ public class ReferenceHelper {
             if (question > -1) {
                 optional = true;
                 end = question + 1;
-                final int opening = findOpening(val, question);
+                final int opening = findOpening(val, end);
                 if (opening > -1) {
                     final int closing = findClosing(val, opening, '(', ')');
                     end = closing + 1;
                     defaultVal = val.substring(opening + 1, closing);
                 }
             }
-            return new Argument(start, end, index, optional,  defaultVal);
+            return new Argument(start, end, index, optional, defaultVal);
         }
     }
 
@@ -409,16 +421,35 @@ public class ReferenceHelper {
         final char first = s.charAt(0);
         final char last = s.charAt(s.length() - 1);
         if (Character.isWhitespace(first)) {
+            final boolean single = containsRawDoubleQuote(s);
             // Only possible if the input was already quoted.
-            return '"' + s + '"';
+            return single ? '\'' + s + '\'' : '"' + s + '"';
         } else if ((first == '{' && last == '}') || (first == '[' && last == ']')) {
             return s;
         }
         for (char c : s.toCharArray()) {
             if (Character.isWhitespace(c)) {
-                return '"' + s + '"';
+                final boolean single = containsRawDoubleQuote(s);
+                return single ? '\'' + s + '\'' : '"' + s + '"';
             }
         }
         return s;
+    }
+
+    /**
+     * Determines whether the input text contains raw double quotes (") with
+     * no escape characters.
+     *
+     * @param s The raw parameter value input to the template
+     * @return Whether an unescaped double quote is found.
+     */
+    private static boolean containsRawDoubleQuote(String s) {
+        boolean escaped = false;
+        for (char c : s.toCharArray()) {
+            if (c == '\\') escaped = true;
+            else if (c == '"' && !escaped) return true;
+            else escaped = false;
+        }
+        return false;
     }
 }

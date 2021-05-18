@@ -114,8 +114,8 @@
       type: speleothem
       state: stone
       height: [ 0, 25 ]
-      length: [ 8, 11 ]
-      space: 9
+      length: [ 7, 10 ]
+      space: 2
       size: large
       chance: 0.01
     }

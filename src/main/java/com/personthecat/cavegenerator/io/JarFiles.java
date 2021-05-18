@@ -56,7 +56,10 @@ public class JarFiles {
 
     /** A couple of structure NBTs to be copied from the jar. */
     private static final String[] STRUCTURES = {
-        "hanging_spawner", "red_mushroom"
+        "brown_mushroom_lg", "brown_mushroom_sm", "bush1_sm",
+        "bush2_sm", "bush3_sm", "bush4_med", "hanging_spawner",
+        "hanging_spawner_skeleton", "hanging_spawner_zombie",
+        "red_mushroom"
     };
 
     /** Any preset that specifically belongs in /imports. */

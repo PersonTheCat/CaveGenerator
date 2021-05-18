@@ -83,7 +83,18 @@ public class PresetReader {
     /** Converts a map of (file -> json) to (filename -> POJO)  */
     private static Map<String, CavePreset> toSettings(Map<File, JsonObject> jsons) {
         final Map<String, CavePreset> settings = new HashMap<>();
-        extractInner(jsons).forEach((name, json) -> settings.put(name, CavePreset.from(json)));
+        extractInner(jsons).forEach((name, json) -> {
+            try {
+                settings.put(name, CavePreset.from(json));
+            } catch (RuntimeException e) {
+                final String msg = f("Error reading {}: {}", name, e.getMessage());
+                if (ConfigFile.ignoreInvalidPresets) {
+                    log.error(msg);
+                } else {
+                    throw runEx(msg);
+                }
+            }
+        });
         return settings;
     }
 
