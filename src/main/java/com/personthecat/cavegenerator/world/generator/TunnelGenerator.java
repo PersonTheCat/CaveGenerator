@@ -20,7 +20,7 @@ public class TunnelGenerator extends MapGenerator {
     @Nullable private final TunnelGenerator branches;
 
     public TunnelGenerator(TunnelSettings cfg, World world) {
-        super(cfg.conditions, cfg.decorators, world, cfg.waterChecks);
+        super(cfg.conditions, cfg.decorators, world, cfg.checkWater);
         this.cfg = cfg;
         this.rooms = cfg.rooms.orElse(null);
         this.branches = cfg.branches.map(b -> new TunnelGenerator(b, world)).orElse(null);

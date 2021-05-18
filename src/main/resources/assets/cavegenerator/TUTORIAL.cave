@@ -588,7 +588,7 @@ tunnels: [
     resizeBranches: true
     
     # Whether to test for water before generating to avoid water walls.
-    waterChecks: true
+    checkWater: true
 
     # Radius in blocks.
     scale: {
@@ -666,7 +666,7 @@ ravines: [
     height: [ 8, 128 ]
     distance: 0
     resolution: 4
-    waterChecks: true
+    checkWater: true
     dYaw: {
       startVal: 0
       factor: 0.5

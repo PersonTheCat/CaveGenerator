@@ -109,7 +109,7 @@
       seed: null
       reseedBranches: true
       resizeBranches: true
-      waterChecks: true
+      checkWater: true
       scale: {
         startVal: 0
         startValRandFactor: 1
@@ -173,7 +173,7 @@
       resolution: 4
       distance: 0
       cutoffStrength: 5.0 
-      waterChecks: true
+      checkWater: true
       dYaw: {
         startVal: 0
         factor: 0.5

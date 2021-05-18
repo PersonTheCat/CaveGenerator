@@ -50,8 +50,8 @@
       $GENERIC_FEATURES: ALL
       $WATER_DECORATORS: ALL
       biomes: $OCEAN_BIOMES
-      *tunnels.waterChecks: false
-      *ravines.waterChecks: false
+      *tunnels.checkWater: false
+      *ravines.checkWater: false
       stalactites: []
     }
     {

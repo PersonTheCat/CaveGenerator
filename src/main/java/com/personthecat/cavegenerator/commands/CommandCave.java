@@ -7,6 +7,7 @@ import com.personthecat.cavegenerator.noise.CachedNoiseHelper;
 import com.personthecat.cavegenerator.util.Calculator;
 import com.personthecat.cavegenerator.util.CaveLinter;
 import com.personthecat.cavegenerator.util.HjsonTools;
+import com.personthecat.cavegenerator.world.feature.StructureSpawner;
 import mcp.MethodsReturnNonnullByDefault;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.settings.GameSettings;
@@ -203,7 +204,7 @@ public class CommandCave extends CommandBase {
         } catch (RuntimeException e) {
             sendError(sender, e.getMessage());
             if (e.getCause() != null) {
-                sendError(sender, f("Cause: ", e.getCause().getMessage()));
+                sendError(sender, f("Cause: {}", e.getCause().getMessage()));
             }
         }
     }
@@ -260,7 +261,9 @@ public class CommandCave extends CommandBase {
     private static void reload(MinecraftServer server, ICommandSender sender) {
         CaveInit.initPresets(Main.instance.presets);
         Main.instance.generators.clear();
+        Main.instance.structures.clear();
         CachedNoiseHelper.removeAll();
+        StructureSpawner.loadAllStructures(Main.instance.structures);
         if (sender.getEntityWorld().provider.getDimension() != 0) {
             Main.instance.loadGenerators(server.getWorld(0));
         }

@@ -51,7 +51,7 @@ public class JarFiles {
     };
 
     private static final String[] DEFAULTS = {
-        "cat", "ore_veins", "geodes"
+        "cat", "cat_lite", "geodes", "ore_veins"
     };
 
     /** A couple of structure NBTs to be copied from the jar. */

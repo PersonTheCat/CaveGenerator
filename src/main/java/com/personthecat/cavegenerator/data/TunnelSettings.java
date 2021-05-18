@@ -100,7 +100,7 @@ public class TunnelSettings {
     @Default boolean hasBranches = true;
 
     /** Whether to test for water before spawning to avoid water walls. */
-    @Default boolean waterChecks = true;
+    @Default boolean checkWater = true;
 
     public static TunnelSettings from(JsonObject json, OverrideSettings overrides) {
         final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();
@@ -142,7 +142,7 @@ public class TunnelSettings {
             .mapInt(Fields.seed, i -> builder.seed(full((long) i)))
             .mapBool(Fields.reseedBranches, builder::reseedBranches)
             .mapBool(Fields.hasBranches, builder::hasBranches)
-            .mapBool(Fields.waterChecks, builder::waterChecks)
+            .mapBool(Fields.checkWater, builder::checkWater)
             .release(builder::build);
     }
 }
