@@ -10,8 +10,8 @@
   ]
   variables: {
     ROOT_HEIGHT: $half_rel(5, 56)
-    ROOT_REPLACEABLE: [ "stone", "dirt", "air", "clay" ]
-    POND_RANGE: 1
+    ROOT_REPLACEABLE: [ "stone", "dirt", "air", "clay", "water" ]
+    POND_RANGE: 2
     # Generic configurations for spawining
     # one of the bush features.
     # Parameters:

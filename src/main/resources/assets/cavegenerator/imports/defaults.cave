@@ -1,24 +1,17 @@
 {
   dimensions: [ 0 ]
   replaceableBlocks: [ "stone", "dirt", "grass", "hardened_clay" ]
-  rooms: {
-    scale: 6
-    stretch: 0.5
-    chance: 0.1
-  }
   caveBlocks: {
     states: lava
     height: [ 0, 10 ]
   }
   tunnels: {
-    frequency: 15
     height: [ 8, 128 ]
     resolution: 4
     distance: 0
     systemChance: 0.25
     chance: 0.142
     systemDensity: 4
-    roomChance: 0.1
     noiseYReduction: true
     resizeBranches: true
     dYaw: {
@@ -54,6 +47,12 @@
       startVal: 0
       startValRandFactor: 0.25
     }
+    rooms: {
+      scale: 6
+      stretch: 0.5
+      chance: 0.1
+    }
+    count: 15
   }
   ravines: {
     chance: 0.02
