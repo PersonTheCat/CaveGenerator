@@ -81,7 +81,7 @@ public abstract class WorldCarver extends BasicGenerator {
     private void evaluatePond(World world, ChunkPrimer primer, Random rand, int x, int y, int z, int cX, int cZ) {
         final int aX = cX * 16 + x;
         final int aZ = cZ * 16 + x;
-        final IBlockState candidate = primer.getBlockState(x, y, z);
+        final IBlockState candidate = primer.getBlockState(x, y - 1, z);
         if (Blocks.AIR.equals(candidate.getBlock())) {
             return;
         }
@@ -93,8 +93,9 @@ public abstract class WorldCarver extends BasicGenerator {
         }
         int d = 1;
         for (ConfiguredPond pond : this.decorators.ponds) {
-            if (pond.cfg.depth < d) continue;
-            d = placeCountPond(pond, primer, rand, x, y, z);
+            if (pond.cfg.depth >= d && pond.canGenerate(rand, candidate, x, y, z, cX, cZ)) {
+                d = placeCountPond(pond, primer, rand, x, y, z);
+            }
         }
     }
 
@@ -134,11 +135,18 @@ public abstract class WorldCarver extends BasicGenerator {
     }
 
     private static int placeCountPond(ConfiguredPond pond, ChunkPrimer primer, Random rand, int x, int y, int z) {
+        if (pond.cfg.integrity == 1.0 && pond.cfg.states.size() > 0) {
+            final IBlockState state = pond.cfg.states.get(0);
+            for (int i = y - 1; i > y - pond.cfg.depth - 1; i--) {
+                primer.setBlockState(x, i, z, state);
+            }
+            return y - pond.cfg.depth;
+        }
         int yO = y;
         for (int i = 1; i < pond.cfg.depth + 1; i++) {
             yO = y - i;
             for (IBlockState state : pond.cfg.states) {
-                if (pond.cfg.integrity == 0 || rand.nextFloat() <= pond.cfg.integrity) {
+                if (rand.nextFloat() <= pond.cfg.integrity) {
                     primer.setBlockState(x, y, z, state);
                 } else {
                     return yO + 1;

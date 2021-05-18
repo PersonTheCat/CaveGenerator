@@ -2,12 +2,14 @@ package com.personthecat.cavegenerator.config;
 
 import com.personthecat.cavegenerator.util.Calculator;
 import com.personthecat.cavegenerator.util.HjsonTools;
+import org.apache.commons.lang3.ArrayUtils;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 
 import java.io.File;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
 import static com.personthecat.cavegenerator.util.HjsonTools.asOrToArray;
@@ -115,6 +117,7 @@ public class PresetExpander {
     private static void expand(JsonObject json) {
         copyObject(json, json);
         mergeObject(json, json);
+        overrideObject(json);
     }
 
     /**
@@ -202,6 +205,7 @@ public class PresetExpander {
         expand(variables);
         copyObject(variables, json);
         mergeObject(variables, json);
+        overrideObject(json);
     }
 
     /**
@@ -310,7 +314,7 @@ public class PresetExpander {
      *  Applies the merge operation to every JSON object nested in an array.
      *
      * @param from The source where variables are defined.
-     * @param to the array which may contain objects requiring merges.
+     * @param to The array which may contain objects requiring merges.
      */
     private static void mergeArray(JsonObject from, JsonArray to) {
         // No clone needed. We won't merge into the array itself.
@@ -319,6 +323,93 @@ public class PresetExpander {
                 mergeObject(from, value.asObject());
             } else if (value.isArray()) {
                 mergeArray(from, value.asArray());
+            }
+        }
+    }
+
+    /**
+     * Applies all recursive overrides inside of a JSON object.
+     *
+     * @param json The object which may contain recursive overrides.
+     */
+    private static void overrideObject(JsonObject json) {
+        final JsonObject clone = new JsonObject();
+        for (JsonObject.Member member : json) {
+            final String name = member.getName();
+            final JsonValue value = member.getValue();
+            if (name.startsWith("*")) {
+                final String[] path = name.substring(1).split(Pattern.quote("."));
+                final String recursiveKey = path[0];
+                if (path.length == 1) {
+                    forEachParent(json, recursiveKey, o -> o.set(recursiveKey, value));
+                } else {
+                    FieldHistory.recursive(recursiveKey).forEach(json, o ->
+                        FieldHistory.withPath(ArrayUtils.subarray(path, 1, path.length - 1))
+                            .forEach(o, c -> c.set(path[path.length - 1], value)));
+                }
+            } else {
+                clone.add(name, value);
+            }
+            if (value.isObject()) {
+                overrideObject(value.asObject());
+            } else if (value.isArray()) {
+                overrideArray(value.asArray());
+            }
+        }
+        replaceContents(clone, json);
+    }
+
+    /**
+     * Applies all recursive overrides inside of a JSON array.
+     *
+     * @param json The array which may contain recursive overrides.
+     */
+    private static void overrideArray(JsonArray json) {
+        for (JsonValue value : json) {
+            if (value.isObject()) {
+                overrideObject(value.asObject());
+            } else if (value.isArray()) {
+                overrideArray(value.asArray());
+            }
+        }
+    }
+
+    /**
+     * Performs an action on every JSON object containing the given field key.
+     *
+     * @param json The object which may contain this field at any depth.
+     * @param key The key which the object must contain
+     * @param fn The function to run for each object containing the key
+     */
+    private static void forEachParent(JsonObject json, String key, Consumer<JsonObject> fn) {
+        for (JsonObject.Member member : json) {
+            final String name = member.getName();
+            final JsonValue value = member.getValue();
+            if (name.equals(key)) {
+                fn.accept(json);
+                continue;
+            }
+            if (value.isObject()) {
+                forEachParent(value.asObject(), key, fn);
+            } else if (value.isArray()) {
+                forEachParent(value.asArray(), key, fn);
+            }
+        }
+    }
+
+    /**
+     * Performs an action on every JSON object containing the given field key.
+     *
+     * @param json The array which may contain this field at any depth.
+     * @param key The key which the object must contain
+     * @param fn The function to run for each object containing the key
+     */
+    private static void forEachParent(JsonArray json, String key, Consumer<JsonObject> fn) {
+        for (JsonValue value : json) {
+            if (value.isObject()) {
+                forEachParent(value.asObject(), key, fn);
+            } else if (value.isArray()) {
+                forEachParent(value.asArray(), key, fn);
             }
         }
     }
