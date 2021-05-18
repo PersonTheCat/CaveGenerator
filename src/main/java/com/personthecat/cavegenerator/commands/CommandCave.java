@@ -308,7 +308,9 @@ public class CommandCave extends CommandBase {
         final File located = locateFile(args);
         final Optional<JsonObject> preset = PresetReader.getPresetJson(located);
         if (preset.isPresent()) {
+            JsonValue.setEol("\n"); // Chat can't render \r characters.
             sender.sendMessage(CaveLinter.lint(preset.get().toString(FORMATTER)));
+            JsonValue.setEol(System.getProperty("line.separator"));
         } else {
             sendError(sender, "Error reading preset.");
         }
@@ -696,7 +698,9 @@ public class CommandCave extends CommandBase {
         if (value.isString() && Calculator.isExpression(value.asString())) {
             result = tcs(String.valueOf(Calculator.evaluate(value.asString())));
         } else {
+            JsonValue.setEol("\n");
             result = CaveLinter.lint(value.toString(FORMATTER));
+            JsonValue.setEol(System.getProperty("line.separator"));
         }
         sender.sendMessage(result);
     }
