@@ -44,10 +44,6 @@ public class GeneratorController {
         return builder.build();
     }
 
-    public static GeneratorController merge(List<GeneratorController> controllers) {
-        return builder().build();
-    }
-
     private static void sortClusters(List<ClusterSettings> clusters, World world, GeneratorControllerBuilder builder) {
         final List<ClusterSettings> global = new ArrayList<>();
         final List<ClusterSettings> layered = new ArrayList<>();
