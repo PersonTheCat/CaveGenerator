@@ -196,9 +196,11 @@ public class SafeFileIO {
             final File[] arr = BACKUP_DIR.listFiles(this::matches);
             if (arr == null) return;
             final List<File> matching = Arrays.asList(arr);
-            matching.sort(this::compare); // Reverse order.
-            for (File f : matching) {
-                final int number = this.getNumber(f) + 1;
+            matching.sort(this::compare);
+            final int end = this.getFirstGap(matching);
+            for (int i = end - 1; i >= 0; i--) {
+                final File f = matching.get(i);
+                final int number = i + 1;
                 final File newFile = new File(f.getParentFile(), base + " (" + number + ")" + ext);
                 if (!f.renameTo(newFile)) {
                     throw runExF("Could not increment backup: {}", f.getName());
@@ -210,6 +212,10 @@ public class SafeFileIO {
             return pattern.matcher(file.getName()).matches();
         }
 
+        private int compare(File f1, File f2) {
+            return Integer.compare(this.getNumber(f1), this.getNumber(f2));
+        }
+
         int getNumber(File file) {
             final Matcher matcher = pattern.matcher(file.getName());
             if (!matcher.find()) throw runExF("Backup deleted externally: {}", file.getName());
@@ -217,8 +223,16 @@ public class SafeFileIO {
             return g2 == null ? 0 : Integer.parseInt(g2);
         }
 
-        private int compare(File f1, File f2) {
-            return Integer.compare(this.getNumber(f2), this.getNumber(f1));
+        int getFirstGap(List<File> files) {
+            int lastNum = 0;
+            for (File f : files) {
+                final int num = this.getNumber(f) + 1;
+                if (num - lastNum > 1) {
+                    return lastNum;
+                }
+                lastNum = num;
+            }
+            return files.size();
         }
     }
 }
