@@ -118,7 +118,7 @@ public class ClusterSettings {
         }
         if (matchers.isEmpty()) {
             // By default, only replace stone blocks.
-            return state.getMaterial().equals(Material.ROCK);
+            return !Blocks.BEDROCK.equals(state.getBlock()) && Material.ROCK.equals(state.getMaterial());
         }
         return matchers.contains(state);
     }

@@ -193,7 +193,9 @@ public class SafeFileIO {
         }
 
         void cycle() {
-            final List<File> matching = Arrays.asList(CaveInit.BACKUP_DIR.listFiles(this::matches));
+            final File[] arr = BACKUP_DIR.listFiles(this::matches);
+            if (arr == null) return;
+            final List<File> matching = Arrays.asList(arr);
             matching.sort(this::compare); // Reverse order.
             for (File f : matching) {
                 final int number = this.getNumber(f) + 1;
