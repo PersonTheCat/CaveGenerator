@@ -23,6 +23,7 @@
     "fabric": "*",
     "minecraft": "${mc_version}",
     "catlib": "${catlib_version}",
+    "cloth-config2": "${cloth_version}",
     "java": ">=8"
   }
 }
