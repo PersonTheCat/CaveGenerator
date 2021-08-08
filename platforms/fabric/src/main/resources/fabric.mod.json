@@ -1,0 +1,28 @@
+{
+  "schemaVersion": 1,
+  "id": "${mod_id}",
+  "version": "${mod_version}",
+  "name": "${mod_name}",
+  "description": "${mod_description}",
+  "authors": [
+    "${mod_authors}"
+  ],
+  "contact": {
+    "homepage": "${mod_download}",
+    "sources": "${mod_sources}"
+  },
+  "license": "${license_name}",
+  "environment": "*",
+  "entrypoints": {
+    "main": [
+      "personthecat.cavegenerator.CaveGenerator"
+    ]
+  },
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${mc_version}",
+    "catlib": "${catlib_version}",
+    "java": ">=8"
+  }
+}

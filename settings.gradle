@@ -1,0 +1,23 @@
+pluginManagement {
+    repositories {
+        maven {
+            name = 'Fabric'
+            url = 'https://maven.fabricmc.net/'
+        }
+        maven {
+            name = 'Forge'
+            url = 'https://files.minecraftforge.net/maven/'
+        }
+        maven {
+            name = 'Architectury'
+            url = 'https://maven.shedaniel.me/'
+        }
+        gradlePluginPortal()
+    }
+}
+
+rootProject.name = 'CaveGenerator'
+
+include 'common', 'platforms:forge', 'platforms:fabric'
+
+startParameter.excludedTaskNames += [':build', ':platforms:build']
