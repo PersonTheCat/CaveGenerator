@@ -34,7 +34,7 @@ public class Cfg implements ConfigData {
         "Whether this mod will attempt to run simultaneously\n" +
         "with one other cave generation mod, such as Worley's\n" +
         "Caves or Yung's Better Caves.")
-    public boolean otherGeneratorsEnabled = false;
+    public boolean enableOtherGenerators = false;
 
     @Comment(
         "When this field is set to true, PresetTester is allowed to\n" +
