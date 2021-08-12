@@ -41,7 +41,7 @@ public class ScalableFloat {
             .mapFloat(Fields.startValRandFactor, ScalableFloatBuilder::startValRandFactor)
             .mapFloat(Fields.factor, ScalableFloatBuilder::factor)
             .mapFloat(Fields.randFactor, ScalableFloatBuilder::randFactor)
-            .mapFloat(Fields.exponent, ScalableFloatBuilder::exponent)
+            .mapFloat   (Fields.exponent, ScalableFloatBuilder::exponent)
             .create(json, defaults.toBuilder());
     }
 
@@ -51,23 +51,12 @@ public class ScalableFloat {
                 throw jsonFormatEx("Expected number value in scalable float type");
             }
         }
-        final ScalableFloatBuilder builder = defaults.toBuilder();
-
-        if (json.size() < 1) return builder.build();
-        builder.startVal(json.get(0).asFloat());
-
-        if (json.size() < 2) return builder.build();
-        builder.startValRandFactor(json.get(1).asFloat());
-
-        if (json.size() < 3) return builder.build();
-        builder.factor(json.get(2).asFloat());
-
-        if (json.size() < 4) return builder.build();
-        builder.randFactor(json.get(3).asFloat());
-
-        if (json.size() < 5) return builder.build();
-        builder.exponent(json.get(4).asFloat());
-
-        return builder.build();
+        return new ScalableFloat(
+            json.size() > 0 ? json.get(0).asFloat() : defaults.startVal,
+            json.size() > 1 ? json.get(1).asFloat() : defaults.startValRandFactor,
+            json.size() > 2 ? json.get(2).asFloat() : defaults.factor,
+            json.size() > 3 ? json.get(3).asFloat() : defaults.randFactor,
+            json.size() > 4 ? json.get(4).asFloat() : defaults.exponent
+        );
     }
 }

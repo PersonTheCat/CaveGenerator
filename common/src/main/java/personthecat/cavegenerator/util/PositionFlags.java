@@ -18,7 +18,7 @@ public class PositionFlags {
     private int[] positions;
     private int index;
 
-    public PositionFlags(int capacity) {
+    public PositionFlags(final int capacity) {
         this.positions = new int[capacity];
         this.index = 0;
     }
@@ -29,7 +29,7 @@ public class PositionFlags {
      * In order to ensure that no data are written out of bounds, this should be called before
      * each sphere is generated.
      */
-    public void grow(int volume) {
+    public void grow(final int volume) {
         final int len = positions.length;
         if (volume > len) {
             final int[] data = this.positions;
@@ -48,7 +48,7 @@ public class PositionFlags {
      * @param y The y-coordinate being stored.
      * @param z The z-coordinate being stored.
      */
-    public void add(int x, int y, int z) {
+    public void add(final int x, final int y, final int z) {
         positions[index++] = x << 12 | z << 8 | y;
     }
 

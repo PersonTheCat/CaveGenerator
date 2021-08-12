@@ -174,7 +174,7 @@ class PresetCompat {
         }
     }
 
-    private static void updateRoot(JsonObject json) {
+    private static void updateRoot(final JsonObject json) {
         JsonTransformer.withPath()
             .toRange(MIN_HEIGHT, 0, MAX_HEIGHT, 255, ConditionSettings.Fields.height)
             .history(USE_BIOME_BLACKLIST, OverrideSettings.Fields.blacklistBiomes)
@@ -185,7 +185,7 @@ class PresetCompat {
             .updateAll(json);
     }
 
-    private static void updateImports(JsonObject json) {
+    private static void updateImports(final JsonObject json) {
         final JsonValue rawImports = json.get(IMPORTS);
         if (rawImports != null) {
             final JsonArray imports = HjsonUtils.asOrToArray(rawImports);
@@ -201,7 +201,7 @@ class PresetCompat {
         }
     }
 
-    private static String replaceImportVal(String val) {
+    private static String replaceImportVal(final String val) {
         final Matcher matcher = DEFAULT_IMPORT.matcher(val);
         if (matcher.matches()) {
             final String name = matcher.group(1);
@@ -212,7 +212,7 @@ class PresetCompat {
         return val;
     }
 
-    private static void updateCaveBlocks(JsonObject json) {
+    private static void updateCaveBlocks(final JsonObject json) {
         JsonTransformer.withPath(OverrideSettings.Fields.caveBlocks)
             .toRange(MIN_HEIGHT, 0, MAX_HEIGHT, 50, CaveBlockSettings.Fields.height)
             .history(NOISE_3D, CaveBlockSettings.Fields.noise)
@@ -220,7 +220,7 @@ class PresetCompat {
             .updateAll(json);
     }
 
-    private static void updateWallDecorators(JsonObject json) {
+    private static void updateWallDecorators(final JsonObject json) {
         JsonTransformer.withPath(OverrideSettings.Fields.wallDecorators)
             .toRange(MIN_HEIGHT, 10, MAX_HEIGHT, 50, WallDecoratorSettings.Fields.height)
             .history(NOISE_3D, WallDecoratorSettings.Fields.noise)
@@ -228,14 +228,14 @@ class PresetCompat {
             .updateAll(json);
     }
 
-    private static void updateRooms(JsonObject json) {
+    private static void updateRooms(final JsonObject json) {
         JsonTransformer.withPath(OverrideSettings.Fields.rooms)
             .history(SCALE_Y, RoomSettings.Fields.stretch)
             .updateAll(json);
         updateRoomChance(json);
     }
 
-    private static void updateTunnels(JsonObject json) {
+    private static void updateTunnels(final JsonObject json) {
         JsonTransformer.withPath(CavePreset.Fields.tunnels)
             .toRange(MIN_HEIGHT, 8, MAX_HEIGHT, 128, TunnelSettings.Fields.originHeight)
             .history(ISOLATED_CHANCE, TunnelSettings.Fields.chance)
@@ -248,7 +248,7 @@ class PresetCompat {
             .updateAll(json);
     }
 
-    private static void updateRavines(JsonObject json) {
+    private static void updateRavines(final JsonObject json) {
         JsonTransformer.withPath(CavePreset.Fields.ravines)
             .toRange(MIN_HEIGHT, 20, MAX_HEIGHT, 66, RavineSettings.Fields.originHeight)
             .history(ANGLE_XZ, RavineSettings.Fields.yaw)
@@ -265,7 +265,7 @@ class PresetCompat {
             .updateAll(json);
     }
 
-    private static void updateCaverns(JsonObject json) {
+    private static void updateCaverns(final JsonObject json) {
         JsonTransformer.withPath(CavePreset.Fields.caverns)
             .toRange(MIN_HEIGHT, 10, MAX_HEIGHT, 50, ConditionSettings.Fields.height)
             .history(NOISE_3D, CavernSettings.Fields.generators)
@@ -285,14 +285,14 @@ class PresetCompat {
             .updateAll(json);
     }
 
-    private static void updateClusters(JsonObject json) {
+    private static void updateClusters(final JsonObject json) {
         JsonTransformer.withPath(CavePreset.Fields.clusters)
             .history(NOISE_3D, ConditionSettings.Fields.noise)
             .updateAll(json);
         updateClusterRanges(json);
     }
 
-    private static void updateLayers(JsonObject json) {
+    private static void updateLayers(final JsonObject json) {
         JsonTransformer.withPath(CavePreset.Fields.layers)
             .toRange(MIN_HEIGHT, 0, MAX_HEIGHT, 20, ConditionSettings.Fields.height)
             .history(NOISE_2D, ConditionSettings.Fields.ceiling)
@@ -302,7 +302,7 @@ class PresetCompat {
             .updateAll(json);
     }
 
-    private static void updateStalactites(JsonObject json) {
+    private static void updateStalactites(final JsonObject json) {
         condenseStalactites(json);
         JsonTransformer.withPath(CavePreset.Fields.stalactites)
             .toRange(MIN_HEIGHT, 11, MAX_HEIGHT, 55, ConditionSettings.Fields.height)
@@ -312,7 +312,7 @@ class PresetCompat {
             .updateAll(json);
     }
 
-    private static void updatePillars(JsonObject json) {
+    private static void updatePillars(final JsonObject json) {
         JsonTransformer.withPath(CavePreset.Fields.pillars)
             .history(FREQUENCY, PillarSettings.Fields.count)
             .toRange(MIN_HEIGHT, 10, MAX_HEIGHT, 50, ConditionSettings.Fields.height)
@@ -320,7 +320,7 @@ class PresetCompat {
             .updateAll(json);
     }
 
-    private static void updateStructures(JsonObject json) {
+    private static void updateStructures(final JsonObject json) {
         JsonTransformer.withPath(CavePreset.Fields.structures)
             .toRange(MIN_HEIGHT, 10, MAX_HEIGHT, 50, ConditionSettings.Fields.height)
             .history(FREQUENCY, StructureSettings.Fields.count)
@@ -331,7 +331,7 @@ class PresetCompat {
             .updateAll(json);
     }
 
-    private static void updateRecursive(JsonObject json) {
+    private static void updateRecursive(final JsonObject json) {
         JsonTransformer.recursive(ConditionSettings.Fields.ceiling)
             .markRemoved(SCALE, CG_1_0)
             .markRemoved(NoiseSettings.Fields.threshold, CG_1_0)
@@ -362,7 +362,7 @@ class PresetCompat {
      *
      * @param json The root JSON object containing these fields.
      */
-    private static void condenseStalactites(JsonObject json) {
+    private static void condenseStalactites(final JsonObject json) {
         final List<JsonObject> largeStalactites = HjsonUtils.getRegularObjects(json, LARGE_STALACTITES);
         final List<JsonObject> largeStalagmites = HjsonUtils.getRegularObjects(json, LARGE_STALAGMITES);
         if (!largeStalactites.isEmpty() || !largeStalagmites.isEmpty()) {
@@ -381,7 +381,7 @@ class PresetCompat {
         }
     }
 
-    private static void updateRoomChance(JsonObject json) {
+    private static void updateRoomChance(final JsonObject json) {
         final List<JsonObject> tunnels = HjsonUtils.getRegularObjects(json, CavePreset.Fields.tunnels);
         final JsonObject rooms = HjsonUtils.getObject(json, OverrideSettings.Fields.rooms)
             .orElseGet(PresetCompat::getDefaultRooms);
@@ -403,7 +403,7 @@ class PresetCompat {
         }
     }
 
-    private static void moveRoomsFromOverrides(JsonObject json, JsonObject rooms, List<JsonObject> tunnels) {
+    private static void moveRoomsFromOverrides(final JsonObject json, final JsonObject rooms, final List<JsonObject> tunnels) {
         // Copy these rooms to any tunnels which now need them.
         for (final JsonObject tunnel : tunnels) {
             if (!tunnel.has(TunnelSettings.Fields.rooms)) {
@@ -419,7 +419,7 @@ class PresetCompat {
             .add(RoomSettings.Fields.stretch, settings.stretch);
     }
 
-    private static void updateClusterRanges(JsonObject json) {
+    private static void updateClusterRanges(final JsonObject json) {
         for (final JsonObject cluster : HjsonUtils.getRegularObjects(json, CavePreset.Fields.clusters)) {
             final JsonValue radiusVariance = cluster.get(RADIUS_VARIANCE);
             if (radiusVariance != null) {
@@ -433,7 +433,7 @@ class PresetCompat {
         }
     }
 
-    private static void updateClusterRadii(JsonObject cluster, int diff) {
+    private static void updateClusterRadii(final JsonObject cluster, final int diff) {
         final String radiusXKey = ClusterSettings.Fields.radiusX;
         final String radiusYKey = ClusterSettings.Fields.radiusY;
         final String radiusZKey = ClusterSettings.Fields.radiusZ;
@@ -447,20 +447,20 @@ class PresetCompat {
         cluster.remove(RADIUS_VARIANCE);
     }
 
-    private static void updateClusterCenter(JsonObject cluster, int center, int diff) {
+    private static void updateClusterCenter(final JsonObject cluster, final int center, final int diff) {
         final String centerKey = ClusterSettings.Fields.centerHeight;
         cluster.set(centerKey, new JsonArray().add(center - diff).add(center + diff).setCondensed(true));
         cluster.remove(START_HEIGHT);
         cluster.remove(HEIGHT_VARIANCE);
     }
 
-    private static Pair<String, JsonValue> transformScale(String name, JsonValue value) {
+    private static Pair<String, JsonValue> transformScale(final String name, final JsonValue value) {
         final double scale = value.asDouble();
         final double threshold = (2.0 * scale) - 1.0; // Convert to range down.
         return Pair.of(NoiseSettings.Fields.threshold, JsonValue.valueOf(threshold));
     }
 
-    private static Pair<String, JsonValue> transformSize(String name, JsonValue value) {
+    private static Pair<String, JsonValue> transformSize(final String name, final JsonValue value) {
         final String size = value.isBoolean() && value.asBoolean()
             ? StalactiteSettings.Size.MEDIUM.name()
             : StalactiteSettings.Size.SMALL.name();
@@ -479,7 +479,7 @@ class PresetCompat {
      *
      * @param json The JSON object to be updated.
      */
-    private static void removeBlankSlate(JsonObject json) {
+    private static void removeBlankSlate(final JsonObject json) {
         final JsonValue blankSlate = json.get(BLANK_SLATE);
         if (blankSlate != null) {
             // User did *not* want a blank slate.
@@ -498,7 +498,7 @@ class PresetCompat {
      *
      * @param json The JSON object to be updated.
      */
-    private static void enforceValueOrder(JsonObject json) {
+    private static void enforceValueOrder(final JsonObject json) {
         final JsonObject top = new JsonObject();
         final JsonObject bottom = new JsonObject();
 
@@ -523,7 +523,7 @@ class PresetCompat {
      * @param from The JSON source being copied from.
      * @param to The JSON target being copied into.
      */
-    private static void moveValue(String field, JsonObject from, JsonObject to) {
+    private static void moveValue(final String field, final JsonObject from, final JsonObject to) {
         if (from.has(field)) {
             to.add(field, from.get(field));
             from.remove(field);

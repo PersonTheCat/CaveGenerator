@@ -17,7 +17,7 @@ public class PresetCompressor {
      *
      * @param json The JSON object being compressed.
      */
-    public static void compress(JsonObject json) {
+    public static void compress(final JsonObject json) {
         final JsonObject clone = new JsonObject();
         for (final JsonObject.Member member : json) {
             final String name = member.getName();
@@ -33,7 +33,7 @@ public class PresetCompressor {
         json.addAll(clone);
     }
 
-    private static void compressArray(JsonArray array) {
+    private static void compressArray(final JsonArray array) {
         final JsonArray clone = new JsonArray();
         for (int i = 0; i < array.size(); i++) {
             final JsonValue value = array.get(i);
@@ -51,7 +51,7 @@ public class PresetCompressor {
         array.addAll(clone);
     }
 
-    private static Optional<JsonValue> compressSingle(JsonArray array) {
+    private static Optional<JsonValue> compressSingle(final JsonArray array) {
         if (array.size() == 1) {
             final JsonValue single = array.get(0);
             if (single.isObject()) {

@@ -57,8 +57,7 @@ public class CavernSettings {
     private static final DecoratorSettings DEFAULT_DECORATORS = DecoratorSettings.DEFAULTS;
 
     /** Conditions for these caverns to spawn. */
-    @Default
-    ConditionSettings conditions = DEFAULT_CONDITIONS;
+    @Default ConditionSettings conditions = DEFAULT_CONDITIONS;
 
     /** Cave blocks and wall decorators applied to these caverns. */
     @Default DecoratorSettings decorators = DEFAULT_DECORATORS;

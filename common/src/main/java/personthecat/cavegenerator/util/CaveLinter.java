@@ -43,6 +43,7 @@ public class CaveLinter extends SyntaxLinter {
         new Target(ARGUMENT, Style.EMPTY.withColor(ChatFormatting.DARK_GREEN).withUnderlined(true))
     };
 
+    @SuppressWarnings("unused") // Reflective invocation
     public CaveLinter() {
         super(TARGETS);
     }
