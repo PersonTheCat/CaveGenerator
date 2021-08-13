@@ -7,17 +7,13 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.biome.Biome;
 import personthecat.catlib.data.Range;
 import personthecat.cavegenerator.data.ConditionSettings;
 import personthecat.cavegenerator.noise.DummyGenerator;
 import personthecat.fastnoise.FastNoise;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
+import java.util.*;
 import java.util.function.Predicate;
 
 @Builder(toBuilder = true)
@@ -51,7 +47,7 @@ public class Conditions {
     /** 3-dimensional noise constraints for this feature. */
     @Default FastNoise noise = new DummyGenerator(0F);
 
-    public static Conditions compile(final ConditionSettings settings, final Level level) {
+    public static Conditions compile(final ConditionSettings settings, final Random rand, final long seed) {
         final ConditionsBuilder builder = builder()
             .hasBiomes(settings.blacklistBiomes || !settings.biomes.isEmpty())
             .hasRegion(settings.region.isPresent())
@@ -59,10 +55,10 @@ public class Conditions {
             .dimensions(compileDimensions(settings))
             .height(settings.height);
 
-        settings.floor.ifPresent(c -> builder.floor(c.getGenerator(level)));
-        settings.ceiling.ifPresent(c -> builder.ceiling(c.getGenerator(level)));
-        settings.region.ifPresent(c -> builder.region(c.getGenerator(level)));
-        settings.noise.ifPresent(c -> builder.noise(c.getGenerator(level)));
+        settings.floor.ifPresent(c -> builder.floor(c.getGenerator(rand, seed)));
+        settings.ceiling.ifPresent(c -> builder.ceiling(c.getGenerator(rand, seed)));
+        settings.region.ifPresent(c -> builder.region(c.getGenerator(rand, seed)));
+        settings.noise.ifPresent(c -> builder.noise(c.getGenerator(rand, seed)));
         return builder.build();
     }
 

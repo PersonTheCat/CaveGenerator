@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import net.minecraft.world.level.Level;
 import org.hjson.JsonObject;
 import personthecat.catlib.data.FloatRange;
 import personthecat.catlib.data.Range;
@@ -14,8 +13,10 @@ import personthecat.cavegenerator.noise.CachedNoiseGenerator;
 import personthecat.cavegenerator.noise.DummyGenerator;
 import personthecat.fastnoise.FastNoise;
 import personthecat.fastnoise.data.*;
+import personthecat.fastnoise.generator.PerlinNoise;
 
 import java.util.Optional;
+import java.util.Random;
 
 import static java.util.Optional.empty;
 import static personthecat.catlib.util.Shorthand.full;
@@ -138,12 +139,12 @@ public class NoiseSettings {
     }
 
     /** Converts these settings into a regular {@link FastNoise} object. */
-    public FastNoise getGenerator(final Level level) {
+    public FastNoise getGenerator(final Random rand, final long seed) {
         if (dummy) {
             return new DummyGenerator(dummyOutput);
         }
         final NoiseDescriptor cfg = FastNoise.createDescriptor()
-            .seed(getSeed(level))
+            .seed(getSeed(rand, seed))
             .noise(type)
             .frequency(frequency)
             .fractal(fractal)
@@ -169,16 +170,11 @@ public class NoiseSettings {
         return cache ? new CachedNoiseGenerator(cfg, generator) : generator;
     }
 
-    private int getSeed(final Level level) {
-        return level.random.nextInt();
+    private int getSeed(final Random rand, final long seed) {
+        return this.seed.map(num -> {
+            final int scramble = new Random(seed).nextInt();
+            final FastNoise simple = new PerlinNoise(FastNoise.createDescriptor().seed(scramble));
+            return Float.floatToIntBits(simple.getNoise(num));
+        }).orElseGet(rand::nextInt);
     }
-
-//    /** Generates a new seed from the input `base` value. */
-//    private int getSeed(final Level level) {
-//        return seed.map(num -> {
-//            final Random rand = new XoRoShiRo(level.getSeed());
-//            final FastNoise simple = new FastNoise(rand.nextInt());
-//            return Float.floatToIntBits(simple.getNoise(num));
-//        }).orElseGet(level.random::nextInt);
-//    }
 }

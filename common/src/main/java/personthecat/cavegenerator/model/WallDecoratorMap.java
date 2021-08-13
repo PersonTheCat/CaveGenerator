@@ -1,6 +1,5 @@
 package personthecat.cavegenerator.model;
 
-import net.minecraft.world.level.Level;
 import personthecat.cavegenerator.data.WallDecoratorSettings;
 import lombok.AccessLevel;
 import lombok.Builder;
@@ -8,6 +7,7 @@ import lombok.Singular;
 import lombok.experimental.FieldDefaults;
 
 import java.util.List;
+import java.util.Random;
 
 @Builder
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
@@ -23,10 +23,10 @@ public class WallDecoratorMap {
     @Singular("west") List<ConfiguredWallDecorator> west;
     boolean containsAny;
 
-    public static WallDecoratorMap sort(final List<WallDecoratorSettings> decorators, Level level) {
+    public static WallDecoratorMap sort(final List<WallDecoratorSettings> decorators, final Random rand, final long seed) {
         final WallDecoratorMapBuilder builder = builder().containsAny(!decorators.isEmpty());
         for (final WallDecoratorSettings cfg : decorators) {
-            final ConfiguredWallDecorator wall = new ConfiguredWallDecorator(cfg, level);
+            final ConfiguredWallDecorator wall = new ConfiguredWallDecorator(cfg, rand, seed);
             for (final Direction d : cfg.directions) {
                 switch (d) {
                     case ALL: builder.all(wall); break;

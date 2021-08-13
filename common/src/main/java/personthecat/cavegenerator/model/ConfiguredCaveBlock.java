@@ -1,18 +1,20 @@
 package personthecat.cavegenerator.model;
 
-import net.minecraft.world.level.Level;
 import personthecat.cavegenerator.data.CaveBlockSettings;
 import personthecat.cavegenerator.noise.DummyGenerator;
 import personthecat.fastnoise.FastNoise;
+
+import java.util.Random;
 
 public class ConfiguredCaveBlock {
 
     public final CaveBlockSettings cfg;
     public final FastNoise noise;
 
-    public ConfiguredCaveBlock(final CaveBlockSettings cfg, final Level level) {
+    public ConfiguredCaveBlock(final CaveBlockSettings cfg, final Random rand, final long seed) {
         this.cfg = cfg;
-        this.noise = cfg.noise.map(n -> n.getGenerator(level)).orElse(new DummyGenerator(0L));
+        this.noise = cfg.noise.map(n -> n.getGenerator(rand, seed))
+            .orElse(new DummyGenerator(0L));
     }
 
     public boolean canGenerate(final int x, final int y, final int z, final int chunkX, final int chunkZ) {

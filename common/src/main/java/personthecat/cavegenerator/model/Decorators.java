@@ -4,15 +4,11 @@ import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import personthecat.cavegenerator.data.DecoratorSettings;
 
-import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Predicate;
 
 import static personthecat.catlib.util.Shorthand.map;
@@ -36,13 +32,13 @@ public class Decorators {
     /** Determines which blocks to place surrounding the current feature. */
     @Default ConfiguredShell shell = ConfiguredShell.EMPTY_SHELL;
 
-    public static Decorators compile(final DecoratorSettings settings, final Level level) {
+    public static Decorators compile(final DecoratorSettings settings, final Random rand, final long seed) {
         return builder()
             .canReplace(compileCanReplace(settings))
-            .caveBlocks(map(settings.caveBlocks, b -> new ConfiguredCaveBlock(b, level)))
-            .wallMap(WallDecoratorMap.sort(settings.wallDecorators, level))
-            .ponds(map(settings.ponds, p -> new ConfiguredPond(p, level)))
-            .shell(new ConfiguredShell(settings.shell, level))
+            .caveBlocks(map(settings.caveBlocks, b -> new ConfiguredCaveBlock(b, rand, seed)))
+            .wallMap(WallDecoratorMap.sort(settings.wallDecorators, rand, seed))
+            .ponds(map(settings.ponds, p -> new ConfiguredPond(p, rand, seed)))
+            .shell(new ConfiguredShell(settings.shell, rand, seed))
             .build();
     }
 

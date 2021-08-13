@@ -1,6 +1,5 @@
 package personthecat.cavegenerator.data;
 
-import net.minecraft.world.level.Level;
 import personthecat.catlib.data.FloatRange;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.util.HjsonMapper;
@@ -17,8 +16,10 @@ import org.hjson.JsonObject;
 import personthecat.fastnoise.data.FractalType;
 import personthecat.fastnoise.data.NoiseDescriptor;
 import personthecat.fastnoise.data.NoiseType;
+import personthecat.fastnoise.generator.PerlinNoise;
 
 import java.util.Optional;
+import java.util.Random;
 
 import static java.util.Optional.empty;
 import static personthecat.catlib.util.Shorthand.full;
@@ -83,12 +84,12 @@ public class NoiseRegionSettings {
             .create(json, builder);
     }
 
-    public FastNoise getGenerator(final Level level) {
+    public FastNoise getGenerator(final Random rand, final long seed) {
         if (dummy) {
             return new DummyGenerator(dummyOutput);
         }
         final NoiseDescriptor cfg = FastNoise.createDescriptor()
-            .seed(getSeed(level))
+            .seed(getSeed(rand, seed))
             .noise(type)
             .fractal(fractal)
             .threshold(threshold.min, threshold.max)
@@ -100,16 +101,11 @@ public class NoiseRegionSettings {
         return cache ? new CachedNoiseGenerator(cfg, generator) : generator;
     }
 
-    private int getSeed(final Level level) {
-        return level.random.nextInt();
+    private int getSeed(final Random rand, final long seed) {
+        return this.seed.map(num -> {
+            final int scramble = new Random(seed).nextInt();
+            final FastNoise simple = new PerlinNoise(FastNoise.createDescriptor().seed(scramble));
+            return Float.floatToIntBits(simple.getNoise(num));
+        }).orElseGet(rand::nextInt);
     }
-
-//    /** Generates a new seed from the input `base` value. */
-//    private int getSeed(final Level level) {
-//        return this.seed.map(num -> {
-//            final Random rand = new XoRoShiRo(level.getSeed());
-//            final FastNoise simple = new FastNoise(rand.nextInt());
-//            return Float.floatToIntBits(simple.getNoise(num));
-//        }).orElseGet(level.random::nextInt);
-//    }
 }

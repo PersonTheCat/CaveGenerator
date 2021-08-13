@@ -1,6 +1,5 @@
 package personthecat.cavegenerator.model;
 
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import personthecat.cavegenerator.data.ShellSettings;
 import personthecat.cavegenerator.noise.DummyGenerator;
@@ -8,6 +7,7 @@ import personthecat.fastnoise.FastNoise;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Random;
 
 import static personthecat.catlib.util.Shorthand.map;
 
@@ -20,11 +20,11 @@ public class ConfiguredShell {
     public final float noiseThreshold;
     public final List<Decorator> decorators;
 
-    public ConfiguredShell(final ShellSettings cfg, final Level level) {
+    public ConfiguredShell(final ShellSettings cfg, final Random rand, final long seed) {
         this.cfg = cfg;
         this.radius = cfg.radius;
         this.noiseThreshold = cfg.noiseThreshold.orElse(((float) cfg.radius + 0.0001F) / 10.0F);
-        this.decorators = map(cfg.decorators, d -> new Decorator(d, level));
+        this.decorators = map(cfg.decorators, d -> new Decorator(d, rand, seed));
     }
 
     private ConfiguredShell() {
@@ -39,9 +39,10 @@ public class ConfiguredShell {
         public final ShellSettings.Decorator cfg;
         public final FastNoise noise;
 
-        private Decorator(final ShellSettings.Decorator cfg, final Level level) {
+        private Decorator(final ShellSettings.Decorator cfg, final Random rand, final long seed) {
             this.cfg = cfg;
-            this.noise = cfg.noise.map(n -> n.getGenerator(level)).orElse(new DummyGenerator(0F));
+            this.noise = cfg.noise.map(n -> n.getGenerator(rand, seed))
+                .orElse(new DummyGenerator(0F));
         }
 
         public boolean matches(final BlockState state) {

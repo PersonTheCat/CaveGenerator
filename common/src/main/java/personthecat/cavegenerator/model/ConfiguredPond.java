@@ -1,6 +1,5 @@
 package personthecat.cavegenerator.model;
 
-import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.state.BlockState;
 import personthecat.cavegenerator.data.PondSettings;
 import personthecat.cavegenerator.noise.DummyGenerator;
@@ -13,9 +12,10 @@ public class ConfiguredPond {
     public final PondSettings cfg;
     public final FastNoise noise;
 
-    public ConfiguredPond(final PondSettings cfg, final Level level) {
+    public ConfiguredPond(final PondSettings cfg, final Random rand, final long seed) {
         this.cfg = cfg;
-        this.noise = cfg.noise.map(n -> n.getGenerator(level)).orElse(new DummyGenerator(0L));
+        this.noise = cfg.noise.map(n -> n.getGenerator(rand, seed))
+            .orElse(new DummyGenerator(0L));
     }
 
     public boolean canGenerate(Random rand, BlockState state, int x, int y, int z, int chunkX, int chunkZ) {
