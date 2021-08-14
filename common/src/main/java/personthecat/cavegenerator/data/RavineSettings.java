@@ -11,7 +11,7 @@ import personthecat.catlib.util.HjsonMapper;
 import personthecat.cavegenerator.config.CavePreset;
 import personthecat.cavegenerator.model.ScalableFloat;
 
-import static personthecat.cavegenerator.util.CommonMethods.invert;
+import static personthecat.catlib.util.Shorthand.invert;
 
 @Builder
 @FieldNameConstants
@@ -107,7 +107,7 @@ public class RavineSettings {
             .mapObject(Fields.walls, (b, o) -> copyWallNoise(o, original, b))
             .mapBool(Fields.useWallNoise, RavineSettingsBuilder::useWallNoise)
             .mapBool(Fields.checkWater, RavineSettingsBuilder::checkWater)
-            .create(json, builder);
+            .create(builder, json);
     }
 
     private static void copyWallNoise(final JsonObject json, final RavineSettings original, final RavineSettingsBuilder builder) {

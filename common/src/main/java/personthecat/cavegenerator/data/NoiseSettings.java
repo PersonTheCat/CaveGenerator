@@ -135,7 +135,7 @@ public class NoiseSettings {
             .mapDistFunc(Fields.distFunc, NoiseSettingsBuilder::distFunc)
             .mapReturnType(Fields.returnType, NoiseSettingsBuilder::returnType)
             .mapNoiseType(Fields.cellularLookup, NoiseSettingsBuilder::cellularLookup)
-            .create(json, builder);
+            .create(builder, json);
     }
 
     /** Converts these settings into a regular {@link FastNoise} object. */
@@ -172,8 +172,7 @@ public class NoiseSettings {
 
     private int getSeed(final Random rand, final long seed) {
         return this.seed.map(num -> {
-            final int scramble = new Random(seed).nextInt();
-            final FastNoise simple = new PerlinNoise(FastNoise.createDescriptor().seed(scramble));
+            final FastNoise simple = new PerlinNoise(new Random(seed).nextInt());
             return Float.floatToIntBits(simple.getNoise(num));
         }).orElseGet(rand::nextInt);
     }

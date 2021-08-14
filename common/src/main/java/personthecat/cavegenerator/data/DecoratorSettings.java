@@ -69,6 +69,6 @@ public class DecoratorSettings {
     }
 
     private static DecoratorSettings copyInto(final JsonObject json, final DecoratorSettingsBuilder builder) {
-        return MAPPER.create(json, builder);
+        return MAPPER.create(builder, json);
     }
 }

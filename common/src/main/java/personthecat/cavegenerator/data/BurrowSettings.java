@@ -93,7 +93,7 @@ public class BurrowSettings {
             .mapFloat(Fields.wallDistance, BurrowSettingsBuilder::wallDistance)
             .mapFloat(Fields.wallExponent, BurrowSettingsBuilder::wallExponent)
             .mapObject(Fields.branches, BurrowSettings::copyBranches)
-            .create(json, builder);
+            .create(builder, json);
     }
 
     private static void copyBranches(final BurrowSettingsBuilder builder, final JsonObject branches) {

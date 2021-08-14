@@ -78,7 +78,7 @@ public class StalactiteSettings {
             .mapInt(Fields.space, StalactiteSettingsBuilder::space)
             .mapBool(Fields.symmetrical, StalactiteSettingsBuilder::symmetrical)
             .mapStateList(Fields.matchers, StalactiteSettingsBuilder::matchers)
-            .create(json, builder);
+            .create(builder, json);
     }
 
     public enum Type {

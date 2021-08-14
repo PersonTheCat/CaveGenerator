@@ -7,12 +7,11 @@ import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.StructureBlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import org.hjson.JsonObject;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.util.HjsonMapper;
-import personthecat.catlib.util.Shorthand;
 import personthecat.cavegenerator.config.CavePreset;
 import personthecat.cavegenerator.model.BlockCheck;
 import personthecat.cavegenerator.model.Direction;
@@ -36,7 +35,7 @@ public class StructureSettings {
     String name;
 
     /** Vanilla placement settings for the template being spawned. */
-    @Default StructureBlockEntity placement = new StructureBlockEntity();
+    @Default StructurePlaceSettings placement = new StructurePlaceSettings();
 
     /** A list of source blocks that this structure can spawn on top of. */
     @Default List<BlockState> matchers = Collections.singletonList(Blocks.STONE.defaultBlockState());
@@ -96,8 +95,7 @@ public class StructureSettings {
             .mapSelf((b, o) -> b.conditions(ConditionSettings.from(o, original.conditions)))
             .mapPlacementSettings(StructureSettingsBuilder::placement)
             .mapStateList(Fields.matchers, StructureSettingsBuilder::matchers)
-            .mapGenericArray(Fields.directions, v -> Shorthand.assertEnumConstant(v.asString(), Direction.class),
-                (b, l) -> b.directions(Direction.Container.from(l)))
+            .mapEnumList(Fields.directions, Direction.class, (b, l) -> b.directions(Direction.Container.from(l)))
             .mapBlockPosList(Fields.airChecks, StructureSettingsBuilder::airChecks)
             .mapBlockPosList(Fields.solidChecks, StructureSettingsBuilder::solidChecks)
             .mapBlockPosList(Fields.nonSolidChecks, StructureSettingsBuilder::nonSolidChecks)
@@ -110,7 +108,7 @@ public class StructureSettings {
             .mapBool(Fields.debugSpawns, StructureSettingsBuilder::debugSpawns)
             .mapString(Fields.command, StructureSettingsBuilder::command)
             .mapBool(Fields.rotateRandomly, StructureSettingsBuilder::rotateRandomly)
-            .create(json, builder);
+            .create(builder, json);
     }
 
 }

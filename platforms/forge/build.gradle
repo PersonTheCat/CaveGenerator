@@ -29,6 +29,7 @@ dependencies {
     minecraft "com.mojang:minecraft:$mc_version"
     mappings minecraft.officialMojangMappings()
     forge "net.minecraftforge:forge:$mc_version-$forge_version"
+    modApi "curse.maven:CatLib-513391:$catlib_maven_forge_version"
 }
 
 jar {

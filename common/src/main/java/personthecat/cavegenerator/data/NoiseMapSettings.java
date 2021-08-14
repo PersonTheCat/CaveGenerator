@@ -5,7 +5,6 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import net.minecraft.world.level.Level;
 import org.hjson.JsonObject;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.util.HjsonMapper;
@@ -99,7 +98,7 @@ public class NoiseMapSettings {
             .mapBool(Fields.cache, NoiseMapSettingsBuilder::cache)
             .mapBool(Fields.dummy, NoiseMapSettingsBuilder::dummy)
             .mapFloat(Fields.dummyOutput, (b, f) -> b.dummyOutput(full(f)))
-            .create(json, builder);
+            .create(builder, json);
     }
 
     public FastNoise getGenerator(final Random rand, final long seed) {
@@ -125,8 +124,7 @@ public class NoiseMapSettings {
 
     private int getSeed(final Random rand, final long seed) {
         return this.seed.map(num -> {
-            final int scramble = new Random(seed).nextInt();
-            final FastNoise simple = new PerlinNoise(FastNoise.createDescriptor().seed(scramble));
+            final FastNoise simple = new PerlinNoise(new Random(seed).nextInt());
             return Float.floatToIntBits(simple.getNoise(num));
         }).orElseGet(rand::nextInt);
     }

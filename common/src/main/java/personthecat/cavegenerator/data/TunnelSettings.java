@@ -15,7 +15,7 @@ import java.util.Optional;
 
 import static java.util.Optional.empty;
 import static personthecat.catlib.util.Shorthand.full;
-import static personthecat.cavegenerator.util.CommonMethods.invert;
+import static personthecat.catlib.util.Shorthand.invert;
 
 @Builder
 @FieldNameConstants
@@ -140,6 +140,6 @@ public class TunnelSettings {
             .mapBool(Fields.reseedBranches, TunnelSettingsBuilder::reseedBranches)
             .mapBool(Fields.hasBranches, TunnelSettingsBuilder::hasBranches)
             .mapBool(Fields.checkWater, TunnelSettingsBuilder::checkWater)
-            .create(json, builder);
+            .create(builder, json);
     }
 }

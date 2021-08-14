@@ -91,7 +91,7 @@ public class ClusterSettings {
             .mapRange(Fields.centerHeight, ClusterSettingsBuilder::centerHeight)
             .mapStateList(Fields.matchers, ClusterSettingsBuilder::matchers)
             .mapInt("seed", ClusterSettings::copySeed)
-            .create(json, builder);
+            .create(builder, json);
     }
 
     private static void copyStates(final ClusterSettingsBuilder builder, final List<BlockState> states) {

@@ -49,7 +49,7 @@ public class LayerSettings {
         return new HjsonMapper<>(CavePreset.Fields.layers, LayerSettingsBuilder::build)
             .mapRequiredState(Fields.state, LayerSettingsBuilder::state)
             .mapSelf((b, o) -> b.conditions(ConditionSettings.from(o, original.conditions)))
-            .create(json, builder);
+            .create(builder, json);
     }
 
 }

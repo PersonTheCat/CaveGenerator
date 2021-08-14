@@ -6,12 +6,11 @@ import org.hjson.JsonValue;
 import personthecat.catlib.util.HjsonUtils;
 import personthecat.cavegenerator.io.ModFolders;
 
-import javax.annotation.CheckReturnValue;
 import java.io.File;
-import java.io.FileFilter;
 import java.util.*;
 
 import static java.util.Optional.empty;
+import static personthecat.catlib.io.FileIO.locateFileRecursive;
 import static personthecat.catlib.util.Shorthand.find;
 import static personthecat.catlib.util.Shorthand.full;
 import static personthecat.cavegenerator.exception.CaveSyntaxException.caveSyntax;
@@ -166,25 +165,7 @@ public class ImportHelper {
             if (root.exists()) {
                 return full(root);
             }
-            return getFileRecursive(ModFolders.IMPORT_DIR, this::matches);
-        }
-
-        @CheckReturnValue // Todo: move this into CatLib
-        static Optional<File> getFileRecursive(final File dir, final FileFilter filter) {
-            final File[] inDir = dir.listFiles();
-            if (inDir != null) {
-                for (File f : inDir) {
-                    if (f.isDirectory()) {
-                        final Optional<File> found = getFileRecursive(f, filter);
-                        if (found.isPresent()) {
-                            return found;
-                        }
-                    } else if (filter.accept(f)) {
-                        return full(f);
-                    }
-                }
-            }
-            return empty();
+            return locateFileRecursive(ModFolders.IMPORT_DIR, this::matches);
         }
 
         boolean matches(final File f) {

@@ -70,7 +70,7 @@ public class ConditionSettings {
             .mapObject(Fields.ceiling, ConditionSettings::copyCeiling)
             .mapObject(Fields.region, ConditionSettings::copyRegion)
             .mapObject(Fields.noise, ConditionSettings::copyNoise)
-            .create(json, builder);
+            .create(builder, json);
     }
 
     private static void copyFloor(final ConditionSettingsBuilder builder, final JsonObject json) {

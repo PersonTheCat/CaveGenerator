@@ -58,7 +58,7 @@ public class PondSettings {
             .mapRange(Fields.height, PondSettingsBuilder::height)
             .mapInt(Fields.depth, PondSettingsBuilder::depth)
             .mapStateList(Fields.matchers, PondSettingsBuilder::matchers)
-            .create(json, builder);
+            .create(builder, json);
     }
 
     private static void copyNoise(final PondSettingsBuilder builder, final JsonObject json) {

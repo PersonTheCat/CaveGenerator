@@ -81,7 +81,7 @@ public class NoiseRegionSettings {
             .mapBool(Fields.dummy, NoiseRegionSettingsBuilder::dummy)
             .mapFloat(Fields.dummyOutput, NoiseRegionSettingsBuilder::dummyOutput)
             .mapNoiseType(Fields.type, NoiseRegionSettingsBuilder::type)
-            .create(json, builder);
+            .create(builder, json);
     }
 
     public FastNoise getGenerator(final Random rand, final long seed) {
@@ -103,8 +103,7 @@ public class NoiseRegionSettings {
 
     private int getSeed(final Random rand, final long seed) {
         return this.seed.map(num -> {
-            final int scramble = new Random(seed).nextInt();
-            final FastNoise simple = new PerlinNoise(FastNoise.createDescriptor().seed(scramble));
+            final FastNoise simple = new PerlinNoise(new Random(seed).nextInt());
             return Float.floatToIntBits(simple.getNoise(num));
         }).orElseGet(rand::nextInt);
     }

@@ -63,7 +63,7 @@ public class PillarSettings {
             .mapInt(Fields.count, PillarSettingsBuilder::count)
             .mapRange(Fields.length, PillarSettingsBuilder::length)
             .mapState(Fields.stairBlock, (b, s) -> b.stairBlock(full(toStairBlock(s))))
-            .create(json, builder);
+            .create(builder, json);
     }
 
     private static StairBlock toStairBlock(final BlockState state) {

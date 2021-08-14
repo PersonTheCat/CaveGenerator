@@ -4,6 +4,9 @@ import lombok.experimental.UtilityClass;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
+import net.minecraftforge.fml.ModContainer;
+import net.minecraftforge.fml.config.ModConfig;
+import personthecat.catlib.config.CustomModConfig;
 import personthecat.catlib.config.HjsonFileConfig;
 import personthecat.catlib.util.McUtils;
 import personthecat.cavegenerator.util.Reference;
@@ -20,6 +23,10 @@ public class Cfg {
     private static final ForgeConfigSpec.Builder COMMON = new ForgeConfigSpec.Builder();
     private static final String FILENAME = McUtils.getConfigDir() + "/" + Reference.MOD_ID;
     private static final HjsonFileConfig COMMON_CFG = new HjsonFileConfig(FILENAME + "-common.hjson");
+
+    public static void register(final ModContainer ctx) {
+        ctx.addConfig(new CustomModConfig(ModConfig.Type.COMMON, COMMON.build(), ctx, COMMON_CFG));
+    }
 
     private static final BooleanValue ENABLE_VANILLA_STONE_CLUSTERS_VALUE = COMMON
         .comment("Whether vanilla stone clusters--including andesite",

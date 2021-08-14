@@ -50,7 +50,7 @@ public class CaveBlockSettings {
             .mapRange(Fields.height, CaveBlockSettingsBuilder::height);
 
     public static CaveBlockSettings from(final JsonObject json) {
-        return MAPPER.create(json, builder());
+        return MAPPER.create(builder(), json);
     }
 
     private static void copyNoise(final CaveBlockSettingsBuilder builder, final JsonObject json) {

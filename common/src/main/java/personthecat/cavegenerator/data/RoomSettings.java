@@ -8,7 +8,7 @@ import lombok.experimental.FieldNameConstants;
 import org.hjson.JsonObject;
 import personthecat.catlib.util.HjsonMapper;
 
-import static personthecat.cavegenerator.util.CommonMethods.invert;
+import static personthecat.catlib.util.Shorthand.invert;
 
 @Builder
 @FieldNameConstants
@@ -46,7 +46,7 @@ public class RoomSettings {
             .mapFloat(Fields.scale, RoomSettingsBuilder::scale)
             .mapFloat(Fields.stretch, RoomSettingsBuilder::stretch)
             .mapFloat(Fields.chance, (b, f) -> b.chance(invert(f)))
-            .create(json, builder);
+            .create(builder, json);
     }
 
 }

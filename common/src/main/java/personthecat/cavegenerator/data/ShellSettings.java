@@ -43,7 +43,7 @@ public class ShellSettings {
             .mapInt(Fields.sphereResolution, ShellSettingsBuilder::sphereResolution)
             .mapFloat(Fields.noiseThreshold, (b, f) -> b.noiseThreshold(full(f)))
             .mapArray(Fields.decorators, Decorator::from, ShellSettingsBuilder::decorators)
-            .create(json, builder());
+            .create(builder(), json);
     }
 
     @Builder
@@ -78,7 +78,7 @@ public class ShellSettings {
                 .mapRange(Fields.height, DecoratorBuilder::height)
                 .mapFloat(Fields.integrity, DecoratorBuilder::integrity)
                 .mapObject(Fields.noise, Decorator::copyNoise)
-                .create(json, builder());
+                .create(builder(), json);
         }
 
         private static void copyNoise(final DecoratorBuilder builder, final JsonObject json) {

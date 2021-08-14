@@ -107,7 +107,7 @@ public class OverrideSettings {
             .mapObject(Fields.shell, (b, s) -> b.shell(full(ShellSettings.from(s))))
             .mapObject(Fields.branches, (s, b) -> s.branches(full(TunnelSettings.from(b))))
             .mapObject(Fields.rooms, (b, r) -> b.rooms(full(RoomSettings.from(r))))
-            .create(json, builder);
+            .create(builder, json);
     }
 
     public ConditionSettings.ConditionSettingsBuilder apply(final ConditionSettings.ConditionSettingsBuilder builder) {

@@ -10,7 +10,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.hjson.JsonObject;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.util.HjsonMapper;
-import personthecat.catlib.util.Shorthand;
 import personthecat.cavegenerator.model.Direction;
 
 import java.util.Collections;
@@ -57,11 +56,10 @@ public class WallDecoratorSettings {
             .mapObject(Fields.noise, WallDecoratorSettings::copyNoise)
             .mapFloat(Fields.integrity, WallDecoratorSettingsBuilder::integrity)
             .mapRange(Fields.height, WallDecoratorSettingsBuilder::height)
-            .mapGenericArray(Fields.directions, v -> Shorthand.assertEnumConstant(v.toString(), Direction.class),
-                WallDecoratorSettingsBuilder::directions)
+            .mapEnumList(Fields.directions, Direction.class, WallDecoratorSettingsBuilder::directions)
             .mapStateList(Fields.matchers, WallDecoratorSettingsBuilder::matchers)
             .mapEnum(Fields.placement, Placement.class, WallDecoratorSettingsBuilder::placement)
-            .create(json, builder());
+            .create(builder(), json);
     }
 
     private static void copyNoise(final WallDecoratorSettingsBuilder builder, final JsonObject json) {

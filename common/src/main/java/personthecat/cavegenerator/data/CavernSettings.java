@@ -113,7 +113,7 @@ public class CavernSettings {
             .mapArray(Fields.generators, CavernSettings::createNoise, CavernSettingsBuilder::generators)
             .mapObject(Fields.branches, CavernSettings::copyBranches)
             .mapBool(Fields.deferred, CavernSettingsBuilder::deferred)
-            .create(json, builder);
+            .create(builder, json);
     }
 
     private static NoiseSettings createNoise(JsonObject json) {
