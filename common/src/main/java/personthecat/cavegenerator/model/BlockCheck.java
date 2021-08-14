@@ -40,7 +40,7 @@ public class BlockCheck {
         return new HjsonMapper<>(StructureSettings.Fields.blockChecks, BlockCheckBuilder::build)
             .mapRequiredStateList(Fields.matchers, BlockCheckBuilder::matchers)
             .mapRequiredBlockPosList(Fields.positions, BlockCheckBuilder::positions)
-            .create(json, builder());
+            .create(builder(), json);
     }
 
     public static BlockCheck from(JsonArray json) {

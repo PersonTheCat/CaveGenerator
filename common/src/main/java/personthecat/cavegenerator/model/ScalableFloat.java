@@ -42,7 +42,7 @@ public class ScalableFloat {
             .mapFloat(Fields.factor, ScalableFloatBuilder::factor)
             .mapFloat(Fields.randFactor, ScalableFloatBuilder::randFactor)
             .mapFloat   (Fields.exponent, ScalableFloatBuilder::exponent)
-            .create(json, defaults.toBuilder());
+            .create(defaults.toBuilder(), json);
     }
 
     public static ScalableFloat fromArray(final JsonArray json, final ScalableFloat defaults) {

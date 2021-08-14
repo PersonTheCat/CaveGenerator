@@ -75,6 +75,6 @@ public class CavePreset {
             .mapArray(Fields.stalactites, o -> StalactiteSettings.from(o, overrides), CavePresetBuilder::stalactites)
             .mapArray(Fields.pillars, o -> PillarSettings.from(o, overrides), CavePresetBuilder::pillars)
             .mapArray(Fields.structures, o -> StructureSettings.from(o, overrides), CavePresetBuilder::structures)
-            .create(json, builder);
+            .create(builder, json);
     }
 }

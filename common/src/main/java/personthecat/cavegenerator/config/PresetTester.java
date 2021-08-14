@@ -176,9 +176,11 @@ public class PresetTester {
 
     private void testStructure(final StructureSettings s, final String path) {
         final String fullPath = path + "[name=" + s.name + "]";
-        if (s.placement.getIntegrity() < 0 || s.placement.getIntegrity() > 1) {
-            log.log(high, "Invalid integrity @ {}. Use a number between 0 and 1.", fullPath);
-        }
+
+        // Todo: Get integrity from BlockRotProcessor with Access Transformers / Wideners.
+//        if (s.placement.getIntegrity() < 0 || s.placement.getIntegrity() > 1) {
+//            log.log(high, "Invalid integrity @ {}. Use a number between 0 and 1.", fullPath);
+//        }
         if (s.count > 100) {
             log.log(low, "Unusually high count @ {}. Consider a dedicated mod.", fullPath);
         }

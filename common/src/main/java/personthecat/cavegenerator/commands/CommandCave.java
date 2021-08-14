@@ -9,7 +9,6 @@ import personthecat.cavegenerator.noise.CachedNoiseHelper;
 public class CommandCave {
 
     @ModCommand(
-        name = "reload",
         description = "Reloads all of the current presets from the disk."
     )
     private static void reload(final CommandContextWrapper wrapper) {
