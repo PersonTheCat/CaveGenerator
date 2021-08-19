@@ -8,6 +8,7 @@ buildscript {
     dependencies {
         classpath group: 'com.github.PersonTheCat', name: 'OverwriteValidator', version: '1.8'
         classpath group: 'gradle.plugin.com.github.jengelman.gradle.plugins', name: 'shadow', version: '7.0.0'
+        classpath group: 'local.personthecat', name: 'cavegenerator-plugins'
     }
 }
 
@@ -48,6 +49,7 @@ allprojects {
         compileOnly group: 'org.jetbrains', name: 'annotations', version: '16.0.2'
         compileOnly group: 'javax.annotation', name: 'javax.annotation-api', version: '1.3.2'
         compileOnly group: 'com.google.code.findbugs', name: 'jsr305', version: '3.0.2'
+        implementation group: 'local.personthecat', name: 'cavegenerator-plugins'
 
         compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.20'
         annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.20'

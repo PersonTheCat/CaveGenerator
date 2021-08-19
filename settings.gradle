@@ -20,4 +20,10 @@ rootProject.name = 'CaveGenerator'
 
 include 'common', 'platforms:forge', 'platforms:fabric'
 
+includeBuild('buildTools') {
+    dependencySubstitution {
+        substitute module('local.personthecat:cavegenerator-plugins') with project(':')
+    }
+}
+
 startParameter.excludedTaskNames += [':build', ':platforms:build']

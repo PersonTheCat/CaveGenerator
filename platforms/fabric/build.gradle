@@ -20,10 +20,8 @@ dependencies {
     implementation(project("$common")) {
         transitive = false
     }
-    // Add this -> inconsistent class load order.
-    // Remove this -> inconsistent memory addresses.
     developmentFabric(project("$common")) {
-        transitive = false;
+        transitive = false
     }
 
     minecraft "com.mojang:minecraft:$mc_version"

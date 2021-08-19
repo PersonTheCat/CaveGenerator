@@ -7,6 +7,8 @@ import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
 import net.minecraftforge.fml.event.server.FMLServerStartingEvent;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import personthecat.catlib.command.LibCommandRegistrar;
+import personthecat.cavegenerator.commands.CommandCave;
 import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.util.Reference;
 
@@ -17,6 +19,7 @@ public class CaveGenerator {
     private final IEventBus eventBus = MinecraftForge.EVENT_BUS;
 
     public CaveGenerator() {
+        LibCommandRegistrar.registerCommands(Reference.MOD_DESCRIPTOR, true, CommandCave.class);
         Cfg.register(ModLoadingContext.get().getActiveContainer());
         this.setupEventHandlers();
     }
