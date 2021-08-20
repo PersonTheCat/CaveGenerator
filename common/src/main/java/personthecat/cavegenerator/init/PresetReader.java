@@ -1,4 +1,4 @@
-package personthecat.cavegenerator.presets.init;
+package personthecat.cavegenerator.init;
 
 import lombok.extern.log4j.Log4j2;
 import org.hjson.JsonObject;
@@ -7,7 +7,6 @@ import org.hjson.ParseException;
 import personthecat.catlib.util.HjsonUtils;
 import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.presets.CavePreset;
-import personthecat.cavegenerator.presets.PresetCompat;
 import personthecat.cavegenerator.presets.lang.PresetExpander;
 import personthecat.cavegenerator.presets.lang.SyntaxHelper;
 
@@ -15,10 +14,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
+import java.util.*;
 
 import static java.util.Optional.empty;
 import static personthecat.catlib.io.FileIO.listFiles;
@@ -47,7 +43,7 @@ public class PresetReader {
      * @param dir The directory to read presets from.
      * @return A map of filename -> GeneratorSettings.
      */
-    public static Map<String, CavePreset> getPresets(final File dir, final File imports) {
+    public static Map<String, CavePreset> loadPresets(final File dir, final File imports) {
         final Map<File, JsonObject> jsons = loadJsons(dir);
         final Map<File, JsonObject> definitions = loadJsons(imports);
         // Detect a few common syntax errors.
@@ -91,7 +87,7 @@ public class PresetReader {
 
     /** Converts a map of (file -> json) to (filename -> POJO)  */
     private static Map<String, CavePreset> toSettings(final Map<File, JsonObject> jsons) {
-        final Map<String, CavePreset> settings = new HashMap<>();
+        final Map<String, CavePreset> settings = new TreeMap<>();
         extractInner(jsons).forEach((name, json) -> {
             try {
                 settings.put(name, CavePreset.from(json));

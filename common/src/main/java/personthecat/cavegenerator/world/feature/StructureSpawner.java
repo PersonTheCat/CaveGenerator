@@ -32,7 +32,7 @@ public class StructureSpawner {
      *
      * @return A map of filename (no extension) -> template
      */
-    public static Map<String, StructureTemplate> loadStructureFiles() {
+    public static Map<String, StructureTemplate> initStructures() {
         final Map<String, StructureTemplate> structures = new HashMap<>();
 
         for (final File f : listFiles(STRUCTURE_DIR, f -> "nbt".equals(extension(f)))) {

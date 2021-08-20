@@ -1,4 +1,4 @@
-package personthecat.cavegenerator.presets.init;
+package personthecat.cavegenerator.init;
 
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.data.BuiltinRegistries;
@@ -41,6 +41,8 @@ import java.util.List;
  *   In some cases, it may be unclear as to whether a test should be included here or deferred
  * to the source. The current solution is to prefer PresetTester as the primary hub for
  * validating presets, as doing so should improve readability elsewhere.
+ * 
+ * Todo: Discover and warn about unused generator caching.
  */
 @Log4j2
 public class PresetTester {

@@ -1,4 +1,4 @@
-package personthecat.cavegenerator.presets.init;
+package personthecat.cavegenerator.init;
 
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.log4j.Log4j2;
