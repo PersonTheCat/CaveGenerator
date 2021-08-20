@@ -2,7 +2,7 @@ package personthecat.cavegenerator;
 
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import personthecat.catlib.data.SafeRegistry;
-import personthecat.cavegenerator.config.CavePreset;
+import personthecat.cavegenerator.presets.CavePreset;
 import personthecat.cavegenerator.world.GeneratorController;
 import personthecat.cavegenerator.world.feature.StructureSpawner;
 

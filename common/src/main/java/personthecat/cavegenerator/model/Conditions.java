@@ -9,7 +9,7 @@ import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
 import net.minecraft.world.level.biome.Biome;
 import personthecat.catlib.data.Range;
-import personthecat.cavegenerator.data.ConditionSettings;
+import personthecat.cavegenerator.presets.data.ConditionSettings;
 import personthecat.cavegenerator.noise.DummyGenerator;
 import personthecat.fastnoise.FastNoise;
 

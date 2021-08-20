@@ -1,6 +1,6 @@
 package personthecat.cavegenerator.model;
 
-import personthecat.cavegenerator.data.CaveBlockSettings;
+import personthecat.cavegenerator.presets.data.CaveBlockSettings;
 import personthecat.cavegenerator.noise.DummyGenerator;
 import personthecat.fastnoise.FastNoise;
 

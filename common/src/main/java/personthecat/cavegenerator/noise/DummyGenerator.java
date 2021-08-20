@@ -1,14 +1,13 @@
 package personthecat.cavegenerator.noise;
 
 import personthecat.fastnoise.FastNoise;
-import personthecat.fastnoise.data.NoiseDescriptor;
 
 public class DummyGenerator extends FastNoise {
 
     private final float output;
 
     public DummyGenerator(final float output) {
-        super(new NoiseDescriptor()); // Todo: Remove this requirement.
+        super(0);
         this.output = output;
     }
 

@@ -1,7 +1,7 @@
 package personthecat.cavegenerator.world.generator;
 
 import net.minecraft.world.level.levelgen.carver.WorldCarver;
-import personthecat.cavegenerator.data.ConditionSettings;
+import personthecat.cavegenerator.presets.data.ConditionSettings;
 import personthecat.cavegenerator.model.Conditions;
 
 import java.util.Random;

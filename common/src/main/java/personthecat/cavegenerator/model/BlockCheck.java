@@ -10,7 +10,7 @@ import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 import personthecat.catlib.util.HjsonMapper;
-import personthecat.cavegenerator.data.StructureSettings;
+import personthecat.cavegenerator.presets.data.StructureSettings;
 
 import java.util.List;
 

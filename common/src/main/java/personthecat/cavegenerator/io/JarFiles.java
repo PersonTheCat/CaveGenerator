@@ -3,7 +3,7 @@ package personthecat.cavegenerator.io;
 import lombok.extern.log4j.Log4j2;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
-import personthecat.cavegenerator.config.PresetExpander;
+import personthecat.cavegenerator.presets.lang.PresetExpander;
 import personthecat.cavegenerator.exception.ModSetupException;
 import personthecat.cavegenerator.util.Reference;
 

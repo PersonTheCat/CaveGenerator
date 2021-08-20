@@ -6,7 +6,7 @@ import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import personthecat.cavegenerator.data.DecoratorSettings;
+import personthecat.cavegenerator.presets.data.DecoratorSettings;
 
 import java.util.*;
 import java.util.function.Predicate;

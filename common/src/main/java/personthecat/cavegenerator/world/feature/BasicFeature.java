@@ -6,7 +6,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import personthecat.catlib.util.Shorthand;
-import personthecat.cavegenerator.data.ConditionSettings;
+import personthecat.cavegenerator.presets.data.ConditionSettings;
 import personthecat.cavegenerator.model.BlockCheck;
 import personthecat.cavegenerator.model.Conditions;
 
