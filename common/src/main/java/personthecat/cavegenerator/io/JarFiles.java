@@ -67,6 +67,7 @@ public class JarFiles {
 
     /** Copies the example presets from the jar to the disk. */
     public static void copyFiles() {
+        // Todo: CatLib / createRequired(File...)
         if (!(mkdirs(ModFolders.EXAMPLE_DIR) && mkdirs(ModFolders.IMPORT_DIR))) {
             throw new ModSetupException("Creating mod directory.");
         }

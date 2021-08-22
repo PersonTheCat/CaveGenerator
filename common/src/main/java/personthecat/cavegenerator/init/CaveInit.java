@@ -133,6 +133,7 @@ public class CaveInit {
      * @param directory The directory which may or may not contain the file.
      * @param preset The name of the file, <b>without</b> any extension.
      * @param extension The extension being appended to the filename.
+     * @return The expected file, or else {@link Optional#empty}
      */
     private static Optional<File> tryExtension(final File directory, final String preset, final String extension) {
         final File presetFile = new File(directory, preset + "." + extension);

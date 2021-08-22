@@ -1,6 +1,8 @@
 package personthecat.cavegenerator.config;
 
+import personthecat.catlib.exception.MissingOverrideException;
 import personthecat.overwritevalidator.annotations.OverwriteTarget;
+import personthecat.overwritevalidator.annotations.PlatformMustOverwrite;
 
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
@@ -20,4 +22,9 @@ public class Cfg {
     public static final BooleanSupplier UPDATE_IMPORTS = () -> true;
     public static final IntSupplier MAP_RANGE = () -> 8;
     public static final IntSupplier BIOME_RANGE = () -> 2;
+
+    @PlatformMustOverwrite
+    public static void register() {
+        throw new MissingOverrideException();
+    }
 }

@@ -1,18 +1,20 @@
 package personthecat.cavegenerator;
 
-import me.shedaniel.autoconfig.AutoConfig;
-import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import net.fabricmc.api.ModInitializer;
-import personthecat.catlib.command.LibCommandRegistrar;
-import personthecat.cavegenerator.commands.CommandCave;
-import personthecat.cavegenerator.config.Cfg;
-import personthecat.cavegenerator.util.Reference;
+import personthecat.catlib.exception.MissingOverrideException;
+import personthecat.overwritevalidator.annotations.Inherit;
+import personthecat.overwritevalidator.annotations.OverwriteClass;
 
+@OverwriteClass
 public class CaveGenerator implements ModInitializer {
 
     @Override
     public void onInitialize() {
-        AutoConfig.register(Cfg.class, GsonConfigSerializer::new);
-        LibCommandRegistrar.registerCommands(Reference.MOD_DESCRIPTOR, true, CommandCave.class);
+        this.initCommon();
+    }
+
+    @Inherit
+    public void initCommon() {
+        throw new MissingOverrideException();
     }
 }
