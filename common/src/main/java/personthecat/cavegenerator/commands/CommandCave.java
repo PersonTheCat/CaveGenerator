@@ -31,8 +31,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
+import static personthecat.catlib.command.CommandUtils.clickToOpen;
+import static personthecat.catlib.command.CommandUtils.clickToRun;
+import static personthecat.catlib.command.CommandUtils.displayOnHover;
 import static personthecat.catlib.exception.Exceptions.cmdEx;
 import static personthecat.catlib.io.FileIO.listFiles;
+import static personthecat.catlib.util.PathUtils.getRelativePath;
 import static personthecat.catlib.util.Shorthand.f;
 
 @SuppressWarnings("unused") // Used by CatLib
@@ -212,7 +216,7 @@ public class CommandCave {
             wrapper.sendError("Error reading preset.");
         } else if (wrapper.getOptional(DISPLAY_ARG, Boolean.class).orElse(false)) {
             wrapper.execute("/cave reload");
-            wrapper.execute(f("/cave list {}", getRelativeDir(f)));
+            wrapper.execute(f("/cave list {}", getRelativePath(ModFolders.CG_DIR, f)));
         } else {
             wrapper.sendMessage("Preset {} successfully.", (enabled ? "enabled" : "disabled"));
         }
@@ -228,28 +232,12 @@ public class CommandCave {
     )
     private static void newPreset(final CommandContextWrapper wrapper) {
         String name = wrapper.getString(NAME_ARG);
-        // Todo: CatLib / string only
-        if (PathUtils.extension(new File(name)).isEmpty()) {
+        if (PathUtils.extension(name).isEmpty()) {
             name += ".cave";
         }
         final JsonObject preset = new JsonObject().add(ENABLED_KEY, true);
         HjsonUtils.writeJson(preset, new File(ModFolders.PRESET_DIR, name));
         wrapper.sendMessage("Finished writing {}", name);
-    }
-
-    // Todo: CatLib
-    private static HoverEvent displayOnHover(final String txt) {
-        return new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TextComponent(txt));
-    }
-
-    // Todo: CatLib
-    private static ClickEvent clickToRun(final String cmd) {
-        return new ClickEvent(ClickEvent.Action.RUN_COMMAND, cmd);
-    }
-
-    // Todo: CatLib
-    private static ClickEvent clickToOpen(final File file) {
-        return new ClickEvent(ClickEvent.Action.OPEN_FILE, file.getPath());
     }
 
     private static boolean isPresetEnabled(final File file) {
@@ -264,7 +252,7 @@ public class CommandCave {
     }
 
     private static MutableComponent getListElementText(final File file, final boolean enabled) {
-        final String dir = getRelativeDir(file.getParentFile());
+        final String dir = getRelativePath(ModFolders.CG_DIR, file.getParentFile());
         final String filename = PathUtils.noExtension(file);
         final Style openButton = Style.EMPTY
             .withHoverEvent(displayOnHover(("Open" + file.getName() + ".")))
@@ -284,13 +272,13 @@ public class CommandCave {
 
     private static MutableComponent enableButton(final File f) {
         final Style style = ENABLE_BUTTON_STYLE
-            .withClickEvent(clickToRun("/cave enable " + getRelativeDir(f) + " true"));
+            .withClickEvent(clickToRun("/cave enable " + getRelativePath(ModFolders.CG_DIR, f) + " true"));
         return new TextComponent("[ENABLE]").setStyle(style);
     }
 
     private static MutableComponent disableButton(final File f) {
         final Style style = DISABLE_BUTTON_STYLE
-            .withClickEvent(clickToRun("/cave disable " + getRelativeDir(f) + " true"));
+            .withClickEvent(clickToRun("/cave disable " + getRelativePath(ModFolders.CG_DIR, f) + " true"));
         return new TextComponent("[DISABLE]").setStyle(style);
     }
 
@@ -298,10 +286,5 @@ public class CommandCave {
         final Style style = EXPLORE_BUTTON_STYLE
             .withClickEvent(clickToRun("/cave list " + dir));
         return new TextComponent("[VIEW]").setStyle(style);
-    }
-
-    // Todo: CatLib
-    private static String getRelativeDir(final File file) {
-        return file.getPath().substring(ModFolders.CG_DIR.getPath().length());
     }
 }

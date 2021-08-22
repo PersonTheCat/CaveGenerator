@@ -7,7 +7,6 @@ import personthecat.cavegenerator.CaveRegistries;
 import personthecat.cavegenerator.model.SeedStorage;
 import personthecat.cavegenerator.presets.CavePreset;
 import personthecat.cavegenerator.config.Cfg;
-import personthecat.cavegenerator.exception.ModSetupException;
 import personthecat.cavegenerator.world.GeneratorController;
 
 import java.io.File;
@@ -17,16 +16,13 @@ import static java.util.Optional.empty;
 import static personthecat.catlib.util.PathUtils.extension;
 import static personthecat.catlib.util.Shorthand.full;
 import static personthecat.catlib.io.FileIO.fileExists;
-import static personthecat.catlib.io.FileIO.mkdirs;
+import static personthecat.catlib.io.FileIO.mkdirsOrThrow;
 import static personthecat.cavegenerator.io.ModFolders.GENERATED_DIR;
 import static personthecat.cavegenerator.io.ModFolders.IMPORT_DIR;
 import static personthecat.cavegenerator.io.ModFolders.PRESET_DIR;
 
 @Log4j2
 public class CaveInit {
-
-    /** A message to display when failing to run mkdirs. */
-    private static final String CANT_CREATE = "Unable to create directory";
 
     /** A list of valid extensions to compare against presets. */
     private static final List<String> EXTENSIONS = Arrays.asList("hjson", "json", "cave");
@@ -38,17 +34,13 @@ public class CaveInit {
      */
     public static Map<String, CavePreset> initPresets() {
         // Verify the folders' integrity before proceeding.
-        if (!(mkdirs(PRESET_DIR) && mkdirs(IMPORT_DIR))) {
-            throw new ModSetupException(CANT_CREATE);
-        }
+        mkdirsOrThrow(PRESET_DIR, IMPORT_DIR);
         // Handle all files in the preset directory.
         final Map<String, CavePreset> presets = PresetReader.loadPresets(PRESET_DIR, IMPORT_DIR);
 
         // If necessary, automatically write the expanded values.
         if (Cfg.AUTO_GENERATE.getAsBoolean()) {
-            if (!mkdirs(GENERATED_DIR)) {
-                throw new ModSetupException(CANT_CREATE);
-            }
+            mkdirsOrThrow(GENERATED_DIR);
             presets.forEach((name, preset) -> {
                 final File file = new File(GENERATED_DIR, name + ".cave");
                 HjsonUtils.writeJson(preset.raw, file).unwrap();

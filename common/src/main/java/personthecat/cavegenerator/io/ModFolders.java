@@ -15,4 +15,28 @@ public class ModFolders {
     public static final File IMPORT_DIR = new File(CG_DIR, "imports");
     public static final File GENERATED_DIR = new File(CG_DIR, "generated");
     public static final File STRUCTURE_DIR = new File(CG_DIR, "structures");
+
+    public static File root(final String name) {
+        return new File(CG_DIR, name);
+    }
+
+    public static File examples(final String name) {
+        return new File(EXAMPLE_DIR, name);
+    }
+
+    public static File presets(final String name) {
+        return new File(PRESET_DIR, name);
+    }
+
+    public static File imports(final String name) {
+        return new File(IMPORT_DIR, name);
+    }
+
+    public static File generated(final String name) {
+        return new File(GENERATED_DIR, name);
+    }
+
+    public static File structures(final String name) {
+        return new File(STRUCTURE_DIR, name);
+    }
 }

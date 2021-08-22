@@ -4,7 +4,6 @@ import lombok.extern.log4j.Log4j2;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 import personthecat.cavegenerator.presets.lang.PresetExpander;
-import personthecat.cavegenerator.exception.ModSetupException;
 import personthecat.cavegenerator.util.Reference;
 
 import java.io.*;
@@ -12,8 +11,13 @@ import java.io.*;
 import static personthecat.catlib.io.FileIO.copyStream;
 import static personthecat.catlib.io.FileIO.fileExists;
 import static personthecat.catlib.io.FileIO.getRequiredResource;
-import static personthecat.catlib.io.FileIO.mkdirs;
+import static personthecat.catlib.io.FileIO.mkdirsOrThrow;
 import static personthecat.cavegenerator.exception.CaveSyntaxException.caveSyntax;
+import static personthecat.cavegenerator.io.ModFolders.CG_DIR;
+import static personthecat.cavegenerator.io.ModFolders.EXAMPLE_DIR;
+import static personthecat.cavegenerator.io.ModFolders.IMPORT_DIR;
+import static personthecat.cavegenerator.io.ModFolders.PRESET_DIR;
+import static personthecat.cavegenerator.io.ModFolders.STRUCTURE_DIR;
 
 @Log4j2
 public class JarFiles {
@@ -67,10 +71,8 @@ public class JarFiles {
 
     /** Copies the example presets from the jar to the disk. */
     public static void copyFiles() {
-        // Todo: CatLib / createRequired(File...)
-        if (!(mkdirs(ModFolders.EXAMPLE_DIR) && mkdirs(ModFolders.IMPORT_DIR))) {
-            throw new ModSetupException("Creating mod directory.");
-        }
+        mkdirsOrThrow(EXAMPLE_DIR, IMPORT_DIR);
+
         copyExamples();
         copyDefaults();
         copyImports();
@@ -102,7 +104,7 @@ public class JarFiles {
     private static void copyExamples() {
         for (final String filename : EXAMPLES) {
             final String fromLocation = DATA_PATH + "/presets/" + filename + ".cave";
-            final String toLocation = ModFolders.EXAMPLE_DIR + "/" + filename + ".cave";
+            final String toLocation = EXAMPLE_DIR + "/" + filename + ".cave";
             if (!fileExists(new File(toLocation))) {
                 copyFile(fromLocation, toLocation);
             }
@@ -110,12 +112,10 @@ public class JarFiles {
     }
 
     private static void copyDefaults() {
-        if (!fileExists(ModFolders.PRESET_DIR)) {
+        if (!fileExists(PRESET_DIR)) {
             // The directory doesn't exist. Create it.
-            if (!mkdirs(ModFolders.PRESET_DIR)) {
-                throw new ModSetupException("Error creating preset directory");
-            }
-            for (String s : DEFAULTS) {
+            mkdirsOrThrow(PRESET_DIR);
+            for (final String s : DEFAULTS) {
                 copyDefault(s + ".cave");
             }
         }
@@ -123,17 +123,15 @@ public class JarFiles {
 
     private static void copyDefault(String name) {
         final String fromLocation = DATA_PATH + "/presets/" + name;
-        final String toLocation = ModFolders.PRESET_DIR + "/" + name;
+        final String toLocation = PRESET_DIR + "/" + name;
         copyFile(fromLocation, toLocation);
     }
 
     private static void copyImports() {
-        if (!mkdirs(ModFolders.IMPORT_DIR)) {
-            throw new ModSetupException("Error creating import directory");
-        }
+        mkdirsOrThrow(IMPORT_DIR);
         for (final String i : IMPORTS) {
             final String fromLocation = DATA_PATH + "/imports/" + i + ".cave";
-            final String toLocation = ModFolders.IMPORT_DIR + "/" + i + ".cave";
+            final String toLocation = IMPORT_DIR + "/" + i + ".cave";
             // Only copy each file if it doesn't already exist.
             if (!fileExists(new File(toLocation))) {
                 copyFile(fromLocation, toLocation);
@@ -142,9 +140,7 @@ public class JarFiles {
     }
 
     private static void copyCatImports() {
-        if (!mkdirs(new File(ModFolders.IMPORT_DIR, CAT_FOLDER_NAME))) {
-            throw new ModSetupException("Error creating cat directory");
-        }
+        mkdirsOrThrow(new File(IMPORT_DIR, CAT_FOLDER_NAME));
         for (final String i : CAT_IMPORTS) {
             final String fromLocation = DATA_PATH + "/imports/cat/" + i + ".cave";
             final String toLocation = CAT_DIR + "/" + i + ".cave";
@@ -156,14 +152,12 @@ public class JarFiles {
 
     /** Copies the example structures from the jar to the disk. */
     private static void copyStructures() {
-        if (!fileExists(ModFolders.STRUCTURE_DIR)) {
+        if (!fileExists(STRUCTURE_DIR)) {
             // The directory doesn't exist. Create it.
-            if (!mkdirs(ModFolders.STRUCTURE_DIR)) {
-                throw new ModSetupException("Error creating structure directory");
-            }
+            mkdirsOrThrow(STRUCTURE_DIR);
             for (String structure : STRUCTURES) {
                 final String fromLocation = DATA_PATH + "/structures/" + structure + ".nbt";
-                final String toLocation = ModFolders.STRUCTURE_DIR + "/" + structure + ".nbt";
+                final String toLocation = STRUCTURE_DIR + "/" + structure + ".nbt";
                 copyFile(fromLocation, toLocation);
             }
         }
@@ -173,12 +167,12 @@ public class JarFiles {
     private static void copyTutorial() {
         // Copy the regular tutorial file.
         final String fromLocation = DATA_PATH + "/" + TUTORIAL_NAME;
-        final String toLocation = ModFolders.CG_DIR + "/" + TUTORIAL_NAME;
+        final String toLocation = CG_DIR + "/" + TUTORIAL_NAME;
         copyFile(fromLocation, toLocation);
 
         // Copy the condensed version. Todo: Generate this file.
         final String fromLocation2 = DATA_PATH + "/" + REFERENCE_NAME;
-        final String toLocation2 = ModFolders.CG_DIR + "/" + REFERENCE_NAME;
+        final String toLocation2 = CG_DIR + "/" + REFERENCE_NAME;
         copyFile(fromLocation2, toLocation2);
     }
 

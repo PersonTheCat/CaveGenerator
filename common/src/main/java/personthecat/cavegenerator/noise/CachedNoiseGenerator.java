@@ -10,7 +10,7 @@ public class CachedNoiseGenerator extends FastNoise {
 
     public CachedNoiseGenerator(final NoiseDescriptor cfg, final FastNoise reference) {
         super(cfg);
-        this.reference = reference; // Todo: this hash is no longer meaningful
+        this.reference = reference;
         this.cache = CachedNoiseHelper.getOrCreate(cfg.hashCode());
     }
 
