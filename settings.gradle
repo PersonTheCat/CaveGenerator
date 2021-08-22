@@ -10,8 +10,13 @@ pluginManagement {
         }
         maven {
             name = 'Architectury'
-            url = 'https://maven.shedaniel.me/'
+            url = 'https://maven.architectury.dev'
         }
+        maven {
+            name = "JitPack"
+            url = 'https://jitpack.io'
+        }
+        mavenCentral()
         gradlePluginPortal()
     }
 }

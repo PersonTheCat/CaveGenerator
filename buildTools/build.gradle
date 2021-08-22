@@ -1,11 +1,11 @@
 plugins {
-    id "java"
+    id 'java'
 }
 
 repositories {
-    maven { url "https://maven.shedaniel.me/" }
+    maven { url 'https://maven.architectury.dev' }
 }
 
 dependencies {
-    implementation "dev.architectury:architectury-transformer:4.1.51"
+    implementation 'dev.architectury:architectury-transformer:4.1.51'
 }

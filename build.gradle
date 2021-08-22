@@ -1,10 +1,6 @@
 import personthecat.overwritevalidator.OverwriteValidator
 
 buildscript {
-    repositories {
-        maven { url = "https://jitpack.io" }
-        mavenCentral()
-    }
     dependencies {
         classpath group: 'com.github.PersonTheCat', name: 'OverwriteValidator', version: '1.8'
         classpath group: 'gradle.plugin.com.github.jengelman.gradle.plugins', name: 'shadow', version: '7.0.0'
@@ -32,10 +28,15 @@ allprojects {
 
     repositories {
         // More convenient access to CF mods.
-        maven { url 'https://www.cursemaven.com' }
+        maven {
+            // Temporary workaround to fix CF dependencies
+            allowInsecureProtocol true
+            url 'http://www.cursemaven.com'
+        }
 
         // So we can conveniently read dependencies from GH.
         maven { url 'https://jitpack.io' }
+        maven { url 'https://maven.architectury.dev' }
         mavenCentral()
     }
 
