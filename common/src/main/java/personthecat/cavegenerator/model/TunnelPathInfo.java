@@ -3,13 +3,16 @@ package personthecat.cavegenerator.model;
 import net.minecraft.util.Mth;
 import personthecat.cavegenerator.presets.data.RavineSettings;
 import personthecat.cavegenerator.presets.data.TunnelSettings;
+import personthecat.cavegenerator.world.generator.PrimerContext;
 
 import java.util.Random;
 
 /**
  * Holds all of the information related to the tunnel generator's current position along
  * the path of a tunnel. Used for generating a series of center coordinates around which
- * to generate spheres. Based on Mojang's original algorithm.
+ * to generate spheres. Based on Mojang's original algorithm in 1.12.
+ *
+ * Todo: Modernize this up to 1.13+ specs, ideally by removing it.
  */
 public class TunnelPathInfo {
 
@@ -163,7 +166,7 @@ public class TunnelPathInfo {
         z += Mth.sin(yaw) * cosPitch;
     }
 
-    void updateVals(Random rand, float maxRotation) {
+    void updateVals(final Random rand, final float maxRotation) {
         // Adjust the angle based on current twist(XZ/Y). twist
         // will have been recalculated on subsequent iterations.
         // The potency of twist is reduced immediately.
@@ -178,7 +181,7 @@ public class TunnelPathInfo {
     }
 
     /** Updates the value of `original` based on the input settings. */
-    private float rotate(float original, Random rand, ScalableFloat f) {
+    private float rotate(float original, final Random rand, final ScalableFloat f) {
         original = (float) Math.pow(original, f.exponent);
         original *= f.factor;
         original += f.randFactor * (rand.nextFloat() - rand.nextFloat()) * rand.nextFloat();
@@ -186,7 +189,7 @@ public class TunnelPathInfo {
     }
 
     /** Updates the value of `original` based on the input settings. */
-    private float reScale(float original, Random rand, ScalableFloat f) {
+    private float reScale(float original, final Random rand, final ScalableFloat f) {
         original = (float) Math.pow(original, f.exponent);
         original *= f.factor;
         //original += f.randFactor * (rand.nextFloat() - 0.5F);
@@ -194,9 +197,9 @@ public class TunnelPathInfo {
         return original;
     }
 
-    public boolean travelledTooFar(PrimerData data, int currentPos, int distance) {
-        final double fromCenterX = x - data.centerX;
-        final double fromCenterZ = z - data.centerZ;
+    public boolean travelledTooFar(final PrimerContext ctx, final int currentPos, final int distance) {
+        final double fromCenterX = x - ctx.centerX;
+        final double fromCenterZ = z - ctx.centerZ;
         // Name? Is this related to Y?
         final double distanceRemaining = distance - currentPos;
         final double adjustedScale = scale + 18.00;
@@ -209,10 +212,10 @@ public class TunnelPathInfo {
         return (fromCenterX2 + fromCenterZ2 - distanceRemaining2) > adjustedScale2;
     }
 
-    public boolean touchesChunk(PrimerData data, double diameterXZ) {
-        return x >= data.centerX - 16.0 - diameterXZ
-            && z >= data.centerZ - 16.0 - diameterXZ
-            && x <= data.centerX + 16.0 + diameterXZ
-            && z <= data.centerZ + 16.0 + diameterXZ;
+    public boolean touchesChunk(final PrimerContext ctx, final double diameterXZ) {
+        return x >= ctx.centerX - 16.0 - diameterXZ
+            && z >= ctx.centerZ - 16.0 - diameterXZ
+            && x <= ctx.centerX + 16.0 + diameterXZ
+            && z <= ctx.centerZ + 16.0 + diameterXZ;
     }
 }

@@ -21,18 +21,20 @@ import static personthecat.cavegenerator.util.CommonBlocks.BLK_VOID;
 
 public final class PrimerContext {
 
-    final BiomeManager provider;
-    final BiomeSearch search;
-    final Random localRand;
-    final int chunkX;
-    final int chunkZ;
-    final int actualX;
-    final int actualZ;
-    final int seaLevel;
-    final ProtoChunk primer;
-    final Map<Heightmap.Types, Heightmap> heightmaps;
-    final Map<GenerationStep.Carving, BitSet> carvingMasks;
-    final List<Heightmap> heightmapsAfter = new ArrayList<>();
+    public final BiomeManager provider;
+    public final BiomeSearch search;
+    public final Random localRand;
+    public final int chunkX;
+    public final int chunkZ;
+    public final int actualX;
+    public final int actualZ;
+    public final int centerX;
+    public final int centerZ;
+    public final int seaLevel;
+    public final ProtoChunk primer;
+    public final Map<Heightmap.Types, Heightmap> heightmaps;
+    public final Map<GenerationStep.Carving, BitSet> carvingMasks;
+    public final List<Heightmap> heightmapsAfter = new ArrayList<>();
 
     public PrimerContext(
         final BiomeManager provider,
@@ -48,6 +50,8 @@ public final class PrimerContext {
         this.chunkZ = pos.z;
         this.actualX = chunkX << 4;
         this.actualZ = chunkZ << 4;
+        this.centerX = actualX + 8;
+        this.centerZ = actualZ + 8;
         this.localRand = new XoRoShiRo(seed ^ chunkX ^ chunkZ);
         this.seaLevel = seaLevel;
         this.primer = primer;
