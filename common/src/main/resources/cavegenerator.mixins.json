@@ -3,7 +3,8 @@
   "package": "personthecat.cavegenerator.mixin",
   "compatibilityLevel": "JAVA_8",
   "mixins": [
-    "ChunkGeneratorMixin"
+    "ChunkGeneratorMixin",
+    "PrimerAccessor"
   ],
   "injectors": {
     "defaultRequire": 1

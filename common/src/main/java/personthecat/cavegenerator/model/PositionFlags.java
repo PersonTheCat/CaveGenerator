@@ -1,4 +1,7 @@
-package personthecat.cavegenerator.util;
+package personthecat.cavegenerator.model;
+
+import personthecat.cavegenerator.util.PositionConsumer;
+import personthecat.cavegenerator.util.PositionPredicate;
 
 /**
  * A reusable list of <em>relative</em> block positions stored in an array of raw integers.

@@ -3,6 +3,7 @@ package personthecat.cavegenerator.model;
 import net.minecraft.world.level.block.state.BlockState;
 import personthecat.cavegenerator.presets.data.WallDecoratorSettings;
 import personthecat.cavegenerator.noise.DummyGenerator;
+import personthecat.cavegenerator.world.generator.PrimerContext;
 import personthecat.fastnoise.FastNoise;
 
 import java.util.Random;
@@ -51,13 +52,13 @@ public class ConfiguredWallDecorator {
         return false;
     }
 
-//    public boolean decidePlace(BlockState state, ChunkPrimer primer, int xO, int yO, int zO, int xD, int yD, int zD) {
-//        if (WallDecoratorSettings.Placement.OVERLAY.equals(cfg.placement)) {
-//            primer.setBlockState(xO, yO, zO, state);
-//            return true;
-//        }
-//        primer.setBlockState(xD, yD, zD, state);
-//        return false;
-//    }
+    public boolean decidePlace(PrimerContext ctx, BlockState state, int x0, int y0, int z0, int xD, int yD, int zD) {
+        if (WallDecoratorSettings.Placement.OVERLAY.equals(cfg.placement)) {
+            ctx.set(x0, y0, z0, state);
+            return true;
+        }
+        ctx.set(xD, yD, zD, state);
+        return false;
+    }
 
 }

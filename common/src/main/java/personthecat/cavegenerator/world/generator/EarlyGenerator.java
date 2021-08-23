@@ -15,13 +15,13 @@ import java.util.Random;
  *   which could potentially improve compatibility with other mods.
  * </p>
  */
-public abstract class BasicGenerator {
+public abstract class EarlyGenerator {
 
     protected final Conditions conditions;
     protected final Random globalRand;
     protected final long seed;
 
-    public BasicGenerator(final ConditionSettings conditions, final Random rand, final long seed) {
+    public EarlyGenerator(final ConditionSettings conditions, final Random rand, final long seed) {
         this.conditions = Conditions.compile(conditions, rand, seed);
         this.globalRand = rand;
         this.seed = seed;

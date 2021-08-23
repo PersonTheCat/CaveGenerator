@@ -10,7 +10,7 @@ architectury {
 
 loom {
     silentMojangMappingsLicense()
-    mixinConfig "cavegenerator.mixins.json"
+    mixinConfig 'cavegenerator.mixins.json'
 }
 
 dependencies {
