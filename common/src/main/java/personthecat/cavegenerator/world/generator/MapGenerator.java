@@ -23,12 +23,10 @@ public abstract class MapGenerator extends CaveCarver {
 
     protected final List<BlockPos> invalidChunks = new ArrayList<>();
     private final SphereData sphere = new SphereData();
-    protected final Random rand;
     private final boolean checkWater;
 
     public MapGenerator(ConditionSettings conditions, DecoratorSettings decorators, Random rand, long seed, boolean checkWater) {
         super(conditions, decorators, rand, seed);
-        this.rand = new Random(seed);
         this.checkWater = checkWater;
     }
 
@@ -95,15 +93,15 @@ public abstract class MapGenerator extends CaveCarver {
     @Override
     protected final void generateChecked(final PrimerContext ctx) {
         final int range = Cfg.MAP_RANGE.getAsInt();
-        this.rand.setSeed(this.seed);
-        final long xMask = this.rand.nextLong();
-        final long zMask = this.rand.nextLong();
+        ctx.localRand.setSeed(this.seed);
+        final long xMask = ctx.localRand.nextLong();
+        final long zMask = ctx.localRand.nextLong();
 
         for (int destX = ctx.chunkX - range; destX <= ctx.chunkX + range; destX++) {
             for (int destZ = ctx.chunkZ - range; destZ <= ctx.chunkZ + range; destZ++) {
                 long xHash = (long) destX * xMask;
                 long zHash = (long) destZ * zMask;
-                this.rand.setSeed(xHash ^ zHash ^ this.seed);
+                ctx.localRand.setSeed(xHash ^ zHash ^ this.seed);
                 this.mapGenerate(ctx, destX, destZ);
             }
         }

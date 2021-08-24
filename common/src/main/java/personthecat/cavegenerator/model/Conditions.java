@@ -8,9 +8,11 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
 import net.minecraft.world.level.biome.Biome;
+import net.minecraft.world.level.levelgen.Heightmap;
 import personthecat.catlib.data.Range;
 import personthecat.cavegenerator.presets.data.ConditionSettings;
 import personthecat.cavegenerator.noise.DummyGenerator;
+import personthecat.cavegenerator.world.generator.PrimerContext;
 import personthecat.fastnoise.FastNoise;
 
 import java.util.*;
@@ -94,9 +96,11 @@ public class Conditions {
     }
 
     /** Get the current height range when given two absolute coordinates and a heightmap of the current chunk. */
-    public Range getColumn(final int[][] heightmap, final int x, final int z) {
+    public Range getColumn(final PrimerContext ctx, final int x, final int z) {
+        // Todo: no need to do a lookup on this every time. This map is already loaded by CG
+        final int surface = ctx.primer.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, x, z);
         final int min = height.min + (int) floor.getNoiseScaled((float) x, (float) z);
-        final int max = Math.min(height.max, heightmap[x & 15][z & 15]) + (int) ceiling.getNoiseScaled((float) x, (float) z);
+        final int max = Math.min(height.max, surface) + (int) ceiling.getNoiseScaled((float) x, (float) z);
         return Range.checkedOrEmpty(min, max);
     }
 }

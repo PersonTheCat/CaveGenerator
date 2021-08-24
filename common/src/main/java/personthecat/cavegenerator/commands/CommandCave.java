@@ -6,7 +6,6 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.effect.MobEffect;
 import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.Entity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
 import org.hjson.JsonObject;
@@ -37,7 +36,6 @@ import static personthecat.catlib.command.CommandUtils.displayOnHover;
 import static personthecat.catlib.exception.Exceptions.cmdEx;
 import static personthecat.catlib.io.FileIO.listFiles;
 import static personthecat.catlib.util.PathUtils.getRelativePath;
-import static personthecat.catlib.util.Shorthand.f;
 
 @SuppressWarnings("unused") // Used by CatLib
 public class CommandCave {
@@ -131,9 +129,8 @@ public class CommandCave {
         description = "Applies night vision and spectator mode for easy cave viewing."
     )
     private static void test(final CommandContextWrapper wrapper) {
-        final Entity entity = wrapper.getSource().getEntity();
-        if (entity instanceof Player) {
-            final Player player = (Player) entity;
+        final Player player = wrapper.getPlayer();
+        if (player != null) {
             player.setGameMode(GameType.SPECTATOR);
 
             final MobEffect nightVision = MobEffects.NIGHT_VISION;
@@ -145,9 +142,8 @@ public class CommandCave {
         description = "Removes night vision and puts you in the default game mode."
     )
     private static void untest(final CommandContextWrapper wrapper) {
-        final Entity entity = wrapper.getSource().getEntity();
-        if (entity instanceof Player) {
-            final Player player = (Player) entity;
+        final Player player = wrapper.getPlayer();
+        if (player != null) {
             final GameType mode = Optional.ofNullable(wrapper.getSource().getServer())
                 .map(MinecraftServer::getDefaultGameType)
                 .orElse(GameType.CREATIVE);
@@ -166,7 +162,7 @@ public class CommandCave {
     )
     private static void jump(final CommandContextWrapper wrapper) {
         final double distance = 1000.0 * wrapper.getOptional(DISTANCE_ARG, Double.class).orElse(1.0);
-        wrapper.execute(f("/tp ~{} ~ ~{}", distance));
+        wrapper.execute("/tp ~{} ~ ~{}", distance, distance);
     }
 
     @ModCommand(
@@ -216,7 +212,7 @@ public class CommandCave {
             wrapper.sendError("Error reading preset.");
         } else if (wrapper.getOptional(DISPLAY_ARG, Boolean.class).orElse(false)) {
             wrapper.execute("/cave reload");
-            wrapper.execute(f("/cave list {}", getRelativePath(ModFolders.CG_DIR, f)));
+            wrapper.execute("/cave list {}", getRelativePath(ModFolders.CG_DIR, f));
         } else {
             wrapper.sendMessage("Preset {} successfully.", (enabled ? "enabled" : "disabled"));
         }
@@ -248,14 +244,14 @@ public class CommandCave {
 
     private static MutableComponent getViewDirectoryText(File file) {
         return new TextComponent("\n / " + file.getName() + " ")
-            .append(viewButton(file.getPath()));
+            .append(viewButton(file));
     }
 
     private static MutableComponent getListElementText(final File file, final boolean enabled) {
         final String dir = getRelativePath(ModFolders.CG_DIR, file.getParentFile());
         final String filename = PathUtils.noExtension(file);
         final Style openButton = Style.EMPTY
-            .withHoverEvent(displayOnHover(("Open" + file.getName() + ".")))
+            .withHoverEvent(displayOnHover(("Open " + file.getName() + ".")))
             .withClickEvent(clickToOpen(file));
         if (enabled) {
             return new TextComponent("\n")
@@ -282,9 +278,9 @@ public class CommandCave {
         return new TextComponent("[DISABLE]").setStyle(style);
     }
 
-    private static MutableComponent viewButton(final String dir) {
+    private static MutableComponent viewButton(final File dir) {
         final Style style = EXPLORE_BUTTON_STYLE
-            .withClickEvent(clickToRun("/cave list " + dir));
+            .withClickEvent(clickToRun("/cave list " + getRelativePath(ModFolders.CG_DIR, dir)));
         return new TextComponent("[VIEW]").setStyle(style);
     }
 }

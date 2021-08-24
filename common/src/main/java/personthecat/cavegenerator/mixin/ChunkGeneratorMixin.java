@@ -13,6 +13,7 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import personthecat.catlib.exception.MissingOverrideException;
 import personthecat.cavegenerator.CaveRegistries;
+import personthecat.cavegenerator.util.XoRoShiRo;
 import personthecat.cavegenerator.world.BiomeSearch;
 import personthecat.cavegenerator.world.GeneratorController;
 import personthecat.cavegenerator.world.generator.PrimerContext;
@@ -41,6 +42,9 @@ public class ChunkGeneratorMixin {
      */
     @Overwrite
     public void applyCarvers(final long seed, final BiomeManager biomes, final ChunkAccess chunk, final Carving step) {
+        // Todo: find a better place for this (looking for world load event)
+        CaveRegistries.CURRENT_SEED.set(new XoRoShiRo(seed), seed);
+
         final BiomeManager withSource = biomes.withDifferentSource(this.biomeSource);
         final ChunkPos pos = chunk.getPos();
         final BiomeSearch search = BiomeSearch.in(withSource, pos.x, pos.z);

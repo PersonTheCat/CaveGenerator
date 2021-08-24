@@ -164,15 +164,15 @@ public final class PrimerContext {
      * by the generator controller. This relieves the responsibility of repeatedly checking
      * whether those sections exist in the future.
      *
-     * <p>Mote that an additional section will be created in each direction in case of block
+     * <p>Note that an additional section may be created in each direction in case of block
      * updates.
      *
      * @param minY The lowest y-level affected by <b>any</b> controller.
      * @param maxY The highest y-level affected by <b>any</b> controller.
      */
     public void primeSections(final int minY, final int maxY) {
-        final int min = Math.max(0, minY >> 4 - 1);
-        final int max = Math.min(15, maxY >> 4 + 1);
+        final int min = Math.max(0, (minY - 1) >> 4);
+        final int max = Math.min(15, (maxY + 1) >> 4);
         for (int i = min; i <= max; i++) {
             if (this.primer.getSections()[i] == null) {
                 this.primer.getSections()[i] = new LevelChunkSection(i << 4);

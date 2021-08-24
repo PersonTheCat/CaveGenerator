@@ -303,7 +303,7 @@ public abstract class CaveCarver extends EarlyGenerator {
      * @param z    The relative z-coordinate being tested.
      * @return     Whether the block at the current position hsa been updated.
      */
-    protected static boolean decorateAll(PrimerContext ctx, List<ConfiguredWallDecorator> all, Random rand, int x, int y, int z) {
+    protected boolean decorateAll(PrimerContext ctx, List<ConfiguredWallDecorator> all, Random rand, int x, int y, int z) {
         for (final ConfiguredWallDecorator decorator : all) {
             if (decorator.canGenerate(rand, x, y, z, ctx.chunkX, ctx.chunkZ)) {
                 if (y > 0 && checkPlaceWall(ctx, decorator, rand, x, y, z, x, y - 1, z)) {
@@ -341,7 +341,7 @@ public abstract class CaveCarver extends EarlyGenerator {
      * @param z    The relative z-coordinate being tested.
      * @return     Whether the block at the current position hsa been updated.
      */
-    private static boolean decorateSide(PrimerContext ctx, List<ConfiguredWallDecorator> side, Random rand, int x, int y, int z) {
+    private boolean decorateSide(PrimerContext ctx, List<ConfiguredWallDecorator> side, Random rand, int x, int y, int z) {
         for (final ConfiguredWallDecorator decorator : side) {
             if (decorator.canGenerate(rand, x, y, z, ctx.chunkX, ctx.chunkZ)) {
                 if (x > 0 && checkPlaceWall(ctx, decorator, rand, x, y, z, x - 1, y, z)) {
@@ -375,7 +375,7 @@ public abstract class CaveCarver extends EarlyGenerator {
      * @param zD        The z-coordinate of the current surface block.
      * @return Whether a block was placed at the current position.
      */
-    private static boolean checkPlaceWall(PrimerContext ctx, ConfiguredWallDecorator decorator, Random rand, int x0, int y0, int z0, int xD, int yD, int zD) {
+    private boolean checkPlaceWall(PrimerContext ctx, ConfiguredWallDecorator decorator, Random rand, int x0, int y0, int z0, int xD, int yD, int zD) {
         if (decorator.matchesBlock(ctx.get(xD, yD, zD))) {
             return placeWall(ctx, decorator, rand, x0, y0, z0, xD, yD, zD);
         }
@@ -396,7 +396,7 @@ public abstract class CaveCarver extends EarlyGenerator {
      * @param zD         The z-coordinate of the current surface block.
      * @return Whether a block was placed at the current position.
      */
-    private static boolean decorate(PrimerContext ctx, List<ConfiguredWallDecorator> decorators, Random rand, int x0, int y0, int z0, int xD, int yD, int zD) {
+    private boolean decorate(PrimerContext ctx, List<ConfiguredWallDecorator> decorators, Random rand, int x0, int y0, int z0, int xD, int yD, int zD) {
         for (final ConfiguredWallDecorator decorator : decorators) {
             final BlockState candidate = ctx.get(xD, yD, zD);
             if (decorator.canGenerate(rand, candidate, x0, y0, z0, ctx.chunkX, ctx.chunkZ)) {
@@ -423,7 +423,7 @@ public abstract class CaveCarver extends EarlyGenerator {
      * @param zD        The z-coordinate of the current surface block.
      * @return Whether a block was placed at the current position.
      */
-    private static boolean placeWall(PrimerContext ctx, ConfiguredWallDecorator decorator, Random rand, int x0, int y0, int z0, int xD, int yD, int zD) {
+    private boolean placeWall(PrimerContext ctx, ConfiguredWallDecorator decorator, Random rand, int x0, int y0, int z0, int xD, int yD, int zD) {
         for (final BlockState state : decorator.cfg.states) {
             if (rand.nextFloat() <= decorator.cfg.integrity) {
                 if (decorator.decidePlace(ctx, state, x0, y0, z0, xD, yD, zD)) {
