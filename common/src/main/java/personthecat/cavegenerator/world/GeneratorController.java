@@ -3,10 +3,7 @@ package personthecat.cavegenerator.world;
 import lombok.Builder;
 import personthecat.cavegenerator.presets.CavePreset;
 import personthecat.cavegenerator.world.feature.WorldContext;
-import personthecat.cavegenerator.world.generator.BurrowGenerator;
-import personthecat.cavegenerator.world.generator.CavernGenerator;
-import personthecat.cavegenerator.world.generator.PrimerContext;
-import personthecat.cavegenerator.world.generator.TunnelGenerator;
+import personthecat.cavegenerator.world.generator.*;
 
 import java.util.List;
 import java.util.Random;
@@ -18,12 +15,14 @@ public class GeneratorController {
 
     private final List<CavernGenerator> caverns;
     private final List<TunnelGenerator> tunnels;
+    private final List<RavineGenerator> ravines;
     private final List<BurrowGenerator> burrows;
 
     public static GeneratorController from(final CavePreset preset, final Random rand, final long seed) {
         return GeneratorController.builder()
             .caverns(map(preset.caverns, c -> new CavernGenerator(c, rand, seed)))
             .tunnels(map(preset.tunnels, t -> new TunnelGenerator(t, rand, seed)))
+            .ravines(map(preset.ravines, r -> new RavineGenerator(r, rand, seed)))
             .burrows(map(preset.burrows, b -> new BurrowGenerator(b, rand, seed)))
             .build();
     }
@@ -35,6 +34,7 @@ public class GeneratorController {
 
     public void mapGenerate(final PrimerContext ctx) {
         tunnels.forEach(t -> t.generate(ctx));
+        ravines.forEach(r -> r.generate(ctx));
     }
 
     public void featureGenerate(final WorldContext ctx) {
