@@ -13,9 +13,11 @@ import static personthecat.catlib.util.Shorthand.map;
 
 public abstract class ListGenerator<T> {
     protected final List<Pair<T, Conditions>> features;
+    protected final long worldSeed;
 
     public ListGenerator(List<T> features, Function<T, ConditionSettings> getter, Random rand, long seed) {
         this.features = map(features, f -> Pair.of(f, Conditions.compile(getter.apply(f), rand, seed)));
+        this.worldSeed = seed;
     }
 
     public void generate(final PrimerContext ctx) {

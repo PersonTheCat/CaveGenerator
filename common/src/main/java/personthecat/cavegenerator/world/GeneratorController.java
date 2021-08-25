@@ -18,6 +18,7 @@ public class GeneratorController {
     private final List<RavineGenerator> ravines;
     private final List<BurrowGenerator> burrows;
     private final List<LayerGenerator> layers;
+    private final ClusterGenerator clusters; // Todo: global, layered
 
     public static GeneratorController from(final CavePreset preset, final Random rand, final long seed) {
         return GeneratorController.builder()
@@ -26,10 +27,12 @@ public class GeneratorController {
             .ravines(map(preset.ravines, r -> new RavineGenerator(r, rand, seed)))
             .burrows(map(preset.burrows, b -> new BurrowGenerator(b, rand, seed)))
             .layers(map(preset.layers, l -> new LayerGenerator(l, rand, seed)))
+            .clusters(new ClusterGenerator(preset.clusters, rand, seed))
             .build();
     }
 
     public void earlyGenerate(final PrimerContext ctx) {
+        clusters.generate(ctx);
         layers.forEach(l -> l.generate(ctx));
         caverns.forEach(c -> c.generate(ctx));
         burrows.forEach(b -> b.generate(ctx));
