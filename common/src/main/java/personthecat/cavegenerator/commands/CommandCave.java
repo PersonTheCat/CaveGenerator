@@ -84,9 +84,7 @@ public class CommandCave {
         description = "Reloads all of the current presets from the disk."
     )
     private static void reload(final CommandContextWrapper wrapper) {
-        CaveRegistries.PRESETS.reload();
-        CaveRegistries.GENERATORS.reload();
-        CaveRegistries.STRUCTURES.reload();
+        CaveRegistries.reloadAll();
         CachedNoiseHelper.removeAll();
         wrapper.sendMessage("Successfully reloaded caves. View the log for diagnostics.");
     }
@@ -195,27 +193,31 @@ public class CommandCave {
 
     private static void enableOrDisable(final CommandContextWrapper wrapper, final boolean enabled) {
         final File f = wrapper.getFile(FILE_ARG);
-        final Optional<JsonObject> found = PresetReader.getPresetJson(f);
-        found.ifPresent(preset -> {
-            if (preset.has(ENABLED_KEY)) {
-                preset.set(ENABLED_KEY, enabled);
-            } else {
-                preset.add(ENABLED_KEY, enabled, "Whether this preset is enabled globally");
-            }
+        final JsonObject preset = PresetReader.getPresetJson(f).orElse(null);
+
+        if (preset == null) {
+            wrapper.sendError("Error reading preset.");
+        } else {
             final File output = enabled && !ModFolders.PRESET_DIR.equals(f.getParentFile())
                 ? new File(ModFolders.PRESET_DIR, f.getName()) : f;
 
-            HjsonUtils.writeJson(preset, output).expect("Error writing to file: {}", output.getName());
-        });
-
-        if (!found.isPresent()) {
-            wrapper.sendError("Error reading preset.");
-        } else if (wrapper.getOptional(DISPLAY_ARG, Boolean.class).orElse(false)) {
-            wrapper.execute("/cave reload");
-            wrapper.execute("/cave list {}", getRelativePath(ModFolders.CG_DIR, f));
-        } else {
+            markPresetEnabledOnDisk(preset, output, enabled);
             wrapper.sendMessage("Preset {} successfully.", (enabled ? "enabled" : "disabled"));
+
+            if (wrapper.getOptional(DISPLAY_ARG, Boolean.class).orElse(false)) {
+                wrapper.execute("/cave reload");
+                wrapper.execute("/cave list {}", getRelativePath(ModFolders.CG_DIR, f));
+            }
         }
+    }
+
+    private static void markPresetEnabledOnDisk(final JsonObject preset, final File f, final boolean enabled) {
+        if (preset.has(ENABLED_KEY)) {
+            preset.set(ENABLED_KEY, enabled);
+        } else {
+            preset.add(ENABLED_KEY, enabled, "Whether this preset is enabled globally");
+        }
+        HjsonUtils.writeJson(preset, f).expect("Error writing to file: {}", f.getName());
     }
 
     @ModCommand(

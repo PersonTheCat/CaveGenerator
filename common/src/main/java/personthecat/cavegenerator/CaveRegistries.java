@@ -27,4 +27,10 @@ public class CaveRegistries {
             .canBeReset(true);
 
     public static final SeedStorage CURRENT_SEED = new SeedStorage();
+
+    public static void reloadAll() {
+        PRESETS.reload();
+        GENERATORS.reload();
+        STRUCTURES.reload();
+    }
 }
