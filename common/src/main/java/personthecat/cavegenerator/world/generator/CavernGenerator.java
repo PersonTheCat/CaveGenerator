@@ -231,28 +231,19 @@ public class CavernGenerator extends CaveCarver implements TunnelSocket {
     }
 
     private void place(PrimerContext ctx, Range height, int x, int y, int z, int yO, int aX, int aZ) {
-        // Todo: This will be handled below after FastNoise is fixed
-        if (height.contains(y))
-
         for (final FastNoise noise : this.generators) {
-            if (noise.getBoolean(aX, y, aZ)) {
-                this.replaceBlock(ctx, ctx.localRand, x, y, z);
-                this.caverns.add(x, y, z);
+            final float value = noise.getNoise(aX, y + yO, aZ);
+            if (noise.isInThreshold(value)) {
+                if (height.contains(y)) {
+                    this.replaceBlock(ctx, ctx.localRand, x, y, z);
+                    this.caverns.add(x, y, z);
+                } else {
+                    this.generateShell(ctx, ctx.localRand, x, y, z, y);
+                }
+                return;
+            } else if (noise.isInThreshold(value, this.decorators.shell.noiseThreshold)) {
+                this.generateShell(ctx, ctx.localRand, x, y, z, y);
             }
-
-            // Todo: add these options to FastNoise lib
-//            final float value = noise.getNoise(aX, y + yO, aZ);
-//            if (noise.isInThreshold(value)) {
-//                if (height.contains(y)) {
-//                    this.replaceBlock(ctx, ctx.localRand, x, y, z);
-//                    this.caverns.add(x, y, z);
-//                } else {
-//                    this.generateShell(ctx, ctx.localRand, x, y, z, y);
-//                }
-//                return;
-//            } else if (noise.isOuter(value, this.decorators.shell.noiseThreshold)) {
-//                this.generateShell(ctx, ctx.localRand, x, y, z, y);
-//            }
         }
     }
 

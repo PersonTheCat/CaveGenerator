@@ -142,7 +142,7 @@ public class CommandCave {
     private static void untest(final CommandContextWrapper wrapper) {
         final Player player = wrapper.getPlayer();
         if (player != null) {
-            final GameType mode = Optional.ofNullable(wrapper.getSource().getServer())
+            final GameType mode = Optional.ofNullable(wrapper.getServer())
                 .map(MinecraftServer::getDefaultGameType)
                 .orElse(GameType.CREATIVE);
 
