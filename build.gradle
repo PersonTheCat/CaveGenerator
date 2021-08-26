@@ -28,11 +28,7 @@ allprojects {
 
     repositories {
         // More convenient access to CF mods.
-        maven {
-            // Temporary workaround to fix CF dependencies
-            allowInsecureProtocol true
-            url 'http://www.cursemaven.com'
-        }
+        maven { url 'https://www.cursemaven.com' }
 
         // So we can conveniently read dependencies from GH.
         maven { url 'https://jitpack.io' }

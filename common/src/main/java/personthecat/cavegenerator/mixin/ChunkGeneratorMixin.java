@@ -39,6 +39,7 @@ public class ChunkGeneratorMixin {
      * Todo: Implement WorldCarverAdapters to support other cave generators.
      *
      * @author PersonTheCat
+     * @reason Cave Generator's primary entry point
      */
     @Overwrite
     public void applyCarvers(final long seed, final BiomeManager biomes, final ChunkAccess chunk, final Carving step) {
