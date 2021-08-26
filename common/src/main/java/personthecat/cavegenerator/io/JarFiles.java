@@ -123,7 +123,12 @@ public class JarFiles {
 
     private static void copyDefault(String name) {
         final String fromLocation = DATA_PATH + "/presets/" + name;
-        final String toLocation = PRESET_DIR + "/" + name;
+//        final String toLocation = PRESET_DIR + "/" + name;
+
+        final File temporary = new File(CG_DIR, "temporarily_disabled");
+        mkdirsOrThrow(temporary);
+
+        final String toLocation = temporary + "/" + name;
         copyFile(fromLocation, toLocation);
     }
 
