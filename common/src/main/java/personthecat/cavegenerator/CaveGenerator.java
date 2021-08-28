@@ -2,7 +2,6 @@ package personthecat.cavegenerator;
 
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.server.MinecraftServer;
-import net.minecraft.server.level.ServerLevel;
 import personthecat.catlib.command.LibCommandRegistrar;
 import personthecat.cavegenerator.commands.CommandCave;
 import personthecat.cavegenerator.config.Cfg;
