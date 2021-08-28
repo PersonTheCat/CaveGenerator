@@ -70,18 +70,30 @@ public class PresetExpander {
      * Expands a single preset, automatically loading import files as needed.
      *
      * @param file The JSON file being expanded.
+     * @return Either the expanded JSON data or an error wrapping the IOException.
      */
     public static Result<JsonObject, CaveEvaluationException> expand(final File file) {
         final Optional<JsonObject> read = HjsonUtils.readSuppressing(file);
         if (!read.isPresent()) {
             return Result.err(new CaveEvaluationException(file));
         }
-        final JsonObject json = read.get();
+        return Result.ok(expandInPlace(read.get()));
+    }
+
+    /**
+     * Expands a single preset JSON, modifying the data in place. Note that all required
+     * imports will be automatically loaded, as needed.
+     *
+     * @param json The raw JSON object being expanded.
+     * @return The expanded JSON (== input).
+     */
+    public static JsonObject expandInPlace(final JsonObject json) {
         final Map<File, JsonObject> singleton = Collections.singletonMap(ModFolders.CG_DIR, json);
         final Map<File, JsonObject> definitions = ImportHelper.locateDefinitions(json);
         definitions.putIfAbsent(new File(ModFolders.IMPORT_DIR, DEFAULTS), new JsonObject());
         expandAll(singleton, definitions);
-        return Result.ok(json);
+
+        return json;
     }
 
     /**
