@@ -6,13 +6,13 @@ import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 import personthecat.catlib.util.HjsonUtils;
 import personthecat.catlib.util.JsonTransformer;
+import personthecat.cavegenerator.exception.CaveEvaluationException;
+import personthecat.cavegenerator.io.ModFolders;
 import personthecat.cavegenerator.util.Calculator;
+import personthecat.fresult.Result;
 
 import java.io.File;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Consumer;
 import java.util.regex.Pattern;
 
@@ -64,6 +64,23 @@ public class PresetExpander {
         presets.forEach((f, json) -> calculateAll(json));
         // Delete all of the now unneeded imports and variables.
         presets.forEach((f, json) -> deleteUnused(json));
+    }
+
+    /**
+     * Expands a single preset, automatically loading import files as needed.
+     *
+     * @param file The JSON file being expanded.
+     */
+    public static Result<JsonObject, CaveEvaluationException> expand(final File file) {
+        final Optional<JsonObject> read = HjsonUtils.readSuppressing(file);
+        if (!read.isPresent()) {
+            return Result.err(new CaveEvaluationException(file));
+        }
+        final JsonObject json = read.get();
+        final Map<File, JsonObject> singleton = Collections.singletonMap(ModFolders.CG_DIR, json);
+        final Map<File, JsonObject> definitions = ImportHelper.locateDefinitions(json);
+        expandAll(singleton, definitions);
+        return Result.ok(json);
     }
 
     /**

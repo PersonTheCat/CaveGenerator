@@ -16,26 +16,31 @@ import personthecat.catlib.command.annotations.Node;
 import personthecat.catlib.command.annotations.Node.DoubleRange;
 import personthecat.catlib.command.annotations.Node.StringValue;
 import personthecat.catlib.command.arguments.ArgumentSuppliers;
+import personthecat.catlib.exception.CommandExecutionException;
+import personthecat.catlib.exception.Exceptions;
+import personthecat.catlib.io.FileIO;
 import personthecat.catlib.util.HjsonUtils;
 import personthecat.catlib.util.PathUtils;
 import personthecat.cavegenerator.CaveRegistries;
+import personthecat.cavegenerator.exception.CaveOutputException;
 import personthecat.cavegenerator.init.CaveInit;
 import personthecat.cavegenerator.init.PresetReader;
 import personthecat.cavegenerator.io.ModFolders;
 import personthecat.cavegenerator.noise.CachedNoiseHelper;
 import personthecat.cavegenerator.presets.CavePreset;
+import personthecat.cavegenerator.presets.PresetCompressor;
+import personthecat.cavegenerator.presets.lang.PresetExpander;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
+import java.io.IOException;
+import java.util.*;
 
 import static personthecat.catlib.command.CommandUtils.clickToOpen;
 import static personthecat.catlib.command.CommandUtils.clickToRun;
 import static personthecat.catlib.command.CommandUtils.displayOnHover;
 import static personthecat.catlib.exception.Exceptions.cmdEx;
 import static personthecat.catlib.io.FileIO.listFiles;
-import static personthecat.catlib.util.PathUtils.getRelativePath;
+import static personthecat.catlib.util.PathUtils.*;
 
 @SuppressWarnings("unused") // Used by CatLib
 public class CommandCave {
@@ -238,6 +243,56 @@ public class CommandCave {
         final JsonObject preset = new JsonObject().add(ENABLED_KEY, true);
         HjsonUtils.writeJson(preset, new File(ModFolders.PRESET_DIR, name));
         wrapper.sendMessage("Finished writing {}", name);
+    }
+
+    @ModCommand(
+        arguments = "<file> [<as>]",
+        description = "Writes the expanded version of this preset to /generated.",
+        branch = {
+            @Node(name = FILE_ARG, descriptor = ArgumentSuppliers.File.class),
+            @Node(name = NAME_ARG, stringValue = @StringValue, optional = true)
+        }
+    )
+    private static void expand(final CommandContextWrapper wrapper) {
+        PresetExpander.expand(wrapper.getFile(FILE_ARG))
+            .ifErr(e -> wrapper.sendError(e.getMessage()))
+            .ifOk(j -> writeExpanded(wrapper, j));
+    }
+
+    private static void writeExpanded(final CommandContextWrapper wrapper, final JsonObject expanded) {
+        FileIO.mkdirsOrThrow(ModFolders.GENERATED_DIR);
+        final String name = wrapper.getOptional(NAME_ARG, String.class)
+            .map(s -> !extension(s).isEmpty() ? s : s + ".cave")
+            .orElse(wrapper.getFile(FILE_ARG).getName());
+        HjsonUtils.writeJson(expanded, new File(ModFolders.GENERATED_DIR, name))
+            .mapErr(CaveOutputException::new)
+            .throwIfErr();
+    }
+
+    @ModCommand(
+        arguments = "<file> [<as>]",
+        description = "Writes a lightly compressed version of the given file to /generated",
+        branch = {
+            @Node(name = FILE_ARG, descriptor = ArgumentSuppliers.File.class),
+            @Node(name = NAME_ARG, stringValue = @StringValue, optional = true)
+        }
+    )
+    private static void compress(final CommandContextWrapper wrapper) throws IOException {
+        final File file = wrapper.getFile(FILE_ARG);
+
+        final Optional<JsonObject> read = HjsonUtils.readSuppressing(file);
+        if (!read.isPresent()) {
+            throw Exceptions.cmdEx("Error reading {}", file.getName());
+        }
+
+        final String name = wrapper.getOptional(NAME_ARG, String.class)
+            .map(s -> noExtension(s) + ".json")
+            .orElse(file.getName());
+
+        FileIO.mkdirsOrThrow(ModFolders.GENERATED_DIR);
+        final File output = new File(ModFolders.GENERATED_DIR, name);
+
+        HjsonUtils.writeJson(PresetCompressor.compress(read.get()), output).throwIfErr();
     }
 
     private static boolean isPresetEnabled(final File file) {

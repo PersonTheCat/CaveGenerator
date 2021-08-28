@@ -17,51 +17,48 @@ public class PresetCompressor {
      *
      * @param json The JSON object being compressed.
      */
-    public static void compress(final JsonObject json) {
+    public static JsonObject compress(final JsonObject json) {
         final JsonObject clone = new JsonObject();
         for (final JsonObject.Member member : json) {
             final String name = member.getName();
             final JsonValue value = member.getValue();
-            clone.add(name, value);
             if (value.isArray()) {
-                compressSingle(value.asArray()).ifPresent(single -> clone.set(name, single));
+                clone.add(name, compressSingle(value.asArray()).orElse(value));
             } else if (value.isObject()) {
-                compress(value.asObject());
+                clone.add(name, compress(value.asObject()));
+            } else {
+                clone.add(name, value);
             }
         }
-        json.clear();
-        json.addAll(clone);
+        return clone;
     }
 
-    private static void compressArray(final JsonArray array) {
+    private static JsonArray compressArray(final JsonArray array) {
         final JsonArray clone = new JsonArray();
         for (int i = 0; i < array.size(); i++) {
             final JsonValue value = array.get(i);
-            clone.add(value);
             if (value.isArray()) {
-                final Optional<JsonValue> single = compressSingle(value.asArray());
-                if (single.isPresent()) {
-                    clone.set(i, single.get());
-                }
+                clone.add(compressSingle(value.asArray()).orElse(value));
             } else if (value.isObject()) {
-                compress(value.asObject());
+                clone.add(compress(value.asObject()));
+            } else {
+                clone.add(value);
             }
         }
-        array.clear();
-        array.addAll(clone);
+        return clone;
     }
 
     private static Optional<JsonValue> compressSingle(final JsonArray array) {
         if (array.size() == 1) {
             final JsonValue single = array.get(0);
             if (single.isObject()) {
-                compress(single.asObject());
+                return full(compress(single.asObject()));
             } else if (single.isArray()) {
-                compressArray(single.asArray());
+                return full(compressArray(single.asArray()));
             }
             return full(single);
         } else if (!array.isEmpty()) {
-            compressArray(array);
+            return full(compressArray(array));
         }
         return empty();
     }

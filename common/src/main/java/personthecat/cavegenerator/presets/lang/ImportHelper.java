@@ -73,6 +73,17 @@ public class ImportHelper {
         return definitions;
     }
 
+    /** Recursively loads all import definitions from the imports array in a JSON object. */
+    public static Map<File, JsonObject> locateDefinitions(final JsonObject json) {
+        final Optional<List<String>> imports = HjsonUtils.getStringArray(json, PresetExpander.IMPORTS);
+        if (!imports.isPresent()) {
+            return Collections.emptyMap();
+        }
+        final Map<File, JsonObject> definitions = new HashMap<>();
+        imports.get().forEach(exp -> locateRecursively(definitions, exp));
+        return definitions;
+    }
+
     private static void locateRecursively(final Map<File, JsonObject> definitions, final String exp) {
         final Import helper = new Import(exp);
         final File file = helper.locateFile()
