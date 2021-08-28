@@ -1,4 +1,4 @@
-package personthecat.cavegenerator.init;
+package personthecat.cavegenerator.presets;
 
 import lombok.extern.log4j.Log4j2;
 import org.hjson.JsonObject;
@@ -6,7 +6,7 @@ import org.hjson.JsonValue;
 import org.hjson.ParseException;
 import personthecat.catlib.util.HjsonUtils;
 import personthecat.cavegenerator.config.Cfg;
-import personthecat.cavegenerator.presets.CavePreset;
+import personthecat.cavegenerator.init.CaveInit;
 import personthecat.cavegenerator.presets.lang.PresetExpander;
 import personthecat.cavegenerator.presets.lang.SyntaxHelper;
 

@@ -1,4 +1,4 @@
-package personthecat.cavegenerator.init;
+package personthecat.cavegenerator.presets;
 
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.data.BuiltinRegistries;
@@ -25,7 +25,6 @@ import personthecat.cavegenerator.presets.data.TunnelSettings;
 import personthecat.cavegenerator.presets.data.WallDecoratorSettings;
 import personthecat.cavegenerator.model.Direction;
 import personthecat.cavegenerator.model.ScalableFloat;
-import personthecat.cavegenerator.presets.CavePreset;
 
 import java.util.List;
 

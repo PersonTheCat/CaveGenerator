@@ -4,7 +4,7 @@ import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 import personthecat.catlib.util.HjsonUtils;
-import personthecat.cavegenerator.init.PresetReader;
+import personthecat.cavegenerator.presets.PresetReader;
 import personthecat.cavegenerator.io.ModFolders;
 
 import java.io.File;

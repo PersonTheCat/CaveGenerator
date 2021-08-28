@@ -25,7 +25,7 @@ import personthecat.catlib.util.PathUtils;
 import personthecat.cavegenerator.CaveRegistries;
 import personthecat.cavegenerator.exception.CaveOutputException;
 import personthecat.cavegenerator.init.CaveInit;
-import personthecat.cavegenerator.init.PresetReader;
+import personthecat.cavegenerator.presets.PresetReader;
 import personthecat.cavegenerator.io.ModFolders;
 import personthecat.cavegenerator.noise.CachedNoiseHelper;
 import personthecat.cavegenerator.presets.CavePreset;

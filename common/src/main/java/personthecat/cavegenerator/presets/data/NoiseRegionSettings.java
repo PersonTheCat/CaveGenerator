@@ -3,7 +3,7 @@ package personthecat.cavegenerator.presets.data;
 import personthecat.catlib.data.FloatRange;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.util.HjsonMapper;
-import personthecat.cavegenerator.init.PresetTester;
+import personthecat.cavegenerator.presets.PresetTester;
 import personthecat.cavegenerator.noise.CachedNoiseGenerator;
 import personthecat.cavegenerator.noise.DummyGenerator;
 import personthecat.fastnoise.FastNoise;

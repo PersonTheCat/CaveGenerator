@@ -1,4 +1,4 @@
-package personthecat.cavegenerator.init;
+package personthecat.cavegenerator.presets;
 
 import com.google.common.collect.ImmutableMap;
 import lombok.extern.log4j.Log4j2;
@@ -9,7 +9,6 @@ import org.hjson.JsonValue;
 import personthecat.catlib.util.HjsonUtils;
 import personthecat.catlib.util.JsonTransformer;
 import personthecat.cavegenerator.config.Cfg;
-import personthecat.cavegenerator.presets.CavePreset;
 import personthecat.cavegenerator.presets.data.CaveBlockSettings;
 import personthecat.cavegenerator.presets.data.CavernSettings;
 import personthecat.cavegenerator.presets.data.ClusterSettings;
@@ -27,6 +26,8 @@ import personthecat.cavegenerator.presets.data.TunnelSettings;
 import personthecat.cavegenerator.presets.data.WallDecoratorSettings;
 import personthecat.cavegenerator.io.JarFiles;
 import personthecat.cavegenerator.presets.lang.PresetExpander;
+import personthecat.fastnoise.data.DomainWarpType;
+import personthecat.fastnoise.data.FractalType;
 import personthecat.fresult.Result;
 import personthecat.fresult.Void;
 
@@ -88,6 +89,10 @@ class PresetCompat {
     private static final String HEIGHT_VARIANCE = "heightVariance";
     private static final String WIDE = "wide";
     private static final String CHANCE = "chance";
+    private static final String FRACTAL = "fractal";
+    private static final String PERTURB = "perturb";
+    private static final String PERTURB_AMP = "perturbAmp";
+    private static final String PERTURB_FREQ = "perturbFreq";
 
     // Other field names needed for performing updates.
     private static final String IMPORTS = PresetExpander.IMPORTS;
@@ -338,19 +343,32 @@ class PresetCompat {
         JsonTransformer.recursive(ConditionSettings.Fields.ceiling)
             .markRemoved(SCALE, CG_1_0)
             .markRemoved(NoiseSettings.Fields.threshold, CG_1_0)
+            .ifPresent(NoiseSettings.Fields.type, PresetCompat::transformNoiseType)
+            .transform(PERTURB, PresetCompat::transformPerturb)
+            .history(PERTURB_AMP, NoiseSettings.Fields.warpAmplitude)
+            .history(PERTURB_FREQ, NoiseSettings.Fields.warpFrequency)
             .updateAll(json);
         JsonTransformer.recursive(ConditionSettings.Fields.floor)
             .markRemoved(SCALE, CG_1_0)
             .markRemoved(NoiseSettings.Fields.threshold, CG_1_0)
+            .ifPresent(NoiseSettings.Fields.type, PresetCompat::transformNoiseType)
+            .transform(PERTURB, PresetCompat::transformPerturb)
+            .history(PERTURB_AMP, NoiseSettings.Fields.warpAmplitude)
+            .history(PERTURB_FREQ, NoiseSettings.Fields.warpFrequency)
             .updateAll(json);
         JsonTransformer.recursive(ConditionSettings.Fields.noise)
             .transform(SCALE, PresetCompat::transformScale)
+            .ifPresent(NoiseSettings.Fields.type, PresetCompat::transformNoiseType)
+            .transform(PERTURB, PresetCompat::transformPerturb)
+            .history(PERTURB_AMP, NoiseSettings.Fields.warpAmplitude)
+            .history(PERTURB_FREQ, NoiseSettings.Fields.warpFrequency)
             .updateAll(json);
         JsonTransformer.recursive(ConditionSettings.Fields.region)
             .transform(SCALE, PresetCompat::transformScale)
             .markRemoved(MIN_VAL, CG_1_0)
             .markRemoved(MAX_VAL, CG_1_0)
             .markRemoved(NoiseMapSettings.Fields.range, CG_1_0)
+            .ifPresent(NoiseSettings.Fields.type, PresetCompat::transformNoiseType)
             .updateAll(json);
         JsonTransformer.recursive(OverrideSettings.Fields.wallDecorators)
             .history(PREFERENCE, WallDecoratorSettings.Fields.placement)
@@ -468,6 +486,34 @@ class PresetCompat {
             ? StalactiteSettings.Size.MEDIUM.name()
             : StalactiteSettings.Size.SMALL.name();
         return Pair.of(StalactiteSettings.Fields.size, JsonValue.valueOf(size));
+    }
+
+    private static void transformNoiseType(final JsonObject cfg, final JsonValue value) {
+        if (!value.isString()) {
+            return;
+        }
+        final String type = value.asString().toLowerCase();
+        if (!type.endsWith(FRACTAL)) {
+            return;
+        }
+        int index = type.length() - FRACTAL.length();
+        while (type.charAt(index) == '_') {
+            index--;
+        }
+        cfg.set(NoiseSettings.Fields.type, type.substring(0, index));
+        if (cfg.has(FRACTAL)) {
+            cfg.set(FRACTAL, FractalType.FBM.format());
+        }
+    }
+
+    private static Pair<String, JsonValue> transformPerturb(final String name, final JsonValue value) {
+        if (!value.isBoolean()) {
+            return Pair.of(NoiseSettings.Fields.warp, value);
+        }
+        if (!value.asBoolean()) {
+            return Pair.of(NoiseSettings.Fields.warp, JsonValue.valueOf(DomainWarpType.NONE.format()));
+        }
+        return Pair.of(NoiseSettings.Fields.warp, JsonValue.valueOf(DomainWarpType.BASIC_GRID.format()));
     }
 
     /**

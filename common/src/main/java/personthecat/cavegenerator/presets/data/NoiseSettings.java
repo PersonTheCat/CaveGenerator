@@ -50,11 +50,11 @@ public class NoiseSettings {
     /** The octave gain for fractal noise types. */
     @Default float gain = 0.5F;
 
-    /** The maximum amount to warp coordinates when perturb is enabled. */
-    @Default float perturbAmp = 1.0F;
+    /** The maximum amount to warp coordinates when warping is enabled. */
+    @Default float warpAmplitude = 1.0F;
 
     /** The frequency used in warping input coordinates. */
-    @Default float perturbFreq = 1.0F;
+    @Default float warpFrequency = 1.0F;
 
     /** The maximum amount a cellular point can move off grid. (x-axis) */
     @Default float jitterX = 0.45F;
@@ -70,9 +70,6 @@ public class NoiseSettings {
 
     /** The vertical offset applied to the noise generator. */
     @Default int offset = 0;
-
-    /** Whether to apply a gradient perturb function. */
-    @Default boolean perturb = false;
 
     /** Whether to invert the acceptable values generated. */
     @Default boolean invert = false;
@@ -91,6 +88,9 @@ public class NoiseSettings {
 
     /** Determines how the noise will be fractalized, if applicable. */
     @Default FractalType fractal = FractalType.FBM;
+
+    /** The type of warping applied to input coordinates. */
+    @Default DomainWarpType warp = DomainWarpType.NONE;
 
     /** The type of distance function used with cellular noise types. */
     @Default CellularDistanceType distFunc = CellularDistanceType.EUCLIDEAN;
@@ -117,21 +117,21 @@ public class NoiseSettings {
             .mapFloat(Fields.stretch, NoiseSettingsBuilder::stretch)
             .mapFloat(Fields.lacunarity, NoiseSettingsBuilder::lacunarity)
             .mapFloat(Fields.gain, NoiseSettingsBuilder::gain)
-            .mapFloat(Fields.perturbAmp, NoiseSettingsBuilder::perturbAmp)
-            .mapFloat(Fields.perturbFreq, NoiseSettingsBuilder::perturbFreq)
+            .mapFloat(Fields.warpAmplitude, NoiseSettingsBuilder::warpAmplitude)
+            .mapFloat(Fields.warpFrequency, NoiseSettingsBuilder::warpFrequency)
             .mapFloat("jitter", (b, i) -> b.jitterX(i).jitterY(i).jitterZ(i))
             .mapFloat(Fields.jitterX, NoiseSettingsBuilder::jitterX)
             .mapFloat(Fields.jitterY, NoiseSettingsBuilder::jitterY)
             .mapFloat(Fields.jitterZ, NoiseSettingsBuilder::jitterZ)
             .mapInt(Fields.octaves, NoiseSettingsBuilder::octaves)
             .mapInt(Fields.offset, NoiseSettingsBuilder::offset)
-            .mapBool(Fields.perturb, NoiseSettingsBuilder::perturb)
             .mapBool(Fields.invert, NoiseSettingsBuilder::invert)
             .mapBool(Fields.cache, NoiseSettingsBuilder::cache)
             .mapBool(Fields.dummy, NoiseSettingsBuilder::dummy)
             .mapFloat(Fields.dummyOutput, NoiseSettingsBuilder::dummyOutput)
             .mapNoiseType(Fields.type, NoiseSettingsBuilder::type)
             .mapFractalType(Fields.fractal, NoiseSettingsBuilder::fractal)
+            .mapEnum(Fields.warp, DomainWarpType.class, NoiseSettingsBuilder::warp)
             .mapDistFunc(Fields.distFunc, NoiseSettingsBuilder::distFunc)
             .mapReturnType(Fields.returnType, NoiseSettingsBuilder::returnType)
             .mapNoiseType(Fields.cellularLookup, NoiseSettingsBuilder::cellularLookup)
@@ -152,9 +152,9 @@ public class NoiseSettings {
             .invert(invert)
             .gain(gain)
             .cellularReturn(returnType)
-            .warpAmplitude(perturbAmp)
-            .warpFrequency(perturbFreq)
-            .warp(perturb ? DomainWarpType.BASIC_GRID : DomainWarpType.NONE)
+            .warpAmplitude(warpAmplitude)
+            .warpFrequency(warpFrequency)
+            .warp(warp)
             .lacunarity(lacunarity)
             .noiseLookup(FastNoise.createDescriptor().noise(cellularLookup))
             .distance(distFunc)

@@ -7,6 +7,7 @@ import personthecat.cavegenerator.CaveRegistries;
 import personthecat.cavegenerator.model.SeedStorage;
 import personthecat.cavegenerator.presets.CavePreset;
 import personthecat.cavegenerator.config.Cfg;
+import personthecat.cavegenerator.presets.PresetReader;
 import personthecat.cavegenerator.world.GeneratorController;
 
 import java.io.File;

@@ -48,20 +48,20 @@ public class NoiseMapSettings {
     /** Determines how the noise will be fractalized, if applicable. */
     @Default FractalType fractal = FractalType.NONE;
 
-    /** The maximum amount to warp coordinates when perturb is enabled. */
-    @Default float perturbAmp = 1.0F;
+    /** The type of warp applied to input coordinates. */
+    @Default DomainWarpType warp = DomainWarpType.NONE;
+
+    /** The maximum amount to warp coordinates when warping is enabled. */
+    @Default float warpAmplitude = 1.0F;
 
     /** The frequency used in warping input coordinates. */
-    @Default float perturbFreq = 1.0F;
+    @Default float warpFrequency = 1.0F;
 
     /** The number of fractal generation passes. */
     @Default int octaves = 1;
 
     /** The range of values produced by the generator */
     @Default Range range = Range.of(-1, 1);
-
-    /** Whether to apply a gradient perturb function. */
-    @Default boolean perturb = false;
 
     /** Whether to invert the output of this generator. */
     @Default boolean invert = false;
@@ -89,11 +89,11 @@ public class NoiseMapSettings {
             .mapFloat(Fields.frequency, NoiseMapSettingsBuilder::frequency)
             .mapNoiseType(Fields.type, NoiseMapSettingsBuilder::type)
             .mapFractalType(Fields.fractal, NoiseMapSettingsBuilder::fractal)
-            .mapFloat(Fields.perturbAmp, NoiseMapSettingsBuilder::perturbAmp)
-            .mapFloat(Fields.perturbFreq, NoiseMapSettingsBuilder::perturbFreq)
+            .mapEnum(NoiseSettings.Fields.warp, DomainWarpType.class, NoiseMapSettingsBuilder::warp)
+            .mapFloat(Fields.warpAmplitude, NoiseMapSettingsBuilder::warpAmplitude)
+            .mapFloat(Fields.warpFrequency, NoiseMapSettingsBuilder::warpFrequency)
             .mapInt(Fields.octaves, NoiseMapSettingsBuilder::octaves)
             .mapRange(Fields.range, NoiseMapSettingsBuilder::range)
-            .mapBool(Fields.perturb, NoiseMapSettingsBuilder::perturb)
             .mapBool(Fields.invert, NoiseMapSettingsBuilder::invert)
             .mapBool(Fields.cache, NoiseMapSettingsBuilder::cache)
             .mapBool(Fields.dummy, NoiseMapSettingsBuilder::dummy)
@@ -112,9 +112,9 @@ public class NoiseMapSettings {
             .frequency(frequency)
             .octaves(octaves)
             .range(range.min, range.max)
-            .warp(perturb ? DomainWarpType.BASIC_GRID : DomainWarpType.NONE)
-            .warpAmplitude(perturbAmp)
-            .warpFrequency(perturbFreq)
+            .warp(warp)
+            .warpAmplitude(warpAmplitude)
+            .warpFrequency(warpFrequency)
             .invert(invert);
 
         final FastNoise generator = cfg.generate();
