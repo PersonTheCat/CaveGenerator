@@ -77,7 +77,7 @@ public class ImportHelper {
     public static Map<File, JsonObject> locateDefinitions(final JsonObject json) {
         final Optional<List<String>> imports = HjsonUtils.getStringArray(json, PresetExpander.IMPORTS);
         if (!imports.isPresent()) {
-            return Collections.emptyMap();
+            return new HashMap<>();
         }
         final Map<File, JsonObject> definitions = new HashMap<>();
         imports.get().forEach(exp -> locateRecursively(definitions, exp));

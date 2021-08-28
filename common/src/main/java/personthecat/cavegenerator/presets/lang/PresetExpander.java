@@ -79,6 +79,7 @@ public class PresetExpander {
         final JsonObject json = read.get();
         final Map<File, JsonObject> singleton = Collections.singletonMap(ModFolders.CG_DIR, json);
         final Map<File, JsonObject> definitions = ImportHelper.locateDefinitions(json);
+        definitions.putIfAbsent(new File(ModFolders.IMPORT_DIR, DEFAULTS), new JsonObject());
         expandAll(singleton, definitions);
         return Result.ok(json);
     }

@@ -51,6 +51,7 @@ public class ChunkGeneratorMixin {
         final PrimerContext ctx = new PrimerContext(withSource, search, seed, seaLevel, primer);
 
         ctx.primeHeightmaps();
+        CaveRegistries.CURRENT_SEED.set(new XoRoShiRo(seed), seed);
         for (final GeneratorController controller : CaveRegistries.GENERATORS) {
             controller.earlyGenerate(ctx);
             controller.mapGenerate(ctx);

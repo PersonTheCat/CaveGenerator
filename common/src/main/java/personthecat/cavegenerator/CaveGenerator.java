@@ -2,6 +2,7 @@ package personthecat.cavegenerator;
 
 import lombok.extern.log4j.Log4j2;
 import net.minecraft.server.MinecraftServer;
+import net.minecraft.server.level.ServerLevel;
 import personthecat.catlib.command.LibCommandRegistrar;
 import personthecat.cavegenerator.commands.CommandCave;
 import personthecat.cavegenerator.config.Cfg;
@@ -23,9 +24,9 @@ public class CaveGenerator {
     }
 
     @PlatformMustInherit
+    @SuppressWarnings("unused")
     public void serverStarting(final MinecraftServer server) {
         log.info("Loading cave generators");
-        CaveRegistries.CURRENT_SEED.set(server.overworld().random, server.overworld().getSeed());
         CaveRegistries.loadAll();
     }
 
