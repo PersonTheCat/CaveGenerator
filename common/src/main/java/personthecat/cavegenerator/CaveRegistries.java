@@ -28,9 +28,21 @@ public class CaveRegistries {
 
     public static final SeedStorage CURRENT_SEED = new SeedStorage();
 
+    public static void loadAll() {
+        PRESETS.load();
+        GENERATORS.load();
+        STRUCTURES.load();
+    }
+
     public static void reloadAll() {
         PRESETS.reload();
         GENERATORS.reload();
         STRUCTURES.reload();
+    }
+
+    public static void resetAll() {
+        PRESETS.reset();
+        GENERATORS.reset();
+        STRUCTURES.reset();
     }
 }

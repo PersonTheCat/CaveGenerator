@@ -144,7 +144,7 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
         for (int x = 0; x < 16; x++) {
             final int aX = ctx.actualX + x;
             for (int z = 0; z < 16; z++) {
-                final int aZ = ctx.actualZ * 16 + z;
+                final int aZ = ctx.actualZ + z;
                 final double distance = this.getNearestBorder(aX, aZ);
                 final double value = this.map.getNoise(aX, aZ);
                 final double shifted = this.cfg.shift + value;

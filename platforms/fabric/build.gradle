@@ -11,10 +11,11 @@ architectury {
 
 loom {
     silentMojangMappingsLicense()
+//    mixinConfig 'cavegenerator.mixins.json'
 }
 
 dependencies {
-    bundle(project("$common")) {
+    bundle(project(path: "$common", configuration: 'transformProductionFabric')) {
         transitive = false
     }
     implementation(project("$common")) {

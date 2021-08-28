@@ -18,6 +18,9 @@
       "personthecat.cavegenerator.CaveGenerator"
     ]
   },
+  "mixins": [
+    "cavegenerator.mixins.json"
+  ],
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",

@@ -80,6 +80,8 @@ public class CommandCave {
     private static final String NAME_ARG = "name";
     private static final String ENABLED_KEY = CavePreset.Fields.enabled;
 
+    private static final JsonObject MEMORY = new JsonObject();
+
     @ModCommand(
         description = "Reloads all of the current presets from the disk."
     )

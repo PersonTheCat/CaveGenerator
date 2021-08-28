@@ -43,9 +43,6 @@ public class ChunkGeneratorMixin {
      */
     @Overwrite
     public void applyCarvers(final long seed, final BiomeManager biomes, final ChunkAccess chunk, final Carving step) {
-        // Todo: find a better place for this (looking for world load event)
-        CaveRegistries.CURRENT_SEED.set(new XoRoShiRo(seed), seed);
-
         final BiomeManager withSource = biomes.withDifferentSource(this.biomeSource);
         final ChunkPos pos = chunk.getPos();
         final BiomeSearch search = BiomeSearch.in(withSource, pos.x, pos.z);
