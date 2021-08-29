@@ -112,7 +112,7 @@ public class CommandCave {
     private static void list(final CommandContextWrapper wrapper) {
         final File dir = wrapper.getOptional(FILE_ARG, File.class).orElse(ModFolders.PRESET_DIR);
         if (!dir.isDirectory()) {
-            throw cmdEx("Expected a directory argument: ", dir.getName());
+            throw cmdEx("Expected a directory: {}", dir.getName());
         }
         final MutableComponent msg = new TextComponent("") // No formatting on parent.
             .append(VIEW_BUTTON.copy())
@@ -220,7 +220,7 @@ public class CommandCave {
 
             if (wrapper.getOptional(DISPLAY_ARG, Boolean.class).orElse(false)) {
                 wrapper.execute("/cave reload");
-                wrapper.execute("/cave list {}", getRelativePath(ModFolders.CG_DIR, f));
+                wrapper.execute("/cave list {}", getRelativePath(ModFolders.CG_DIR, f.getParentFile()));
             }
         }
     }
@@ -509,20 +509,23 @@ public class CommandCave {
     }
 
     private static MutableComponent enableButton(final File f) {
+        final String path = getRelativePath(ModFolders.CG_DIR, f);
         final Style style = ENABLE_BUTTON_STYLE
-            .withClickEvent(clickToRun("/cave enable " + getRelativePath(ModFolders.CG_DIR, f) + " true"));
+            .withClickEvent(clickToRun("/cave enable " + path + " true"));
         return new TextComponent("[ENABLE]").setStyle(style);
     }
 
     private static MutableComponent disableButton(final File f) {
+        final String path = getRelativePath(ModFolders.CG_DIR, f);
         final Style style = DISABLE_BUTTON_STYLE
-            .withClickEvent(clickToRun("/cave disable " + getRelativePath(ModFolders.CG_DIR, f) + " true"));
+            .withClickEvent(clickToRun("/cave disable " + path + " true"));
         return new TextComponent("[DISABLE]").setStyle(style);
     }
 
     private static MutableComponent viewButton(final File dir) {
+        final String path = getRelativePath(ModFolders.CG_DIR, dir);
         final Style style = EXPLORE_BUTTON_STYLE
-            .withClickEvent(clickToRun("/cave list " + getRelativePath(ModFolders.CG_DIR, dir)));
+            .withClickEvent(clickToRun("/cave list " + path));
         return new TextComponent("[VIEW]").setStyle(style);
     }
 }

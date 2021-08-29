@@ -277,6 +277,9 @@ class PresetCompat {
         JsonTransformer.withPath(CavePreset.Fields.caverns, CavernSettings.Fields.generators)
             .transform(SCALE, PresetCompat::transformScale)
             .history(SCALE_Y, NoiseSettings.Fields.stretch)
+            .transform(PERTURB, PresetCompat::transformPerturb)
+            .history(PERTURB_AMP, NoiseSettings.Fields.warpAmplitude)
+            .history(PERTURB_FREQ, NoiseSettings.Fields.warpFrequency)
             .updateAll(json);
     }
 

@@ -6,6 +6,7 @@ import org.hjson.JsonValue;
 import org.hjson.ParseException;
 import personthecat.catlib.util.HjsonUtils;
 import personthecat.cavegenerator.config.Cfg;
+import personthecat.cavegenerator.exception.CaveSyntaxException;
 import personthecat.cavegenerator.init.CaveInit;
 import personthecat.cavegenerator.presets.lang.PresetExpander;
 import personthecat.cavegenerator.presets.lang.SyntaxHelper;
@@ -130,7 +131,8 @@ public class PresetReader {
     public static Optional<JsonObject> getPresetJson(final File file) {
         try {
             return full(loadJson(file).asObject());
-        } catch (RuntimeException ignored) {
+        } catch (CaveSyntaxException e) {
+            log.error("Unable to load preset", e);
             return empty();
         }
     }
@@ -144,10 +146,10 @@ public class PresetReader {
             } else {
                 return JsonObject.readHjson(reader);
             }
-        } catch (IOException ignored) {
-            throw caveSyntax("Unable to load preset file {}", file.getName());
+        } catch (IOException e) {
+            throw caveSyntax("Loading " + file.getName(), e);
         } catch (ParseException e) {
-            throw caveSyntax("Error reading {}", file.getName(), e);
+            throw caveSyntax("Parsing " + file.getName(), e);
         }
     }
 }
