@@ -18,6 +18,12 @@ public class SeedStorage {
         this.data.set(new Info(rand, seed));
     }
 
+    public synchronized void setIfAbsent(final Random rand, final long seed) {
+        if (this.get().seed == 0L) {
+            this.set(rand, seed);
+        }
+    }
+
     @AllArgsConstructor
     public static class Info {
         public final Random rand;

@@ -5,6 +5,8 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.nbt.NbtIo;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.ServerLevel;
+import net.minecraft.server.level.WorldGenRegion;
+import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
@@ -105,10 +107,9 @@ public class StructureSpawner {
      * @param rand     A RNG used for any random block placement needed.
      */
     public static void spawnStructure(final StructureTemplate template, final StructurePlaceSettings cfg,
-          final ServerLevel level, final BlockPos pos, final Random rand) {
+            final WorldGenRegion level, final BlockPos pos, final Random rand) {
 
-        final BlockState state = level.getBlockState(pos);
-        level.sendBlockUpdated(pos, state, state, 3);
+        level.blockUpdated(pos, level.getBlockState(pos).getBlock());
         template.placeInWorld(level, pos, cfg, rand);
     }
 }

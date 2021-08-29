@@ -1,6 +1,8 @@
 package personthecat.cavegenerator.mixin;
 
+import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.ChunkPos;
+import net.minecraft.world.level.StructureFeatureManager;
 import net.minecraft.world.level.biome.BiomeManager;
 import net.minecraft.world.level.biome.BiomeSource;
 import net.minecraft.world.level.chunk.ChunkAccess;
@@ -11,14 +13,20 @@ import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
+import org.spongepowered.asm.mixin.injection.At;
+import org.spongepowered.asm.mixin.injection.Inject;
+import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import personthecat.catlib.exception.MissingOverrideException;
 import personthecat.cavegenerator.CaveRegistries;
 import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.util.XoRoShiRo;
 import personthecat.cavegenerator.world.BiomeSearch;
 import personthecat.cavegenerator.world.GeneratorController;
+import personthecat.cavegenerator.world.feature.WorldContext;
 import personthecat.cavegenerator.world.generator.PrimerContext;
 import personthecat.cavegenerator.world.generator.WorldCarverAdapter;
+
+import java.util.Random;
 
 @Mixin(ChunkGenerator.class)
 public class ChunkGeneratorMixin {
@@ -41,7 +49,7 @@ public class ChunkGeneratorMixin {
      * Todo: Implement WorldCarverAdapters to support other cave generators.
      *
      * @author PersonTheCat
-     * @reason Cave Generator's primary entry point
+     * @reason Cave Generator's primary entry point for early features
      */
     @Overwrite
     public void applyCarvers(final long seed, final BiomeManager biomes, final ChunkAccess chunk, final Carving step) {
@@ -65,8 +73,29 @@ public class ChunkGeneratorMixin {
         }
     }
 
+    /**
+     * Primary entry point for late features, as used by this mod.
+     *
+     * <p>Unlike {@link #applyCarvers}, this event provides a regular level
+     * accessor which can be used to acquire data about foreign chunks. This
+     * is ideal for features spanning from 16 to 32 blocks wide.
+     *
+     * @author PersonTheCat
+     * @reason Cave Generator's primary entry point for late features
+     */
+    @Inject(at = @At("TAIL"), method = "applyBiomeDecoration(Lnet/minecraft/server/level/WorldGenRegion;Lnet/minecraft/world/level/StructureFeatureManager;)V")
+    public void applyFeatures(final WorldGenRegion region, final StructureFeatureManager structures, final CallbackInfo ci) {
+        final WorldContext ctx = new WorldContext(region);
+        CaveRegistries.CURRENT_SEED.setIfAbsent(ctx.rand, ctx.seed);
+
+        for (final GeneratorController controller : CaveRegistries.GENERATORS) {
+            controller.featureGenerate(ctx);
+        }
+    }
+
     @Shadow
     public int getSeaLevel() {
         throw new MissingOverrideException();
     }
 }
+
