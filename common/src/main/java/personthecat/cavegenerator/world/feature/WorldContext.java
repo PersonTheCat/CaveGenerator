@@ -12,6 +12,8 @@ public class WorldContext {
     public final Random rand;
     public final int chunkX;
     public final int chunkZ;
+    public final int actualX;
+    public final int actualZ;
     public final int centerX;
     public final int centerZ;
     public final long seed;
@@ -19,10 +21,12 @@ public class WorldContext {
 
     public WorldContext(final WorldGenRegion region) {
         this.rand = region.getRandom();
-        this.centerX = region.getCenterX();
-        this.centerZ = region.getCenterZ();
-        this.chunkX = centerX >> 4;
-        this.chunkZ = centerZ >> 4;
+        this.chunkX = region.getCenterX();
+        this.chunkZ = region.getCenterZ();
+        this.actualX = chunkX << 4;
+        this.actualZ = chunkZ << 4;
+        this.centerX = actualX + 8;
+        this.centerZ = actualZ + 8;
         this.seed = region.getSeed();
         this.region = region;
     }
