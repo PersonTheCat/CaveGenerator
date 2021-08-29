@@ -83,7 +83,7 @@ public class ChunkGeneratorMixin {
      * @author PersonTheCat
      * @reason Cave Generator's primary entry point for late features
      */
-    @Inject(at = @At("TAIL"), method = "applyBiomeDecoration(Lnet/minecraft/server/level/WorldGenRegion;Lnet/minecraft/world/level/StructureFeatureManager;)V")
+    @Inject(at = @At("TAIL"), method = "applyBiomeDecoration")
     public void applyFeatures(final WorldGenRegion region, final StructureFeatureManager structures, final CallbackInfo ci) {
         final WorldContext ctx = new WorldContext(region);
         CaveRegistries.CURRENT_SEED.setIfAbsent(ctx.rand, ctx.seed);

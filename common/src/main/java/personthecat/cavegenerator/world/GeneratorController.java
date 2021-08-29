@@ -7,6 +7,7 @@ import personthecat.cavegenerator.presets.data.CavernSettings;
 import personthecat.cavegenerator.presets.data.ClusterSettings;
 import personthecat.cavegenerator.world.feature.PillarGenerator;
 import personthecat.cavegenerator.world.feature.StalactiteGenerator;
+import personthecat.cavegenerator.world.feature.StructureGenerator;
 import personthecat.cavegenerator.world.feature.WorldContext;
 import personthecat.cavegenerator.world.generator.*;
 
@@ -30,6 +31,7 @@ public class GeneratorController {
     private final ClusterGenerator layeredClusters;
     private final List<StalactiteGenerator> stalactites;
     private final List<PillarGenerator> pillars;
+    private final List<StructureGenerator> structures;
 
     public static GeneratorController from(final CavePreset preset, final Random rand, final long seed) {
         return GeneratorController.builder()
@@ -38,6 +40,7 @@ public class GeneratorController {
             .layers(map(preset.layers, l -> new LayerGenerator(l, rand, seed)))
             .stalactites(map(preset.stalactites, s -> new StalactiteGenerator(s, rand, seed)))
             .pillars(map(preset.pillars, p -> new PillarGenerator(p, rand, seed)))
+            .structures(map(preset.structures, s -> new StructureGenerator(s, rand, seed)))
             .sortClusters(preset.clusters, rand, seed)
             .sortCaverns(preset.caverns, rand, seed)
             .sortBurrows(preset.burrows, rand, seed)
@@ -62,6 +65,7 @@ public class GeneratorController {
     public void featureGenerate(final WorldContext ctx) {
         stalactites.forEach(s -> s.generate(ctx));
         pillars.forEach(p -> p.generate(ctx));
+        structures.forEach(s -> s.generate(ctx));
     }
 
     public static class GeneratorControllerBuilder {

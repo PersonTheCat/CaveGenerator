@@ -2,6 +2,7 @@ package personthecat.cavegenerator;
 
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import personthecat.catlib.data.SafeRegistry;
+import personthecat.cavegenerator.model.CaveCommandSource;
 import personthecat.cavegenerator.model.SeedStorage;
 import personthecat.cavegenerator.presets.CavePreset;
 import personthecat.cavegenerator.init.CaveInit;
@@ -27,6 +28,8 @@ public class CaveRegistries {
             .canBeReset(true);
 
     public static final SeedStorage CURRENT_SEED = new SeedStorage();
+
+    public static final CaveCommandSource COMMAND_SOURCE = new CaveCommandSource();
 
     public static void loadAll() {
         SafeRegistry.loadAll(PRESETS, GENERATORS, STRUCTURES);

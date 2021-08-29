@@ -27,6 +27,7 @@ public class CaveGenerator {
     public void serverStarting(final MinecraftServer server) {
         log.info("Loading cave generators");
         CaveRegistries.loadAll();
+        CaveRegistries.COMMAND_SOURCE.create(server);
     }
 
     @PlatformMustInherit
@@ -35,5 +36,6 @@ public class CaveGenerator {
         log.info("Unloading cave generators.");
         CaveRegistries.resetAll();
         CachedNoiseHelper.removeAll();
+        CaveRegistries.COMMAND_SOURCE.clear();
     }
 }
