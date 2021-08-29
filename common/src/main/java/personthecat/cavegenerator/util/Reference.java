@@ -11,5 +11,6 @@ public class Reference {
         .name(MOD_NAME)
         .modId(MOD_ID)
         .commandPrefix(COMMAND_PREFIX)
+        .defaultLinter(new CaveLinter())
         .build();
 }

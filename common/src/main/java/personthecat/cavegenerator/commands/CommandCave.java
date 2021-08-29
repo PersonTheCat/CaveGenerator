@@ -367,7 +367,6 @@ public class CommandCave {
     @ModCommand(
         arguments = "<exp>",
         description = "Evaluates a JSON, Cave, or arithmetic expression.",
-        linter = CaveLinter.class, // Todo: setup default linter.
         branch = {
             @Node(name = JSON_ARG, stringValue = @StringValue(StringValue.Type.GREEDY))
         }
@@ -397,7 +396,6 @@ public class CommandCave {
     @ModCommand(
         arguments = "[<key1>] [<key2>] [...]",
         description = "Prints JSON values and comments from working memory.",
-        linter = CaveLinter.class, // Todo: default linter
         branch = {
             @Node(name = NAME_ARG, stringValue = @StringValue, intoList = @ListInfo, optional = true)
         }
