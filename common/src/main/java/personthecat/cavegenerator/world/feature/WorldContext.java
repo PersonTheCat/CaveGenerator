@@ -18,7 +18,7 @@ public class WorldContext {
     public final WorldGenRegion region;
 
     public WorldContext(final WorldGenRegion region) {
-        this.rand = new XoRoShiRo(region.getSeed());
+        this.rand = region.getRandom();
         this.centerX = region.getCenterX();
         this.centerZ = region.getCenterZ();
         this.chunkX = centerX >> 4;
