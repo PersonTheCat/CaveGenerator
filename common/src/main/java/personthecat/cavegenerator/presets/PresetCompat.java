@@ -9,21 +9,7 @@ import org.hjson.JsonValue;
 import personthecat.catlib.util.HjsonUtils;
 import personthecat.catlib.util.JsonTransformer;
 import personthecat.cavegenerator.config.Cfg;
-import personthecat.cavegenerator.presets.data.CaveBlockSettings;
-import personthecat.cavegenerator.presets.data.CavernSettings;
-import personthecat.cavegenerator.presets.data.ClusterSettings;
-import personthecat.cavegenerator.presets.data.ConditionSettings;
-import personthecat.cavegenerator.presets.data.DecoratorSettings;
-import personthecat.cavegenerator.presets.data.NoiseSettings;
-import personthecat.cavegenerator.presets.data.NoiseMapSettings;
-import personthecat.cavegenerator.presets.data.OverrideSettings;
-import personthecat.cavegenerator.presets.data.PillarSettings;
-import personthecat.cavegenerator.presets.data.RavineSettings;
-import personthecat.cavegenerator.presets.data.RoomSettings;
-import personthecat.cavegenerator.presets.data.StalactiteSettings;
-import personthecat.cavegenerator.presets.data.StructureSettings;
-import personthecat.cavegenerator.presets.data.TunnelSettings;
-import personthecat.cavegenerator.presets.data.WallDecoratorSettings;
+import personthecat.cavegenerator.presets.data.*;
 import personthecat.cavegenerator.io.JarFiles;
 import personthecat.cavegenerator.presets.lang.PresetExpander;
 import personthecat.fastnoise.data.DomainWarpType;
@@ -161,6 +147,7 @@ class PresetCompat {
         updateStalactites(json);
         updatePillars(json);
         updateStructures(json);
+        updateBurrows(json);
         updateRecursive(json);
         removeBlankSlate(json);
     }
@@ -336,6 +323,15 @@ class PresetCompat {
             .history(SOLID_MATCHERS, StructureSettings.Fields.solidChecks)
             .history(NON_SOLID_MATCHERS, StructureSettings.Fields.nonSolidChecks)
             .history(WATER_MATCHERS, StructureSettings.Fields.waterChecks)
+            .updateAll(json);
+    }
+
+    private static void updateBurrows(final JsonObject json) {
+        JsonTransformer.withPath(CavePreset.Fields.burrows, BurrowSettings.Fields.map)
+            .ifPresent(NoiseSettings.Fields.type, PresetCompat::transformNoiseType)
+            .transform(PERTURB, PresetCompat::transformPerturb)
+            .history(PERTURB_AMP, NoiseSettings.Fields.warpAmplitude)
+            .history(PERTURB_FREQ, NoiseSettings.Fields.warpFrequency)
             .updateAll(json);
     }
 

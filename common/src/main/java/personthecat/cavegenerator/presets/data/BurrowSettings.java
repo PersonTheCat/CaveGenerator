@@ -9,6 +9,7 @@ import org.hjson.JsonObject;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.util.HjsonMapper;
 import personthecat.cavegenerator.presets.CavePreset;
+import personthecat.fastnoise.data.DomainWarpType;
 
 import java.util.Optional;
 
@@ -23,7 +24,7 @@ public class BurrowSettings {
 
     /** The default noise settings used for the map generator. */
     private static final NoiseMapSettings DEFAULT_MAP =
-        NoiseMapSettings.builder().frequency(0.005F).perturb(true).perturbAmp(0.1F).perturbFreq(2.5F).build();
+        NoiseMapSettings.builder().frequency(0.005F).warp(DomainWarpType.BASIC_GRID).warpAmplitude(0.1F).warpFrequency(2.5F).build();
 
     /** The default noise settings used for the offset generator. */
     private static final NoiseMapSettings DEFAULT_OFFSET =
