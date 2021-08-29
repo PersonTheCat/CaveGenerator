@@ -13,10 +13,12 @@ import org.spongepowered.asm.mixin.Overwrite;
 import org.spongepowered.asm.mixin.Shadow;
 import personthecat.catlib.exception.MissingOverrideException;
 import personthecat.cavegenerator.CaveRegistries;
+import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.util.XoRoShiRo;
 import personthecat.cavegenerator.world.BiomeSearch;
 import personthecat.cavegenerator.world.GeneratorController;
 import personthecat.cavegenerator.world.generator.PrimerContext;
+import personthecat.cavegenerator.world.generator.WorldCarverAdapter;
 
 @Mixin(ChunkGenerator.class)
 public class ChunkGeneratorMixin {
@@ -48,13 +50,18 @@ public class ChunkGeneratorMixin {
         final BiomeSearch search = BiomeSearch.in(withSource, pos.x, pos.z);
         final int seaLevel = this.getSeaLevel();
         final ProtoChunk primer = (ProtoChunk) chunk;
-        final PrimerContext ctx = new PrimerContext(withSource, search, seed, seaLevel, primer);
+        final PrimerContext ctx = new PrimerContext(withSource, search, seed, seaLevel, primer, step);
 
-        ctx.primeHeightmaps();
-        CaveRegistries.CURRENT_SEED.set(new XoRoShiRo(seed), seed);
-        for (final GeneratorController controller : CaveRegistries.GENERATORS) {
-            controller.earlyGenerate(ctx);
-            controller.mapGenerate(ctx);
+        if (Cfg.ENABLE_OTHER_GENERATORS.getAsBoolean()) {
+            WorldCarverAdapter.generate(ctx, this.biomeSource);
+        }
+        if (step == Carving.AIR) {
+            ctx.primeHeightmaps();
+            CaveRegistries.CURRENT_SEED.set(new XoRoShiRo(seed), seed);
+            for (final GeneratorController controller : CaveRegistries.GENERATORS) {
+                controller.earlyGenerate(ctx);
+                controller.mapGenerate(ctx);
+            }
         }
     }
 

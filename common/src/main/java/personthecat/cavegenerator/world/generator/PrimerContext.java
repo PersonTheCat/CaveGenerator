@@ -31,7 +31,9 @@ public final class PrimerContext {
     public final int centerX;
     public final int centerZ;
     public final int seaLevel;
+    public final long seed;
     public final ProtoChunk primer;
+    public final GenerationStep.Carving step;
     public final Map<Heightmap.Types, Heightmap> heightmaps;
     public final Map<GenerationStep.Carving, BitSet> carvingMasks;
     public final List<Heightmap> heightmapsAfter = new ArrayList<>();
@@ -41,7 +43,8 @@ public final class PrimerContext {
         final BiomeSearch search,
         final long seed,
         final int seaLevel,
-        final ProtoChunk primer
+        final ProtoChunk primer,
+        final GenerationStep.Carving step
     ) {
         final ChunkPos pos = primer.getPos();
         this.provider = provider;
@@ -54,7 +57,9 @@ public final class PrimerContext {
         this.centerZ = actualZ + 8;
         this.localRand = new XoRoShiRo(seed ^ chunkX ^ chunkZ);
         this.seaLevel = seaLevel;
+        this.seed = seed;
         this.primer = primer;
+        this.step = step;
         this.heightmaps = ((PrimerAccessor) primer).heightmaps();
         this.carvingMasks = ((PrimerAccessor) primer).carvingMasks();
 
