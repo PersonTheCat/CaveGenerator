@@ -19,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import personthecat.catlib.exception.MissingOverrideException;
 import personthecat.cavegenerator.CaveRegistries;
 import personthecat.cavegenerator.config.Cfg;
+import personthecat.cavegenerator.noise.CachedNoiseHelper;
 import personthecat.cavegenerator.util.XoRoShiRo;
 import personthecat.cavegenerator.world.BiomeSearch;
 import personthecat.cavegenerator.world.GeneratorController;
@@ -68,6 +69,7 @@ public class ChunkGeneratorMixin {
                 controller.mapGenerate(ctx);
             }
         }
+        CachedNoiseHelper.resetAll();
     }
 
     /**
@@ -88,6 +90,7 @@ public class ChunkGeneratorMixin {
         for (final GeneratorController controller : CaveRegistries.GENERATORS) {
             controller.featureGenerate(ctx);
         }
+        CachedNoiseHelper.resetAll();
     }
 
     @Shadow
