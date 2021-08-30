@@ -28,6 +28,8 @@ import java.util.regex.Pattern;
  * This is a temporary class designed to extend compatibility of deprecated fields and notations
  * until they can safely be phased out. It will handle updating these fields to their new format
  * for the next few updates until sufficient time has passed to remove them safely.
+ *
+ * Todo: consider storing these transformers to improve repeated load times.
  */
 @Log4j2
 class PresetCompat {

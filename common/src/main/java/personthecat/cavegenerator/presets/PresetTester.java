@@ -420,6 +420,8 @@ public class PresetTester {
             log.log(low, "Octaves are < 0 @ {}. Octaves is a count and should be > 0.", path);
         } else if (octaves == 0) {
             log.log(low, "Octaves are == 0 @ {}. Set dummy: true if you want this generator to have no effect.", path);
+        } else if (octaves == 1) {
+            log.log(low, "Octaves ore == 0 @ {}. Set fractal: none if you want to disable fractal noise.", path);
         } else if (octaves > 5) {
             log.log(low, "Unusually high octave count @ {}. This is expensive and may have no effect.", path);
         }

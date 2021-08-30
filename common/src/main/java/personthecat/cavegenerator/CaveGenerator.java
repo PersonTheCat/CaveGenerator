@@ -23,7 +23,6 @@ public class CaveGenerator {
     }
 
     @PlatformMustInherit
-    @SuppressWarnings("unused")
     public void serverStarting(final MinecraftServer server) {
         log.info("Loading cave generators");
         CaveRegistries.loadAll();
