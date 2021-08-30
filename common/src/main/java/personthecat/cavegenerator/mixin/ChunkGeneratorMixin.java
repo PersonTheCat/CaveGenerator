@@ -44,7 +44,6 @@ public class ChunkGeneratorMixin {
      * written by any other mod author.
      *
      * Todo: Moving early generate to an even earlier hook could be a great idea.
-     * Todo: Implement WorldCarverAdapters to support other cave generators.
      *
      * @author PersonTheCat
      * @reason Cave Generator's primary entry point for early features

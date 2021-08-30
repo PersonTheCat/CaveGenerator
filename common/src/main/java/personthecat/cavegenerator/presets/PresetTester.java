@@ -345,7 +345,7 @@ public class PresetTester {
     // Todo: Add registry collections to CatLib / McUtils
     private void testBiomeList(final List<Biome> biomes, final boolean blacklist, final String path) {
         if (biomes.size() > BuiltinRegistries.BIOME.keySet().size() / 2) {
-            log.log(low, "High number of dimensions in the dimension list @ {}. Consider " +
+            log.log(low, "High number of biomes in the biome list @ {}. Consider " +
                 "{} `blacklistBiomes`.", path, (blacklist ? "disabling" : "enabling"));
             log.log(low, "If you want this feature to spawn anywhere, you can leave the list empty.");
         }
