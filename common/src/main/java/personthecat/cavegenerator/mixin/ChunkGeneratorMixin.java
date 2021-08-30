@@ -26,8 +26,6 @@ import personthecat.cavegenerator.world.feature.WorldContext;
 import personthecat.cavegenerator.world.generator.PrimerContext;
 import personthecat.cavegenerator.world.generator.WorldCarverAdapter;
 
-import java.util.Random;
-
 @Mixin(ChunkGenerator.class)
 public class ChunkGeneratorMixin {
 
