@@ -2,7 +2,7 @@ import personthecat.overwritevalidator.OverwriteValidator
 
 buildscript {
     dependencies {
-        classpath group: 'com.github.PersonTheCat', name: 'OverwriteValidator', version: '1.8'
+        classpath group: 'com.github.PersonTheCat', name: 'OverwriteValidator', version: '1.9'
         classpath group: 'gradle.plugin.com.github.jengelman.gradle.plugins', name: 'shadow', version: '7.0.0'
         classpath group: 'local.personthecat', name: 'cavegenerator-plugins'
     }
