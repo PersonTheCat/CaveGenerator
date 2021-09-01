@@ -68,10 +68,6 @@ public class Cfg {
                 "check your log to determine if any presets erred.")
         .define("ignoreInvalidPresets", false);
 
-    private static final BooleanValue NETHER_GENERATE_VALUE = COMMON
-        .comment("Whether to override and replace caverns in the nether.")
-        .define("netherGenerate", false);
-
     private static final BooleanValue AUTO_FORMAT_VALUE = COMMON
         .comment("Whether to automatically format your preset files. They will",
                 "still be reformatted if values are updated.")
@@ -126,10 +122,6 @@ public class Cfg {
     @Overwrite
     public static final BooleanSupplier IGNORE_INVALID_PRESETS =
         IGNORE_INVALID_PRESETS_VALUE::get;
-
-    @Overwrite
-    public static final BooleanSupplier NETHER_GENERATE =
-        NETHER_GENERATE_VALUE::get;
 
     @Overwrite
     public static final BooleanSupplier AUTO_FORMAT =

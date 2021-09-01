@@ -18,20 +18,6 @@ import java.util.function.IntSupplier;
 public class Cfg implements ConfigData {
 
     @Comment(
-        "Whether vanilla stone clusters--including andesite,\n" +
-        "diorite, and granite--should spawn in the world.")
-    public boolean enableVanillaStoneClusters = false;
-
-    @Comment("Whether to enable vanilla water lakes underground.")
-    public boolean enableWaterLakes = false;
-
-    @Comment("Whether to enable vanilla lava lakes underground.")
-    public boolean enableLavaLakes = false;
-
-    @Comment("Whether to enable vanilla mineshafts underground.")
-    public boolean enableMineshafts = true;
-
-    @Comment(
         "Whether this mod will attempt to run simultaneously\n" +
         "with one other cave generation mod, such as Worley's\n" +
         "Caves or Yung's Better Caves.")
@@ -50,9 +36,6 @@ public class Cfg implements ConfigData {
         "any invalid presets and simply not load them. Make sure to\n" +
         "check your log to determine if any presets erred.")
     public boolean ignoreInvalidPresets = false;
-
-    @Comment("Whether to override and replace caverns in the nether.")
-    public boolean netherGenerate = false;
 
     @Comment(
         "Whether to automatically format your preset files. They will\n" +
@@ -88,22 +71,6 @@ public class Cfg implements ConfigData {
         Lazy.of(() -> AutoConfig.getConfigHolder(Cfg.class).getConfig());
 
     @Overwrite
-    public static final BooleanSupplier ENABLE_VANILLA_STONE_CLUSTERS =
-        () -> CONFIG.get().enableVanillaStoneClusters;
-
-    @Overwrite
-    public static final BooleanSupplier ENABLE_WATER_LAKES =
-        () -> CONFIG.get().enableWaterLakes;
-
-    @Overwrite
-    public static final BooleanSupplier ENABLE_LAVA_LAKES =
-        () -> CONFIG.get().enableLavaLakes;
-
-    @Overwrite
-    public static final BooleanSupplier ENABLE_MINESHAFTS =
-        () -> CONFIG.get().enableMineshafts;
-
-    @Overwrite
     public static final BooleanSupplier ENABLE_OTHER_GENERATORS =
         () -> CONFIG.get().enableOtherGenerators;
 
@@ -114,10 +81,6 @@ public class Cfg implements ConfigData {
     @Overwrite
     public static final BooleanSupplier IGNORE_INVALID_PRESETS =
         () -> CONFIG.get().ignoreInvalidPresets;
-
-    @Overwrite
-    public static final BooleanSupplier NETHER_GENERATE =
-        () -> CONFIG.get().netherGenerate;
 
     @Overwrite
     public static final BooleanSupplier AUTO_FORMAT =
