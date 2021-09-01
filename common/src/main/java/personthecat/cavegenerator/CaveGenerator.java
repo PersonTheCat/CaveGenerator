@@ -4,6 +4,7 @@ import lombok.extern.log4j.Log4j2;
 import net.minecraft.server.MinecraftServer;
 import personthecat.catlib.command.LibCommandRegistrar;
 import personthecat.cavegenerator.commands.CommandCave;
+import personthecat.cavegenerator.commands.arguments.FeatureArgument;
 import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.io.JarFiles;
 import personthecat.cavegenerator.noise.CachedNoiseHelper;
@@ -20,6 +21,7 @@ public class CaveGenerator {
         JarFiles.copyFiles();
         Cfg.register();
         LibCommandRegistrar.registerCommands(Reference.MOD_DESCRIPTOR, true, CommandCave.class);
+        FeatureArgument.register();
     }
 
     @PlatformMustInherit

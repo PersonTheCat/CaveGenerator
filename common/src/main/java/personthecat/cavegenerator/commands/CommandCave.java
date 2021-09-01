@@ -1,6 +1,7 @@
 package personthecat.cavegenerator.commands;
 
 import net.minecraft.ChatFormatting;
+import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.network.chat.*;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.world.effect.MobEffect;
@@ -8,6 +9,8 @@ import net.minecraft.world.effect.MobEffectInstance;
 import net.minecraft.world.effect.MobEffects;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.GameType;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.Feature;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
@@ -23,6 +26,7 @@ import personthecat.catlib.io.FileIO;
 import personthecat.catlib.util.HjsonUtils;
 import personthecat.catlib.util.PathUtils;
 import personthecat.cavegenerator.CaveRegistries;
+import personthecat.cavegenerator.commands.arguments.FeatureArgument;
 import personthecat.cavegenerator.exception.CaveOutputException;
 import personthecat.cavegenerator.init.CaveInit;
 import personthecat.cavegenerator.presets.PresetReader;
@@ -34,6 +38,7 @@ import personthecat.cavegenerator.presets.lang.PresetExpander;
 import personthecat.cavegenerator.presets.lang.ReferenceHelper;
 import personthecat.cavegenerator.util.Calculator;
 import personthecat.cavegenerator.util.CaveLinter;
+import personthecat.cavegenerator.util.ResourceArrayLinter;
 
 import java.io.File;
 import java.io.IOException;
@@ -90,6 +95,7 @@ public class CommandCave {
     private static final String DISPLAY_ARG = "display";
     private static final String NAME_ARG = "name";
     private static final String JSON_ARG = "json";
+    private static final String FEATURE_ARG = "feature";
     private static final String ENABLED_KEY = CavePreset.Fields.enabled;
 
     private static final JsonObject MEMORY = new JsonObject();
@@ -474,6 +480,35 @@ public class CommandCave {
     private static void clear(final CommandContextWrapper wrapper) {
         MEMORY.clear();
         wrapper.sendMessage("JSON data were cleared from memory.");
+    }
+
+    @ModCommand(
+        name = "debug",
+        arguments = "<features|carvers>",
+        description = "Displays a list of all current biome features or carvers.",
+        linter = ResourceArrayLinter.class,
+        branch = {
+            @Node(name = "features"),
+            @Node(name = FEATURE_ARG, type = FeatureArgument.class)
+        }
+    )
+    private static void debugFeatures(final CommandContextWrapper wrapper) {
+        final Feature<?> feature = wrapper.get(FEATURE_ARG, Feature.class);
+        final Object[] features = BuiltinRegistries.CONFIGURED_FEATURE.entrySet().stream()
+            .filter(e -> e.getValue().getFeatures().anyMatch(f -> feature.equals(f.feature)))
+            .map(e -> e.getKey().location())
+            .toArray();
+
+        wrapper.sendLintedMessage(Arrays.toString(features));
+    }
+
+    @ModCommand(
+        name = "debug",
+        linter = ResourceArrayLinter.class,
+        branch = @Node(name = "carvers")
+    )
+    private static void debugCarvers(final CommandContextWrapper wrapper) {
+        wrapper.sendLintedMessage(Arrays.toString(BuiltinRegistries.CONFIGURED_CARVER.keySet().toArray()));
     }
 
     private static boolean isPresetEnabled(final File file) {

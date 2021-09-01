@@ -30,17 +30,17 @@ public class CaveLinter extends SyntaxLinter {
     private static final Pattern ARGUMENT = Pattern.compile("\\B@\\d+(?:\\s*\\?(?:\\s*\\(.*\\))?)?", Pattern.MULTILINE);
 
     private static final Target[] TARGETS = {
-        new Target(MULTILINE_DOC, Style.EMPTY.withColor(ChatFormatting.DARK_GREEN).withItalic(true)),
-        new Target(LINE_TODO, Style.EMPTY.withColor(ChatFormatting.YELLOW)),
-        new Target(LINE_DOC, Style.EMPTY.withColor(ChatFormatting.DARK_GREEN).withItalic(true)),
-        new Target(MULTILINE_COMMENT, Style.EMPTY.withColor(ChatFormatting.GRAY)),
-        new Target(LINE_COMMENT, Style.EMPTY.withColor(ChatFormatting.GRAY)),
-        new Target(CONSTANT, Style.EMPTY.withColor(ChatFormatting.DARK_PURPLE)),
-        new Target(FUNCTION, Style.EMPTY.withColor(ChatFormatting.GOLD)),
-        new Target(KEY, Style.EMPTY.withColor(ChatFormatting.AQUA)),
-        new Target(CALL, Style.EMPTY.withColor(ChatFormatting.GOLD).withUnderlined(true)),
-        new Target(REFERENCE, Style.EMPTY.withColor(ChatFormatting.DARK_PURPLE).withUnderlined(true)),
-        new Target(ARGUMENT, Style.EMPTY.withColor(ChatFormatting.DARK_GREEN).withUnderlined(true))
+        new Target(MULTILINE_DOC, color(ChatFormatting.DARK_GREEN).withItalic(true)),
+        new Target(LINE_TODO, color(ChatFormatting.YELLOW)),
+        new Target(LINE_DOC, color(ChatFormatting.DARK_GREEN).withItalic(true)),
+        new Target(MULTILINE_COMMENT, color(ChatFormatting.GRAY)),
+        new Target(LINE_COMMENT, color(ChatFormatting.GRAY)),
+        new Target(CONSTANT, color(ChatFormatting.DARK_PURPLE)),
+        new Target(FUNCTION, color(ChatFormatting.GOLD)),
+        new Target(KEY, color(ChatFormatting.AQUA)),
+        new Target(CALL, color(ChatFormatting.GOLD).withUnderlined(true)),
+        new Target(REFERENCE, color(ChatFormatting.DARK_PURPLE).withUnderlined(true)),
+        new Target(ARGUMENT, color(ChatFormatting.DARK_GREEN).withUnderlined(true))
     };
 
     @SuppressWarnings("unused") // Reflective invocation
