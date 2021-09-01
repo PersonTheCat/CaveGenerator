@@ -10,12 +10,37 @@ import personthecat.cavegenerator.util.Reference;
 import personthecat.overwritevalidator.annotations.Overwrite;
 import personthecat.overwritevalidator.annotations.OverwriteClass;
 
+import java.util.Arrays;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 @OverwriteClass
 @Config(name = Reference.MOD_ID)
 public class Cfg implements ConfigData {
+
+    @Comment(
+        "To use this feature, toggle enableOtherGenerators and\n" +
+        "list out the registry names of any world carvers you wish\n" +
+        "to manually disable.\n" +
+        "For example, `cave` or `minecraft:underwater_canyon`.\n" +
+        "For a list of all carvers, run `/cave debug carvers`.")
+    public String[] disabledCarvers = {};
+
+    @Comment(
+        "A list of all feature types OR configured features being\n" +
+        "globally disabled by the mod.\n" +
+        "For example, `ore` or `minecraft:ore_coal`." +
+        "For a list of all features, run `/cave debug features`.")
+    public String[] disabledFeatures = {};
+
+    @Comment(
+        "A list of all structure features being globally disabled\n" +
+        "by the mod." +
+        "For example, `minecraft:mineshaft`." +
+        "For a list of all features, run `/cave debug structures`.")
+    public String[] disabledStructures = {};
 
     @Comment(
         "Whether this mod will attempt to run simultaneously\n" +
@@ -69,6 +94,18 @@ public class Cfg implements ConfigData {
 
     private static final Lazy<Cfg> CONFIG =
         Lazy.of(() -> AutoConfig.getConfigHolder(Cfg.class).getConfig());
+
+    @Overwrite
+    public static final Supplier<List<String>> DISABLED_CARVERS =
+        () -> Arrays.asList(CONFIG.get().disabledCarvers);
+
+    @Overwrite
+    public static final Supplier<List<String>> DISABLED_FEATURES =
+        () -> Arrays.asList(CONFIG.get().disabledFeatures);
+
+    @Overwrite
+    public static final Supplier<List<String>> DISABLED_STRUCTURES =
+        () -> Arrays.asList(CONFIG.get().disabledStructures);
 
     @Overwrite
     public static final BooleanSupplier ENABLE_OTHER_GENERATORS =

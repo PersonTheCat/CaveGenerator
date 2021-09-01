@@ -3,6 +3,7 @@ package personthecat.cavegenerator.config;
 import lombok.experimental.UtilityClass;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
+import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModLoadingContext;
@@ -14,8 +15,11 @@ import personthecat.cavegenerator.util.Reference;
 import personthecat.overwritevalidator.annotations.Overwrite;
 import personthecat.overwritevalidator.annotations.OverwriteClass;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
+import java.util.function.Supplier;
 
 @UtilityClass
 @OverwriteClass
@@ -30,6 +34,25 @@ public class Cfg {
         final ModContainer ctx = ModLoadingContext.get().getActiveContainer();
         ctx.addConfig(new CustomModConfig(ModConfig.Type.COMMON, COMMON.build(), ctx, COMMON_CFG));
     }
+
+    private static final ConfigValue<List<String>> DISABLED_CARVERS_VALUE = COMMON
+        .comment("To use this feature, toggle enableOtherGenerators and",
+                "list out the registry names of any world carvers you wish",
+                "to manually disable.",
+                "For example, `cave` or `minecraft:underwater_canyon`.",
+                "For a list of all carvers, run `/cave debug carvers`.")
+        .define("disabledCarvers", Collections.emptyList());
+
+    private static final ConfigValue<List<String>> DISABLED_FEATURES_VALUE = COMMON
+        .comment("A list of all feature types OR configured features being",
+                "globally disabled by the mod.",
+                "For example, `ore` or `minecraft:ore_coal`.",
+                "For a list of all features, run `/cave debug features`.")
+        .define("disabledFeatures", Collections.emptyList());
+
+    private static final ConfigValue<List<String>> DISABLED_STRUCTURES_VALUE = COMMON
+        .comment("")
+        .define("disabledStructures", Collections.emptyList());
 
     private static final BooleanValue ENABLE_VANILLA_STONE_CLUSTERS_VALUE = COMMON
         .comment("Whether vanilla stone clusters--including andesite",
@@ -94,6 +117,18 @@ public class Cfg {
         .comment("The range in chunks to read biomes for features that use",
                 "distance-based biome testing.")
         .defineInRange("biomeRange", 2, 1, 20);
+
+    @Overwrite
+    public static final Supplier<List<String>> DISABLED_CARVERS =
+        DISABLED_CARVERS_VALUE::get;
+
+    @Overwrite
+    public static final Supplier<List<String>> DISABLED_FEATURES =
+        DISABLED_FEATURES_VALUE::get;
+
+    @Overwrite
+    public static final Supplier<List<String>> DISABLED_STRUCTURES =
+        DISABLED_STRUCTURES_VALUE::get;
 
     @Overwrite
     public static final BooleanSupplier ENABLE_VANILLA_STONE_CLUSTERS =
