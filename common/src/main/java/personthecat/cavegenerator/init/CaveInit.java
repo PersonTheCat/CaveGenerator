@@ -116,7 +116,12 @@ public class CaveInit {
     private static List<ResourceLocation> loadDisabledCarvers() {
         final ImmutableList.Builder<ResourceLocation> disabledCarvers = ImmutableList.builder();
         for (final String id : Cfg.DISABLED_CARVERS.get()) {
-            disabledCarvers.add(new ResourceLocation(id));
+            final ResourceLocation key = new ResourceLocation(id);
+            if (BuiltinRegistries.CONFIGURED_CARVER.get(key) != null) {
+                disabledCarvers.add(key);
+            } else {
+                log.error("Invalid carver id. Cannot disable: {}", id);
+            }
         }
         return disabledCarvers.build();
     }
@@ -134,11 +139,13 @@ public class CaveInit {
             final Feature<?> feature = Registry.FEATURE.get(key);
             if (feature != null) {
                 BuiltinRegistries.CONFIGURED_FEATURE.stream()
-                        .filter(c -> c.getFeatures().anyMatch(f -> feature.equals(f.feature)))
-                        .map(c -> Objects.requireNonNull(BuiltinRegistries.CONFIGURED_FEATURE.getKey(c)))
-                        .forEach(disabledFeatures::add);
-            } else {
+                    .filter(c -> c.getFeatures().anyMatch(f -> feature.equals(f.feature)))
+                    .map(c -> Objects.requireNonNull(BuiltinRegistries.CONFIGURED_FEATURE.getKey(c)))
+                    .forEach(disabledFeatures::add);
+            } else if (BuiltinRegistries.CONFIGURED_FEATURE.get(key) != null) {
                 disabledFeatures.add(key);
+            } else {
+                log.error("Invalid feature id. Cannot disable: {}", id);
             }
         }
         return disabledFeatures.build();
@@ -153,7 +160,12 @@ public class CaveInit {
     private static List<ResourceLocation> loadDisabledStructures() {
         final ImmutableList.Builder<ResourceLocation> disabledStructures = ImmutableList.builder();
         for (final String id : Cfg.DISABLED_STRUCTURES.get()) {
-            disabledStructures.add(new ResourceLocation(id));
+            final ResourceLocation key = new ResourceLocation(id);
+            if (BuiltinRegistries.CONFIGURED_STRUCTURE_FEATURE.get(key) != null) {
+                disabledStructures.add(key);
+            } else {
+                log.error("Invalid structure id. Cannot disable: {}", id);
+            }
         }
         return disabledStructures.build();
     }
