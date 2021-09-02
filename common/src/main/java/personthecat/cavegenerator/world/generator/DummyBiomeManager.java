@@ -1,5 +1,7 @@
 package personthecat.cavegenerator.world.generator;
 
+import net.fabricmc.api.EnvType;
+import net.fabricmc.api.Environment;
 import net.minecraft.core.BlockPos;
 import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.world.level.biome.Biome;
@@ -24,6 +26,7 @@ public class DummyBiomeManager extends BiomeManager {
     }
 
     @Override
+    @Environment(EnvType.CLIENT)
     public Biome getNoiseBiomeAtQuart(int x, int y, int z) {
         return this.wrapped.apply(new BlockPos(x, y, z));
     }

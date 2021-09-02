@@ -5,6 +5,8 @@ import net.fabricmc.fabric.api.biome.v1.BiomeSelectionContext;
 import net.minecraft.core.Registry;
 import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.level.levelgen.GenerationStep.Carving;
+import net.minecraft.world.level.levelgen.GenerationStep.Decoration;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
@@ -44,5 +46,14 @@ public class CaveModificationContext {
     public boolean removeStructure(final ResourceLocation id) {
         final ResourceKey<ConfiguredStructureFeature<?, ?>> key = ResourceKey.create(Registry.CONFIGURED_STRUCTURE_FEATURE_REGISTRY, id);
         return this.modificationContext.getGenerationSettings().removeStructure(key);
+    }
+
+    @Overwrite
+    public void addFeature(final Decoration step, final ConfiguredFeature<?, ?> feature) {
+        this.modificationContext.getGenerationSettings().addBuiltInFeature(step, feature);
+    }
+
+    public void addCarver(final Carving step, final ConfiguredWorldCarver<?> carver) {
+        this.modificationContext.getGenerationSettings().addBuiltInCarver(step, carver);
     }
 }

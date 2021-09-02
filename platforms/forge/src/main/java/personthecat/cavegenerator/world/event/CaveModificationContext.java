@@ -2,7 +2,8 @@ package personthecat.cavegenerator.world.event;
 
 import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.GenerationStep.Carving;
+import net.minecraft.world.level.levelgen.GenerationStep.Decoration;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
@@ -35,8 +36,8 @@ public class CaveModificationContext {
         }
 
         boolean anyRemoved = false;
-        for (final GenerationStep.Decoration decoration : GenerationStep.Decoration.values()) {
-            anyRemoved |= this.builder.getFeatures(decoration).removeIf(f -> feature.equals(f.get()));
+        for (final Decoration step : Decoration.values()) {
+            anyRemoved |= this.builder.getFeatures(step).removeIf(f -> feature.equals(f.get()));
         }
         return anyRemoved;
     }
@@ -49,8 +50,8 @@ public class CaveModificationContext {
         }
 
         boolean anyRemoved = false;
-        for (final GenerationStep.Carving carving : GenerationStep.Carving.values()) {
-            anyRemoved |= this.builder.getCarvers(carving).removeIf(c -> carver.equals(c.get()));
+        for (final Carving step : Carving.values()) {
+            anyRemoved |= this.builder.getCarvers(step).removeIf(c -> carver.equals(c.get()));
         }
         return anyRemoved;
     }
@@ -62,5 +63,15 @@ public class CaveModificationContext {
             return false;
         }
         return this.builder.getStructures().removeIf(s -> structure.equals(s.get()));
+    }
+
+    @Overwrite
+    public void addFeature(final Decoration step, final ConfiguredFeature<?, ?> feature) {
+        this.builder.addFeature(step, feature);
+    }
+
+    @Overwrite
+    public void addCarver(final Carving step, final ConfiguredWorldCarver<?> carver) {
+        this.builder.addCarver(step, carver);
     }
 }

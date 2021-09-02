@@ -2,15 +2,23 @@ package personthecat.cavegenerator.world.generator;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.data.BuiltinRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.ChunkAccess;
 import net.minecraft.world.level.chunk.ProtoChunk;
 import net.minecraft.world.level.levelgen.GenerationStep;
+import net.minecraft.world.level.levelgen.carver.CarverConfiguration;
+import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.carver.NoneCarverConfiguration;
 import net.minecraft.world.level.levelgen.carver.WorldCarver;
+import net.minecraft.world.level.levelgen.feature.Feature;
+import personthecat.catlib.data.Lazy;
 import personthecat.cavegenerator.CaveRegistries;
 import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.noise.CachedNoiseHelper;
+import personthecat.cavegenerator.util.Reference;
 import personthecat.cavegenerator.util.XoRoShiRo;
 import personthecat.cavegenerator.world.BiomeSearch;
 import personthecat.cavegenerator.world.GeneratorController;
@@ -20,6 +28,11 @@ import java.util.Random;
 import java.util.function.Function;
 
 public class FallbackCarverHook extends WorldCarver<NoneCarverConfiguration> {
+
+    public static final Lazy<ConfiguredWorldCarver<?>> INSTANCE =
+        Lazy.of(() -> Registry.register(BuiltinRegistries.CONFIGURED_CARVER,
+            new ResourceLocation(Reference.MOD_ID, "fallback_carver"),
+            new FallbackCarverHook().configured(CarverConfiguration.NONE)));
 
     private final long seed = Cfg.FALLBACK_CARVER_SEED.getAsLong();
 

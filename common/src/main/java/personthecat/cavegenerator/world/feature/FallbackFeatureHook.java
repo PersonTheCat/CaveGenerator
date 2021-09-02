@@ -2,18 +2,30 @@ package personthecat.cavegenerator.world.feature;
 
 import com.mojang.serialization.Codec;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.data.BuiltinRegistries;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
+import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
+import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
+import personthecat.catlib.data.Lazy;
 import personthecat.cavegenerator.CaveRegistries;
 import personthecat.cavegenerator.noise.CachedNoiseHelper;
+import personthecat.cavegenerator.util.Reference;
 import personthecat.cavegenerator.world.GeneratorController;
 
 import java.util.Random;
 
 public class FallbackFeatureHook extends Feature<NoneFeatureConfiguration> {
+
+    public static final Lazy<ConfiguredFeature<?, ?>> INSTANCE =
+        Lazy.of(() -> Registry.register(BuiltinRegistries.CONFIGURED_FEATURE,
+            new ResourceLocation(Reference.MOD_ID, "fallback_feature"),
+            new FallbackFeatureHook().configured(FeatureConfiguration.NONE)));
 
     public FallbackFeatureHook() {
         super(Codec.unit(NoneFeatureConfiguration.INSTANCE));
