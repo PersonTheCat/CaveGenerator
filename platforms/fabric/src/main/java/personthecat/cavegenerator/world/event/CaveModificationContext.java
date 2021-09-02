@@ -7,6 +7,7 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import personthecat.overwritevalidator.annotations.Overwrite;
 import personthecat.overwritevalidator.annotations.OverwriteClass;
 
@@ -37,5 +38,11 @@ public class CaveModificationContext {
     public boolean removeCarver(final ResourceLocation id) {
         final ResourceKey<ConfiguredWorldCarver<?>> key = ResourceKey.create(Registry.CONFIGURED_CARVER_REGISTRY, id);
         return this.modificationContext.getGenerationSettings().removeCarver(key);
+    }
+
+    @Overwrite
+    public boolean removeStructure(final ResourceLocation id) {
+        final ResourceKey<ConfiguredStructureFeature<?, ?>> key = ResourceKey.create(Registry.CONFIGURED_STRUCTURE_FEATURE_REGISTRY, id);
+        return this.modificationContext.getGenerationSettings().removeStructure(key);
     }
 }

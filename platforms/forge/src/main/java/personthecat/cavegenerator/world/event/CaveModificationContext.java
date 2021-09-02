@@ -5,6 +5,7 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
+import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import net.minecraftforge.common.world.BiomeGenerationSettingsBuilder;
 import net.minecraftforge.event.world.BiomeLoadingEvent;
 import personthecat.overwritevalidator.annotations.Overwrite;
@@ -52,5 +53,14 @@ public class CaveModificationContext {
             anyRemoved |= this.builder.getCarvers(carving).removeIf(c -> carver.equals(c.get()));
         }
         return anyRemoved;
+    }
+
+    @Overwrite
+    public boolean removeStructure(final ResourceLocation id) {
+        final ConfiguredStructureFeature<?, ?> structure = BuiltinRegistries.CONFIGURED_STRUCTURE_FEATURE.get(id);
+        if (structure == null) {
+            return false;
+        }
+        return this.builder.getStructures().removeIf(s -> structure.equals(s.get()));
     }
 }

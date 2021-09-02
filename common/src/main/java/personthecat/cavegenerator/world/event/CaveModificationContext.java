@@ -23,4 +23,9 @@ public class CaveModificationContext {
     public boolean removeCarver(final ResourceLocation id) {
         throw new MissingOverrideException();
     }
+
+    @PlatformMustOverwrite
+    public boolean removeStructure(final ResourceLocation id) {
+        throw new MissingOverrideException();
+    }
 }
