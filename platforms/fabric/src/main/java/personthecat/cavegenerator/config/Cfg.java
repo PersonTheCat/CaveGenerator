@@ -50,8 +50,7 @@ public class Cfg implements ConfigData {
 
     @Comment(
         "Whether to enable the fallback generator compatibility layer\n" +
-        "for support with mods that use custom chunk generators.\n" +
-        "Note that the ")
+        "for support with mods that use custom chunk generators.")
     public boolean fallbackCarvers = false;
 
     @Comment(
