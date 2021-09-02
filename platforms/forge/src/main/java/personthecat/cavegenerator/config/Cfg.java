@@ -5,6 +5,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
+import net.minecraftforge.common.ForgeConfigSpec.LongValue;
 import net.minecraftforge.fml.ModContainer;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
@@ -20,6 +21,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 @UtilityClass
@@ -55,25 +57,21 @@ public class Cfg {
         .define("disabledFeatures", DEFAULT_DISABLED_FEATURES);
 
     private static final ConfigValue<List<String>> DISABLED_STRUCTURES_VALUE = COMMON
-        .comment("")
+        .comment("A list of all structure features being globally disabled",
+                "by the mod.",
+                "For example, `minecraft:mineshaft`.",
+                "For a list of all features, run `/cave debug structures`.")
         .define("disabledStructures", Collections.emptyList());
 
-    private static final BooleanValue ENABLE_VANILLA_STONE_CLUSTERS_VALUE = COMMON
-        .comment("Whether vanilla stone clusters--including andesite",
-                "diorite, and granite--should spawn in the world.")
-        .define("enableVanillaStoneClusters", false);
+    private static final BooleanValue FALLBACK_CARVERS_VALUE = COMMON
+        .comment("Whether to enable the fallback generator compatibility layer",
+                "for support with mods that use custom chunk generators.")
+        .define("fallbackCarvers", false);
 
-    private static final BooleanValue ENABLE_WATER_LAKES_VALUE = COMMON
-        .comment("Whether to enable vanilla water lakes underground.")
-        .define("enableWaterLakes", false);
-
-    private static final BooleanValue ENABLE_LAVA_LAKES_VALUE = COMMON
-        .comment("Whether to enable vanilla lava lakes underground.")
-        .define("enableLavaLakes", false);
-
-    private static final BooleanValue ENABLE_MINESHAFTS_VALUE = COMMON
-        .comment("Whether to enable vanilla mineshafts underground")
-        .define("enableMineshafts", true);
+    private static final BooleanValue FALLBACK_FEATURES_VALUE = COMMON
+        .comment("Whether to enable the fallback feature compatibility layer",
+                "for support with mods that use custom chunk generators.")
+        .define("fallbackFeatures", false);
 
     private static final BooleanValue ENABLE_OTHER_GENERATORS_VALUE = COMMON
         .comment("Whether this mod will attempt to run simultaneously",
@@ -122,6 +120,11 @@ public class Cfg {
                 "distance-based biome testing.")
         .defineInRange("biomeRange", 2, 1, 20);
 
+    private static final LongValue FALLBACK_CARVER_SEED_VALUE = COMMON
+        .comment("The seed to for the fallback generator when this feature",
+                "is enabled.")
+        .defineInRange("fallbackCarverSeed", Long.MIN_VALUE, Long.MAX_VALUE, 24L);
+
     @Overwrite
     public static final Supplier<List<String>> DISABLED_CARVERS =
         DISABLED_CARVERS_VALUE::get;
@@ -133,6 +136,14 @@ public class Cfg {
     @Overwrite
     public static final Supplier<List<String>> DISABLED_STRUCTURES =
         DISABLED_STRUCTURES_VALUE::get;
+
+    @Overwrite
+    public static final BooleanSupplier FALLBACK_CARVERS =
+        FALLBACK_CARVERS_VALUE::get;
+
+    @Overwrite
+    public static final BooleanSupplier FALLBACK_FEATURES =
+        FALLBACK_FEATURES_VALUE::get;
 
     @Overwrite
     public static final BooleanSupplier ENABLE_OTHER_GENERATORS =
@@ -165,4 +176,8 @@ public class Cfg {
     @Overwrite
     public static final IntSupplier BIOME_RANGE =
         BIOME_RANGE_VALUE::get;
+
+    @Overwrite
+    public static final LongSupplier FALLBACK_CARVER_SEED =
+        FALLBACK_CARVER_SEED_VALUE::get;
 }

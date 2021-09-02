@@ -9,6 +9,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 @OverwriteTarget
@@ -20,6 +21,8 @@ public class Cfg {
     public static final Supplier<List<String>> DISABLED_CARVERS = Collections::emptyList;
     public static final Supplier<List<String>> DISABLED_FEATURES = () -> DEFAULT_DISABLED_FEATURES;
     public static final Supplier<List<String>> DISABLED_STRUCTURES = Collections::emptyList;
+    public static final BooleanSupplier FALLBACK_CARVERS = () -> false;
+    public static final BooleanSupplier FALLBACK_FEATURES = () -> false;
     public static final BooleanSupplier ENABLE_OTHER_GENERATORS = () -> false;
     public static final BooleanSupplier STRICT_PRESETS = () -> false;
     public static final BooleanSupplier IGNORE_INVALID_PRESETS = () -> false;
@@ -28,6 +31,7 @@ public class Cfg {
     public static final BooleanSupplier UPDATE_IMPORTS = () -> true;
     public static final IntSupplier MAP_RANGE = () -> 8;
     public static final IntSupplier BIOME_RANGE = () -> 2;
+    public static final LongSupplier FALLBACK_CARVER_SEED = () -> 24L;
 
     @PlatformMustOverwrite
     public static void register() {

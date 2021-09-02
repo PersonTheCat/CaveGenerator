@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
+import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 @OverwriteClass
@@ -46,6 +47,16 @@ public class Cfg implements ConfigData {
         "For example, `minecraft:mineshaft`." +
         "For a list of all features, run `/cave debug structures`.")
     public String[] disabledStructures = {};
+
+    @Comment(
+        "Whether to enable the fallback generator compatibility layer\n" +
+        "for support with mods that use custom chunk generators.")
+    public boolean fallbackCarvers = false;
+
+    @Comment(
+        "Whether to enable the fallback feature compatibility layer\n" +
+        "for support with mods that use custom chunk generators.")
+    public boolean fallbackFeatures = false;
 
     @Comment(
         "Whether this mod will attempt to run simultaneously\n" +
@@ -92,6 +103,11 @@ public class Cfg implements ConfigData {
         "distance-based biome testing.")
     public int biomeRange = 2;
 
+    @Comment(
+        "The seed to for the fallback generator when this feature\n" +
+        "is enabled.")
+    public long fallbackCarverSeed = 24L;
+
     @Overwrite
     public static void register() {
         AutoConfig.register(Cfg.class, GsonConfigSerializer::new);
@@ -111,6 +127,14 @@ public class Cfg implements ConfigData {
     @Overwrite
     public static final Supplier<List<String>> DISABLED_STRUCTURES =
         () -> Arrays.asList(CONFIG.get().disabledStructures);
+
+    @Overwrite
+    public static final BooleanSupplier FALLBACK_CARVERS =
+        () -> CONFIG.get().fallbackCarvers;
+
+    @Overwrite
+    public static final BooleanSupplier FALLBACK_FEATURES =
+        () -> CONFIG.get().fallbackFeatures;
 
     @Overwrite
     public static final BooleanSupplier ENABLE_OTHER_GENERATORS =
@@ -143,4 +167,8 @@ public class Cfg implements ConfigData {
     @Overwrite
     public static final IntSupplier BIOME_RANGE =
         () -> CONFIG.get().biomeRange;
+
+    @Overwrite
+    public static final LongSupplier FALLBACK_CARVER_SEED =
+        () -> CONFIG.get().fallbackCarverSeed;
 }
