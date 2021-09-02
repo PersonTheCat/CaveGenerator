@@ -1,5 +1,8 @@
 package personthecat.cavegenerator;
 
+import net.minecraft.core.Registry;
+import net.minecraft.resources.ResourceKey;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import personthecat.catlib.data.SafeRegistry;
 import personthecat.cavegenerator.model.CaveCommandSource;
@@ -8,6 +11,8 @@ import personthecat.cavegenerator.presets.CavePreset;
 import personthecat.cavegenerator.init.CaveInit;
 import personthecat.cavegenerator.world.GeneratorController;
 import personthecat.cavegenerator.world.feature.StructureSpawner;
+
+import java.util.List;
 
 // Todo: map generators to dimension keys?
 public class CaveRegistries {
@@ -25,6 +30,11 @@ public class CaveRegistries {
     public static final SafeRegistry<String, StructureTemplate> STRUCTURES =
         SafeRegistry.of(StructureSpawner::initStructures)
             .respondsWith(key -> "Structure file or resource not found: " + key)
+            .canBeReset(true);
+
+    public static final SafeRegistry<ResourceKey<?>, List<ResourceLocation>> DISABLED_FEATURES =
+        SafeRegistry.of(CaveInit::initDisabledFeatures)
+            .respondsWith(key -> "Unsupported registry key: " + key)
             .canBeReset(true);
 
     public static final SeedStorage CURRENT_SEED = new SeedStorage();
