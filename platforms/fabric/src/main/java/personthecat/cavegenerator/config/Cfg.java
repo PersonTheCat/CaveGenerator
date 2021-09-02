@@ -7,10 +7,12 @@ import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 import personthecat.catlib.data.Lazy;
 import personthecat.cavegenerator.util.Reference;
+import personthecat.overwritevalidator.annotations.Inherit;
 import personthecat.overwritevalidator.annotations.Overwrite;
 import personthecat.overwritevalidator.annotations.OverwriteClass;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
@@ -19,6 +21,9 @@ import java.util.function.Supplier;
 @OverwriteClass
 @Config(name = Reference.MOD_ID)
 public class Cfg implements ConfigData {
+
+    @Inherit
+    private static final List<String> DEFAULT_DISABLED_FEATURES = Collections.emptyList();
 
     @Comment(
         "To use this feature, toggle enableOtherGenerators and\n" +
@@ -33,7 +38,7 @@ public class Cfg implements ConfigData {
         "globally disabled by the mod.\n" +
         "For example, `ore` or `minecraft:ore_coal`." +
         "For a list of all features, run `/cave debug features`.")
-    public String[] disabledFeatures = {};
+    public String[] disabledFeatures = DEFAULT_DISABLED_FEATURES.toArray(new String[0]);
 
     @Comment(
         "A list of all structure features being globally disabled\n" +

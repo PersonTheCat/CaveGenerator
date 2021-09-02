@@ -12,6 +12,7 @@ import personthecat.catlib.config.CustomModConfig;
 import personthecat.catlib.config.HjsonFileConfig;
 import personthecat.catlib.util.McUtils;
 import personthecat.cavegenerator.util.Reference;
+import personthecat.overwritevalidator.annotations.Inherit;
 import personthecat.overwritevalidator.annotations.Overwrite;
 import personthecat.overwritevalidator.annotations.OverwriteClass;
 
@@ -35,6 +36,9 @@ public class Cfg {
         ctx.addConfig(new CustomModConfig(ModConfig.Type.COMMON, COMMON.build(), ctx, COMMON_CFG));
     }
 
+    @Inherit
+    private static final List<String> DEFAULT_DISABLED_FEATURES = Collections.emptyList();
+
     private static final ConfigValue<List<String>> DISABLED_CARVERS_VALUE = COMMON
         .comment("To use this feature, toggle enableOtherGenerators and",
                 "list out the registry names of any world carvers you wish",
@@ -48,7 +52,7 @@ public class Cfg {
                 "globally disabled by the mod.",
                 "For example, `ore` or `minecraft:ore_coal`.",
                 "For a list of all features, run `/cave debug features`.")
-        .define("disabledFeatures", Collections.emptyList());
+        .define("disabledFeatures", DEFAULT_DISABLED_FEATURES);
 
     private static final ConfigValue<List<String>> DISABLED_STRUCTURES_VALUE = COMMON
         .comment("")
@@ -129,22 +133,6 @@ public class Cfg {
     @Overwrite
     public static final Supplier<List<String>> DISABLED_STRUCTURES =
         DISABLED_STRUCTURES_VALUE::get;
-
-    @Overwrite
-    public static final BooleanSupplier ENABLE_VANILLA_STONE_CLUSTERS =
-        ENABLE_VANILLA_STONE_CLUSTERS_VALUE::get;
-
-    @Overwrite
-    public static final BooleanSupplier ENABLE_WATER_LAKES =
-        ENABLE_WATER_LAKES_VALUE::get;
-
-    @Overwrite
-    public static final BooleanSupplier ENABLE_LAVA_LAKES =
-        ENABLE_LAVA_LAKES_VALUE::get;
-
-    @Overwrite
-    public static final BooleanSupplier ENABLE_MINESHAFTS =
-        ENABLE_MINESHAFTS_VALUE::get;
 
     @Overwrite
     public static final BooleanSupplier ENABLE_OTHER_GENERATORS =

@@ -511,6 +511,15 @@ public class CommandCave {
         wrapper.sendLintedMessage(Arrays.toString(BuiltinRegistries.CONFIGURED_CARVER.keySet().toArray()));
     }
 
+    @ModCommand(
+        name = "debug",
+        linter = ResourceArrayLinter.class,
+        branch = @Node(name = "structures")
+    )
+    private static void debugStructures(final CommandContextWrapper wrapper) {
+        wrapper.sendLintedMessage(Arrays.toString(BuiltinRegistries.CONFIGURED_STRUCTURE_FEATURE.keySet().toArray()));
+    }
+
     private static boolean isPresetEnabled(final File file) {
         return PresetReader.getPresetJson(file)
             .flatMap(preset -> HjsonUtils.getBool(preset, "enabled"))

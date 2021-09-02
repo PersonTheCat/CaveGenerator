@@ -4,6 +4,7 @@ import personthecat.catlib.exception.MissingOverrideException;
 import personthecat.overwritevalidator.annotations.OverwriteTarget;
 import personthecat.overwritevalidator.annotations.PlatformMustOverwrite;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.function.BooleanSupplier;
@@ -12,8 +13,12 @@ import java.util.function.Supplier;
 
 @OverwriteTarget
 public class Cfg {
+
+    private static final List<String> DEFAULT_DISABLED_FEATURES =
+        Arrays.asList("spring", "lake", "ore_dirt", "ore_gravel", "ore_andesite", "ore_diorite", "ore_granite");
+
     public static final Supplier<List<String>> DISABLED_CARVERS = Collections::emptyList;
-    public static final Supplier<List<String>> DISABLED_FEATURES = Collections::emptyList;
+    public static final Supplier<List<String>> DISABLED_FEATURES = () -> DEFAULT_DISABLED_FEATURES;
     public static final Supplier<List<String>> DISABLED_STRUCTURES = Collections::emptyList;
     public static final BooleanSupplier ENABLE_OTHER_GENERATORS = () -> false;
     public static final BooleanSupplier STRICT_PRESETS = () -> false;
