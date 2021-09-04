@@ -19,6 +19,7 @@ import personthecat.overwritevalidator.annotations.OverwriteClass;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.function.BooleanSupplier;
 import java.util.function.IntSupplier;
 import java.util.function.LongSupplier;
@@ -47,21 +48,21 @@ public class Cfg {
                 "to manually disable.",
                 "For example, `cave` or `minecraft:underwater_canyon`.",
                 "For a list of all carvers, run `/cave debug carvers`.")
-        .define("disabledCarvers", Collections.emptyList());
+        .define("disabledCarvers", Collections.emptyList(), Objects::nonNull);
 
     private static final ConfigValue<List<String>> DISABLED_FEATURES_VALUE = COMMON
         .comment("A list of all feature types OR configured features being",
                 "globally disabled by the mod.",
                 "For example, `ore` or `minecraft:ore_coal`.",
                 "For a list of all features, run `/cave debug features`.")
-        .define("disabledFeatures", DEFAULT_DISABLED_FEATURES);
+        .define("disabledFeatures", DEFAULT_DISABLED_FEATURES, Objects::nonNull);
 
     private static final ConfigValue<List<String>> DISABLED_STRUCTURES_VALUE = COMMON
         .comment("A list of all structure features being globally disabled",
                 "by the mod.",
                 "For example, `minecraft:mineshaft`.",
                 "For a list of all features, run `/cave debug structures`.")
-        .define("disabledStructures", Collections.emptyList());
+        .define("disabledStructures", Collections.emptyList(), Objects::nonNull);
 
     private static final BooleanValue FALLBACK_CARVERS_VALUE = COMMON
         .comment("Whether to enable the fallback generator compatibility layer",
@@ -123,7 +124,7 @@ public class Cfg {
     private static final LongValue FALLBACK_CARVER_SEED_VALUE = COMMON
         .comment("The seed to for the fallback generator when this feature",
                 "is enabled.")
-        .defineInRange("fallbackCarverSeed", Long.MIN_VALUE, Long.MAX_VALUE, 24L);
+        .defineInRange("fallbackCarverSeed", 24L, Long.MIN_VALUE, Long.MAX_VALUE);
 
     @Overwrite
     public static final Supplier<List<String>> DISABLED_CARVERS =

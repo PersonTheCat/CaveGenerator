@@ -61,7 +61,7 @@ public class ChunkGeneratorMixin {
         if (Cfg.ENABLE_OTHER_GENERATORS.getAsBoolean()) {
             WorldCarverAdapter.generate(ctx, this.biomeSource);
         }
-        if (step == Carving.AIR) {
+        if (step == Carving.AIR && !Cfg.FALLBACK_CARVERS.getAsBoolean()) {
             ctx.primeHeightmaps();
             CaveRegistries.CURRENT_SEED.set(new XoRoShiRo(seed), seed);
             for (final GeneratorController controller : CaveRegistries.GENERATORS) {
@@ -84,13 +84,15 @@ public class ChunkGeneratorMixin {
      */
     @Inject(at = @At("TAIL"), method = "applyBiomeDecoration")
     public void applyFeatures(final WorldGenRegion region, final StructureFeatureManager structures, final CallbackInfo ci) {
-        final WorldContext ctx = new WorldContext(region);
-        CaveRegistries.CURRENT_SEED.setIfAbsent(ctx.rand, ctx.seed);
+        if (!Cfg.FALLBACK_FEATURES.getAsBoolean()) {
+            final WorldContext ctx = new WorldContext(region);
+            CaveRegistries.CURRENT_SEED.setIfAbsent(ctx.rand, ctx.seed);
 
-        for (final GeneratorController controller : CaveRegistries.GENERATORS) {
-            controller.featureGenerate(ctx);
+            for (final GeneratorController controller : CaveRegistries.GENERATORS) {
+                controller.featureGenerate(ctx);
+            }
+            CachedNoiseHelper.resetAll();
         }
-        CachedNoiseHelper.resetAll();
     }
 
     @Shadow

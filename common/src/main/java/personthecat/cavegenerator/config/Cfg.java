@@ -16,7 +16,7 @@ import java.util.function.Supplier;
 public class Cfg {
 
     private static final List<String> DEFAULT_DISABLED_FEATURES =
-        Arrays.asList("spring", "lake", "ore_dirt", "ore_gravel", "ore_andesite", "ore_diorite", "ore_granite");
+        Arrays.asList("spring_feature", "lake", "ore_dirt", "ore_gravel", "ore_andesite", "ore_diorite", "ore_granite");
 
     public static final Supplier<List<String>> DISABLED_CARVERS = Collections::emptyList;
     public static final Supplier<List<String>> DISABLED_FEATURES = () -> DEFAULT_DISABLED_FEATURES;
