@@ -7,16 +7,15 @@
  # from bottom to top.                                         #
  # ----------------------------------------------------------- #
 {
-  imports: blocks.cave
   $VANILLA: "ALL" # Default tunnels, ravines, etc.
   enabled: false
   stoneLayers: [
     {
-      state: $GRANITE
+      state: granite
       height: [ 0, 12 ]
     }
     {
-      state: $ANDESITE
+      state: andesite
       height: [ 12, 23 ]
     }
     {
@@ -24,7 +23,7 @@
       height: [ 23, 44 ]
     }
     {
-      state: $DIORITE
+      state: diorite
       height: [ 44, 60 ]
     }
   ]

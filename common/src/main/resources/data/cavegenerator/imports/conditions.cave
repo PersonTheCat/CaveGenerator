@@ -5,9 +5,9 @@
   HALF_HEIGHT: [ 0, 127 ]
   # Indicates that a feature should only spawn
   # in a specific dimension.
-  OVERWORLD: [ 0 ]
-  NETHER: [ -1 ]
-  THE_END: [ 1 ]
+  OVERWORLD: [ "overworld" ]
+  NETHER: [ "the_nether" ]
+  THE_END: [ "the_end" ]
   # A function that produces a simple biome
   # settings object when given a list of biome
   # types.
@@ -18,7 +18,7 @@
   #  @...
   # Examples:
   #  $types(FOREST)
-  #  $types(HILLS, RARE)
+  #  $types(EXTREME_HILLS, MUSHROOM)
   types(): {
     types: [ "@1", "@2?", "@3?", "@4?", "@5?" ]
   }
@@ -26,12 +26,16 @@
   # in a specific biome type.
   OCEAN_BIOMES: { types: [ "OCEAN" ] }
   WET_BIOMES: { types: [ "OCEAN", "RIVER", "SWAMP" ] }
-  RARE_BIOMES: { types: [ "RARE" ] }
+  # Todo: rare no longer exists
+  RARE_BIOMES: { types: [ "MUSHROOM" ] }
   MUSHROOM_BIOMES: { types: [ "MUSHROOM" ] }
-  HILL_BIOMES: { types: [ "HILLS" ] }
+  # Todo: used to be HILLS (no longer exists)
+  HILL_BIOMES: { types: [ "EXTREME_HILLS" ] }
   FOREST_BIOMES: { types: [ "FOREST" ] }
-  COLD_BIOMES: { types: [ "COLD" ] }
-  HOT_BIOMES: { types: [ "HOT" ] }
-  SNOWY_BIOMES: { types: [ "SNOWY" ] }
-  SANDY_BIOMES: { types: [ "SANDY" ] }
+  # Todo: cold no longer exists (predicates?)
+  COLD_BIOMES: { types: [ "ICY" ] }
+  # Todo: hot no longer exists (predicates?)
+  HOT_BIOMES: { types: [ "DESERT", "MESA" ] }
+  SNOWY_BIOMES: { types: [ "ICY" ] }
+  SANDY_BIOMES: { types: [ "DESERT", "BEACH" ] }
 }

@@ -39,14 +39,14 @@
   # which biomes should be blacklisted
   # by generic features.
   DECORATED_BIOMES: {
-    types: [ "SNOWY", "SANDY", "JUNGLE", "OCEAN", "MUSHROOM" ]
-    names: [ "roofed_forest" ]
+    types: [ "ICY", "DESERT", "MESA", "JUNGLE", "OCEAN", "MUSHROOM" ]
+    names: [ "dark_forest", "dark_forest_hills" ]
   }
   # All of the biomes where dense / lush 
   # cave features should spawn.
   DENSE_CAVE_BIOMES: {
     types: JUNGLE
-    names: roofed_forest
+    names: [ "dark_forest", "dark_forest_hills" ]
   }
   # A list of all the biomes that upper
   # caverns should spawn in. These 
@@ -55,32 +55,31 @@
   # upper caverns with unique decorations.
   MOUNTAIN_CAVE_BIOMES: {
     names: [
+      wooded_hills
       birch_forest_hills
-      mutated_birch_forest
-      mutated_birch_forest_hills
-      desert_hills
-      extreme_hills
-      extreme_hills_with_trees
-      mutated_extreme_hills
-      mutated_extreme_hills_with_trees
-      smaller_extreme_hills
-      mutated_forest
+      tall_birch_hills
+      dark_forest_hills
       jungle_hills
-      mutated_jungle
-      mutated_jungle_edge
-      mesa_rock
-      mesa_clear_rock
-      mutated_mesa
-      mutated_mesa_rock
-      mutated_mesa_clear_rock
-      redwood_taiga_hills
-      mutated_redwood_taiga_hills
-      savanna_rock
-      mutated_savanna
-      mutated_savanna_rock
-      mutated_swampland
+      modified_jungle
+      modified_jungle_edge
+      bamboo_jungle_hills
       taiga_hills
-      mutated_taiga
+      taiga_mountains
+      giant_tree_taiga_hills
+      giant_spruce_taiga_hills
+      swamp_hills
+      savanna_plateau
+      shattered_savanna
+      shattered_savanna_plateau
+      desert_hills
+      mountains
+      wooded_mountains
+      gravelly_mountains
+      modified_gravelly_mountains
+      badlands_plateau
+      modified_badlands_plateau
+      wooded_badlands_plateau
+      modified_wooded_badlands_plateau
     ]
   }
   variables: {

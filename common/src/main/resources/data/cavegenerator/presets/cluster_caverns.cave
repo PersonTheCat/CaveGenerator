@@ -9,7 +9,8 @@
 {
   enabled: false
   biomes: {
-    types: HILLS
+    # Todo: this used to be HILLS (no longer exists)
+    types: EXTREME_HILLS
   }
   clusters: {
     states: air

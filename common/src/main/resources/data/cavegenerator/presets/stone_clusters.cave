@@ -9,12 +9,11 @@
 # it.                                                         #
 # ----------------------------------------------------------- #
 {
-  imports: blocks.cave
   $VANILLA: "ALL" # Default ravines and lava settings.
   enabled: false
   clusters: [
     {
-      states: $ANDESITE
+      states: andesite
       chance: 0.15
       radiusX: [ 16, 23 ]
       radiusY: [ 11, 18 ]
@@ -22,12 +21,12 @@
       centerHeight: [ 20, 32 ]
     }
     {
-      states: $DIORITE
+      states: diorite
       chance: 0.25
       centerHeight: [ 49, 58 ]
     }
     {
-      states: $GRANITE
+      states: granite
       chance: 0.3
       radiusX: [ 16, 23 ]
       radiusY: [ 11, 18 ]

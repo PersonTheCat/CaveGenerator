@@ -27,12 +27,14 @@ import personthecat.cavegenerator.world.GeneratorController;
 import personthecat.overwritevalidator.annotations.Inherit;
 import personthecat.overwritevalidator.annotations.InheritMissingMembers;
 import personthecat.overwritevalidator.annotations.Overwrite;
+import personthecat.overwritevalidator.annotations.OverwriteClass;
 
 import java.util.BitSet;
 import java.util.Random;
 import java.util.function.Function;
 
 @Log4j2
+@OverwriteClass
 @InheritMissingMembers
 public class FallbackCarverHook extends WorldCarver<NoneCarverConfiguration> {
 
