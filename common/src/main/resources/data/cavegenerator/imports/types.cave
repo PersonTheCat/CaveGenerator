@@ -56,11 +56,12 @@
   # Examples:
   #  $vines(0.1, [10, 30])
   #  $vines(0.2, [20, 40], $MY_NOISE)
+  # Todo: fix block states in CatLib
   vines(): [
-    $single_vine(vine:1, south, @1, @2, @3?)
-    $single_vine(vine:2, west, @1, @2, @3?)
-    $single_vine(vine:4, north, @1, @2, @3?)
-    $single_vine(vine:8, east, @1, @2, @3?)
+    $single_vine(vine, south, @1, @2, @3?)
+    $single_vine(vine, west, @1, @2, @3?)
+    $single_vine(vine, north, @1, @2, @3?)
+    $single_vine(vine, east, @1, @2, @3?)
   ]
   # Generates a new cluster settings
   # object when given a few parameters.
@@ -128,7 +129,7 @@
   #  $roots()
   roots(): {
     height: @2 ? ([ 0, 55 ])
-    replaceableBlocks: @5 ? ([ "stone", "dirt", "air" ])
+    replaceableBlocks: @5 ? ([ "stone", "dirt", "cave_air" ])
     count: @1 ? (5)
     chance: 0.4
     systemChance: 0.05

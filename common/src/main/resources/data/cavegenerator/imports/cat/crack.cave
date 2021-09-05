@@ -4,7 +4,7 @@
     cat/common.cave::half_rel()
   ]
   ravines: {
-    replaceableBlocks: [ "stone", "dirt", "grass", "sandstone", "sand" ]
+    replaceableBlocks: [ "stone", "dirt", "grass_block", "sandstone", "sand" ]
     chance: 0.0035
     height: $full_rel(8, 128)
     originHeight: $half_rel(67, 69)

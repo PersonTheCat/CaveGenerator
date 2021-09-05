@@ -1,15 +1,14 @@
 {
   imports: [
-    blocks.cave::DIORITE
     cat/common.cave::full_rel()
   ]
   replaceableBlocks: [
     stone
     dirt
     clay
-    leaves
+    oak_leaves
     sandstone
-    $DIORITE
+    diorite
   ]
   caverns: {
     height: $full_rel(45, 83)

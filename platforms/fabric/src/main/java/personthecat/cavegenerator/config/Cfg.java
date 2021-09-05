@@ -3,8 +3,8 @@ package personthecat.cavegenerator.config;
 import me.shedaniel.autoconfig.AutoConfig;
 import me.shedaniel.autoconfig.ConfigData;
 import me.shedaniel.autoconfig.annotation.Config;
-import me.shedaniel.autoconfig.serializer.GsonConfigSerializer;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
+import personthecat.catlib.config.HjsonConfigSerializer;
 import personthecat.catlib.data.Lazy;
 import personthecat.cavegenerator.util.Reference;
 import personthecat.overwritevalidator.annotations.Inherit;
@@ -110,7 +110,7 @@ public class Cfg implements ConfigData {
 
     @Overwrite
     public static void register() {
-        AutoConfig.register(Cfg.class, GsonConfigSerializer::new);
+        AutoConfig.register(Cfg.class, HjsonConfigSerializer::new);
     }
 
     private static final Lazy<Cfg> CONFIG =

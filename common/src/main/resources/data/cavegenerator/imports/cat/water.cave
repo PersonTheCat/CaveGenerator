@@ -7,7 +7,7 @@
       height: $half_rel(12, 63)
     }
     {
-      states: magma
+      states: magma_block
       height: 11
       integrity: 0.025
     }

@@ -414,7 +414,7 @@ noise: {}
 # ------------------------------------------------------------------------- #
 
 # For standard carvers: tunnels, ravines, rooms, and caverns.
-replaceableBlocks: [ "stone", "dirt", "grass", "hardened_clay" ]
+replaceableBlocks: [ "stone", "dirt", "grass_block", "terracotta" ]
 
 # Put your decorator blocks in this list automatically.
 replaceDecorators: true
@@ -998,10 +998,10 @@ structures: [
     # Example:
     # blockChecks: [
     #   # verbose syntax
-    #   { positions: [[1, 0, 1], [-1, 0, -1]], matchers: ["grass", "mycelium"] }
+    #   { positions: [[1, 0, 1], [-1, 0, -1]], matchers: ["grass_block", "mycelium"] }
     #   { positions: [[0, -1, 0], [0, -2, 0]], matchers: ["dirt", "gravel"] }
     #   # implicit syntax
-    #   [ [0, 1, 0], [0, 2, 0], "grass", "gravel" ]
+    #   [ [0, 1, 0], [0, 2, 0], "grass_block", "gravel" ]
     # ]
     # This feature is expensive. Be careful to not check every single position
     # and try to optimize by using the fewest checks possible.

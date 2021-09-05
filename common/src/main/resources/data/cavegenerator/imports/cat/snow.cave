@@ -19,7 +19,7 @@
     #  @2 -> max pct
     #  @3 -> integrity
     snow_floor(): {
-      states: snow
+      states: snow_block
       directions: down
       height: $half_rel(@1, @2)
       integrity: @3
@@ -42,7 +42,7 @@
   ]
   burrows: [
     {
-      replaceableBlocks: [ "water", "stone", "dirt", "ice", "grass", "grass:1" ]
+      replaceableBlocks: [ "water", "stone", "dirt", "ice", "grass_block" ]
       radius: 3.5
       height: $half_rel(12, 81)
       offset: {
@@ -119,7 +119,7 @@
       height: $half_rel(40, 69)
     }
     {
-      state: snow
+      state: snow_block
       type: speleothem
       size: large
       symmetrical: true
@@ -141,8 +141,8 @@
   # Rare vanilla igloos on flat surfaces.
   structures: [
     {
-      name: igloo/igloo_top
-      matchers: snow
+      name: igloo/top
+      matchers: snow_block
       directions: down
       integrity: 1
       chance: 0.5

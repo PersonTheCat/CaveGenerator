@@ -6,11 +6,10 @@
     types.cave::vines()
     types.cave::roots()
     types.cave::simple_generator()
-    blocks.cave::COARSE_DIRT
   ]
   variables: {
     ROOT_HEIGHT: $half_rel(5, 56)
-    ROOT_REPLACEABLE: [ "stone", "dirt", "air", "clay", "water" ]
+    ROOT_REPLACEABLE: [ "stone", "dirt", "cave_air", "clay", "water" ]
     POND_RANGE: 2
     # Generic configurations for spawining
     # one of the bush features.
@@ -25,7 +24,7 @@
       offset: [ 0, 0, 0 ]
       directions: down
       rotateRandomly: false
-      matchers: [ "stone", "dirt", "$COARSE_DIRT", "gravel", "mossy_cobblestone" ]
+      matchers: [ "stone", "dirt", "coarse_dirt", "gravel", "mossy_cobblestone" ]
       airChecks: [
         [ 1, 2, 1 ]
         [ 0, 2, -1 ]
@@ -54,19 +53,16 @@
     dirt
     grass
     clay
-    vine:1
-    vine:2
-    vine:4
-    vine:8
+    vine
     mossy_cobblestone
     gravel
-    leaves
-    $COARSE_DIRT
+    oak_leaves
+    coarse_dirt
   ]
   replaceDecorators: false
   wallDecorators: [
     {
-      states: leaves
+      states: oak_leaves
       directions: [ "up", "side" ]
       integrity: 0.35
       placement: overlay
@@ -75,7 +71,7 @@
       noise: $simple_generator(-0.25)
     }
     {
-      states: $COARSE_DIRT
+      states: coarse_dirt
       height: $half_rel(10, 45)
       integrity: 0.4
       directions: down

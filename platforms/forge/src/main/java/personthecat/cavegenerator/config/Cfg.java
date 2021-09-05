@@ -31,7 +31,7 @@ public class Cfg {
 
     private static final ForgeConfigSpec.Builder COMMON = new ForgeConfigSpec.Builder();
     private static final String FILENAME = McUtils.getConfigDir() + "/" + Reference.MOD_ID;
-    private static final HjsonFileConfig COMMON_CFG = new HjsonFileConfig(FILENAME + "-common.hjson");
+    private static final HjsonFileConfig COMMON_CFG = new HjsonFileConfig(FILENAME + ".hjson");
 
     @Overwrite
     public static void register() {

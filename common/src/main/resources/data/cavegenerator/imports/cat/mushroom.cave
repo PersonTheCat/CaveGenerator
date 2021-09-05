@@ -1,7 +1,6 @@
 {
   imports: [
     cat/common.cave::half_rel()
-    blocks.cave::COARSE_DIRT
   ]
   variables: {
     mushroom(): {
@@ -32,7 +31,7 @@
   }
   wallDecorators: [
     {
-      states: $COARSE_DIRT
+      states: coarse_dirt
       matchers: dirt
       directions: down
       integrity: 0.2
@@ -65,7 +64,7 @@
     $mushroom(brown_mushroom_sm)
     $mushroom(brown_mushroom_lg)
     {
-      name: fossils/fossil_spine_03
+      name: fossil/spine_3
       offset: [ 0, -4, 0 ]
       matchers: [ "stone", "mycelium" ]
       directions: down

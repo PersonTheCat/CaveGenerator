@@ -13,7 +13,6 @@ import personthecat.cavegenerator.world.generator.FallbackCarverHook;
 public class CaveCleanupEvent {
 
     public static void onBiomeCleanup(final FeatureModificationContext ctx) {
-        log.info("running biome cleanup v5 on {}", ctx.getName());
         CaveRegistries.DISABLED_FEATURES.getAsserted(Registry.CONFIGURED_CARVER_REGISTRY).forEach(id -> {
             if (ctx.removeCarver(id)) log.debug("Removed carver {} from {}.", id, ctx.getName());
         });

@@ -13,8 +13,8 @@
     shell: {
       radius: 2
       decorators: {
-        states: magma
-        matchers: air
+        states: magma_block
+        matchers: cave_air
       }
     }
     caveBlocks: {

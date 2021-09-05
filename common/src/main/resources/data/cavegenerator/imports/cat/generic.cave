@@ -2,22 +2,19 @@
   imports: [
     cat/common.cave::half_rel()
     cat/common.cave::full_rel()
-    blocks.cave::ANDESITE
-    blocks.cave::DIORITE
-    blocks.cave::GRANITE
   ]
   wallDecorators: [
     {
       states: dirt
       height: $half_rel(58, 75)
       integrity: 0.5
-      matchers: [ "stone", "$DIORITE" ]
+      matchers: [ "stone", "diorite" ]
     }
     {
       states: dirt
       height: $half_rel(48, 58)
       integrity: 0.25
-      matchers: [ "stone", "$DIORITE" ]
+      matchers: [ "stone", "diorite" ]
     }
   ]
   burrows: [
@@ -63,7 +60,7 @@
   ]
   ravines: [
     # Generic ravines which pitch downward on
-    # averange, unlike vanilla ravines.
+    # average, unlike vanilla ravines.
     {
       height: $half_rel(18, 69)
       chance: 1 / 130
@@ -88,7 +85,7 @@
   ]
   clusters: [
     {
-      states: $ANDESITE
+      states: andesite
       chance: 0.01
       radiusX: [ 16, 23 ]
       radiusY: [ 11, 18 ]
@@ -96,12 +93,12 @@
       centerHeight: $half_rel(20, 32)
     }
     {
-      states: $DIORITE
+      states: diorite
       chance: 0.01
       centerHeight: $half_rel(49, 58)
     }
     {
-      states: $GRANITE
+      states: granite
       chance: 0.015
       radiusX: [ 20, 27 ]
       radiusY: [ 15, 22 ]

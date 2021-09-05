@@ -56,10 +56,11 @@ public class Decorators {
             settings.ponds.forEach(p -> replaceable.addAll(p.states));
             settings.shell.decorators.forEach(s -> replaceable.addAll(s.states));
         }
+        // Temporarily ignore specific block states.
         if (replaceable.size() == 1) {
             final BlockState state = replaceable.iterator().next();
-            return state::equals;
+            return s -> state.equals(s.getBlock().defaultBlockState());
         }
-        return replaceable::contains;
+        return s -> replaceable.contains(s.getBlock().defaultBlockState());
     }
 }

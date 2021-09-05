@@ -1,6 +1,6 @@
 {
   dimensions: [ 0 ]
-  replaceableBlocks: [ "stone", "dirt", "grass", "hardened_clay" ]
+  replaceableBlocks: [ "stone", "dirt", "grass_block", "terracotta" ]
   caveBlocks: {
     states: lava
     height: [ 0, 10 ]

@@ -23,9 +23,9 @@
       type: Cellular
       returnType: Distance3Div
       jitter: 1
-      perturb: true
-      perturbAmp: 10
-      perturbFreq: 0.025
+      warp: BasicGrid
+      warpAmplitude: 20
+      warpFrequency: 0.0025
       invert: true
     }
   }

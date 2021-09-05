@@ -1,11 +1,10 @@
 {
   imports: [
-    blocks.cave::COARSE_DIRT
     cat/common.cave::half_rel()
     cat/common.cave::full_rel()
   ]
   # Rare tunnels which are rigid and
-  # mazelike. These should spawn in
+  # maze-like. These should spawn in
   # forest biomes.
   tunnels: {
     count: 4
@@ -28,7 +27,7 @@
         directions: down
       }
       {
-        states: [ "mossy_cobblestone", "$COARSE_DIRT", "gravel" ]
+        states: [ "mossy_cobblestone", "coarse_dirt", "gravel" ]
         height: $half_rel(0, 50)
         integrity: 0.25
         directions: down
@@ -36,7 +35,7 @@
       # Place intermittent cobwebs on the
       # ceiling
       {
-        states: web
+        states: cobweb
         height: $half_rel(0, 50)
         integrity: 0.05
         directions: up
