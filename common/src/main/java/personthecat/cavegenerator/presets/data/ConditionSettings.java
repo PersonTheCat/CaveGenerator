@@ -5,8 +5,8 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
+import net.minecraft.world.level.biome.Biome;
 import org.hjson.JsonObject;
-import personthecat.catlib.data.BiomePredicate;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.util.HjsonMapper;
 
@@ -27,7 +27,7 @@ public class ConditionSettings {
     @Default boolean blacklistBiomes = false;
 
     /** A list of biomes in which this feature can spawn. */
-    @Default BiomePredicate biomes = BiomePredicate.builder().build();
+    @Default List<Biome> biomes = Collections.emptyList();
 
     /** Whether the dimension list should be treated as a blacklist. */
     @Default boolean blacklistDimensions = false;
@@ -62,7 +62,7 @@ public class ConditionSettings {
     private static ConditionSettings copyInto(final JsonObject json, final ConditionSettingsBuilder builder) {
         return new HjsonMapper<>("", ConditionSettingsBuilder::build)
             .mapBool(Fields.blacklistBiomes, ConditionSettingsBuilder::blacklistBiomes)
-            .mapBiomePredicate(Fields.biomes, ConditionSettingsBuilder::biomes)
+            .mapBiomes(Fields.biomes, ConditionSettingsBuilder::biomes)
             .mapBool(Fields.blacklistDimensions, ConditionSettingsBuilder::blacklistDimensions)
             .mapIntList(Fields.dimensions, ConditionSettingsBuilder::dimensions)
             .mapRange(Fields.height, ConditionSettingsBuilder::height)

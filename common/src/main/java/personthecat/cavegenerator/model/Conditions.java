@@ -1,14 +1,13 @@
 package personthecat.cavegenerator.model;
 
-import it.unimi.dsi.fastutil.ints.IntArrayList;
-import it.unimi.dsi.fastutil.ints.IntList;
-import it.unimi.dsi.fastutil.ints.IntLists;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
 import net.minecraft.world.level.biome.Biome;
+import personthecat.catlib.data.InvertibleSet;
 import personthecat.catlib.data.Range;
+import personthecat.catlib.event.registry.DynamicRegistries;
 import personthecat.cavegenerator.presets.data.ConditionSettings;
 import personthecat.cavegenerator.noise.DummyGenerator;
 import personthecat.cavegenerator.world.generator.PrimerContext;
@@ -25,7 +24,7 @@ public class Conditions {
     @Default Predicate<Biome> biomes = b -> true;
 
     /** Indicates whether this feature has specific biome restrictions. */
-    @Default boolean hasBiomes = true; // Todo: reimplement checks
+    @Default boolean hasBiomes = false;
 
     /** Indicates whether this feature has noise-based region restrictions. */
     @Default boolean hasRegion = false;
@@ -50,8 +49,9 @@ public class Conditions {
 
     public static Conditions compile(final ConditionSettings settings, final Random rand, final long seed) {
         final ConditionsBuilder builder = builder()
+            .hasBiomes(settings.blacklistBiomes || !settings.biomes.isEmpty())
             .hasRegion(settings.region.isPresent())
-            .biomes(settings.biomes.compile()::contains)
+            .biomes(compileBiomes(settings))
             .dimensions(compileDimensions(settings))
             .height(settings.height);
 
@@ -62,16 +62,16 @@ public class Conditions {
         return builder.build();
     }
 
+    private static Predicate<Biome> compileBiomes(final ConditionSettings settings) {
+        final InvertibleSet<Biome> set = new InvertibleSet<>(new HashSet<>(settings.biomes), settings.blacklistBiomes);
+        final Set<Biome> all = new HashSet<>();
+        DynamicRegistries.BIOMES.forEach(all::add);
+        final Set<Biome> compiled = set.optimize(all);
+        return compiled::contains;
+    }
+
     private static Predicate<Integer> compileDimensions(final ConditionSettings settings) {
-        final List<Integer> list = settings.dimensions;
-        if (list.isEmpty()) {
-            return d -> true;
-        } else if (list.size() == 1) {
-            final int listed = list.get(0);
-            return settings.blacklistDimensions ? d -> listed != d : d -> listed == d;
-        }
-        final IntList nonRedundant = IntLists.unmodifiable(new IntArrayList(new HashSet<>(list)));
-        return settings.blacklistDimensions ? d -> !nonRedundant.contains(d) : nonRedundant::contains;
+        return i -> true; // Todo: this was for 1.12
     }
 
     /** Get the current height range when given two absolute coordinates. */
