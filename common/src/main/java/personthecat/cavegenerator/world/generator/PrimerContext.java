@@ -35,6 +35,7 @@ public final class PrimerContext {
     public final ProtoChunk primer;
     public final GenerationStep.Carving step;
     public final Map<Heightmap.Types, Heightmap> heightmaps;
+    public final Heightmap oceanFloor;
     public final Map<GenerationStep.Carving, BitSet> carvingMasks;
     public final List<Heightmap> heightmapsAfter = new ArrayList<>();
 
@@ -61,6 +62,7 @@ public final class PrimerContext {
         this.primer = primer;
         this.step = step;
         this.heightmaps = ((PrimerAccessor) primer).heightmaps();
+        this.oceanFloor = this.heightmaps.get(Heightmap.Types.OCEAN_FLOOR_WG);
         this.carvingMasks = ((PrimerAccessor) primer).carvingMasks();
 
         for (final Heightmap.Types type : primer.getStatus().heightmapsAfter()) {
@@ -183,5 +185,16 @@ public final class PrimerContext {
                 this.primer.getSections()[i] = new LevelChunkSection(i << 4);
             }
         }
+    }
+
+    /**
+     * Direct variant of calling {@link ProtoChunk#getHeight}
+     *
+     * @param x The absolute or chunk x-coordinate.
+     * @param z The absolute or chunk z-coordinate.
+     * @return The height at these coordinates.
+     */
+    public int getHeight(final int x, final int z) {
+        return this.oceanFloor.getFirstAvailable(x & 15, z & 15) - 1;
     }
 }

@@ -8,7 +8,6 @@ import lombok.Builder;
 import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
 import net.minecraft.world.level.biome.Biome;
-import net.minecraft.world.level.levelgen.Heightmap;
 import personthecat.catlib.data.Range;
 import personthecat.cavegenerator.presets.data.ConditionSettings;
 import personthecat.cavegenerator.noise.DummyGenerator;
@@ -26,7 +25,7 @@ public class Conditions {
     @Default Predicate<Biome> biomes = b -> true;
 
     /** Indicates whether this feature has specific biome restrictions. */
-    @Default boolean hasBiomes = false;
+    @Default boolean hasBiomes = true; // Todo: reimplement checks
 
     /** Indicates whether this feature has noise-based region restrictions. */
     @Default boolean hasRegion = false;
@@ -51,9 +50,8 @@ public class Conditions {
 
     public static Conditions compile(final ConditionSettings settings, final Random rand, final long seed) {
         final ConditionsBuilder builder = builder()
-            .hasBiomes(settings.blacklistBiomes || !settings.biomes.isEmpty())
             .hasRegion(settings.region.isPresent())
-            .biomes(compileBiomes(settings))
+            .biomes(settings.biomes.compile()::contains)
             .dimensions(compileDimensions(settings))
             .height(settings.height);
 
@@ -62,18 +60,6 @@ public class Conditions {
         settings.region.ifPresent(c -> builder.region(c.getGenerator(rand, seed)));
         settings.noise.ifPresent(c -> builder.noise(c.getGenerator(rand, seed)));
         return builder.build();
-    }
-
-    private static Predicate<Biome> compileBiomes(final ConditionSettings settings) {
-        final List<Biome> list = settings.biomes;
-        if (list.isEmpty()) {
-            return b -> true;
-        } else if (list.size() == 1) {
-            final Biome listed = list.get(0);
-            return settings.blacklistBiomes ? b -> !listed.equals(b) : listed::equals;
-        }
-        final List<Biome> nonRedundant = Collections.unmodifiableList(new ArrayList<>(new HashSet<>(list)));
-        return settings.blacklistBiomes ? b -> !nonRedundant.contains(b) : nonRedundant::contains;
     }
 
     private static Predicate<Integer> compileDimensions(final ConditionSettings settings) {
@@ -97,8 +83,7 @@ public class Conditions {
 
     /** Get the current height range when given two absolute coordinates and a heightmap of the current chunk. */
     public Range getColumn(final PrimerContext ctx, final int x, final int z) {
-        // Todo: no need to do a lookup on this every time. This map is already loaded by CG
-        final int surface = ctx.primer.getHeight(Heightmap.Types.OCEAN_FLOOR_WG, x, z);
+        final int surface = ctx.getHeight(x, z);
         final int min = height.min + (int) floor.getNoiseScaled((float) x, (float) z);
         final int max = Math.min(height.max, surface) + (int) ceiling.getNoiseScaled((float) x, (float) z);
         return Range.checkedOrEmpty(min, max);
