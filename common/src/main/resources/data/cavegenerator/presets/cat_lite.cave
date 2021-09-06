@@ -27,6 +27,8 @@
       biomes: $OCEAN_BIOMES
       *tunnels.checkWater: false
       *ravines.checkWater: false
+      *tunnels.replaceableBlocks: [ "stone", "dirt", "sand" ]
+      *ravines.replaceableBlocks: [ "stone", "dirt", "sand" ]
       stalactites: []
     }
     {

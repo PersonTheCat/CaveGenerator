@@ -56,12 +56,11 @@
   # Examples:
   #  $vines(0.1, [10, 30])
   #  $vines(0.2, [20, 40], $MY_NOISE)
-  # Todo: fix block states in CatLib
   vines(): [
-    $single_vine(vine, south, @1, @2, @3?)
-    $single_vine(vine, west, @1, @2, @3?)
-    $single_vine(vine, north, @1, @2, @3?)
-    $single_vine(vine, east, @1, @2, @3?)
+    $single_vine(vine[south=true], south, @1, @2, @3?)
+    $single_vine(vine[west=true], west, @1, @2, @3?)
+    $single_vine(vine[north=true], north, @1, @2, @3?)
+    $single_vine(vine[east=true], east, @1, @2, @3?)
   ]
   # Generates a new cluster settings
   # object when given a few parameters.

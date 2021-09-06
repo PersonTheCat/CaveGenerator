@@ -51,7 +51,7 @@
   replaceableBlocks: [
     stone
     dirt
-    grass
+    grass_block
     clay
     vine
     mossy_cobblestone
@@ -62,7 +62,7 @@
   replaceDecorators: false
   wallDecorators: [
     {
-      states: oak_leaves
+      states: oak_leaves[persistent=true]
       directions: [ "up", "side" ]
       integrity: 0.35
       placement: overlay
