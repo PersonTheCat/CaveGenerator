@@ -15,12 +15,12 @@ public class CachedNoiseGenerator extends FastNoise {
     }
 
     @Override
-    public float getSingle(final int seed, final float x) {
-        return reference.getSingle(seed, x);
+    public float getNoise(final float x) {
+        return reference.getNoise(x);
     }
 
     @Override
-    public float getSingle(final int seed, final float x, final float y) {
+    public float getNoise(final float x, final float y) {
         final int relX = (int) x & 15;
         final int relY = (int) y & 15;
 
@@ -28,13 +28,13 @@ public class CachedNoiseGenerator extends FastNoise {
         if (reused != 0) {
             return reused;
         }
-        final float noise = reference.getSingle(seed, x, y);
+        final float noise = reference.getNoise(x, y);
         cache.writeNoise(relX, relY, noise);
         return noise;
     }
 
     @Override
-    public float getSingle(final int seed, final float x, final float y, final float z) {
+    public float getNoise(final float x, final float y, final float z) {
         final int relX = (int) x & 15;
         final int relY = (int) y & 255;
         final int relZ = (int) z & 15;
@@ -43,8 +43,23 @@ public class CachedNoiseGenerator extends FastNoise {
         if (reused != 0) {
             return reused;
         }
-        final float noise = reference.getSingle(seed, x, y, z);
+        final float noise = reference.getNoise(x, y, z);
         cache.writeNoise(relX, relY, relZ, noise);
         return noise;
+    }
+
+    @Override
+    public float getSingle(final int seed, final float x) {
+        return 0;
+    }
+
+    @Override
+    public float getSingle(final int seed, final float x, final float y) {
+        return 0;
+    }
+
+    @Override
+    public float getSingle(final int seed, final float x, final float y, final float zd) {
+        return 0;
     }
 }
