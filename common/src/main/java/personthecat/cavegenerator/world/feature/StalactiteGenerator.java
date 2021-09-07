@@ -119,7 +119,7 @@ public class StalactiteGenerator extends BasicFeature {
         for (int i = 0; i < max; i++) {
             // We will be at the top and need to look down.
             pos = this.stalactite ? pos.below() : pos.above();
-            if (ctx.region.getBlockState(pos).getMaterial().isSolid()) {
+            if (ctx.region.getBlockState(pos).getMaterial().isSolidBlocking()) {
                 return i;
             }
         }
@@ -145,7 +145,7 @@ public class StalactiteGenerator extends BasicFeature {
 
     private void findPlace(final WorldContext ctx, BlockPos pos, final int length, final boolean up) {
         for (int i = 0; i < 3; i++) {
-            if (ctx.region.getBlockState(pos).getMaterial().isSolid()) {
+            if (ctx.region.getBlockState(pos).getMaterial().isSolidBlocking()) {
                 this.place(ctx, pos, length, up);
                 return;
             } // Go in the opposite direction and find a surface.

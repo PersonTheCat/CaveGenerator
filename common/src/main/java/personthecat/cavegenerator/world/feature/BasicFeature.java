@@ -79,7 +79,7 @@ public abstract class BasicFeature {
      * @return <code>true</code> If the block at this position is solid.
      */
     protected final boolean isSolid(final WorldGenRegion region, final BlockPos pos) {
-        return region.getBlockState(pos).getMaterial().isSolid();
+        return region.getBlockState(pos).getMaterial().isSolidBlocking();
     }
 
     /**
