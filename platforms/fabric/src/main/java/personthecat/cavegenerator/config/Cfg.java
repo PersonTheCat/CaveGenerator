@@ -99,7 +99,7 @@ public class Cfg implements ConfigData {
     public int mapRange = 8;
 
     @Comment(
-        "The range in chunks to read biomes for features that use" +
+        "The range in chunks to read biomes for features that use\n" +
         "distance-based biome testing.")
     public int biomeRange = 2;
 
