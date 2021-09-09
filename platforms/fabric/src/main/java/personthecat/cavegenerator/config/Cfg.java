@@ -37,14 +37,14 @@ public class Cfg implements ConfigData {
     @Comment(
         "A list of all feature types OR configured features being\n" +
         "globally disabled by the mod.\n" +
-        "For example, `ore` or `minecraft:ore_coal`." +
+        "For example, `ore` or `minecraft:ore_coal`.\n" +
         "For a list of all features, run `/cave debug features`.")
     public String[] disabledFeatures = DEFAULT_DISABLED_FEATURES.toArray(new String[0]);
 
     @Comment(
         "A list of all structure features being globally disabled\n" +
         "by the mod." +
-        "For example, `minecraft:mineshaft`." +
+        "For example, `minecraft:mineshaft`.\n" +
         "For a list of all features, run `/cave debug structures`.")
     public String[] disabledStructures = {};
 
