@@ -83,6 +83,9 @@ public class NoiseSettings {
     /** The output to use if this generator is a dummy. */
     @Default float dummyOutput = 1.0F;
 
+    /** The amplitude of the ping pong fractal type, when used. */
+    @Default float pingPongStrength = 2.0F;
+
     /** The type of noise generator to run. */
     @Default NoiseType type = NoiseType.SIMPLEX;
 
@@ -129,6 +132,7 @@ public class NoiseSettings {
             .mapBool(Fields.cache, NoiseSettingsBuilder::cache)
             .mapBool(Fields.dummy, NoiseSettingsBuilder::dummy)
             .mapFloat(Fields.dummyOutput, NoiseSettingsBuilder::dummyOutput)
+            .mapFloat(Fields.pingPongStrength, NoiseSettingsBuilder::pingPongStrength)
             .mapNoiseType(Fields.type, NoiseSettingsBuilder::type)
             .mapFractalType(Fields.fractal, NoiseSettingsBuilder::fractal)
             .mapEnum(Fields.warp, DomainWarpType.class, NoiseSettingsBuilder::warp)
@@ -163,7 +167,8 @@ public class NoiseSettings {
             .jitterZ(jitterZ)
             .threshold(threshold.min, threshold.max)
             .frequencyY(frequency / stretch)
-            .offset(offset);
+            .offset(offset)
+            .pingPongStrength(pingPongStrength);
 
         final FastNoise generator = cfg.generate();
 

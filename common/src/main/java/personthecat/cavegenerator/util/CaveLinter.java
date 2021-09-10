@@ -15,7 +15,7 @@ import java.util.regex.Pattern;
 public class CaveLinter extends SyntaxLinter {
 
     /** Identifies constant value keys to be highlighted. */
-    private static final Pattern CONSTANT = Pattern.compile("[-_A-Z]+\\s*:|[-_\\w./]+\\s*::\\s*[-_A-Z]+|.*\\s[aA][sS]\\s+[-_A-Z]+", Pattern.MULTILINE);
+    private static final Pattern CONSTANT = Pattern.compile("(\\\"[A-Z\\s._-]*\\\"|[A-Z._-]+)\\s*(?=:)|[-_\\w./]+\\s*(?:::|[aA][sS])\\s*[A-Z._-]+(.*\\s[aA][sS]\\s+[A-Z._-]+)?", Pattern.MULTILINE);
 
     /** Identifies function keys to be highlighted. */
     private static final Pattern FUNCTION = Pattern.compile("\\b\\w+\\(\\)\\s*:|[-_\\w./]+\\s*::\\s*\\w+\\(\\)|.*\\s[aA][sS]\\s+\\w+\\(\\)", Pattern.MULTILINE);
@@ -40,7 +40,10 @@ public class CaveLinter extends SyntaxLinter {
         new Target(KEY, color(ChatFormatting.AQUA)),
         new Target(CALL, color(ChatFormatting.GOLD).withUnderlined(true)),
         new Target(REFERENCE, color(ChatFormatting.DARK_PURPLE).withUnderlined(true)),
-        new Target(ARGUMENT, color(ChatFormatting.DARK_GREEN).withUnderlined(true))
+        new Target(ARGUMENT, color(ChatFormatting.DARK_GREEN).withUnderlined(true)),
+        new Target(BOOLEAN_VALUE, color(ChatFormatting.GOLD)),
+        new Target(NUMERIC_VALUE, color(ChatFormatting.LIGHT_PURPLE)),
+        new Target(NULL_VALUE, color(ChatFormatting.RED))
     };
 
     @SuppressWarnings("unused") // Reflective invocation

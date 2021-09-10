@@ -22,10 +22,11 @@
   enabled: true
   biomes: {
     names: []
-    IDs: []
+    mods: []
     types: []
   }
   blacklistBiomes: false
+  # Currently disabled
   dimensions: []
   blacklistDimensions: false
   height: [ 0, 255 ]
@@ -300,9 +301,9 @@
       wallExponent: 2.0
 
       map: {
-        perturb: true
-        perturbAmp: 0.1
-        perturbFreq: 2.5
+        warp: BasicGrid
+        warpAmplitude: 0.1
+        warpFrequency: 2.5
         frequency: 0.005
       }
       offset: {
@@ -437,7 +438,7 @@
       debugSpawns: false
       command: ""
       rotateRandomly: false
-      replacedBlock: stone
+      hasGravity: true
       mirror: none
       ignoreEntities: false
       

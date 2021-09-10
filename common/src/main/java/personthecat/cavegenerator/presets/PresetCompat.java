@@ -272,9 +272,11 @@ class PresetCompat {
             .updateAll(json);
         JsonTransformer.withPath(CavePreset.Fields.caverns, ConditionSettings.Fields.ceiling)
             .toRange(MIN_VAL, -17.0, MAX_VAL, -3.0, NoiseMapSettings.Fields.range)
+            .ifPresent(NoiseSettings.Fields.type, PresetCompat::transformNoiseType)
             .updateAll(json);
         JsonTransformer.withPath(CavePreset.Fields.caverns, ConditionSettings.Fields.floor)
             .toRange(MIN_VAL, 0.0, MAX_VAL, 8.0, NoiseMapSettings.Fields.range)
+            .ifPresent(NoiseSettings.Fields.type, PresetCompat::transformNoiseType)
             .updateAll(json);
         JsonTransformer.withPath(CavePreset.Fields.caverns, CavernSettings.Fields.generators)
             .transform(SCALE, PresetCompat::transformScale)
@@ -282,6 +284,7 @@ class PresetCompat {
             .transform(PERTURB, PresetCompat::transformPerturb)
             .history(PERTURB_AMP, NoiseSettings.Fields.warpAmplitude)
             .history(PERTURB_FREQ, NoiseSettings.Fields.warpFrequency)
+            .ifPresent(NoiseSettings.Fields.type, PresetCompat::transformNoiseType)
             .updateAll(json);
     }
 
