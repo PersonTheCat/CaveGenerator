@@ -364,7 +364,7 @@ enabled: true
 
 biomes: {
   names: []
-  IDs: []
+  mods: []
   types: []
 }
 
@@ -1014,7 +1014,7 @@ structures: [
     rotateRandomly: false
 
     # Whether to apply a random gravity effect to this structure.
-    hasGravity: true
+    hasGravity: false
 
     # Which block (other than air) can be replaced by this structure.
     replacedBlock: stone

@@ -438,7 +438,7 @@
       debugSpawns: false
       command: ""
       rotateRandomly: false
-      hasGravity: true
+      hasGravity: false
       mirror: none
       ignoreEntities: false
       
