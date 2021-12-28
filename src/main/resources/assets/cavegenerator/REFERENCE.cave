@@ -361,6 +361,7 @@
       radius: null
       centerHeight: [ 24, 40 ]
       matchers: []
+      spawnInAir: false
       
       biomes: {}
       blacklistBiomes: false
