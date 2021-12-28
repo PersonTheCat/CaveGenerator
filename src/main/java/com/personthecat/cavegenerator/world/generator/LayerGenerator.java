@@ -18,6 +18,14 @@ public class LayerGenerator extends BasicGenerator {
     }
 
     @Override
+    public void generate(PrimerContext ctx) {
+        final int dim = ctx.world.provider.getDimension();
+        if (conditions.dimensions.test(dim)) {
+            generateChecked(ctx);
+        }
+    }
+
+    @Override
     protected void generateChecked(PrimerContext ctx) {
         for (int x = 0; x < 16; x++) {
             final int actualX = x + (ctx.chunkX * 16);
