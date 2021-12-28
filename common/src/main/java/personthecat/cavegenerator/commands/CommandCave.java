@@ -3,13 +3,6 @@ package personthecat.cavegenerator.commands;
 import net.minecraft.ChatFormatting;
 import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.network.chat.*;
-import net.minecraft.server.MinecraftServer;
-import net.minecraft.world.effect.MobEffect;
-import net.minecraft.world.effect.MobEffectInstance;
-import net.minecraft.world.effect.MobEffects;
-import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.level.GameType;
-import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import org.apache.commons.lang3.tuple.Pair;
 import org.hjson.JsonObject;
@@ -23,10 +16,11 @@ import personthecat.catlib.command.annotations.Node.StringValue;
 import personthecat.catlib.command.arguments.ArgumentSuppliers;
 import personthecat.catlib.exception.Exceptions;
 import personthecat.catlib.io.FileIO;
+import personthecat.catlib.util.FeatureSupport;
 import personthecat.catlib.util.HjsonUtils;
 import personthecat.catlib.util.PathUtils;
+import personthecat.catlib.util.ResourceArrayLinter;
 import personthecat.cavegenerator.CaveRegistries;
-import personthecat.cavegenerator.commands.arguments.FeatureArgument;
 import personthecat.cavegenerator.exception.CaveOutputException;
 import personthecat.cavegenerator.init.CaveInit;
 import personthecat.cavegenerator.presets.PresetReader;
@@ -37,8 +31,6 @@ import personthecat.cavegenerator.presets.PresetCompressor;
 import personthecat.cavegenerator.presets.lang.PresetExpander;
 import personthecat.cavegenerator.presets.lang.ReferenceHelper;
 import personthecat.cavegenerator.util.Calculator;
-import personthecat.cavegenerator.util.CaveLinter;
-import personthecat.cavegenerator.util.ResourceArrayLinter;
 
 import java.io.File;
 import java.io.IOException;
@@ -53,7 +45,6 @@ import static personthecat.catlib.util.PathUtils.*;
 import static personthecat.catlib.util.Shorthand.full;
 import static java.util.Optional.empty;
 
-@SuppressWarnings("unused") // Used by CatLib
 public class CommandCave {
 
     private static final HoverEvent ENABLE_BUTTON_HOVER = displayOnHover("Enable this preset.");
@@ -94,19 +85,20 @@ public class CommandCave {
     private static final String FILE_ARG = "file";
     private static final String DISPLAY_ARG = "display";
     private static final String NAME_ARG = "name";
-    private static final String JSON_ARG = "json";
+    private static final String RAW_ARG = "raw";
+    private static final String EXP_ARG = "exp";
     private static final String FEATURE_ARG = "feature";
     private static final String ENABLED_KEY = CavePreset.Fields.enabled;
 
-    private static final JsonObject MEMORY = new JsonObject();
+    private final JsonObject memory = new JsonObject();
 
     @ModCommand(
         description = "Reloads all of the current presets from the disk."
     )
-    private static void reload(final CommandContextWrapper wrapper) {
+    private void reload(final CommandContextWrapper ctx) {
         CaveRegistries.reloadAll();
         CachedNoiseHelper.removeAll();
-        wrapper.sendMessage("Successfully reloaded caves. View the log for diagnostics.");
+        ctx.sendMessage("Successfully reloaded caves. View the log for diagnostics.");
     }
 
     @ModCommand(
@@ -115,8 +107,8 @@ public class CommandCave {
             @Node(name = FILE_ARG, descriptor = ArgumentSuppliers.File.class, optional = true)
         }
     )
-    private static void list(final CommandContextWrapper wrapper) {
-        final File dir = wrapper.getOptional(FILE_ARG, File.class).orElse(ModFolders.PRESET_DIR);
+    private void list(final CommandContextWrapper ctx) {
+        final File dir = ctx.getOptional(FILE_ARG, File.class).orElse(ModFolders.PRESET_DIR);
         if (!dir.isDirectory()) {
             throw cmdEx("Expected a directory: {}", dir.getName());
         }
@@ -124,7 +116,7 @@ public class CommandCave {
             .append(VIEW_BUTTON.copy())
             .append("\n");
 
-        // Sort all of the features to be displayed in order.
+        // Sort every feature to be displayed in order.
         final List<File> directories = new ArrayList<>();
         final List<File> enabled = new ArrayList<>();
         final List<File> disabled = new ArrayList<>();
@@ -140,51 +132,21 @@ public class CommandCave {
         directories.forEach(f -> msg.append(getViewDirectoryText(f)));
         enabled.forEach(f -> msg.append(getListElementText(f, true)));
         disabled.forEach(f -> msg.append(getListElementText(f, false)));
-        wrapper.sendMessage(msg);
+        ctx.sendMessage(msg);
     }
 
     @ModCommand(
-        description = "Applies night vision and spectator mode for easy cave viewing."
-    )
-    private static void test(final CommandContextWrapper wrapper) {
-        final Player player = wrapper.getPlayer();
-        if (player != null) {
-            player.setGameMode(GameType.SPECTATOR);
-
-            final MobEffect nightVision = MobEffects.NIGHT_VISION;
-            player.addEffect(new MobEffectInstance(nightVision, 999999999, 1, true, false));
-        }
-    }
-
-    @ModCommand(
-        description = "Removes night vision and puts you in the default game mode."
-    )
-    private static void untest(final CommandContextWrapper wrapper) {
-        final Player player = wrapper.getPlayer();
-        if (player != null) {
-            final GameType mode = Optional.ofNullable(wrapper.getServer())
-                .map(MinecraftServer::getDefaultGameType)
-                .orElse(GameType.CREATIVE);
-
-            player.setGameMode(mode);
-            player.removeEffect(MobEffects.NIGHT_VISION);
-        }
-    }
-
-    @ModCommand(
-        arguments = "[<k>]",
         description = "Teleports the player 1,000 * k blocks in each direction",
         branch = {
             @Node(name = DISTANCE_ARG, doubleRange = @DoubleRange(min = 1.0), optional = true)
         }
     )
-    private static void jump(final CommandContextWrapper wrapper) {
-        final double distance = 1000.0 * wrapper.getOptional(DISTANCE_ARG, Double.class).orElse(1.0);
-        wrapper.execute("/tp ~{} ~ ~{}", distance, distance);
+    private void jump(final CommandContextWrapper ctx) {
+        final double distance = 1000.0 * ctx.getOptional(DISTANCE_ARG, Double.class).orElse(1.0);
+        ctx.execute("/tp ~{} ~ ~{}", distance, distance);
     }
 
     @ModCommand(
-        arguments = "<file> [<display>]",
         description = {
             "Enables the given preset file. If this file is not in the presets folder,",
             "a copy of the file will be created in the presets folder and the original",
@@ -195,111 +157,84 @@ public class CommandCave {
             @Node(name = DISPLAY_ARG, isBoolean = true, optional = true)
         }
     )
-    private static void enable(final CommandContextWrapper wrapper) {
-        enableOrDisable(wrapper, true);
+    private void enable(final CommandContextWrapper ctx) {
+        enableOrDisable(ctx, true);
     }
 
     @ModCommand(
-        arguments = "<file> [<display>]",
         description = "Disables the given preset file.",
         branch = {
             @Node(name = FILE_ARG, descriptor = ArgumentSuppliers.File.class),
             @Node(name = DISPLAY_ARG, isBoolean = true, optional = true)
         }
     )
-    private static void disable(final CommandContextWrapper wrapper) {
-        enableOrDisable(wrapper, false);
+    private void disable(final CommandContextWrapper ctx) {
+        enableOrDisable(ctx, false);
     }
 
-    private static void enableOrDisable(final CommandContextWrapper wrapper, final boolean enabled) {
-        final File f = wrapper.getFile(FILE_ARG);
+    private static void enableOrDisable(final CommandContextWrapper ctx, final boolean enabled) {
+        final File f = ctx.getFile(FILE_ARG);
         final JsonObject preset = PresetReader.getPresetJson(f).orElse(null);
 
         if (preset == null) {
-            wrapper.sendError("Error reading preset.");
+            ctx.sendError("Error reading preset.");
         } else {
             final File output = enabled && !ModFolders.PRESET_DIR.equals(f.getParentFile())
                 ? new File(ModFolders.PRESET_DIR, f.getName()) : f;
 
             markPresetEnabledOnDisk(preset, output, enabled);
-            wrapper.sendMessage("Preset {} successfully.", (enabled ? "enabled" : "disabled"));
+            ctx.sendMessage("Preset {} successfully.", (enabled ? "enabled" : "disabled"));
 
-            if (wrapper.getOptional(DISPLAY_ARG, Boolean.class).orElse(false)) {
-                wrapper.execute("/cave reload");
-                wrapper.execute("/cave list {}", getRelativePath(ModFolders.CG_DIR, f.getParentFile()));
+            if (ctx.getOptional(DISPLAY_ARG, Boolean.class).orElse(false)) {
+                ctx.execute("/cave reload");
+                ctx.execute("/cave list {}", getRelativePath(ModFolders.CG_DIR, f.getParentFile()));
             }
         }
     }
 
-    private static void markPresetEnabledOnDisk(final JsonObject preset, final File f, final boolean enabled) {
-        if (preset.has(ENABLED_KEY)) {
-            preset.set(ENABLED_KEY, enabled);
-        } else {
-            preset.add(ENABLED_KEY, enabled, "Whether this preset is enabled globally");
-        }
-        HjsonUtils.writeJson(preset, f).expect("Error writing to file: {}", f.getName());
-    }
-
     @ModCommand(
         name = "new",
-        arguments = "<name>",
         description = "Generates a new preset with the given name. Extensions are optional.",
         branch = {
             @Node(name = NAME_ARG, stringValue = @StringValue)
         }
     )
-    private static void newPreset(final CommandContextWrapper wrapper) {
-        String name = wrapper.getString(NAME_ARG);
+    private void newPreset(final CommandContextWrapper ctx, String name) {
         if (PathUtils.extension(name).isEmpty()) {
             name += ".cave";
         }
         final JsonObject preset = new JsonObject().add(ENABLED_KEY, true);
         HjsonUtils.writeJson(preset, new File(ModFolders.PRESET_DIR, name));
-        wrapper.sendMessage("Finished writing {}", name);
+        ctx.sendMessage("Finished writing {}", name);
     }
 
     @ModCommand(
-        arguments = "<file> [<as>]",
         description = "Writes the expanded version of this preset to /generated.",
         branch = {
             @Node(name = FILE_ARG, descriptor = ArgumentSuppliers.File.class),
             @Node(name = NAME_ARG, stringValue = @StringValue, optional = true)
         }
     )
-    private static void expand(final CommandContextWrapper wrapper) {
-        PresetExpander.expand(wrapper.getFile(FILE_ARG))
-            .ifErr(e -> wrapper.sendError(e.getMessage()))
-            .ifOk(j -> writeExpanded(wrapper, j));
-    }
-
-    private static void writeExpanded(final CommandContextWrapper wrapper, final JsonObject expanded) {
-        FileIO.mkdirsOrThrow(ModFolders.GENERATED_DIR);
-        final String name = wrapper.getOptional(NAME_ARG, String.class)
-            .map(s -> !extension(s).isEmpty() ? s : s + ".cave")
-            .orElse(wrapper.getFile(FILE_ARG).getName());
-        HjsonUtils.writeJson(expanded, new File(ModFolders.GENERATED_DIR, name))
-            .mapErr(CaveOutputException::new)
-            .throwIfErr();
-        wrapper.sendMessage("Finished writing generated/{}.", name);
+    private void expand(final CommandContextWrapper ctx) {
+        PresetExpander.expand(ctx.getFile(FILE_ARG))
+            .ifErr(e -> ctx.sendError(e.getMessage()))
+            .ifOk(j -> writeExpanded(ctx, j));
     }
 
     @ModCommand(
-        arguments = "<file> [<as>]",
         description = "Writes a lightly compressed version of the given file to /generated",
         branch = {
             @Node(name = FILE_ARG, descriptor = ArgumentSuppliers.File.class),
             @Node(name = NAME_ARG, stringValue = @StringValue, optional = true)
         }
     )
-    private static void compress(final CommandContextWrapper wrapper) throws IOException {
-        final File file = wrapper.getFile(FILE_ARG);
-
+    private void compress(final CommandContextWrapper ctx, final File file) throws IOException {
         final Optional<JsonObject> read = HjsonUtils.readSuppressing(file);
         if (!read.isPresent()) {
             throw Exceptions.cmdEx("Error reading {}", file.getName());
         }
 
-        final String name = wrapper.getOptional(NAME_ARG, String.class)
+        final String name = ctx.getOptional(NAME_ARG, String.class)
             .map(s -> noExtension(s) + ".json")
             .orElse(file.getName());
 
@@ -307,21 +242,19 @@ public class CommandCave {
         final File output = new File(ModFolders.GENERATED_DIR, name);
 
         HjsonUtils.writeJson(PresetCompressor.compress(read.get()), output).throwIfErr();
-        wrapper.sendMessage("Finished writing generated/{}.", name);
+        ctx.sendMessage("Finished writing generated/{}.", name);
     }
 
     @ModCommand(
-        arguments = "<member>",
         description = {
             "Defines a JSON member as a variable in memory. e.g.",
             "\"/cave set key: value\" or \"/cave set { k1: 'v1', k2: 'v2'\""
         },
         branch = {
-            @Node(name = JSON_ARG, stringValue = @StringValue(StringValue.Type.GREEDY))
+            @Node(name = RAW_ARG, stringValue = @StringValue(StringValue.Type.GREEDY))
         }
     )
-    private static void set(final CommandContextWrapper wrapper) {
-        final String raw = wrapper.getString(JSON_ARG);
+    private void set(final CommandContextWrapper ctx, final String raw) {
         final JsonValue value = JsonObject.readHjson(raw, HjsonUtils.NO_CR);
         if (!value.isObject()) {
             throw cmdEx("Missing key. (e.g. key: {})", raw);
@@ -330,91 +263,62 @@ public class CommandCave {
         if (data.isEmpty()) {
             throw cmdEx("Nothing to load.");
         }
-        wrapper.sendMessage("Writing...");
+        ctx.sendMessage("Writing...");
         for (final JsonObject.Member member : data) {
-            MEMORY.set(member.getName(), member.getValue());
-            wrapper.sendMessage(" * {}", member.getName());
+            this.memory.set(member.getName(), member.getValue());
+            ctx.sendMessage(" * {}", member.getName());
         }
     }
 
     @ModCommand(
         name = "import",
-        arguments = "<exp>",
         description = "Evaluates a Cave import expression and loads any required variables.",
         branch = {
-            @Node(name = JSON_ARG, stringValue = @StringValue(StringValue.Type.GREEDY))
+            @Node(name = EXP_ARG, stringValue = @StringValue(StringValue.Type.GREEDY))
         }
     )
-    private static void importPreset(final CommandContextWrapper wrapper) {
-        final JsonObject data = getImports(wrapper.getString(JSON_ARG));
+    private void importPreset(final CommandContextWrapper ctx, final String exp) {
+        final JsonObject data = getImports(exp);
         if (data.isEmpty()) {
             throw cmdEx("Nothing to import.");
         }
-        wrapper.sendMessage("Loading...");
+        ctx.sendMessage("Loading...");
         for (final JsonObject.Member member : data) {
-            MEMORY.set(member.getName(), member.getValue());
-            wrapper.sendMessage(" * {}", member.getName());
+            this.memory.set(member.getName(), member.getValue());
+            ctx.sendMessage(" * {}", member.getName());
         }
     }
 
-    private static JsonObject getImports(final String exp) {
-        final JsonObject data = new JsonObject();
-        // Generate a faux preset to be expanded.
-        final JsonObject fauxPreset = new JsonObject()
-            .set(PresetExpander.IMPORTS, exp)
-            .set(PresetExpander.VARIABLES, data);
-        PresetExpander.expandInPlace(fauxPreset);
-        // The variables object was removed from the faux
-        // preset, but the implicit VANILLA is still there.
-        data.remove(PresetExpander.VANILLA);
-        return data;
-    }
-
     @ModCommand(
-        arguments = "<exp>",
         description = "Evaluates a JSON, Cave, or arithmetic expression.",
         branch = {
-            @Node(name = JSON_ARG, stringValue = @StringValue(StringValue.Type.GREEDY))
+            @Node(name = EXP_ARG, stringValue = @StringValue(StringValue.Type.GREEDY))
         }
     )
-    private static void eval(final CommandContextWrapper wrapper) {
-        final String exp = wrapper.getString(JSON_ARG);
+    private void eval(final CommandContextWrapper ctx, final String exp) {
         if (Calculator.isExpression(exp)) {
-            wrapper.sendMessage(String.valueOf(Calculator.evaluate(exp)));
+            ctx.sendMessage(String.valueOf(Calculator.evaluate(exp)));
             return;
         }
-        final JsonValue result = ReferenceHelper.trySubstitute(MEMORY, exp)
+        final JsonValue result = ReferenceHelper.trySubstitute(this.memory, exp)
             .orElseGet(() -> JsonObject.readHjson(exp));
-        wrapper.sendLintedMessage(doEvaluate(result));
-    }
-
-    private static String doEvaluate(final JsonValue value) {
-        if (value.isArray()) {
-            PresetExpander.calculateAll(value.asArray());
-        } else if (value.isObject()) {
-            PresetExpander.calculateAll(value.asObject());
-        } else if (value.isString() && Calculator.isExpression(value.asString())) {
-            return String.valueOf(Calculator.evaluate(value.asString()));
-        }
-        return value.toString(HjsonUtils.NO_CR);
+        ctx.sendLintedMessage(doEvaluate(result));
     }
 
     @ModCommand(
-        arguments = "[<key1>] [<key2>] [...]",
         description = "Prints JSON values and comments from working memory.",
         branch = {
             @Node(name = NAME_ARG, stringValue = @StringValue, intoList = @ListInfo, optional = true)
         }
     )
-    private static void print(final CommandContextWrapper wrapper) {
-        final List<String> keys = wrapper.getList(NAME_ARG, String.class);
+    private void print(final CommandContextWrapper ctx, final List<String> keys) {
         if (keys.isEmpty()) {
-            wrapper.sendLintedMessage(MEMORY.toString(HjsonUtils.NO_CR));
+            ctx.sendLintedMessage(this.memory.toString(HjsonUtils.NO_CR));
             return;
         }
         final JsonObject output = new JsonObject();
         for (final String key : keys) {
-            final Optional<Pair<String, JsonValue>> member = getMember(key);
+            final Optional<Pair<String, JsonValue>> member = this.getMember(key);
             if (member.isPresent()) {
                 final Pair<String, JsonValue> m = member.get();
                 output.add(m.getKey(), m.getValue());
@@ -424,100 +328,76 @@ public class CommandCave {
                 output.add(key, "undefined");
             }
         }
-        wrapper.sendLintedMessage(output.toString(HjsonUtils.NO_CR));
-    }
-
-    private static Optional<Pair<String, JsonValue>> getMember(String key) {
-        JsonValue value = MEMORY.get(key);
-        if (value == null) {
-            value = MEMORY.get(key += "()");
-            if (value == null) {
-                return empty();
-            }
-        }
-        return full(Pair.of(key, value));
+        ctx.sendLintedMessage(output.toString(HjsonUtils.NO_CR));
     }
 
     @ModCommand(
         description = "Displays all of the variables in memory."
     )
-    private static void dir(final CommandContextWrapper wrapper) {
-        if (MEMORY.isEmpty()) {
-            wrapper.sendMessage("[]");
+    private void dir(final CommandContextWrapper ctx) {
+        if (this.memory.isEmpty()) {
+            ctx.sendMessage("[]");
             return;
         }
         final StringBuilder sb = new StringBuilder("[");
-        for (final JsonObject.Member member : MEMORY) {
+        for (final JsonObject.Member member : this.memory) {
             sb.append(' ').append(member.getName()).append(',');
         }
-        wrapper.sendMessage(sb.append(" ]").toString());
+        ctx.sendMessage(sb.append(" ]").toString());
     }
 
     @ModCommand(
-        arguments = "<file>",
         description = "Saves the in-memory definitions to a file.",
         branch = {
             @Node(name = FILE_ARG, descriptor = ArgumentSuppliers.File.class)
         }
     )
-    private static void save(final CommandContextWrapper wrapper) throws IOException {
-        File output = wrapper.getFile(FILE_ARG);
-        if (ModFolders.CG_DIR.equals(output.getParentFile())) {
-            output = new File(ModFolders.GENERATED_DIR, output.getName());
+    private void save(final CommandContextWrapper ctx, File file) throws IOException {
+        if (ModFolders.CG_DIR.equals(file.getParentFile())) {
+            file = new File(ModFolders.GENERATED_DIR, file.getName());
         }
-        final File dir = output.getParentFile();
-        if (extension(output).isEmpty()) {
-            output = new File(dir, output.getName() + ".cave");
+        final File dir = file.getParentFile();
+        if (extension(file).isEmpty()) {
+            file = new File(dir, file.getName() + ".cave");
         }
-        FileIO.mkdirsOrThrow(output.getParentFile());
-        HjsonUtils.writeJson(MEMORY, output).throwIfErr();
-        wrapper.sendMessage("Successfully wrote {}/{}", dir.getName(), output.getName());
+        FileIO.mkdirsOrThrow(file.getParentFile());
+        HjsonUtils.writeJson(this.memory, file).throwIfErr();
+        ctx.sendMessage("Successfully wrote {}/{}", dir.getName(), file.getName());
     }
 
     @ModCommand(
         description = "Clears the in-memory definitions."
     )
-    private static void clear(final CommandContextWrapper wrapper) {
-        MEMORY.clear();
-        wrapper.sendMessage("JSON data were cleared from memory.");
+    private void clear(final CommandContextWrapper ctx) {
+        this.memory.clear();
+        ctx.sendMessage("JSON data were cleared from memory.");
     }
 
     @ModCommand(
         name = "debug",
-        arguments = "<features|carvers>",
+        arguments = "<features|carvers|structures>",
         description = "Displays a list of all current biome features or carvers.",
         linter = ResourceArrayLinter.class,
         branch = {
-            @Node(name = "features"),
-            @Node(name = FEATURE_ARG, type = FeatureArgument.class)
+            @Node(name = FEATURE_ARG, registry = Feature.class)
         }
     )
-    private static void debugFeatures(final CommandContextWrapper wrapper) {
-        final Feature<?> feature = wrapper.get(FEATURE_ARG, Feature.class);
-        final Object[] features = BuiltinRegistries.CONFIGURED_FEATURE.entrySet().stream()
-            .filter(e -> e.getValue().getFeatures().anyMatch(f -> feature.equals(f.feature)))
-            .map(e -> e.getKey().location())
-            .toArray();
-
-        wrapper.sendLintedMessage(Arrays.toString(features));
+    private void debugFeatures(final CommandContextWrapper ctx, final Feature<?> feature) {
+        ctx.sendLintedMessage(Arrays.toString(FeatureSupport.getIds(feature).toArray()));
     }
 
     @ModCommand(
-        name = "debug",
-        linter = ResourceArrayLinter.class,
-        branch = @Node(name = "carvers")
+        linter = ResourceArrayLinter.class
     )
-    private static void debugCarvers(final CommandContextWrapper wrapper) {
-        wrapper.sendLintedMessage(Arrays.toString(BuiltinRegistries.CONFIGURED_CARVER.keySet().toArray()));
+    private void debugCarvers(final CommandContextWrapper ctx) {
+        ctx.sendLintedMessage(Arrays.toString(BuiltinRegistries.CONFIGURED_CARVER.keySet().toArray()));
     }
 
     @ModCommand(
-        name = "debug",
-        linter = ResourceArrayLinter.class,
-        branch = @Node(name = "structures")
+        linter = ResourceArrayLinter.class
     )
-    private static void debugStructures(final CommandContextWrapper wrapper) {
-        wrapper.sendLintedMessage(Arrays.toString(BuiltinRegistries.CONFIGURED_STRUCTURE_FEATURE.keySet().toArray()));
+    private void debugStructures(final CommandContextWrapper ctx) {
+        ctx.sendLintedMessage(Arrays.toString(BuiltinRegistries.CONFIGURED_STRUCTURE_FEATURE.keySet().toArray()));
     }
 
     private static boolean isPresetEnabled(final File file) {
@@ -526,13 +406,12 @@ public class CommandCave {
             .orElse(true);
     }
 
-    private static MutableComponent getViewDirectoryText(File file) {
+    private static MutableComponent getViewDirectoryText(final File file) {
         return new TextComponent("\n / " + file.getName() + " ")
             .append(viewButton(file));
     }
 
     private static MutableComponent getListElementText(final File file, final boolean enabled) {
-        final String dir = getRelativePath(ModFolders.CG_DIR, file.getParentFile());
         final String filename = PathUtils.noExtension(file);
         final Style openButton = Style.EMPTY
             .withHoverEvent(displayOnHover(("Open " + file.getName() + ".")))
@@ -569,5 +448,60 @@ public class CommandCave {
         final Style style = EXPLORE_BUTTON_STYLE
             .withClickEvent(clickToRun("/cave list " + path));
         return new TextComponent("[VIEW]").setStyle(style);
+    }
+
+    private Optional<Pair<String, JsonValue>> getMember(String key) {
+        JsonValue value = this.memory.get(key);
+        if (value == null) {
+            value = this.memory.get(key += "()");
+            if (value == null) {
+                return empty();
+            }
+        }
+        return full(Pair.of(key, value));
+    }
+
+    private static String doEvaluate(final JsonValue value) {
+        if (value.isArray()) {
+            PresetExpander.calculateAll(value.asArray());
+        } else if (value.isObject()) {
+            PresetExpander.calculateAll(value.asObject());
+        } else if (value.isString() && Calculator.isExpression(value.asString())) {
+            return String.valueOf(Calculator.evaluate(value.asString()));
+        }
+        return value.toString(HjsonUtils.NO_CR);
+    }
+
+    private static JsonObject getImports(final String exp) {
+        final JsonObject data = new JsonObject();
+        // Generate a faux preset to be expanded.
+        final JsonObject fauxPreset = new JsonObject()
+                .set(PresetExpander.IMPORTS, exp)
+                .set(PresetExpander.VARIABLES, data);
+        PresetExpander.expandInPlace(fauxPreset);
+        // The variables object was removed from the faux
+        // preset, but the implicit VANILLA is still there.
+        data.remove(PresetExpander.VANILLA);
+        return data;
+    }
+
+    private static void writeExpanded(final CommandContextWrapper ctx, final JsonObject expanded) {
+        FileIO.mkdirsOrThrow(ModFolders.GENERATED_DIR);
+        final String name = ctx.getOptional(NAME_ARG, String.class)
+            .map(s -> !extension(s).isEmpty() ? s : s + ".cave")
+            .orElse(ctx.getFile(FILE_ARG).getName());
+        HjsonUtils.writeJson(expanded, new File(ModFolders.GENERATED_DIR, name))
+            .mapErr(CaveOutputException::new)
+            .throwIfErr();
+        ctx.sendMessage("Finished writing generated/{}.", name);
+    }
+
+    private static void markPresetEnabledOnDisk(final JsonObject preset, final File f, final boolean enabled) {
+        if (preset.has(ENABLED_KEY)) {
+            preset.set(ENABLED_KEY, enabled);
+        } else {
+            preset.add(ENABLED_KEY, enabled, "Whether this preset is enabled globally");
+        }
+        HjsonUtils.writeJson(preset, f).expect("Error writing to file: {}", f.getName());
     }
 }
