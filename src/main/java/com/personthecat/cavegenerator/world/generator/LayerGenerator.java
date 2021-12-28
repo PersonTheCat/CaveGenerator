@@ -34,7 +34,7 @@ public class LayerGenerator extends BasicGenerator {
                 final Biome b = ctx.world.getBiome(new BlockPos(actualX, 0, actualZ));
                 if (conditions.biomes.test(b) && conditions.region.GetBoolean(actualX, actualZ)) {
                     for (int y : conditions.getColumn(actualX, actualZ)) {
-                        if (BLK_STONE.equals(ctx.primer.getBlockState(x, y, z))) {
+                        if (cfg.matchers.contains(ctx.primer.getBlockState(x, y, z))) {
                             if (conditions.noise.GetBoolean(x, z)) {
                                 ctx.primer.setBlockState(x, y, z, cfg.state);
                             }

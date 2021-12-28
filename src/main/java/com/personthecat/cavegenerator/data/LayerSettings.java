@@ -9,7 +9,11 @@ import lombok.Builder.Default;
 import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.block.state.IBlockState;
+import net.minecraft.init.Blocks;
 import org.hjson.JsonObject;
+
+import java.util.Collections;
+import java.util.List;
 
 import static com.personthecat.cavegenerator.util.CommonMethods.full;
 
@@ -28,6 +32,9 @@ public class LayerSettings {
     /** Default spawn conditions for all layer generators. */
     private static final ConditionSettings DEFAULT_CONDITIONS = ConditionSettings.builder()
         .height(Range.of(0, 20)).ceiling(full(DEFAULT_NOISE)).build();
+
+    /** A list of blocks in which this feature can spawn. */
+    @Default List<IBlockState> matchers = Collections.singletonList(Blocks.STONE.getDefaultState());
 
     /** Conditions for these layers to spawn. */
     @Default ConditionSettings conditions = DEFAULT_CONDITIONS;
@@ -49,6 +56,7 @@ public class LayerSettings {
         return new HjsonMapper(json)
             .mapRequiredState(Fields.state, FEATURE_NAME, builder::state)
             .mapSelf(o -> builder.conditions(ConditionSettings.from(o, original.conditions)))
+            .mapStateList(Fields.matchers, builder::matchers)
             .release(builder::build);
     }
 

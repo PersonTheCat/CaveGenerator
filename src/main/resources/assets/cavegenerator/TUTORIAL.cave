@@ -871,6 +871,7 @@ layers: [
     # **This value may not be null**.
     state: null
     height: [ 0, 20 ]
+    matchers: [ "stone" ]
 
     ceiling: {
       scale: 0.5
