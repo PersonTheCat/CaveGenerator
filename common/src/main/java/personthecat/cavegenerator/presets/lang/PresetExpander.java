@@ -31,17 +31,17 @@ public class PresetExpander {
     /** The name of the file containing default settings. */
     public static final String DEFAULTS = "defaults.cave";
 
-    /** The name of the implicit variable holding all of the default settings. */
+    /** The name of the implicit variable holding the default settings. */
     public static final String VANILLA = "VANILLA";
 
     /** The keyword used for merging every field in an object. */
     public static final Pattern MERGE_ALL = Pattern.compile("all", Pattern.CASE_INSENSITIVE);
 
     /**
-     * Expands all of the variable definitions and imports into concrete data.
+     * Expands all variable definitions and imports into concrete data.
      *
-     * @param presets All of the main preset files mapped to their parent files.
-     * @param definitions A map of all JSON objects in the imports folder.
+     * @param presets The main preset files mapped to their parent files.
+     * @param definitions A map of all JSON objects in the <code>imports</code> folder.
      */
     public static void expandAll(final Map<File, JsonObject> presets, final Map<File, JsonObject> definitions) {
         // Automatically copy variables to the root level in imports.
@@ -50,19 +50,19 @@ public class PresetExpander {
         definitions.forEach((f, json) -> { if (!json.has(IMPORTS)) expand(json); });
         // Enable imports to uniquely import each other. This is checked later.
         definitions.forEach((f, json) -> copyImports(definitions, json, true));
-        // Expand any variables used inside of each import.
+        // Expand any variables used within each import.
         definitions.forEach((f, json) -> expand(json));
-        // Strip unused variables so they don't cause issues later.
+        // Strip unused variables, so they don't cause issues later.
         definitions.forEach((f, json) -> stripPrivateValues(definitions, json));
-        // Copy all of the imports directly into each json.
+        // Copy each import directly into each json.
         presets.forEach((f, json) -> copyImports(definitions, json, false));
         // Copy defaults.cave as VANILLA implicitly, if absent.
         copyVanilla(presets, definitions);
-        // Expand the variables now inside of each json.
+        // Expand the variables now within each json.
         presets.forEach((f, json) -> expandVariables(json));
         // Evaluate any arithmetic expressions in all presets.
         presets.forEach((f, json) -> calculateAll(json));
-        // Delete all of the now unneeded imports and variables.
+        // Delete the now unneeded imports and variables.
         presets.forEach((f, json) -> deleteUnused(json));
     }
 
@@ -97,7 +97,7 @@ public class PresetExpander {
     }
 
     /**
-     * Copies all of the variable definitions in <code>root.variables</code> to the
+     * Copies all variable definitions from <code>root.variables</code> to the
      * root level. This is used in import files to provide backward compatibility
      * with regular presets while also enabling them to read variables from the root
      * object.
@@ -115,15 +115,15 @@ public class PresetExpander {
     }
 
     /**
-     * Copies all of the imports declared in the current preset directly into it.
+     * Copies the imports declared in the current preset directly into it.
      * They will be stored inside of <code>root.variables</code>
      *
-     * @param definitions A map of all JSON objects in the imports folder.
+     * @param definitions A map of all JSON objects in the <code>imports</code> folder.
      * @param json The current JSON object being copied into.
      */
     private static void copyImports(final Map<File, JsonObject> definitions, JsonObject json, final boolean root) {
         final Set<JsonObject> imports = new HashSet<>();
-        // Copy by reference all of the required jsons into a set.
+        // Copy by reference each required json into a set.
         HjsonUtils.getArray(json, IMPORTS).ifPresent(arr -> {
             for (final JsonValue value : arr) {
                 if (!value.isString()) {
@@ -138,7 +138,7 @@ public class PresetExpander {
     }
 
     /**
-     * Expands all of the variables in this object, using itself as a source.
+     * Expands the variables in this object, using itself as a source.
      *
      * @param json The JSON object to be expanded.
      */
@@ -152,7 +152,7 @@ public class PresetExpander {
      * Removes all imported variables and functions from an import file so that
      * the file can be re-exported only with the symbols it started with.
      *
-     * @param definitions A map of all JSON objects in the imports folder.
+     * @param definitions A map of all JSON objects in the </code>imports</code> folder.
      * @param json The JSON object to be stripped.
      */
     private static void stripPrivateValues(final Map<File, JsonObject> definitions, final JsonObject json) {
@@ -189,8 +189,8 @@ public class PresetExpander {
      * other variable still needs to be imported manually. I may quickly remove this
      * implicit variable if that turns out to be the case.
      *
-     * @param presets All of the main preset files mapped to their parent files.
-     * @param definitions A map of all JSON objects in the imports folder.
+     * @param presets The main preset files mapped to their parent files.
+     * @param definitions A map of all JSON objects in the <code>imports</code> folder.
      */
     private static void copyVanilla(final Map<File, JsonObject> presets, final Map<File, JsonObject> definitions) {
         // This should not be possible anyway.
@@ -210,8 +210,8 @@ public class PresetExpander {
     /**
      * Retrieves the default values preset from this map, if present.
      *
-     * @param definitions A map of all JSON objects in the imports folder.
-     * @return defaults.cave, if present.
+     * @param definitions A map of all JSON objects in the <code>imports</code> folder.
+     * @return <code>defaults.cave</code>, if present.
      */
     private static Optional<JsonObject> getDefaults(final Map<File, JsonObject> definitions) {
         for (final Map.Entry<File, JsonObject> entry : definitions.entrySet()) {
@@ -223,7 +223,7 @@ public class PresetExpander {
     }
 
     /**
-     * Expands all of the variables inside of <code>root.variables</code>.
+     * Expands all variables inside of <code>root.variables</code>.
      *
      * @param json The JSON object to be expanded.
      */
@@ -317,7 +317,7 @@ public class PresetExpander {
      * </p>
      *
      * @param from The source where variables are defined.
-     * @param to The object to merge variables inside of.
+     * @param to The object to merge variables within.
      */
     private static void mergeObject(final JsonObject from, final JsonObject to) {
         final JsonObject clone = new JsonObject();
@@ -356,7 +356,7 @@ public class PresetExpander {
     }
 
     /**
-     * Applies all recursive overrides inside of a JSON object.
+     * Applies all recursive overrides within a JSON object.
      *
      * @param json The object which may contain recursive overrides.
      */
@@ -388,7 +388,7 @@ public class PresetExpander {
     }
 
     /**
-     * Applies all recursive overrides inside of a JSON array.
+     * Applies all recursive overrides to a JSON array.
      *
      * @param json The array which may contain recursive overrides.
      */
@@ -443,7 +443,7 @@ public class PresetExpander {
     }
 
     /**
-     * If required, merges all of the fields from <code>key</code>--if it is a reference
+     * If required, merges every field from <code>key</code>--if it is a reference
      * to an object--into <code>to</code>.
      *
      * @param from The source of the object to be merged.
@@ -473,7 +473,7 @@ public class PresetExpander {
      * Substitutes a series of references at the current level.
      *
      * @param from The source where variables are defined.
-     * @param to The object to write these variables inside of.
+     * @param to The object to write these variables into.
      * @param array The array of keys to look up.
      */
     private static void addAllReferences(final JsonObject from, final JsonObject to, final JsonArray array) {
@@ -488,7 +488,7 @@ public class PresetExpander {
     }
 
     /**
-     * Evaluates any arithmetic expressions inside of a JSON object.
+     * Evaluates any arithmetic expressions in a JSON object.
      *
      * <p>
      *  For example, given this object: <pre>
@@ -530,7 +530,7 @@ public class PresetExpander {
     }
 
     /**
-     * Evaluates any arithmetic expressions inside of a JSON array.
+     * Evaluates any arithmetic expressions in a JSON array.
      *
      * @param json An array which may or may not contain expressions.
      */
