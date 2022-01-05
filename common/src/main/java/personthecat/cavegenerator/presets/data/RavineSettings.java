@@ -1,10 +1,12 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
 import personthecat.catlib.data.Range;
 import personthecat.cavegenerator.model.ScalableFloat;
+import personthecat.cavegenerator.presets.validator.RavineValidator;
 import personthecat.cavegenerator.world.config.ConditionConfig;
 import personthecat.cavegenerator.world.config.DecoratorConfig;
 import personthecat.cavegenerator.world.config.RavineConfig;
@@ -77,7 +79,7 @@ public class RavineSettings {
         field(Codec.DOUBLE, Fields.cutoffStrength, s -> s.cutoffStrength, (s, c) -> s.cutoffStrength = c),
         field(Codec.BOOL, Fields.checkWater, s -> s.checkWater, (s, c) -> s.checkWater = c),
         field(DEFAULTED_WALLS, Fields.walls, s -> s.walls, (s, w) -> s.walls = w)
-    );
+    ).flatXmap(RavineValidator::apply, DataResult::success);
 
     public Codec<RavineSettings> codec() {
         return CODEC;

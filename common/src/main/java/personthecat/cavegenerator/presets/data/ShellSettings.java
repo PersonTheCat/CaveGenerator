@@ -1,6 +1,7 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.world.level.block.Blocks;
@@ -9,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.serialization.EasyStateCodec;
+import personthecat.cavegenerator.presets.validator.ShellValidator;
 import personthecat.cavegenerator.world.config.ShellConfig;
 import personthecat.fastnoise.FastNoise;
 
@@ -40,7 +42,7 @@ public class ShellSettings implements ConfigProvider<ShellSettings, ShellConfig>
         nullable(Codec.FLOAT, Fields.noiseThreshold, s -> s.noiseThreshold),
         nullable(easyList(Decorator.CODEC), Fields.decorators, s -> s.decorators),
         ShellSettings::new
-    );
+    ).flatXmap(ShellValidator::apply, DataResult::success);
 
     @Override
     public Codec<ShellSettings> codec() {

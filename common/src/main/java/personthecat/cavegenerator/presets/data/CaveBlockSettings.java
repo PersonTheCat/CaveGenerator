@@ -1,12 +1,14 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.serialization.EasyStateCodec;
+import personthecat.cavegenerator.presets.validator.CaveBlockValidator;
 import personthecat.cavegenerator.world.config.CaveBlockConfig;
 
 import java.util.List;
@@ -37,7 +39,7 @@ public class CaveBlockSettings implements ConfigProvider<CaveBlockSettings, Cave
         nullable(Range.CODEC, Fields.height, s -> s.height),
         nullable(DEFAULTED_NOISE, Fields.noise, s -> s.noise),
         CaveBlockSettings::new
-    );
+    ).flatXmap(CaveBlockValidator::apply, DataResult::success);
 
     @Override
     public Codec<CaveBlockSettings> codec() {

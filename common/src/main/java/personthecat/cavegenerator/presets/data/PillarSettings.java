@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.serialization.EasyStateCodec;
+import personthecat.cavegenerator.presets.validator.PillarValidator;
 import personthecat.cavegenerator.world.config.ConditionConfig;
 import personthecat.cavegenerator.world.config.PillarConfig;
 
@@ -45,7 +46,7 @@ public class PillarSettings implements ConfigProvider<PillarSettings, PillarConf
         field(Codec.INT, Fields.count, s -> s.count, (s, c) -> s.count = c),
         field(Range.CODEC, Fields.length, s -> s.length, (s, l) -> s.length = l),
         field(STAIR_CODEC, Fields.stairBlock, s -> s.stairBlock, (s, b) -> s.stairBlock = b)
-    );
+    ).flatXmap(PillarValidator::apply, DataResult::success);
 
     @Override
     public Codec<PillarSettings> codec() {

@@ -1,6 +1,7 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
@@ -9,6 +10,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import personthecat.catlib.data.InvertibleSet;
 import personthecat.catlib.serialization.EasyStateCodec;
 import personthecat.cavegenerator.model.WallDecoratorMap;
+import personthecat.cavegenerator.presets.validator.DecoratorValidator;
 import personthecat.cavegenerator.world.config.*;
 
 import javax.annotation.Nullable;
@@ -46,7 +48,7 @@ public class DecoratorSettings {
         field(ShellSettings.CODEC, Fields.shell, s -> s.shell),
         field(easyList(EasyStateCodec.INSTANCE), "<globals>", s -> s.globalDecorators),
         DecoratorSettings::new
-    );
+    ).flatXmap(DecoratorValidator::apply, DataResult::success);
 
     public DecoratorSettings withOverrides(final OverrideSettings o) {
         return builder()

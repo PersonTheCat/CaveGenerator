@@ -1,10 +1,12 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
 import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.Range;
+import personthecat.cavegenerator.presets.validator.BurrowValidator;
 import personthecat.cavegenerator.world.config.BurrowConfig;
 import personthecat.cavegenerator.world.config.ConditionConfig;
 import personthecat.cavegenerator.world.config.DecoratorConfig;
@@ -57,7 +59,7 @@ public class BurrowSettings implements ConfigProvider<BurrowSettings, BurrowConf
         field(Codec.FLOAT, Fields.wallDistance, s -> s.wallDistance, (s, d) -> s.wallDistance = d),
         field(Codec.FLOAT, Fields.wallExponent, s -> s.wallExponent, (s, e) -> s.wallExponent = e),
         field(TunnelSettings.CODEC, Fields.branches, s -> s.branches, (s, b) -> s.branches = b)
-    );
+    ).flatXmap(BurrowValidator::apply, DataResult::success);
 
     @Override
     public Codec<BurrowSettings> codec() {

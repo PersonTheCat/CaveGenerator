@@ -1,9 +1,11 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
 import org.jetbrains.annotations.Nullable;
+import personthecat.cavegenerator.presets.validator.RoomValidator;
 import personthecat.cavegenerator.world.config.DecoratorConfig;
 import personthecat.cavegenerator.world.config.RoomConfig;
 
@@ -27,7 +29,7 @@ public class RoomSettings {
         field(Codec.FLOAT, Fields.scale, s -> s.scale, (s, f) -> s.scale = f),
         field(Codec.FLOAT, Fields.stretch, s -> s.stretch, (s, f) -> s.stretch = f),
         field(Codec.DOUBLE, Fields.chance, s -> invert(s.chance), (s, c) -> s.chance = invert(c))
-    );
+    ).flatXmap(RoomValidator::apply, DataResult::success);
 
     public RoomSettings withOverrides(final OverrideSettings o) {
         if (this.decorators == null) return this;

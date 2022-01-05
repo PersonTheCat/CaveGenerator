@@ -1,6 +1,7 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.AllArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.world.level.block.Blocks;
@@ -9,6 +10,7 @@ import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.serialization.EasyStateCodec;
+import personthecat.cavegenerator.presets.validator.PondValidator;
 import personthecat.cavegenerator.world.config.PondConfig;
 import personthecat.fastnoise.FastNoise;
 
@@ -46,7 +48,7 @@ public class PondSettings {
         nullable(easySet(EasyStateCodec.INSTANCE), Fields.matchers, s -> s.matchers),
         nullable(DEFAULTED_NOISE, Fields.noise, s -> s.noise),
         PondSettings::new
-    );
+    ).flatXmap(PondValidator::apply, DataResult::success);
 
     public PondConfig compile(final Random rand, final long seed) {
         final double integrity = this.integrity != null ? this.integrity : 1.0;

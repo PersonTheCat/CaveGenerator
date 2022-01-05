@@ -1,11 +1,13 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
 import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.Range;
 import personthecat.cavegenerator.model.ScalableFloat;
+import personthecat.cavegenerator.presets.validator.TunnelValidator;
 import personthecat.cavegenerator.world.config.ConditionConfig;
 import personthecat.cavegenerator.world.config.DecoratorConfig;
 import personthecat.cavegenerator.world.config.RoomConfig;
@@ -91,7 +93,7 @@ public class TunnelSettings implements ConfigProvider<TunnelSettings, TunnelConf
         field(Codec.BOOL, Fields.reseedBranches, s -> s.reseedBranches, (s, b) -> s.reseedBranches = b),
         field(Codec.BOOL, Fields.hasBranches, s -> s.hasBranches, (s, b) -> s.hasBranches = b),
         field(Codec.BOOL, Fields.checkWater, s -> s.checkWater, (s, c) -> s.checkWater = c)
-    );
+    ).flatXmap(TunnelValidator::apply, DataResult::success);
 
     @Override
     public Codec<TunnelSettings> codec() {

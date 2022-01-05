@@ -1,6 +1,7 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.world.level.block.Block;
@@ -10,6 +11,7 @@ import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.InvertibleSet;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.serialization.EasyStateCodec;
+import personthecat.cavegenerator.presets.validator.ClusterValidator;
 import personthecat.cavegenerator.world.config.ClusterConfig;
 
 import java.util.*;
@@ -50,7 +52,7 @@ public class ClusterSettings implements ConfigProvider<ClusterSettings, ClusterC
         field(Range.CODEC, Fields.centerHeight, s -> s.centerHeight, (s, h) -> s.centerHeight = h),
         field(easySet(EasyStateCodec.INSTANCE), Fields.matchers, s -> s.matchers, (s, m) -> s.matchers = m),
         field(Codec.BOOL, Fields.spawnInAir, s -> s.spawnInAir, (s, a) -> s.spawnInAir = a)
-    );
+    ).flatXmap(ClusterValidator::apply, DataResult::success);
 
     @Override
     public Codec<ClusterSettings> codec() {

@@ -1,6 +1,7 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.world.level.block.Blocks;
@@ -9,6 +10,7 @@ import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.InvertibleSet;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.serialization.EasyStateCodec;
+import personthecat.cavegenerator.presets.validator.LayerValidator;
 import personthecat.cavegenerator.world.config.LayerConfig;
 
 import java.util.Collections;
@@ -38,7 +40,7 @@ public class LayerSettings implements ConfigProvider<LayerSettings, LayerConfig>
         extend(ConditionSettings.CODEC, Fields.conditions, d -> d.conditions, (d, c) -> d.conditions = c),
         required(EasyStateCodec.INSTANCE, Fields.state, d -> d.state, (d, s) -> d.state = s),
         field(easySet(EasyStateCodec.INSTANCE), Fields.matchers, s -> s.matchers, (s, m) -> s.matchers = m)
-    );
+    ).flatXmap(LayerValidator::apply, DataResult::success);
 
     public Codec<LayerSettings> codec() {
         return CODEC;

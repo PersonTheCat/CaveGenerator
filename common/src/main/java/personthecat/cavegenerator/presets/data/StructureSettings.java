@@ -1,6 +1,7 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.core.BlockPos;
@@ -13,6 +14,7 @@ import personthecat.catlib.serialization.EasyStateCodec;
 import personthecat.cavegenerator.model.BlockCheck;
 import personthecat.cavegenerator.model.Direction;
 import personthecat.cavegenerator.presets.reader.StructureSettingsReader;
+import personthecat.cavegenerator.presets.validator.StructureValidator;
 import personthecat.cavegenerator.world.config.ConditionConfig;
 import personthecat.cavegenerator.world.config.StructureConfig;
 
@@ -67,7 +69,7 @@ public class StructureSettings implements ConfigProvider<StructureSettings, Stru
         field(Codec.BOOL, Fields.debugSpawns, s -> s.debugSpawns, (s, d) -> s.debugSpawns = d),
         field(Codec.STRING, Fields.command, s -> s.command, (s, c) -> s.command = c),
         field(Codec.BOOL, Fields.rotateRandomly, s -> s.rotateRandomly, (s, r) -> s.rotateRandomly = r)
-    );
+    ).flatXmap(StructureValidator::apply, DataResult::success);
 
     public Codec<StructureSettings> codec() {
         return CODEC;

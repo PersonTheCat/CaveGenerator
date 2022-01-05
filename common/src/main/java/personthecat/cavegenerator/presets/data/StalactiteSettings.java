@@ -1,6 +1,7 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.world.level.block.Blocks;
@@ -8,6 +9,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import personthecat.catlib.data.InvertibleSet;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.serialization.EasyStateCodec;
+import personthecat.cavegenerator.presets.validator.StalactiteValidator;
 import personthecat.cavegenerator.world.config.ConditionConfig;
 import personthecat.cavegenerator.world.config.StalactiteConfig;
 
@@ -51,7 +53,7 @@ public class StalactiteSettings implements ConfigProvider<StalactiteSettings, St
         field(Codec.INT, Fields.space, s -> s.space, (s, p) -> s.space = p),
         field(Codec.BOOL, Fields.symmetrical, s -> s.symmetrical, (s, m) -> s.symmetrical = m),
         field(easySet(EasyStateCodec.INSTANCE), Fields.matchers, s -> s.matchers, (s, m) -> s.matchers = m)
-    );
+    ).flatXmap(StalactiteValidator::apply, DataResult::success);
 
     @Override
     public Codec<StalactiteSettings> codec() {

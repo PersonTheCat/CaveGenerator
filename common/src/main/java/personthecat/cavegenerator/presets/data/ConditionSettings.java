@@ -1,11 +1,13 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
 import personthecat.catlib.data.BiomePredicate;
 import personthecat.catlib.data.DimensionPredicate;
 import personthecat.catlib.data.Range;
+import personthecat.cavegenerator.presets.validator.ConditionValidator;
 import personthecat.cavegenerator.world.config.ConditionConfig;
 import personthecat.fastnoise.FastNoise;
 
@@ -38,7 +40,7 @@ public class ConditionSettings implements ConfigProvider<ConditionSettings, Cond
         field(NoiseSettings.REGION, Fields.region, c -> c.region),
         field(NoiseSettings.NOISE, Fields.noise, c -> c.noise),
         ConditionSettings::new
-    );
+    ).flatXmap(ConditionValidator::apply, DataResult::success);
 
     @Override
     public Codec<ConditionSettings> codec() {

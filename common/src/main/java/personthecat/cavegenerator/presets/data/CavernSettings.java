@@ -1,10 +1,12 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
 import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.Range;
+import personthecat.cavegenerator.presets.validator.CavernValidator;
 import personthecat.cavegenerator.world.config.CavernConfig;
 
 import java.util.Collections;
@@ -62,7 +64,7 @@ public class CavernSettings implements ConfigProvider<CavernSettings, CavernConf
         field(Codec.BOOL, Fields.wallInterpolation, s -> s.wallInterpolation, (s, i) -> s.wallInterpolation = i),
         field(easyList(NoiseSettings.NOISE), Fields.generators, s -> s.generators, (s, g) -> s.generators = g),
         field(TunnelSettings.CODEC, Fields.branches, s -> s.branches, (s, b) -> s.branches = b)
-    );
+    ).flatXmap(CavernValidator::apply, DataResult::success);
 
     @Override
     public Codec<CavernSettings> codec() {
