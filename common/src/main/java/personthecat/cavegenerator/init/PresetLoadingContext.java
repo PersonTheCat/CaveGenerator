@@ -145,6 +145,10 @@ public class PresetLoadingContext {
             if (Cfg.CAVE_EL.getAsBoolean()) {
                 CaveLangExtension.expandAll(this.rawPresets, this.importPresets);
             }
+            if (Cfg.DEEP_TRANSFORMS.getAsBoolean()) {
+                this.rawPresets.forEach((file, json) ->
+                    PresetCompat.transformOnly(json));
+            }
             this.rawPresets.forEach((file, json) -> json.setAllAccessed(false));
             return extractInner(this.rawPresets);
         }

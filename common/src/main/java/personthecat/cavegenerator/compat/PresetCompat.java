@@ -40,7 +40,7 @@ public class PresetCompat {
         }
     }
 
-    public static void transformPreset(final JsonObject preset) {
+    public static void transformOnly(final JsonObject preset) {
         PRESET_TRANSFORMER.updateAll(preset);
     }
 

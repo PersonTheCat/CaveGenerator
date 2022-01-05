@@ -22,7 +22,7 @@ public class Cfg {
     public static final Supplier<List<String>> DISABLED_FEATURES = () -> DEFAULT_DISABLED_FEATURES;
     public static final Supplier<List<String>> DISABLED_STRUCTURES = Collections::emptyList;
     public static final Supplier<PresetUpdatePreference> UPDATE_PREFERENCE = () -> PresetUpdatePreference.ALWAYS;
-    public static final BooleanSupplier THOROUGH_TRANSFORMS = () -> true;
+    public static final BooleanSupplier DEEP_TRANSFORMS = () -> true;
     public static final BooleanSupplier FALLBACK_CARVERS = () -> false;
     public static final BooleanSupplier FALLBACK_FEATURES = () -> false;
     public static final BooleanSupplier ENABLE_OTHER_GENERATORS = () -> false;
