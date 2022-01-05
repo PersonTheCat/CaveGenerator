@@ -1,145 +1,152 @@
 package personthecat.cavegenerator.presets.data;
 
-import lombok.AccessLevel;
+import com.mojang.serialization.Codec;
 import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import org.hjson.JsonObject;
+import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.Range;
-import personthecat.catlib.util.HjsonMapper;
-import personthecat.cavegenerator.presets.CavePreset;
 import personthecat.cavegenerator.model.ScalableFloat;
+import personthecat.cavegenerator.world.config.ConditionConfig;
+import personthecat.cavegenerator.world.config.DecoratorConfig;
+import personthecat.cavegenerator.world.config.RoomConfig;
+import personthecat.cavegenerator.world.config.TunnelConfig;
 
-import java.util.Optional;
+import java.util.Random;
 
-import static java.util.Optional.empty;
-import static personthecat.catlib.util.Shorthand.full;
+import static personthecat.catlib.serialization.CodecUtils.dynamic;
+import static personthecat.catlib.serialization.DynamicField.extend;
+import static personthecat.catlib.serialization.DynamicField.field;
+import static personthecat.catlib.serialization.DynamicField.recursive;
 import static personthecat.catlib.util.Shorthand.invert;
 
 @Builder
 @FieldNameConstants
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public class TunnelSettings {
+public class TunnelSettings implements ConfigProvider<TunnelSettings, TunnelConfig> {
+    @Nullable public final ConditionSettings conditions;
+    @Nullable public final DecoratorSettings decorators;
+    @Nullable public final Range originHeight;
+    @Nullable public final Boolean noiseYReduction;
+    @Nullable public final Boolean resizeBranches;
+    @Nullable public final TunnelSettings branches;
+    @Nullable public final RoomSettings rooms;
+    @Nullable public final ScalableFloat dYaw;
+    @Nullable public final ScalableFloat dPitch;
+    @Nullable public final ScalableFloat scale;
+    @Nullable public final ScalableFloat stretch;
+    @Nullable public final ScalableFloat yaw;
+    @Nullable public final ScalableFloat pitch;
+    @Nullable public final Integer systemChance;
+    @Nullable public final Integer chance;
+    @Nullable public final Integer systemDensity;
+    @Nullable public final Integer distance;
+    @Nullable public final Integer count;
+    @Nullable public final Integer resolution;
+    @Nullable public final Long seed;
+    @Nullable public final Boolean reseedBranches;
+    @Nullable public final Boolean hasBranches;
+    @Nullable public final Boolean checkWater;
 
-    /** Default spawn conditions for all tunnel generators. */
-    private static final ConditionSettings DEFAULT_CONDITIONS = ConditionSettings.builder()
-        .height(Range.of(8, 128)).build();
+    private static final ConditionSettings DEFAULT_CONDITIONS =
+        ConditionSettings.builder().height(Range.of(8, 128)).build();
 
-    /** Default decorator settings for all tunnel generators. */
-    private static final DecoratorSettings DEFAULT_DECORATORS = DecoratorSettings.DEFAULTS;
+    public static final TunnelSettings EMPTY = 
+        new TunnelSettings(null, null, null, null, null, null, null, null, null, null, 
+        null, null, null, null, null, null, null, null, null, null, null, null, null);
 
-    /** Conditions for these tunnels to spawn. */
-    @Default ConditionSettings conditions = DEFAULT_CONDITIONS;
+    private static final ScalableFloat DEFAULT_D_YAW = new ScalableFloat(0.0F, 0.0F, 0.75F, 4.0F, 1.0F);
+    private static final ScalableFloat DEFAULT_D_PITCH = new ScalableFloat(0.0f, 0.0f, 0.9f, 2.0F, 1.0F);
+    private static final ScalableFloat DEFAULT_SCALE = new ScalableFloat(0.0F, 1.0F, 1.0F, 0.0F, 1.0F);
+    private static final ScalableFloat DEFAULT_STRETCH = new ScalableFloat(1.0F, 1.0F, 1.0F, 0.0F, 1.0F);
+    private static final ScalableFloat DEFAULT_YAW = new ScalableFloat(0.0F, 1.0F, 1.0F, 0.0F, 1.0F);
+    private static final ScalableFloat DEFAULT_PITCH = new ScalableFloat(0.0F, 0.25F, 1.0F, 0.0F, 1.0F);
 
-    /** Cave blocks and wall decorators applied to these tunnels. */
-    @Default DecoratorSettings decorators = DEFAULT_DECORATORS;
+    private static final Codec<ScalableFloat> D_YAW_CODEC = ScalableFloat.defaultedCodec(DEFAULT_D_YAW);
+    private static final Codec<ScalableFloat> D_PITCH_CODEC = ScalableFloat.defaultedCodec(DEFAULT_D_PITCH);
+    private static final Codec<ScalableFloat> SCALE_CODEC = ScalableFloat.defaultedCodec(DEFAULT_SCALE);
+    private static final Codec<ScalableFloat> STRETCH_CODEC = ScalableFloat.defaultedCodec(DEFAULT_STRETCH);
+    private static final Codec<ScalableFloat> YAW_CODEC = ScalableFloat.defaultedCodec(DEFAULT_YAW);
+    private static final Codec<ScalableFloat> PITCH_CODEC = ScalableFloat.defaultedCodec(DEFAULT_PITCH);
 
-    /** The height at which any tunnel system can originate. */
-    @Default Range originHeight = Range.of(8, 128);
+    public static final Codec<TunnelSettings> CODEC = dynamic(TunnelSettings::builder, TunnelSettingsBuilder::build).create(
+        extend(ConditionSettings.CODEC, Fields.conditions, s -> s.conditions, (s, c) -> s.conditions = c),
+        extend(DecoratorSettings.CODEC, Fields.decorators, s -> s.decorators, (s, c) -> s.decorators = c),
+        field(Range.CODEC, Fields.originHeight, s -> s.originHeight, (s, h) -> s.originHeight = h),
+        field(Codec.BOOL, Fields.noiseYReduction, s -> s.noiseYReduction, (s, r) -> s.noiseYReduction = r),
+        field(Codec.BOOL, Fields.resizeBranches, s -> s.resizeBranches, (s, r) -> s.resizeBranches = r),
+        recursive(Fields.branches, s -> s.branches, (s, b) -> s.branches = b),
+        field(RoomSettings.CODEC, Fields.rooms, s -> s.rooms, (s, r) -> s.rooms = r),
+        field(D_YAW_CODEC, Fields.dYaw, s -> s.dYaw, (s, f) -> s.dYaw = f),
+        field(D_PITCH_CODEC, Fields.dPitch, s -> s.dPitch, (s, f) -> s.dPitch = f),
+        field(SCALE_CODEC, Fields.scale, s -> s.scale, (s, f) -> s.scale = f),
+        field(STRETCH_CODEC, Fields.stretch, s -> s.stretch, (s, f) -> s.stretch = f),
+        field(YAW_CODEC, Fields.yaw, s -> s.yaw, (s, f) -> s.yaw = f),
+        field(PITCH_CODEC, Fields.pitch, s -> s.pitch, (s, f) -> s.pitch = f),
+        field(Codec.DOUBLE, Fields.systemChance, s -> invert(s.systemChance), (s, c) -> s.systemChance = invert(c)),
+        field(Codec.DOUBLE, Fields.chance, s -> invert(s.chance), (s, c) -> s.chance = invert(c)),
+        field(Codec.INT, Fields.systemDensity, s -> s.systemDensity, (s, d) -> s.systemDensity = d),
+        field(Codec.INT, Fields.distance, s -> s.distance, (s, d) -> s.distance = d),
+        field(Codec.INT, Fields.count, s -> s.count, (s, c) -> s.count = c),
+        field(Codec.INT, Fields.resolution, s -> s.resolution, (s, r) -> s.resolution = r),
+        field(Codec.LONG, Fields.seed, s -> s.seed, (s, l) -> s.seed = l),
+        field(Codec.BOOL, Fields.reseedBranches, s -> s.reseedBranches, (s, b) -> s.reseedBranches = b),
+        field(Codec.BOOL, Fields.hasBranches, s -> s.hasBranches, (s, b) -> s.hasBranches = b),
+        field(Codec.BOOL, Fields.checkWater, s -> s.checkWater, (s, c) -> s.checkWater = c)
+    );
 
-    /** Controls a vanilla function for reducing vertical noise. */
-    @Default boolean noiseYReduction = true;
-
-    /** Controls whether tunnels shrink when branching apart, as in vanilla. */
-    @Default boolean resizeBranches = true;
-
-    /** An optional different kind of tunnel to spawn when these tunnels branch apart. */
-    @Default Optional<TunnelSettings> branches = empty();
-
-    /** Settings for how rooms should spawn at tunnel system origins. */
-    @Default Optional<RoomSettings> rooms = empty();
-
-    /** Horizontal rotation. */
-    @Default ScalableFloat dYaw = new ScalableFloat(0.0F, 0.0F, 0.75F, 4.0F, 1.0F);
-
-    /** Vertical rotation. */
-    @Default ScalableFloat dPitch = new ScalableFloat(0.0f, 0.0f, 0.9f, 2.0F, 1.0F);
-
-    /** Overall scale. */
-    @Default ScalableFloat scale = new ScalableFloat(0.0F, 1.0F, 1.0F, 0.0F, 1.0F);
-
-    /** Vertical scale ratio. */
-    @Default ScalableFloat stretch = new ScalableFloat(1.0F, 1.0F, 1.0F, 0.0F, 1.0F);
-
-    /** Horizontal angle in radians. */
-    @Default ScalableFloat yaw = new ScalableFloat(0.0F, 1.0F, 1.0F, 0.0F, 1.0F);
-
-    /** Vertical angle in radians. */
-    @Default ScalableFloat pitch = new ScalableFloat(0.0F, 0.25F, 1.0F, 0.0F, 1.0F);
-
-    /** The chance that this tunnel will spawn as part of a system. */
-    @Default int systemChance = 4;
-
-    /** The chance will spawn successfully. Lower value distance between tunnel systems. */
-    @Default int chance = 7;
-
-    /** The number of branches spawned when a tunnel system is created. */
-    @Default int systemDensity = 4;
-
-    /** The expected distance of the first cave generated in this system. 0 -> (132 to 136)? */
-    @Default int distance = 0;
-
-    /** The number of tunnel origins per chunk. */
-    @Default int count = 15;
-
-    /** The 1/x chance of tunnel segments being skipped. */
-    @Default int resolution = 4;
-
-    /** A constant seed to use for these tunnels. */
-    @Default Optional<Long> seed = empty();
-
-    /** Whether to generate a fresh seed for tunnel branches. */
-    @Default boolean reseedBranches = true;
-
-    /** Whether this feature should have any branches at all. */
-    @Default boolean hasBranches = true;
-
-    /** Whether to test for water before spawning to avoid water walls. */
-    @Default boolean checkWater = true;
-
-    public static TunnelSettings from(final JsonObject json, final OverrideSettings overrides) {
-        final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();
-        final DecoratorSettings decorators = overrides.apply(DEFAULT_DECORATORS.toBuilder()).build();
-        final TunnelSettingsBuilder builder = overrides.apply(builder());
-        return copyInto(json, builder.conditions(conditions).decorators(decorators));
+    @Override
+    public Codec<TunnelSettings> codec() {
+        return CODEC;
     }
 
-    public static TunnelSettings from(final JsonObject json, final ConditionSettings conditions, final DecoratorSettings decorators) {
-        return copyInto(json, builder().conditions(conditions).decorators(decorators));
+    @Override
+    public TunnelSettings withOverrides(final OverrideSettings o) {
+        final ConditionSettings conditions = this.conditions != null
+            ? this.conditions : ConditionSettings.EMPTY;
+        final DecoratorSettings decorators = this.decorators != null
+            ? this.decorators : DecoratorSettings.EMPTY;
+
+        return builder()
+            .conditions(conditions.withOverrides(o))
+            .decorators(decorators.withOverrides(o))
+            .branches(this.branches != null ? this.branches : o.branches)
+            .rooms(this.rooms != null ? this.rooms : o.rooms)
+            .build();
     }
 
-    public static TunnelSettings from(final JsonObject json) {
-        return copyInto(json, builder());
-    }
+    @Override
+    public TunnelConfig compile(final Random rand, final long seed) {
+        final ConditionSettings conditionCfg = this.conditions != null
+            ? this.conditions : ConditionSettings.EMPTY;
+        final DecoratorSettings decoratorCfg = this.decorators != null
+            ? this.decorators : DecoratorSettings.EMPTY;
+        final Range originHeight = this.originHeight != null ? this.originHeight : Range.of(0, 128);
+        final boolean noiseYReduction = this.noiseYReduction != null ? this.noiseYReduction : true;
+        final boolean resizeBranches = this.resizeBranches != null ? this.resizeBranches : true;
+        final ScalableFloat dYaw = this.dYaw != null ? this.dYaw : DEFAULT_D_YAW;
+        final ScalableFloat dPitch = this.dPitch != null ? this.dPitch : DEFAULT_D_PITCH;
+        final ScalableFloat scale = this.scale != null ? this.scale : DEFAULT_SCALE;
+        final ScalableFloat stretch = this.stretch != null ? this.stretch : DEFAULT_STRETCH;
+        final ScalableFloat yaw = this.yaw != null ? this.yaw : DEFAULT_YAW;
+        final ScalableFloat pitch = this.pitch != null ? this.pitch : DEFAULT_PITCH;
+        final int systemChance = this.systemChance != null ? this.systemChance : 4;
+        final int chance = this.chance != null ? this.chance : 7;
+        final int systemDensity = this.systemDensity != null ? this.systemDensity : 4;
+        final int distance = this.distance != null ? this.distance : 0;
+        final int count = this.count != null ? this.count : 15;
+        final int resolution = this.resolution != null ? this.resolution : 4;
+        final boolean reseedBranches = this.reseedBranches != null ? this.reseedBranches : true;
+        final boolean hasBranches = this.hasBranches != null ? this.hasBranches : true;
+        final boolean checkWater = this.checkWater != null ? this.checkWater : true;
 
-    private static TunnelSettings copyInto(final JsonObject json, final TunnelSettingsBuilder builder) {
-        final TunnelSettings original = builder.build();
-        return new HjsonMapper<>(CavePreset.Fields.tunnels, TunnelSettingsBuilder::build)
-            .mapSelf((b, o) -> b.conditions(ConditionSettings.from(o, original.conditions)))
-            .mapSelf((b, o) -> b.decorators(DecoratorSettings.from(o, original.decorators)))
-            .mapRangeOrTry(Fields.originHeight, ConditionSettings.Fields.height, TunnelSettingsBuilder::originHeight)
-            .mapBool(Fields.noiseYReduction, TunnelSettingsBuilder::noiseYReduction)
-            .mapBool(Fields.resizeBranches, TunnelSettingsBuilder::resizeBranches)
-            .mapObject(Fields.branches, (b, o) -> b.branches(full(from(o))))
-            .mapObject(Fields.rooms, (b, o) -> b.rooms(full(RoomSettings.from(o))))
-            .mapGeneric(Fields.dYaw, v -> ScalableFloat.fromValue(v, original.dYaw), TunnelSettingsBuilder::dYaw)
-            .mapGeneric(Fields.dPitch, v -> ScalableFloat.fromValue(v, original.dPitch), TunnelSettingsBuilder::dPitch)
-            .mapGeneric(Fields.scale, v -> ScalableFloat.fromValue(v, original.scale), TunnelSettingsBuilder::scale)
-            .mapGeneric(Fields.stretch, v -> ScalableFloat.fromValue(v, original.stretch), TunnelSettingsBuilder::stretch)
-            .mapGeneric(Fields.yaw, v -> ScalableFloat.fromValue(v, original.yaw), TunnelSettingsBuilder::yaw)
-            .mapGeneric(Fields.pitch, v -> ScalableFloat.fromValue(v, original.pitch), TunnelSettingsBuilder::pitch)
-            .mapFloat(Fields.systemChance, (b, f) -> b.systemChance(invert(f)))
-            .mapFloat(Fields.chance, (b, f) -> b.chance(invert(f)))
-            .mapInt(Fields.systemDensity, TunnelSettingsBuilder::systemDensity)
-            .mapInt(Fields.distance, TunnelSettingsBuilder::distance)
-            .mapInt(Fields.count, TunnelSettingsBuilder::count)
-            .mapInt(Fields.resolution, TunnelSettingsBuilder::resolution)
-            .mapInt(Fields.seed, (b, i) -> b.seed(full((long) i)))
-            .mapBool(Fields.reseedBranches, TunnelSettingsBuilder::reseedBranches)
-            .mapBool(Fields.hasBranches, TunnelSettingsBuilder::hasBranches)
-            .mapBool(Fields.checkWater, TunnelSettingsBuilder::checkWater)
-            .create(builder, json);
+        final ConditionConfig conditions = conditionCfg.withDefaults(DEFAULT_CONDITIONS).compile(rand, seed);
+        final DecoratorConfig decorators = decoratorCfg.compile(rand, seed);
+        final TunnelConfig branches = this.branches != null
+            ? this.branches.compile(rand, seed) : null;
+        final RoomConfig rooms = this.rooms != null
+            ? this.rooms.compile(rand, seed) : null;
+
+        return new TunnelConfig(conditions, decorators, originHeight, noiseYReduction, resizeBranches,
+            branches, rooms, dYaw, dPitch, scale, stretch, yaw, pitch, systemChance, chance, systemDensity,
+            distance, count, resolution, seed, reseedBranches, hasBranches, checkWater);
     }
 }

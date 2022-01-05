@@ -7,20 +7,20 @@ import org.apache.commons.lang3.tuple.Pair;
 import personthecat.catlib.data.MultiValueIdentityMap;
 import personthecat.catlib.data.MultiValueMap;
 import personthecat.catlib.util.RandomChunkSelector;
-import personthecat.cavegenerator.model.Conditions;
-import personthecat.cavegenerator.presets.data.ClusterSettings;
 import personthecat.cavegenerator.util.XoRoShiRo;
+import personthecat.cavegenerator.world.config.ClusterConfig;
+import personthecat.cavegenerator.world.config.ConditionConfig;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
-public class ClusterGenerator extends ListGenerator<ClusterSettings> {
+public class ClusterGenerator extends ListGenerator<ClusterConfig> {
 
-    private final MultiValueMap<Conditions, ClusterInfo> clusterMap = new MultiValueIdentityMap<>();
+    private final MultiValueMap<ConditionConfig, ClusterInfo> clusterMap = new MultiValueIdentityMap<>();
     private final RandomChunkSelector selector;
 
-    public ClusterGenerator(List<ClusterSettings> cfg, final Random rand, final long seed) {
+    public ClusterGenerator(List<ClusterConfig> cfg, final Random rand, final long seed) {
         super(cfg, c -> c.conditions, rand, seed);
         this.selector = new RandomChunkSelector(seed);
     }
@@ -90,8 +90,8 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
     }
 
     private void spawnColumn(PrimerContext ctx, int x, int z, int aX, int aZ) {
-        for (final Map.Entry<Conditions, List<ClusterInfo>> entry : clusterMap.entrySet()) {
-            final Conditions conditions = entry.getKey();
+        for (final Map.Entry<ConditionConfig, List<ClusterInfo>> entry : clusterMap.entrySet()) {
+            final ConditionConfig conditions = entry.getKey();
 
             for (int y : conditions.getColumn(aX, aZ)) {
                 if (conditions.noise.getBoolean(aX, y, aZ)) {
@@ -129,7 +129,7 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
     private static class ClusterInfo {
 
         /** A reference to the original cluster to be spawned. */
-        final ClusterSettings cluster;
+        final ClusterConfig cluster;
         final BlockState state;
         final int id;
 
@@ -144,7 +144,7 @@ public class ClusterGenerator extends ListGenerator<ClusterSettings> {
         final int radY2;
         final int radZ2;
 
-        ClusterInfo(ClusterSettings cluster, BlockState state, int id, BlockPos center, int radX, int radY, int radZ) {
+        ClusterInfo(ClusterConfig cluster, BlockState state, int id, BlockPos center, int radX, int radY, int radZ) {
             this.cluster = cluster;
             this.state = state;
             this.id = id;

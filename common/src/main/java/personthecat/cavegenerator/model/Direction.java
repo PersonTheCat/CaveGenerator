@@ -1,10 +1,11 @@
 package personthecat.cavegenerator.model;
 
-import lombok.AccessLevel;
+import com.mojang.serialization.Codec;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
-import lombok.experimental.FieldDefaults;
 import java.util.List;
+
+import static personthecat.catlib.serialization.CodecUtils.ofEnum;
 
 public enum Direction {
     UP,
@@ -16,18 +17,17 @@ public enum Direction {
     SIDE,
     ALL;
 
-    /** A DTO counterpart to using Direction arrays.*/
+    public static final Codec<Direction> CODEC = ofEnum(Direction.class);
+
     @NoArgsConstructor(force = true)
     @AllArgsConstructor
-    @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
     public static class Container {
+
+        public final boolean up, down, side, north, south, east, west;
 
         private static final Container ALL_DIRECTIONS =
             new Container(true, true, true, true, true, true, true);
 
-        boolean up, down, side, north, south, east, west;
-
-        /** Converts a direction array into a Direction.Container */
         public static Container from(final List<Direction> directions) {
             // Empty array -> all == true
             if (directions.isEmpty()) {

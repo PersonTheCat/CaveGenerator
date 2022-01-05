@@ -1,184 +1,208 @@
 package personthecat.cavegenerator.presets.data;
 
-import lombok.AccessLevel;
+import com.mojang.serialization.Codec;
 import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import org.hjson.JsonObject;
+import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.FloatRange;
 import personthecat.catlib.data.Range;
-import personthecat.catlib.util.HjsonMapper;
+import personthecat.catlib.serialization.DynamicCodec;
+import personthecat.catlib.serialization.NoiseCodecs;
 import personthecat.cavegenerator.noise.CachedNoiseGenerator;
 import personthecat.cavegenerator.noise.DummyGenerator;
 import personthecat.fastnoise.FastNoise;
 import personthecat.fastnoise.data.*;
 import personthecat.fastnoise.generator.PerlinNoise;
 
-import java.util.Optional;
 import java.util.Random;
 
-import static java.util.Optional.empty;
-import static personthecat.catlib.util.Shorthand.full;
+import static personthecat.catlib.serialization.CodecUtils.dynamic;
+import static personthecat.catlib.serialization.DynamicField.field;
 
-/**
- * This is a variant of {@link NoiseRegionSettings} which contains additional fields
- * specifically relevant to 3-dimensional noise generation. I am looking into how
- * I can remove one or both of them, as they are both almost completely redundant.
- */
 @FieldNameConstants
 @Builder(toBuilder = true)
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class NoiseSettings {
+    @Nullable public final Integer seed;
+    @Nullable public final Float frequencyX;
+    @Nullable public final Float frequencyY;
+    @Nullable public final Float frequencyZ;
+    @Nullable public final Float frequency;
+    @Nullable public final FloatRange threshold;
+    @Nullable public final Float lacunarity;
+    @Nullable public final Float gain;
+    @Nullable public final Float warpAmplitude;
+    @Nullable public final Float warpFrequency;
+    @Nullable public final Float jitterX;
+    @Nullable public final Float jitterY;
+    @Nullable public final Float jitterZ;
+    @Nullable public final Float jitter;
+    @Nullable public final Integer octaves;
+    @Nullable public final Integer offset;
+    @Nullable public final Range range;
+    @Nullable public final Boolean invert;
+    @Nullable public final Boolean cache;
+    @Nullable public final Boolean dummy;
+    @Nullable public final Float dummyOutput;
+    @Nullable public final Float pingPongStrength;
+    @Nullable public final NoiseType type;
+    @Nullable public final FractalType fractal;
+    @Nullable public final DomainWarpType warp;
+    @Nullable public final CellularDistanceType distFunc;
+    @Nullable public final CellularReturnType returnType;
+    @Nullable public final NoiseType cellularLookup;
 
-    /** A seed used for <b>producing</b> new seeds from a given value. */
-    @Default Optional<Integer> seed = empty();
+    public static final DynamicCodec<NoiseSettingsBuilder, NoiseSettings, NoiseSettings> COMMON_CODEC =
+        dynamic(NoiseSettingsBuilder::new, NoiseSettingsBuilder::build).create(
+            field(Codec.INT, Fields.seed, s -> s.seed, (s, i) -> s.seed = i),
+            field(Codec.FLOAT, Fields.frequencyX, s -> s.frequencyX, (s, f) -> s.frequencyX = f),
+            field(Codec.FLOAT, Fields.frequencyZ, s -> s.frequencyZ, (s, f) -> s.frequencyZ = f),
+            field(Codec.FLOAT, Fields.frequency, s -> s.frequency, (s, f) -> s.frequency = f),
+            field(Codec.FLOAT, Fields.lacunarity, s -> s.lacunarity, (s, l) -> s.lacunarity = l),
+            field(Codec.FLOAT, Fields.gain, s -> s.gain, (s, g) -> s.gain = g),
+            field(Codec.FLOAT, Fields.warpAmplitude, s -> s.warpAmplitude, (s, a) -> s.warpAmplitude = a),
+            field(Codec.FLOAT, Fields.warpFrequency, s -> s.warpFrequency, (s, f) -> s.warpFrequency = f),
+            field(Codec.FLOAT, Fields.jitterX, s -> s.jitterX, (s, j) -> s.jitterX = j),
+            field(Codec.FLOAT, Fields.jitterZ, s -> s.jitterZ, (s, j) -> s.jitterZ = j),
+            field(Codec.FLOAT, Fields.jitter, s -> s.jitter, (s, j) -> s.jitter = j),
+            field(Codec.INT, Fields.octaves, s -> s.octaves, (s, o) -> s.octaves = o),
+            field(Codec.BOOL, Fields.invert, s -> s.invert, (s, i) -> s.invert = i),
+            field(Codec.BOOL, Fields.cache, s -> s.cache, (s, c) -> s.cache = c),
+            field(Codec.BOOL, Fields.dummy, s -> s.dummy, (s, d) -> s.dummy = d),
+            field(Codec.FLOAT, Fields.dummyOutput, s -> s.dummyOutput, (s, d) -> s.dummyOutput = d),
+            field(Codec.FLOAT, Fields.pingPongStrength, s -> s.pingPongStrength, (s, p) -> s.pingPongStrength = p),
+            field(NoiseCodecs.TYPE, Fields.type, s -> s.type, (s, t) -> s.type = t),
+            field(NoiseCodecs.FRACTAL, Fields.fractal, s -> s.fractal, (s, f) -> s.fractal = f),
+            field(NoiseCodecs.WARP, Fields.warp, s -> s.warp, (s, w) -> s.warp = w),
+            field(NoiseCodecs.DISTANCE, Fields.distFunc, s -> s.distFunc, (s, d) -> s.distFunc = d),
+            field(NoiseCodecs.RETURN, Fields.returnType, s -> s.returnType, (s, r) -> s.returnType = r),
+            field(NoiseCodecs.TYPE, Fields.cellularLookup, s -> s.cellularLookup, (s, l) -> s.cellularLookup = l)
+        );
 
-    /** The target waveform frequency produced by the generator. */
-    @Default float frequency = 1.0F;
+    public static final DynamicCodec<NoiseSettingsBuilder, NoiseSettings, NoiseSettings> MAP =
+        COMMON_CODEC.withMoreFields(
+            field(Range.CODEC, Fields.range, s -> s.range, (s, r) -> s.range = r)
+        );
 
-    /** The threshold of acceptable values produced by the generator. */
-    @Default FloatRange threshold = Range.of(0.0F);
+    public static final DynamicCodec<NoiseSettingsBuilder, NoiseSettings, NoiseSettings> REGION =
+        COMMON_CODEC.withMoreFields(
+            field(FloatRange.CODEC, Fields.threshold, s -> s.threshold, (s, t) -> s.threshold = t)
+        );
 
-    /** Scales the noise produced * x. */
-    @Default float stretch = 1.0F;
+    public static final DynamicCodec<NoiseSettingsBuilder, NoiseSettings, NoiseSettings> NOISE =
+        COMMON_CODEC.withMoreFields(
+            field(FloatRange.CODEC, Fields.threshold, s -> s.threshold, (s, t) -> s.threshold = t),
+            field(Codec.FLOAT, Fields.frequencyY, s -> s.frequencyY, (s, f) -> s.frequencyY = f),
+            field(Codec.FLOAT, Fields.jitterY, s -> s.jitterY, (s, j) -> s.jitterY = j),
+            field(Codec.INT, Fields.offset, s -> s.offset, (s, o) -> s.offset = o),
+            field(Codec.FLOAT, "stretch", s -> 0.0F, (s, f) -> s.frequencyY /= f)
+        );
 
-    /** The scale of gaps produced in fractal patterns. */
-    @Default float lacunarity = 1.0F;
-
-    /** The octave gain for fractal noise types. */
-    @Default float gain = 0.5F;
-
-    /** The maximum amount to warp coordinates when warping is enabled. */
-    @Default float warpAmplitude = 1.0F;
-
-    /** The frequency used in warping input coordinates. */
-    @Default float warpFrequency = 1.0F;
-
-    /** The maximum amount a cellular point can move off grid. (x-axis) */
-    @Default float jitterX = 0.45F;
-
-    /** The maximum amount a cellular point can move off grid. (y-axis) */
-    @Default float jitterY = 0.45F;
-
-    /** The maximum amount a cellular point can move off grid. (z-axis) */
-    @Default float jitterZ = 0.45F;
-
-    /** The number of generation passes, i.e. the resolution. */
-    @Default int octaves = 1;
-
-    /** The vertical offset applied to the noise generator. */
-    @Default int offset = 0;
-
-    /** Whether to invert the acceptable values generated. */
-    @Default boolean invert = false;
-
-    /** Whether to cache the output for equivalent generators in the current chunk. */
-    @Default boolean cache = false;
-
-    /** Whether to treat this noise generator as a single value, improving performance. */
-    @Default boolean dummy = false;
-
-    /** The output to use if this generator is a dummy. */
-    @Default float dummyOutput = 1.0F;
-
-    /** The amplitude of the ping pong fractal type, when used. */
-    @Default float pingPongStrength = 2.0F;
-
-    /** The type of noise generator to run. */
-    @Default NoiseType type = NoiseType.SIMPLEX;
-
-    /** Determines how the noise will be fractalized, if applicable. */
-    @Default FractalType fractal = FractalType.FBM;
-
-    /** The type of warping applied to input coordinates. */
-    @Default DomainWarpType warp = DomainWarpType.NONE;
-
-    /** The type of distance function used with cellular noise types. */
-    @Default CellularDistanceType distFunc = CellularDistanceType.EUCLIDEAN;
-
-    /** The return type from cellular noise types. */
-    @Default CellularReturnType returnType = CellularReturnType.DISTANCE2;
-
-    /** The noise type used when returnType is set to {@code NoiseLookup}. */
-    @Default NoiseType cellularLookup = NoiseType.SIMPLEX;
-
-    public static NoiseSettings from(final JsonObject json, final NoiseSettings defaults) {
-        return copyInto(json, defaults.toBuilder());
+    public static Codec<NoiseSettings> defaultedMap(final NoiseSettings defaults) {
+        return MAP.withBuilder(defaults::toBuilder);
     }
 
-    public static NoiseSettings from(final JsonObject json) {
-        return copyInto(json, builder());
+    public static Codec<NoiseSettings> defaultedRegion(final NoiseSettings defaults) {
+        return REGION.withBuilder(defaults::toBuilder);
     }
 
-    private static NoiseSettings copyInto(final JsonObject json, final NoiseSettingsBuilder builder) {
-        return new HjsonMapper<>("<noise>", NoiseSettingsBuilder::build)
-            .mapInt(Fields.seed, (b, i) -> b.seed(full(i)))
-            .mapFloat(Fields.frequency, NoiseSettingsBuilder::frequency)
-            .mapFloatRange(Fields.threshold, NoiseSettingsBuilder::threshold)
-            .mapFloat(Fields.stretch, NoiseSettingsBuilder::stretch)
-            .mapFloat(Fields.lacunarity, NoiseSettingsBuilder::lacunarity)
-            .mapFloat(Fields.gain, NoiseSettingsBuilder::gain)
-            .mapFloat(Fields.warpAmplitude, NoiseSettingsBuilder::warpAmplitude)
-            .mapFloat(Fields.warpFrequency, NoiseSettingsBuilder::warpFrequency)
-            .mapFloat("jitter", (b, i) -> b.jitterX(i).jitterY(i).jitterZ(i))
-            .mapFloat(Fields.jitterX, NoiseSettingsBuilder::jitterX)
-            .mapFloat(Fields.jitterY, NoiseSettingsBuilder::jitterY)
-            .mapFloat(Fields.jitterZ, NoiseSettingsBuilder::jitterZ)
-            .mapInt(Fields.octaves, NoiseSettingsBuilder::octaves)
-            .mapInt(Fields.offset, NoiseSettingsBuilder::offset)
-            .mapBool(Fields.invert, NoiseSettingsBuilder::invert)
-            .mapBool(Fields.cache, NoiseSettingsBuilder::cache)
-            .mapBool(Fields.dummy, NoiseSettingsBuilder::dummy)
-            .mapFloat(Fields.dummyOutput, NoiseSettingsBuilder::dummyOutput)
-            .mapFloat(Fields.pingPongStrength, NoiseSettingsBuilder::pingPongStrength)
-            .mapNoiseType(Fields.type, NoiseSettingsBuilder::type)
-            .mapFractalType(Fields.fractal, NoiseSettingsBuilder::fractal)
-            .mapEnum(Fields.warp, DomainWarpType.class, NoiseSettingsBuilder::warp)
-            .mapDistFunc(Fields.distFunc, NoiseSettingsBuilder::distFunc)
-            .mapReturnType(Fields.returnType, NoiseSettingsBuilder::returnType)
-            .mapNoiseType(Fields.cellularLookup, NoiseSettingsBuilder::cellularLookup)
-            .create(builder, json);
+    public static Codec<NoiseSettings> defaultedNoise(final NoiseSettings defaults) {
+        return NOISE.withBuilder(defaults::toBuilder);
     }
 
-    /** Converts these settings into a regular {@link FastNoise} object. */
+    public static FastNoise compile(final @Nullable NoiseSettings cfg, final Random rand, final long seed) {
+        return cfg == null ? new DummyGenerator(0L) : cfg.getGenerator(rand, seed);
+    }
+
+    public static NoiseSettings withDefaults(final @Nullable NoiseSettings noise, final NoiseSettings defaults) {
+        return noise != null ? noise.withDefaults(defaults) : defaults;
+    }
+
+    public NoiseSettings withDefaults(final NoiseSettings defaults) {
+        return builder()
+            .seed(this.seed != null ? this.seed : defaults.seed)
+            .frequency(this.frequency != null ? this.frequency : defaults.frequency)
+            .frequencyX(this.frequencyX != null ? this.frequencyX : defaults.frequencyX)
+            .frequencyY(this.frequencyY != null ? this.frequencyY : defaults.frequencyY)
+            .frequencyZ(this.frequencyZ != null ? this.frequencyZ : defaults.frequencyZ)
+            .threshold(this.threshold != null ? this.threshold : defaults.threshold)
+            .lacunarity(this.lacunarity != null ? this.lacunarity : defaults.lacunarity)
+            .gain(this.gain != null ? this.gain : defaults.gain)
+            .warpAmplitude(this.warpAmplitude != null ? this.warpAmplitude : defaults.warpAmplitude)
+            .warpFrequency(this.warpFrequency != null ? this.warpFrequency : defaults.warpFrequency)
+            .jitter(this.jitter != null ? this.jitter : defaults.jitter)
+            .jitterX(this.jitterX != null ? this.jitterX : defaults.jitterX)
+            .jitter(this.jitterY != null ? this.jitterY : defaults.jitterY)
+            .jitter(this.jitterZ != null ? this.jitterZ : defaults.jitterZ)
+            .octaves(this.octaves != null ? this.octaves : defaults.octaves)
+            .offset(this.offset != null ? this.offset : defaults.offset)
+            .range(this.range != null ? this.range : defaults.range)
+            .invert(this.invert != null ? this.invert : defaults.invert)
+            .cache(this.cache != null ? this.cache : defaults.cache)
+            .dummy(this.dummy != null ? this.dummy : defaults.dummy)
+            .dummyOutput(this.dummyOutput != null ? this.dummyOutput : defaults.dummyOutput)
+            .pingPongStrength(this.pingPongStrength != null ? this.pingPongStrength : defaults.pingPongStrength)
+            .type(this.type != null ? this.type : defaults.type)
+            .fractal(this.fractal != null ? this.fractal : defaults.fractal)
+            .warp(this.warp != null ? this.warp : defaults.warp)
+            .distFunc(this.distFunc != null ? this.distFunc : defaults.distFunc)
+            .returnType(this.returnType != null ? this.returnType : defaults.returnType)
+            .cellularLookup(this.cellularLookup != null ? this.cellularLookup : defaults.cellularLookup)
+            .build();
+    }
+
     public FastNoise getGenerator(final Random rand, final long seed) {
-        if (dummy) {
-            return new DummyGenerator(dummyOutput);
+        if (this.dummy == Boolean.TRUE) {
+            return new DummyGenerator(this.dummyOutput != null ? this.dummyOutput : 0.0F);
         }
-        final NoiseDescriptor cfg = FastNoise.createDescriptor()
-            .seed(getSeed(rand, seed))
-            .noise(type)
-            .frequency(frequency)
-            .fractal(fractal)
-            .octaves(octaves)
-            .invert(invert)
-            .gain(gain)
-            .cellularReturn(returnType)
-            .warpAmplitude(warpAmplitude)
-            .warpFrequency(warpFrequency)
-            .warp(warp)
-            .lacunarity(lacunarity)
-            .noiseLookup(FastNoise.createDescriptor().noise(cellularLookup))
-            .distance(distFunc)
-            .jitterX(jitterX)
-            .jitterY(jitterY)
-            .jitterZ(jitterZ)
-            .threshold(threshold.min, threshold.max)
-            .frequencyY(frequency / stretch)
-            .offset(offset)
-            .pingPongStrength(pingPongStrength);
+        final NoiseDescriptor cfg = FastNoise.createDescriptor();
+
+        if (this.frequency != null) cfg.frequency(this.frequency);
+        if (this.jitter != null) cfg.jitter(this.jitter);
+        if (this.cellularLookup != null) cfg.noiseLookup(FastNoise.createDescriptor().noise(this.cellularLookup));
+
+        if (this.threshold != null) {
+            cfg.threshold(this.threshold.min, this.threshold.max);
+        } else {
+            cfg.threshold(0.5F, 0.5F);
+        }
+
+        if (this.range != null) {
+            cfg.range(this.range.min, this.range.max);
+        } else {
+            cfg.range(-1, 1);
+        }
+
+        cfg.seed(getSeed(rand, seed))
+            .noise(this.type != null ? this.type : NoiseType.SIMPLEX)
+            .frequencyX(this.frequencyX != null ? this.frequencyX : 1.0F)
+            .frequencyY(this.frequencyY != null ? this.frequencyY : 1.0F)
+            .frequencyZ(this.frequencyZ != null ? this.frequencyZ : 1.0F)
+            .fractal(this.fractal != null ? this.fractal : FractalType.NONE)
+            .octaves(this.octaves != null ? this.octaves : 3)
+            .invert(this.invert != null ? this.invert : false)
+            .gain(this.gain != null ? this.gain : 0.5F)
+            .cellularReturn(this.returnType != null ? this.returnType : CellularReturnType.DISTANCE2)
+            .warpAmplitude(this.warpAmplitude != null ? this.warpAmplitude : 1.0F)
+            .warpFrequency(this.warpFrequency != null ? this.warpFrequency : 1.0F)
+            .warp(this.warp != null ? this.warp : DomainWarpType.NONE)
+            .lacunarity(this.lacunarity != null ? this.lacunarity : 1.0F)
+            .distance(this.distFunc != null ? this.distFunc : CellularDistanceType.EUCLIDEAN)
+            .jitterX(this.jitterX != null ? this.jitterX : 0.45F)
+            .jitterY(this.jitterY != null ? this.jitterY : 0.45F)
+            .jitterZ(this.jitterZ != null ? this.jitterZ : 0.45F)
+            .offset(this.offset != null ? this.offset : 0)
+            .pingPongStrength(this.pingPongStrength != null ? this.pingPongStrength : 2.0F);
 
         final FastNoise generator = cfg.generate();
 
-        return cache ? new CachedNoiseGenerator(cfg, generator) : generator;
+        return this.cache == Boolean.TRUE ? new CachedNoiseGenerator(cfg, generator) : generator;
     }
 
     private int getSeed(final Random rand, final long seed) {
-        return this.seed.map(num -> {
-            final FastNoise simple = new PerlinNoise(new Random(seed).nextInt());
-            return Float.floatToIntBits(simple.getNoise(num));
-        }).orElseGet(rand::nextInt);
+        if (this.seed == null) {
+            return rand.nextInt();
+        }
+        final FastNoise simple = new PerlinNoise(new Random(seed).nextInt());
+        return Float.floatToIntBits(simple.getNoise(this.seed));
     }
 }

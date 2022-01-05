@@ -1,8 +1,7 @@
 package personthecat.cavegenerator.world.generator;
 
 import net.minecraft.world.level.levelgen.carver.WorldCarver;
-import personthecat.cavegenerator.presets.data.ConditionSettings;
-import personthecat.cavegenerator.model.Conditions;
+import personthecat.cavegenerator.world.config.ConditionConfig;
 
 import java.util.Random;
 
@@ -17,12 +16,12 @@ import java.util.Random;
  */
 public abstract class EarlyGenerator {
 
-    protected final Conditions conditions;
+    protected final ConditionConfig conditions;
     protected final Random globalRand;
     protected final long seed;
 
-    public EarlyGenerator(final ConditionSettings conditions, final Random rand, final long seed) {
-        this.conditions = Conditions.compile(conditions, rand, seed);
+    public EarlyGenerator(final ConditionConfig conditions, final Random rand, final long seed) {
+        this.conditions = conditions;
         this.globalRand = rand;
         this.seed = seed;
     }

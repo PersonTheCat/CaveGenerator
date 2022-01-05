@@ -6,7 +6,7 @@ import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.block.Rotation;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import personthecat.catlib.data.Range;
-import personthecat.cavegenerator.presets.data.StructureSettings;
+import personthecat.cavegenerator.world.config.StructureConfig;
 
 import java.util.Optional;
 import java.util.Random;
@@ -17,10 +17,10 @@ import static java.util.Optional.empty;
 @Log4j2
 public class StructureGenerator extends BasicFeature {
 
-    private final StructureSettings cfg;
+    private final StructureConfig cfg;
     private StructureTemplate structure;
 
-    public StructureGenerator(StructureSettings cfg, final Random rand, final long seed) {
+    public StructureGenerator(StructureConfig cfg, final Random rand, final long seed) {
         super(cfg.conditions, rand, seed);
         this.cfg = cfg;
         this.structure = null;

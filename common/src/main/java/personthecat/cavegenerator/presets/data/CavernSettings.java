@@ -1,128 +1,106 @@
 package personthecat.cavegenerator.presets.data;
 
-import lombok.AccessLevel;
+import com.mojang.serialization.Codec;
 import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import org.hjson.JsonObject;
+import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.Range;
-import personthecat.catlib.util.HjsonMapper;
-import personthecat.cavegenerator.presets.CavePreset;
+import personthecat.cavegenerator.world.config.CavernConfig;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Random;
 
-import static java.util.Optional.empty;
-import static personthecat.catlib.util.Shorthand.full;
+import static personthecat.catlib.util.Shorthand.map;
+import static personthecat.catlib.serialization.CodecUtils.dynamic;
+import static personthecat.catlib.serialization.CodecUtils.easyList;
+import static personthecat.catlib.serialization.DynamicField.extend;
+import static personthecat.catlib.serialization.DynamicField.field;
 
-@Builder
+@Builder(toBuilder = true)
 @FieldNameConstants
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public class CavernSettings {
+public class CavernSettings implements ConfigProvider<CavernSettings, CavernConfig> {
+    @Nullable public final ConditionSettings conditions;
+    @Nullable public final DecoratorSettings decorators;
+    @Nullable public final Integer resolution;
+    @Nullable public final NoiseSettings offset;
+    @Nullable public final NoiseSettings walls;
+    @Nullable public final NoiseSettings wallOffset;
+    @Nullable public final Float wallCurveRatio;
+    @Nullable public final Boolean wallInterpolation;
+    @Nullable public final List<NoiseSettings> generators;
+    @Nullable public final TunnelSettings branches;
 
-    /** The name of this feature to be used globally in serialization. */
-    private static final String FEATURE_NAME = CavePreset.Fields.caverns;
-
-    /** The default noise generator settings used by the caverns feature. */
     private static final NoiseSettings DEFAULT_GENERATOR =
-        NoiseSettings.builder().frequency(0.0143F).threshold(Range.of(-0.6F)).stretch(0.5F).octaves(1).build();
+        NoiseSettings.builder().frequency(0.0143F).threshold(Range.of(-0.6F)).frequencyY(0.0268F).octaves(1).build();
+    private static final NoiseSettings DEFAULT_CEIL_NOISE =
+        NoiseSettings.builder().frequency(0.02F).range(Range.of(-17, -3)).build();
+    private static final NoiseSettings DEFAULT_FLOOR_NOISE =
+        NoiseSettings.builder().frequency(0.02F).range(Range.of(0, 8)).build();
+    private static final NoiseSettings DEFAULT_HEIGHT_OFFSET =
+        NoiseSettings.builder().frequency(0.005F).range(Range.of(0, 50)).build();
+    private static final NoiseSettings DEFAULT_WALL_NOISE =
+        NoiseSettings.builder().frequency(0.02F).range(Range.of(9, 15)).build();
+    private static final NoiseSettings DEFAULT_WALL_OFFSET =
+        NoiseSettings.builder().frequency(0.05F).range(Range.of(0, 255)).build();
+    private static final ConditionSettings DEFAULT_CONDITIONS =
+        ConditionSettings.builder().height(Range.of(10, 50))
+            .ceiling(DEFAULT_CEIL_NOISE).floor(DEFAULT_FLOOR_NOISE).build();
 
-    /** The default ceiling noise parameters used by caverns, if absent. */
-    private static final NoiseMapSettings DEFAULT_CEIL_NOISE =
-        NoiseMapSettings.builder().frequency(0.02F).range(Range.of(-17, -3)).build();
+    private static final Codec<NoiseSettings> DEFAULTED_OFFSET = NoiseSettings.defaultedMap(DEFAULT_HEIGHT_OFFSET);
+    private static final Codec<NoiseSettings> DEFAULTED_WALL = NoiseSettings.defaultedMap(DEFAULT_WALL_NOISE);
+    private static final Codec<NoiseSettings> DEFAULTED_WALL_OFFSET = NoiseSettings.defaultedMap(DEFAULT_WALL_OFFSET);
 
-    /** The default floor noise parameters used by caverns, if absent. */
-    private static final NoiseMapSettings DEFAULT_FLOOR_NOISE =
-        NoiseMapSettings.builder().frequency(0.02F).range(Range.of(0, 8)).build();
+    public static final Codec<CavernSettings> CODEC = dynamic(CavernSettings::builder, CavernSettingsBuilder::build).create(
+        extend(ConditionSettings.CODEC, Fields.conditions, s -> s.conditions, (s, c) -> s.conditions = c),
+        extend(DecoratorSettings.CODEC, Fields.decorators, s -> s.decorators, (s, d) -> s.decorators = d),
+        field(Codec.INT, Fields.resolution, s -> s.resolution, (s, r) -> s.resolution = r),
+        field(DEFAULTED_OFFSET, Fields.offset, s -> s.offset, (s, o) -> s.offset = o),
+        field(DEFAULTED_WALL, Fields.walls, s -> s.walls, (s, w) -> s.walls = w),
+        field(DEFAULTED_WALL_OFFSET, Fields.wallOffset, s -> s.wallOffset, (s, o) -> s.wallOffset = o),
+        field(Codec.FLOAT, Fields.wallCurveRatio, s -> s.wallCurveRatio, (s, r) -> s.wallCurveRatio = r),
+        field(Codec.BOOL, Fields.wallInterpolation, s -> s.wallInterpolation, (s, i) -> s.wallInterpolation = i),
+        field(easyList(NoiseSettings.NOISE), Fields.generators, s -> s.generators, (s, g) -> s.generators = g),
+        field(TunnelSettings.CODEC, Fields.branches, s -> s.branches, (s, b) -> s.branches = b)
+    );
 
-    private static final NoiseMapSettings DEFAULT_HEIGHT_OFFSET =
-        NoiseMapSettings.builder().frequency(0.005F).range(Range.of(0, 50)).build();
-
-    /** The default wall noise used at biome borders. */
-    private static final NoiseMapSettings DEFAULT_WALL_NOISE =
-        NoiseMapSettings.builder().frequency(0.02F).range(Range.of(9, 15)).build();
-
-    /** Transformations for biome walls for this generator. */
-    private static final NoiseMapSettings DEFAULT_WALL_OFFSET =
-        NoiseMapSettings.builder().frequency(0.05F).range(Range.of(0, 255)).build();
-
-    /** Default spawn conditions for all cavern generators. */
-    private static final ConditionSettings DEFAULT_CONDITIONS = ConditionSettings.builder()
-        .height(Range.of(10, 50)).ceiling(full(DEFAULT_CEIL_NOISE)).floor(full(DEFAULT_FLOOR_NOISE)).build();
-
-    /** Default decorator settings for all caverns generators. */
-    private static final DecoratorSettings DEFAULT_DECORATORS = DecoratorSettings.DEFAULTS;
-
-    /** Conditions for these caverns to spawn. */
-    @Default ConditionSettings conditions = DEFAULT_CONDITIONS;
-
-    /** Cave blocks and wall decorators applied to these caverns. */
-    @Default DecoratorSettings decorators = DEFAULT_DECORATORS;
-
-    /** The number of blocks to iterate and interpolate between when generating. */
-    @Default int resolution = 1;
-
-    /** How much to offset the y-value input to the generator based on (x, z). */
-    @Default Optional<NoiseMapSettings> offset = empty();
-
-    /** Settings for how to generate these walls, if applicable. */
-    @Default Optional<NoiseMapSettings> walls = empty();
-
-    /** Settings for translating wall noise up and down to obscure repetition. */
-    @Default Optional<NoiseMapSettings> wallOffset = empty();
-
-    /** Modifies the ceiling and floor curve around biome borders. */
-    @Default float wallCurveRatio = 1.0f;
-
-    /** Whether to interpolate biome borders for smoother walls. */
-    @Default boolean wallInterpolation = false;
-
-    /** A list of noise generators to produce the shape of these caverns. */
-    @Default List<NoiseSettings> generators = Collections.singletonList(DEFAULT_GENERATOR);
-
-    /** A list of tunnels that will spawn connected to these caverns. */
-    @Default Optional<TunnelSettings> branches = empty();
-
-    /** Whether to run this generator as a late feature. Will be removed. */
-    @Default boolean deferred = false;
-
-    public static CavernSettings from(final JsonObject json, final OverrideSettings overrides) {
-        final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();
-        final DecoratorSettings decorators = overrides.apply(DEFAULT_DECORATORS.toBuilder()).build();
-        return copyInto(json, builder().conditions(conditions).decorators(decorators));
+    @Override
+    public Codec<CavernSettings> codec() {
+        return CODEC;
     }
 
-    public static CavernSettings from(final JsonObject json) {
-        return copyInto(json, builder());
+    @Override
+    public CavernSettings withOverrides(final OverrideSettings o) {
+        final ConditionSettings conditions = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
+        final DecoratorSettings decorators = this.decorators != null ? this.decorators : DecoratorSettings.EMPTY;
+        final TunnelSettings branches = this.branches != null ? this.branches : TunnelSettings.EMPTY;
+        return this.toBuilder()
+            .conditions(conditions.withOverrides(o))
+            .decorators(decorators.withOverrides(o))
+            .branches(branches.withOverrides(o))
+            .build();
     }
 
-    private static CavernSettings copyInto(final JsonObject json, final CavernSettingsBuilder builder) {
-        final CavernSettings original = builder.build();
-        return new HjsonMapper<>(FEATURE_NAME, CavernSettingsBuilder::build)
-            .mapSelf((b, o) -> b.conditions(ConditionSettings.from(o, original.conditions)))
-            .mapSelf((b, o) -> b.decorators(DecoratorSettings.from(o, original.decorators)))
-            .mapInt(Fields.resolution, CavernSettingsBuilder::resolution)
-            .mapObject(Fields.offset, (b, o) -> b.offset(full(NoiseMapSettings.from(o, DEFAULT_HEIGHT_OFFSET))))
-            .mapObject(Fields.walls, (b, o) -> b.walls(full(NoiseMapSettings.from(o, DEFAULT_WALL_NOISE))))
-            .mapObject(Fields.wallOffset, (b, o) -> b.wallOffset(full(NoiseMapSettings.from(o, DEFAULT_WALL_OFFSET))))
-            .mapFloat(Fields.wallCurveRatio, CavernSettingsBuilder::wallCurveRatio)
-            .mapBool(Fields.wallInterpolation, CavernSettingsBuilder::wallInterpolation)
-            .mapArray(Fields.generators, CavernSettings::createNoise, CavernSettingsBuilder::generators)
-            .mapObject(Fields.branches, CavernSettings::copyBranches)
-            .mapBool(Fields.deferred, CavernSettingsBuilder::deferred)
-            .create(builder, json);
-    }
+    @Override
+    public CavernConfig compile(final Random rand, final long seed) {
+        final ConditionSettings conditionCfg = this.conditions != null
+            ? this.conditions : ConditionSettings.EMPTY;
+        final DecoratorSettings decoratorCfg = this.decorators != null
+            ? this.decorators : DecoratorSettings.EMPTY;
+        final List<NoiseSettings> generators = this.generators != null
+            ? this.generators : Collections.singletonList(DEFAULT_GENERATOR);
 
-    private static NoiseSettings createNoise(JsonObject json) {
-        return NoiseSettings.from(json, DEFAULT_GENERATOR);
-    }
-
-    private static void copyBranches(CavernSettingsBuilder builder, JsonObject branches) {
-        // Includes overrides and settings from the caverns object.
-        final CavernSettings updated = builder.build();
-        builder.branches(full(TunnelSettings.from(branches, updated.conditions, updated.decorators)));
+        return new CavernConfig(
+            conditionCfg.withDefaults(DEFAULT_CONDITIONS).compile(rand, seed),
+            decoratorCfg.compile(rand, seed),
+            this.resolution != null ? this.resolution : 1,
+            NoiseSettings.compile(this.offset, rand, seed),
+            NoiseSettings.compile(this.walls, rand, seed),
+            NoiseSettings.compile(this.wallOffset, rand, seed),
+            this.wallCurveRatio != null ? this.wallCurveRatio : 1.0F,
+            this.wallInterpolation != null ? this.wallInterpolation : false,
+            map(generators, g -> g.getGenerator(rand, seed)),
+            this.branches != null ? this.branches.compile(rand, seed) : null
+        );
     }
 }

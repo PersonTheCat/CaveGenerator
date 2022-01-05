@@ -1,68 +1,61 @@
 package personthecat.cavegenerator.presets.data;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.experimental.FieldDefaults;
+import com.mojang.serialization.Codec;
+import lombok.AllArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import org.hjson.JsonObject;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.Range;
-import personthecat.catlib.util.HjsonMapper;
+import personthecat.catlib.serialization.EasyStateCodec;
+import personthecat.cavegenerator.world.config.PondConfig;
+import personthecat.fastnoise.FastNoise;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 
-import static java.util.Optional.empty;
-import static personthecat.catlib.util.Shorthand.full;
+import static personthecat.catlib.serialization.CodecUtils.codecOf;
+import static personthecat.catlib.serialization.CodecUtils.easyList;
+import static personthecat.catlib.serialization.CodecUtils.easySet;
+import static personthecat.catlib.serialization.FieldDescriptor.field;
+import static personthecat.catlib.serialization.FieldDescriptor.nullable;
 
-@Builder
+@AllArgsConstructor
 @FieldNameConstants
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
 public class PondSettings {
+    @NotNull public final List<BlockState> states;
+    @Nullable public final Double integrity;
+    @Nullable public final Range height;
+    @Nullable public final Integer depth;
+    @Nullable public final Set<BlockState> matchers;
+    @Nullable public final NoiseSettings noise;
 
-    /** The name of this feature to be used globally in serialization. */
-    private static final String FEATURE_NAME = DecoratorSettings.Fields.wallDecorators;
-
-    /** The blocks used for decorating walls. */
-    List<BlockState> states;
-
-    /** The 0-1 chance that any block will be placed. */
-    @Default double integrity = 1.0;
-
-    /** Height bounds for this decorator. */
-    @Default Range height = Range.of(10, 50);
-
-    /** How many layers deep to spawn. */
-    @Default int depth = 2;
-
-    /** A list of blocks to check for. */
-    @Default List<BlockState> matchers = Collections.singletonList(Blocks.STONE.defaultBlockState());
-
-    /** Optional noise generator used determine valid placements. */
-    @Default Optional<NoiseSettings> noise = empty();
-
-    /** The default noise values for WallDecorators with noise. */
     public static final NoiseSettings DEFAULT_NOISE = NoiseSettings.builder()
-        .frequency(0.02f).threshold(Range.of(0.0F)).stretch(1.0f).build();
+        .frequency(0.02F).threshold(Range.of(0.0F)).frequencyY(0.04F).build();
 
-    public static PondSettings from(final JsonObject json) {
-        final PondSettingsBuilder builder = builder();
-        return new HjsonMapper<>(DecoratorSettings.Fields.ponds, PondSettingsBuilder::build)
-            .mapRequiredStateList(Fields.states, PondSettingsBuilder::states)
-            .mapObject(Fields.noise, PondSettings::copyNoise)
-            .mapFloat(Fields.integrity, PondSettingsBuilder::integrity)
-            .mapRange(Fields.height, PondSettingsBuilder::height)
-            .mapInt(Fields.depth, PondSettingsBuilder::depth)
-            .mapStateList(Fields.matchers, PondSettingsBuilder::matchers)
-            .create(builder, json);
+    public static final Codec<NoiseSettings> DEFAULTED_NOISE = NoiseSettings.defaultedNoise(DEFAULT_NOISE);
+
+    public static final Codec<PondSettings> CODEC = codecOf(
+        field(easyList(EasyStateCodec.INSTANCE), Fields.states, s -> s.states),
+        nullable(Codec.DOUBLE, Fields.integrity, s -> s.integrity),
+        nullable(Range.CODEC, Fields.height, s -> s.height),
+        nullable(Codec.INT, Fields.depth, s -> s.depth),
+        nullable(easySet(EasyStateCodec.INSTANCE), Fields.matchers, s -> s.matchers),
+        nullable(DEFAULTED_NOISE, Fields.noise, s -> s.noise),
+        PondSettings::new
+    );
+
+    public PondConfig compile(final Random rand, final long seed) {
+        final double integrity = this.integrity != null ? this.integrity : 1.0;
+        final Range height = this.height != null ? this.height : Range.of(10, 50);
+        final int depth = this.depth != null ? this.depth : 2;
+        final Set<BlockState> matchers = this.matchers != null
+            ? this.matchers : Collections.singleton(Blocks.STONE.defaultBlockState());
+        final FastNoise noise = NoiseSettings.compile(this.noise, rand, seed);
+
+        return new PondConfig(this.states, integrity, height, depth, matchers, noise);
     }
-
-    private static void copyNoise(final PondSettingsBuilder builder, final JsonObject json) {
-        builder.noise(full(NoiseSettings.from(json, DEFAULT_NOISE)));
-    }
-
 }

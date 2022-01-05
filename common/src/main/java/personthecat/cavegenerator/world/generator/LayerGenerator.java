@@ -2,7 +2,7 @@ package personthecat.cavegenerator.world.generator;
 
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.biome.Biome;
-import personthecat.cavegenerator.presets.data.LayerSettings;
+import personthecat.cavegenerator.world.config.LayerConfig;
 
 import java.util.Random;
 
@@ -11,9 +11,9 @@ import static personthecat.cavegenerator.util.CommonBlocks.BLK_STONE;
 // Todo: this used to be optimized to avoid overlapping layers. Switch to ListGenerator.
 public class LayerGenerator extends EarlyGenerator {
 
-    private final LayerSettings cfg;
+    private final LayerConfig cfg;
 
-    public LayerGenerator(final LayerSettings cfg, final Random rand, final long seed) {
+    public LayerGenerator(final LayerConfig cfg, final Random rand, final long seed) {
         super(cfg.conditions, rand, seed);
         this.cfg = cfg;
     }

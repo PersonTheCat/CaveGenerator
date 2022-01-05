@@ -1,88 +1,100 @@
 package personthecat.cavegenerator.presets.data;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.RequiredArgsConstructor;
-import lombok.experimental.FieldDefaults;
+import com.mojang.serialization.Codec;
+import lombok.AllArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import org.hjson.JsonObject;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.Range;
-import personthecat.catlib.util.HjsonMapper;
+import personthecat.catlib.serialization.EasyStateCodec;
+import personthecat.cavegenerator.world.config.ShellConfig;
+import personthecat.fastnoise.FastNoise;
 
 import java.util.Collections;
 import java.util.List;
-import java.util.Optional;
+import java.util.Random;
+import java.util.Set;
 
-import static java.util.Optional.empty;
-import static personthecat.catlib.util.Shorthand.full;
+import static personthecat.catlib.serialization.CodecUtils.codecOf;
+import static personthecat.catlib.serialization.CodecUtils.easyList;
+import static personthecat.catlib.serialization.CodecUtils.easySet;
+import static personthecat.catlib.serialization.FieldDescriptor.field;
+import static personthecat.catlib.serialization.FieldDescriptor.nullable;
+import static personthecat.catlib.util.Shorthand.map;
 
-@Builder
+@AllArgsConstructor
 @FieldNameConstants
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public class ShellSettings {
+public class ShellSettings implements ConfigProvider<ShellSettings, ShellConfig> {
+    @Nullable public final Float radius;
+    @Nullable public final Integer sphereResolution;
+    @Nullable public final Float noiseThreshold;
+    @Nullable public final List<Decorator> decorators;
 
-    /** The radius of blocks to decorate when a guaranteed number of blocks is possible. */
-    @Default double radius = 0.0;
+    public static final ShellSettings EMPTY = new ShellSettings(null, null, null, null);
 
-    /** The 1 / x chance that a sphere will have a shell. */
-    @Default int sphereResolution = 2;
+    public static final Codec<ShellSettings> CODEC = codecOf(
+        nullable(Codec.FLOAT, Fields.radius, s -> s.radius),
+        nullable(Codec.INT, Fields.sphereResolution, s -> s.sphereResolution),
+        nullable(Codec.FLOAT, Fields.noiseThreshold, s -> s.noiseThreshold),
+        nullable(easyList(Decorator.CODEC), Fields.decorators, s -> s.decorators),
+        ShellSettings::new
+    );
 
-    /** The threshold-based distance used whenever a guaranteed number is not possible. */
-    @Default Optional<Float> noiseThreshold = empty();
-
-    /** A list of various blocks and conditions for placing those blocks. */
-    @Default List<Decorator> decorators = Collections.emptyList();
-
-    public static ShellSettings from(final JsonObject json) {
-        return new HjsonMapper<>(DecoratorSettings.Fields.shell, ShellSettingsBuilder::build)
-            .mapFloat(Fields.radius, ShellSettingsBuilder::radius)
-            .mapInt(Fields.sphereResolution, ShellSettingsBuilder::sphereResolution)
-            .mapFloat(Fields.noiseThreshold, (b, f) -> b.noiseThreshold(full(f)))
-            .mapArray(Fields.decorators, Decorator::from, ShellSettingsBuilder::decorators)
-            .create(builder(), json);
+    @Override
+    public Codec<ShellSettings> codec() {
+        return CODEC;
     }
 
-    @Builder
+    @Override
+    public ShellConfig compile(final Random rand, final long seed) {
+        final float radius = this.radius != null ? this.radius : 0.0F;
+        final int sphereResolution = this.sphereResolution != null ? this.sphereResolution : 2;
+        final float noiseThreshold = this.noiseThreshold != null ? this.noiseThreshold : (radius + 0.00001F) / 10.0F;
+        final List<Decorator> decorators = this.decorators != null ? this.decorators : Collections.emptyList();
+        final List<ShellConfig.Decorator> decoratorConfigs = map(decorators, d -> d.compile(rand, seed));
+
+        return new ShellConfig(radius, sphereResolution, noiseThreshold, decoratorConfigs);
+    }
+
+    @AllArgsConstructor
     @FieldNameConstants
-    @RequiredArgsConstructor
-    @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
-    public static class Decorator {
+    public static class Decorator implements ConfigProvider<Decorator, ShellConfig.Decorator> {
+        @NotNull public final List<BlockState> states;
+        @Nullable public final Set<BlockState> matchers;
+        @Nullable public final Range height;
+        @Nullable public final Double integrity;
+        @Nullable public final NoiseSettings noise;
 
-        /** A list of blocks to attempt spawning when these conditions are met. */
-        List<BlockState> states;
-
-        /** A list of blocks to search for before this feature will generate. */
-        @Default List<BlockState> matchers = Collections.singletonList(Blocks.STONE.defaultBlockState());
-
-        /** The height criterion for spawning these features. */
-        @Default Range height = Range.of(0, 63);
-
-        /** The 0-1 chance of any single block spawning successfully. */
-        @Default double integrity = 1.0;
-
-        /** 3-dimensional noise parameters for spawning this feature. */
-        @Default Optional<NoiseSettings> noise = empty();
-
-        /** The default noise values for shell decorators with noise. */
         public static final NoiseSettings DEFAULT_NOISE = NoiseSettings.builder()
-            .frequency(0.02f).threshold(Range.of(-0.8F)).stretch(1.0f).octaves(1).build();
+            .frequency(0.02F).threshold(Range.of(-0.8F)).frequencyY(0.04F).octaves(1).build();
 
-        private static Decorator from(final JsonObject json) {
-            return new HjsonMapper<>(ShellSettings.Fields.decorators, DecoratorBuilder::build)
-                .mapRequiredStateList(Fields.states, DecoratorBuilder::states)
-                .mapStateList(Fields.matchers, DecoratorBuilder::matchers)
-                .mapRange(Fields.height, DecoratorBuilder::height)
-                .mapFloat(Fields.integrity, DecoratorBuilder::integrity)
-                .mapObject(Fields.noise, Decorator::copyNoise)
-                .create(builder(), json);
+        public static final Codec<NoiseSettings> DEFAULTED_NOISE = NoiseSettings.defaultedNoise(DEFAULT_NOISE);
+
+        public static final Codec<Decorator> CODEC = codecOf(
+            field(easyList(EasyStateCodec.INSTANCE), Fields.states, s -> s.states),
+            nullable(easySet(EasyStateCodec.INSTANCE), Fields.matchers, s -> s.matchers),
+            nullable(Range.CODEC, Fields.height, s -> s.height),
+            nullable(Codec.DOUBLE, Fields.integrity, s -> s.integrity),
+            nullable(DEFAULTED_NOISE, Fields.noise, s -> s.noise),
+            Decorator::new
+        );
+
+        @Override
+        public Codec<Decorator> codec() {
+            return CODEC;
         }
 
-        private static void copyNoise(final DecoratorBuilder builder, final JsonObject json) {
-            builder.noise(full(NoiseSettings.from(json, DEFAULT_NOISE)));
+        @Override
+        public ShellConfig.Decorator compile(final Random rand, final long seed) {
+            final Set<BlockState> matchers = this.matchers != null
+                ? this.matchers : Collections.singleton(Blocks.STONE.defaultBlockState());
+            final Range height = this.height != null ? this.height : Range.of(0, 63);
+            final double integrity = this.integrity != null ? this.integrity : 1.0;
+            final FastNoise noise = NoiseSettings.compile(this.noise, rand, seed);
+
+            return new ShellConfig.Decorator(this.states, matchers, height, integrity, noise);
         }
     }
 }

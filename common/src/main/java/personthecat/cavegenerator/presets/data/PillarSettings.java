@@ -1,77 +1,71 @@
 package personthecat.cavegenerator.presets.data;
 
-import lombok.AccessLevel;
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.DataResult;
 import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import net.minecraft.world.level.block.Block;
+import net.minecraft.core.Registry;
 import net.minecraft.world.level.block.StairBlock;
 import net.minecraft.world.level.block.state.BlockState;
-import org.hjson.JsonObject;
 import personthecat.catlib.data.Range;
-import personthecat.catlib.util.HjsonMapper;
-import personthecat.cavegenerator.presets.CavePreset;
+import personthecat.catlib.serialization.EasyStateCodec;
+import personthecat.cavegenerator.world.config.ConditionConfig;
+import personthecat.cavegenerator.world.config.PillarConfig;
 
-import javax.annotation.ParametersAreNonnullByDefault;
-import java.util.Optional;
+import javax.annotation.Nullable;
 
-import static java.util.Optional.empty;
-import static personthecat.catlib.exception.Exceptions.jsonFormatEx;
-import static personthecat.catlib.util.Shorthand.full;
+import java.util.Objects;
+import java.util.Random;
 
-@Builder
+import static personthecat.catlib.serialization.CodecUtils.dynamic;
+import static personthecat.catlib.serialization.DynamicField.extend;
+import static personthecat.catlib.serialization.DynamicField.field;
+import static personthecat.catlib.serialization.DynamicField.required;
+
+@Builder(toBuilder = true)
 @FieldNameConstants
-@ParametersAreNonnullByDefault
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public class PillarSettings {
+public class PillarSettings implements ConfigProvider<PillarSettings, PillarConfig> {
+    @Nullable public final ConditionSettings conditions;
+    @Nullable public final BlockState state;
+    @Nullable public final Integer count;
+    @Nullable public final Range length;
+    @Nullable public final StairBlock stairBlock;
 
-    /** Default spawn conditions for all pillar generators. */
-    private static final ConditionSettings DEFAULT_CONDITIONS = ConditionSettings.builder()
-        .height(Range.of(10, 50)).build();
+    private static final ConditionSettings DEFAULT_CONDITIONS =
+        ConditionSettings.builder().height(Range.of(10, 50)).build();
 
-    /** Conditions for these pillars to spawn. */
-    @Default ConditionSettings conditions = DEFAULT_CONDITIONS;
+    private static final Codec<StairBlock> STAIR_CODEC = Registry.BLOCK.flatXmap(
+        b -> b instanceof StairBlock ? DataResult.success((StairBlock) b) : DataResult.error("Not a stair block"),
+        DataResult::success
+    );
 
-    /** The block making up the body of this pillar. */
-    BlockState state;
+    public static final Codec<PillarSettings> CODEC = dynamic(PillarSettings::builder, PillarSettingsBuilder::build).create(
+        required(EasyStateCodec.INSTANCE, Fields.state, s -> s.state, (s, b) -> s.state = b),
+        extend(ConditionSettings.CODEC, Fields.conditions, s -> s.conditions, (s, c) -> s.conditions = c),
+        field(Codec.INT, Fields.count, s -> s.count, (s, c) -> s.count = c),
+        field(Range.CODEC, Fields.length, s -> s.length, (s, l) -> s.length = l),
+        field(STAIR_CODEC, Fields.stairBlock, s -> s.stairBlock, (s, b) -> s.stairBlock = b)
+    );
 
-    /** A number of pillars to attempt spawning per chunk. */
-    @Default int count = 15;
-
-    /** How much vertical space is required to spawn this structure. */
-    @Default Range length = Range.of(5, 12);
-
-    /** An optional Block to place and upper and lower corners of this pillar. */
-    @Default Optional<StairBlock> stairBlock = empty();
-
-    public static PillarSettings from(final JsonObject json, final OverrideSettings overrides) {
-        final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();
-        return copyInto(json, builder().conditions(conditions));
+    @Override
+    public Codec<PillarSettings> codec() {
+        return CODEC;
     }
 
-    public static PillarSettings from(final JsonObject json) {
-        return copyInto(json, builder());
+    @Override
+    public PillarSettings withOverrides(final OverrideSettings o) {
+        if (this.conditions == null) return this;
+        return this.toBuilder().conditions(this.conditions.withOverrides(o)).build();
     }
 
-    private static PillarSettings copyInto(final JsonObject json, final PillarSettingsBuilder builder) {
-        final PillarSettings original = builder.build();
-        return new HjsonMapper<>(CavePreset.Fields.pillars, PillarSettingsBuilder::build)
-            .mapRequiredState(Fields.state, PillarSettingsBuilder::state)
-            .mapSelf((b, o) -> b.conditions(ConditionSettings.from(o, original.conditions)))
-            .mapInt(Fields.count, PillarSettingsBuilder::count)
-            .mapRange(Fields.length, PillarSettingsBuilder::length)
-            .mapState(Fields.stairBlock, (b, s) -> b.stairBlock(full(toStairBlock(s))))
-            .create(builder, json);
-    }
+    @Override
+    public PillarConfig compile(final Random rand, final long seed) {
+        Objects.requireNonNull(this.state, "State not populated by codec");
+        final ConditionSettings conditionsCfg = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
+        final int count = this.count != null ? this.count : 15;
+        final Range length = this.length != null ? this.length : Range.of(5, 12);
+        final ConditionConfig conditions = conditionsCfg.withDefaults(DEFAULT_CONDITIONS).compile(rand, seed);
 
-    private static StairBlock toStairBlock(final BlockState state) {
-        final Block block = state.getBlock();
-        if (block instanceof StairBlock) {
-            return (StairBlock) block;
-        }
-        throw jsonFormatEx("Error: the input block, {}, is not a valid stair block.", block);
+        return new PillarConfig(conditions, this.state, count, length, this.stairBlock);
     }
-
 }

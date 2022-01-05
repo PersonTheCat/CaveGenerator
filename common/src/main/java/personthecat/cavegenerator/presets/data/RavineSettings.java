@@ -1,117 +1,117 @@
 package personthecat.cavegenerator.presets.data;
 
-import lombok.AccessLevel;
+import com.mojang.serialization.Codec;
 import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import org.hjson.JsonObject;
 import personthecat.catlib.data.Range;
-import personthecat.catlib.util.HjsonMapper;
-import personthecat.cavegenerator.presets.CavePreset;
 import personthecat.cavegenerator.model.ScalableFloat;
+import personthecat.cavegenerator.world.config.ConditionConfig;
+import personthecat.cavegenerator.world.config.DecoratorConfig;
+import personthecat.cavegenerator.world.config.RavineConfig;
+import personthecat.fastnoise.FastNoise;
 
+import javax.annotation.Nullable;
+import java.util.Random;
+
+import static personthecat.catlib.serialization.CodecUtils.dynamic;
+import static personthecat.catlib.serialization.DynamicField.*;
+import static personthecat.catlib.serialization.DynamicField.field;
 import static personthecat.catlib.util.Shorthand.invert;
 
-@Builder
+@Builder(toBuilder = true)
 @FieldNameConstants
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 public class RavineSettings {
+    @Nullable public final ConditionSettings conditions;
+    @Nullable public final DecoratorSettings decorators;
+    @Nullable public final Range originHeight;
+    @Nullable public final Float noiseYFactor;
+    @Nullable public final ScalableFloat dYaw;
+    @Nullable public final ScalableFloat dPitch;
+    @Nullable public final ScalableFloat scale;
+    @Nullable public final ScalableFloat stretch;
+    @Nullable public final ScalableFloat yaw;
+    @Nullable public final ScalableFloat pitch;
+    @Nullable public final Integer distance;
+    @Nullable public final Integer chance;
+    @Nullable public final Integer resolution;
+    @Nullable public final Double cutoffStrength;
+    @Nullable public final Boolean checkWater;
+    @Nullable public final NoiseSettings walls;
 
-    /** Default spawn conditions for all ravine generators. */
-    private static final ConditionSettings DEFAULT_CONDITIONS = ConditionSettings.builder()
-        .height(Range.of(20, 66)).build();
+    private static final ConditionSettings DEFAULT_CONDITIONS =
+        ConditionSettings.builder().height(Range.of(20, 66)).build();
 
-    /** Default decorator settings for all caverns generators. */
-    private static final DecoratorSettings DEFAULT_DECORATORS = DecoratorSettings.DEFAULTS;
+    private static final ScalableFloat DEFAULT_D_YAW = new ScalableFloat(0.0F, 0.0F, 0.5F, 4.0F, 1.0F);
+    private static final ScalableFloat DEFAULT_D_PITCH = new ScalableFloat(0.0F, 0.0F, 0.8F, 2.0F, 1.0F);
+    private static final ScalableFloat DEFAULT_SCALE = new ScalableFloat(0.0F, 2.0F, 1.0F, 0.0F, 1.0F);
+    private static final ScalableFloat DEFAULT_STRETCH = new ScalableFloat(3.0F, 1.0F, 1.0F, 0.0F, 1.0F);
+    private static final ScalableFloat DEFAULT_YAW = new ScalableFloat(0.0F, 1.0F, 1.0F, 0.0F, 1.0F);
+    private static final ScalableFloat DEFAULT_PITCH = new ScalableFloat(0.0F, 0.25F, 1.0F, 0.0F, 1.0F);
 
-    /** Conditions for these ravines to spawn. */
-    @Default ConditionSettings conditions = DEFAULT_CONDITIONS;
+    private static final Codec<ScalableFloat> D_YAW_CODEC = ScalableFloat.defaultedCodec(DEFAULT_D_YAW);
+    private static final Codec<ScalableFloat> D_PITCH_CODEC = ScalableFloat.defaultedCodec(DEFAULT_D_PITCH);
+    private static final Codec<ScalableFloat> SCALE_CODEC = ScalableFloat.defaultedCodec(DEFAULT_SCALE);
+    private static final Codec<ScalableFloat> STRETCH_CODEC = ScalableFloat.defaultedCodec(DEFAULT_STRETCH);
+    private static final Codec<ScalableFloat> YAW_CODEC = ScalableFloat.defaultedCodec(DEFAULT_YAW);
+    private static final Codec<ScalableFloat> PITCH_CODEC = ScalableFloat.defaultedCodec(DEFAULT_PITCH);
 
-    /** Cave blocks and wall decorators applied to these ravines. */
-    @Default DecoratorSettings decorators = DEFAULT_DECORATORS;
+    private static final NoiseSettings DEFAULT_WALLS =
+        NoiseSettings.builder().frequency(0.5F).range(Range.of(0, 4)).build();
 
-    /** The height at which any ravine can originate. */
-    @Default Range originHeight = Range.of(20, 66);
+    private static final Codec<NoiseSettings> DEFAULTED_WALLS = NoiseSettings.defaultedMap(DEFAULT_WALLS);
 
-    /** Statically reduces vertical noise. */
-    @Default float noiseYFactor = 0.7F;
+    public static final Codec<RavineSettings> CODEC = dynamic(RavineSettings::builder, RavineSettingsBuilder::build).create(
+        extend(ConditionSettings.CODEC, Fields.conditions, s -> s.conditions, (s, c) -> s.conditions = c),
+        extend(DecoratorSettings.CODEC, Fields.decorators, s -> s.decorators, (s, c) -> s.decorators = c),
+        field(Range.CODEC, Fields.originHeight, s -> s.originHeight, (s, h) -> s.originHeight = h),
+        field(Codec.FLOAT, Fields.noiseYFactor, s -> s.noiseYFactor, (s, f) -> s.noiseYFactor = f),
+        field(D_YAW_CODEC, Fields.dYaw, s -> s.dYaw, (s, f) -> s.dYaw = f),
+        field(D_PITCH_CODEC, Fields.dPitch, s -> s.dPitch, (s, f) -> s.dPitch = f),
+        field(SCALE_CODEC, Fields.scale, s -> s.scale, (s, f) -> s.scale = f),
+        field(STRETCH_CODEC, Fields.stretch, s -> s.stretch, (s, f) -> s.stretch = f),
+        field(YAW_CODEC, Fields.yaw, s -> s.yaw, (s, f) -> s.yaw = f),
+        field(PITCH_CODEC, Fields.pitch, s -> s.pitch, (s, f) -> s.pitch = f),
+        field(Codec.INT, Fields.distance, s -> s.distance, (s, d) -> s.distance = d),
+        field(Codec.DOUBLE, Fields.chance, s -> invert(s.chance), (s, c) -> s.chance = invert(c)),
+        field(Codec.INT, Fields.resolution, s -> s.resolution, (s, r) -> s.resolution = r),
+        field(Codec.DOUBLE, Fields.cutoffStrength, s -> s.cutoffStrength, (s, c) -> s.cutoffStrength = c),
+        field(Codec.BOOL, Fields.checkWater, s -> s.checkWater, (s, c) -> s.checkWater = c),
+        field(DEFAULTED_WALLS, Fields.walls, s -> s.walls, (s, w) -> s.walls = w)
+    );
 
-    /** Horizontal rotation. */
-    @Default ScalableFloat dYaw = new ScalableFloat(0.0F, 0.0F, 0.5F, 4.0F, 1.0F);
-
-    /** Vertical rotation. */
-    @Default ScalableFloat dPitch = new ScalableFloat(0.0F, 0.0F, 0.8F, 2.0F, 1.0F);
-
-    /** Overall scale. */
-    @Default ScalableFloat scale = new ScalableFloat(0.0F, 2.0F, 1.0F, 0.0F, 1.0F);
-
-    /** Vertical scale ratio. */
-    @Default ScalableFloat stretch = new ScalableFloat(3.0F, 1.0F, 1.0F, 0.0F, 1.0F);
-
-    /** Horizontal angle in radians. */
-    @Default ScalableFloat yaw = new ScalableFloat(0.0F, 1.0F, 1.0F, 0.0F, 1.0F);
-
-    /** Vertical angle in radians. */
-    @Default ScalableFloat pitch = new ScalableFloat(0.0F, 0.25F, 1.0F, 0.0F, 1.0F);
-
-    /** The expected distance of this ravine. 0 -> (132 to 136)? */
-    @Default int distance = 0;
-
-    /** The 1/x chance of this ravine spawning. */
-    @Default int chance = 5;
-
-    /** The 1/x chance of ravine segments being skipped. */
-    @Default int resolution = 4;
-
-    /** A ratio of how much to flatten the bottom and top of this feature. */
-    @Default double cutoffStrength = 5.0;
-
-    /** Whether to use a FastNoise generator for the wall of this ravine. */
-    @Default boolean useWallNoise = false;
-
-    /** Whether to test for water before spawning to avoid water walls. */
-    @Default boolean checkWater = true;
-
-    /** Settings for how to generate these walls, if applicable. */
-    @Default NoiseMapSettings walls = NoiseMapSettings.builder()
-        .frequency(0.5F).range(Range.of(0, 4)).build();
-
-    public static RavineSettings from(final JsonObject json, final OverrideSettings overrides) {
-        final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();
-        final DecoratorSettings decorators = overrides.apply(DEFAULT_DECORATORS.toBuilder()).build();
-        return copyInto(json, builder().conditions(conditions).decorators(decorators));
+    public Codec<RavineSettings> codec() {
+        return CODEC;
     }
 
-    public static RavineSettings from(final JsonObject json) {
-        return copyInto(json, builder());
+    public RavineSettings withOverrides(final OverrideSettings o) {
+        final ConditionSettings conditions = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
+        final DecoratorSettings decorators = this.decorators != null ? this.decorators : DecoratorSettings.EMPTY;
+        return this.toBuilder().conditions(conditions.withOverrides(o)).decorators(decorators.withOverrides(o)).build();
     }
 
-    private static RavineSettings copyInto(final JsonObject json, final RavineSettingsBuilder builder) {
-        final RavineSettings original = builder.build();
-        return new HjsonMapper<>(CavePreset.Fields.ravines, RavineSettingsBuilder::build)
-            .mapSelf((b, o) -> b.conditions(ConditionSettings.from(o, original.conditions)))
-            .mapSelf((b, o) -> b.decorators(DecoratorSettings.from(o, original.decorators)))
-            .mapRangeOrTry(Fields.originHeight, ConditionSettings.Fields.height, RavineSettingsBuilder::originHeight)
-            .mapFloat(Fields.noiseYFactor, RavineSettingsBuilder::noiseYFactor)
-            .mapGeneric(Fields.dYaw, v -> ScalableFloat.fromValue(v, original.dYaw), RavineSettingsBuilder::dYaw)
-            .mapGeneric(Fields.dPitch, v -> ScalableFloat.fromValue(v, original.dPitch), RavineSettingsBuilder::dPitch)
-            .mapGeneric(Fields.scale, v -> ScalableFloat.fromValue(v, original.scale), RavineSettingsBuilder::scale)
-            .mapGeneric(Fields.stretch, v -> ScalableFloat.fromValue(v, original.stretch), RavineSettingsBuilder::stretch)
-            .mapGeneric(Fields.yaw, v -> ScalableFloat.fromValue(v, original.yaw), RavineSettingsBuilder::yaw)
-            .mapGeneric(Fields.pitch, v -> ScalableFloat.fromValue(v, original.pitch), RavineSettingsBuilder::pitch)
-            .mapInt(Fields.distance, RavineSettingsBuilder::distance)
-            .mapFloat(Fields.chance, (b, f) -> b.chance(invert(f)))
-            .mapInt(Fields.resolution, RavineSettingsBuilder::resolution)
-            .mapFloat(Fields.cutoffStrength, RavineSettingsBuilder::cutoffStrength)
-            .mapObject(Fields.walls, (b, o) -> copyWallNoise(o, original, b))
-            .mapBool(Fields.useWallNoise, RavineSettingsBuilder::useWallNoise)
-            .mapBool(Fields.checkWater, RavineSettingsBuilder::checkWater)
-            .create(builder, json);
-    }
+    public RavineConfig compile(final Random rand, final long seed) {
+        final ConditionSettings conditionsCfg = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
+        final DecoratorSettings decoratorsCfg = this.decorators != null ? this.decorators : DecoratorSettings.EMPTY;
+        final Range originHeight = this.originHeight != null ? this.originHeight : Range.of(20, 66);
+        final float noiseYFactor = this.noiseYFactor != null ? this.noiseYFactor : 0.7F;
+        final ScalableFloat dYaw = this.dYaw != null ? this.dYaw : DEFAULT_D_YAW;
+        final ScalableFloat dPitch = this.dPitch != null ? this.dPitch : DEFAULT_D_PITCH;
+        final ScalableFloat scale = this.scale != null ? this.scale : DEFAULT_SCALE;
+        final ScalableFloat stretch = this.stretch != null ? this.stretch : DEFAULT_STRETCH;
+        final ScalableFloat yaw = this.yaw != null ? this.yaw : DEFAULT_YAW;
+        final ScalableFloat pitch = this.pitch != null ? this.pitch : DEFAULT_PITCH;
+        final int distance = this.distance != null ? this.distance : 0;
+        final int chance = this.chance != null ? this.chance : 5;
+        final int resolution = this.resolution != null ? this.resolution : 4;
+        final double cutoffStrength = this.cutoffStrength != null ? this.cutoffStrength : 5.0;
+        final boolean checkWater = this.checkWater != null ? this.checkWater : true;
 
-    private static void copyWallNoise(final JsonObject json, final RavineSettings original, final RavineSettingsBuilder builder) {
-        builder.useWallNoise(true).walls(NoiseMapSettings.from(json, original.walls));
-    }
+        final ConditionConfig conditions = conditionsCfg.withDefaults(DEFAULT_CONDITIONS).compile(rand, seed);
+        final DecoratorConfig decorators = decoratorsCfg.compile(rand, seed);
+        final FastNoise walls = this.walls != null ? this.walls.getGenerator(rand, seed) : null;
+        final boolean useWallNoise = this.walls != null;
 
+        return new RavineConfig(conditions, decorators, originHeight, noiseYFactor, dYaw, dPitch, scale,
+            stretch, yaw, pitch, distance, chance, resolution, cutoffStrength, useWallNoise, checkWater, walls);
+    }
 }

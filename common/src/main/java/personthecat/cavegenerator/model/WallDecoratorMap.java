@@ -1,42 +1,40 @@
 package personthecat.cavegenerator.model;
 
-import personthecat.cavegenerator.presets.data.WallDecoratorSettings;
 import lombok.AccessLevel;
 import lombok.Builder;
 import lombok.Singular;
 import lombok.experimental.FieldDefaults;
+import personthecat.cavegenerator.world.config.WallDecoratorConfig;
 
 import java.util.List;
-import java.util.Random;
 
 @Builder
 @FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 public class WallDecoratorMap {
 
-    @Singular("all") List<ConfiguredWallDecorator> all;
-    @Singular("side") List<ConfiguredWallDecorator> side;
-    @Singular("up") List<ConfiguredWallDecorator> up;
-    @Singular("down") List<ConfiguredWallDecorator> down;
-    @Singular("north") List<ConfiguredWallDecorator> north;
-    @Singular("south") List<ConfiguredWallDecorator> south;
-    @Singular("east") List<ConfiguredWallDecorator> east;
-    @Singular("west") List<ConfiguredWallDecorator> west;
+    @Singular("all") List<WallDecoratorConfig> all;
+    @Singular("side") List<WallDecoratorConfig> side;
+    @Singular("up") List<WallDecoratorConfig> up;
+    @Singular("down") List<WallDecoratorConfig> down;
+    @Singular("north") List<WallDecoratorConfig> north;
+    @Singular("south") List<WallDecoratorConfig> south;
+    @Singular("east") List<WallDecoratorConfig> east;
+    @Singular("west") List<WallDecoratorConfig> west;
     boolean containsAny;
 
-    public static WallDecoratorMap sort(final List<WallDecoratorSettings> decorators, final Random rand, final long seed) {
+    public static WallDecoratorMap sort(final List<WallDecoratorConfig> decorators) {
         final WallDecoratorMapBuilder builder = builder().containsAny(!decorators.isEmpty());
-        for (final WallDecoratorSettings cfg : decorators) {
-            final ConfiguredWallDecorator wall = new ConfiguredWallDecorator(cfg, rand, seed);
+        for (final WallDecoratorConfig cfg : decorators) {
             for (final Direction d : cfg.directions) {
                 switch (d) {
-                    case ALL: builder.all(wall); break;
-                    case SIDE: builder.side(wall); break;
-                    case UP: builder.up(wall); break;
-                    case DOWN: builder.down(wall); break;
-                    case NORTH: builder.north(wall); break;
-                    case SOUTH: builder.south(wall); break;
-                    case EAST: builder.east(wall); break;
-                    case WEST: builder.west(wall); break;
+                    case ALL: builder.all(cfg); break;
+                    case SIDE: builder.side(cfg); break;
+                    case UP: builder.up(cfg); break;
+                    case DOWN: builder.down(cfg); break;
+                    case NORTH: builder.north(cfg); break;
+                    case SOUTH: builder.south(cfg); break;
+                    case EAST: builder.east(cfg); break;
+                    case WEST: builder.west(cfg); break;
                 }
             }
         }

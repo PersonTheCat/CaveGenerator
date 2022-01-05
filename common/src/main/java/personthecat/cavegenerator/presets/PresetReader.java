@@ -91,8 +91,8 @@ public class PresetReader {
         final Map<String, CavePreset> settings = new TreeMap<>();
         extractInner(jsons).forEach((name, json) -> {
             try {
-                settings.put(name, CavePreset.from(json));
-            } catch (RuntimeException e) {
+                settings.put(name, CavePreset.from(name, json));
+            } catch (final RuntimeException e) {
                 final String msg = f("Error reading {}: {}", name, e.getMessage());
                 if (Cfg.IGNORE_INVALID_PRESETS.getAsBoolean()) {
                     log.error(msg);

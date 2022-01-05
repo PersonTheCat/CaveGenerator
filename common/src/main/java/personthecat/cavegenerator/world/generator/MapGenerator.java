@@ -3,12 +3,12 @@ package personthecat.cavegenerator.world.generator;
 import net.minecraft.core.BlockPos;
 import net.minecraft.util.Mth;
 import personthecat.cavegenerator.config.Cfg;
-import personthecat.cavegenerator.model.ConfiguredCaveBlock;
 import personthecat.cavegenerator.model.PositionFlags;
 import personthecat.cavegenerator.model.SphereData;
-import personthecat.cavegenerator.presets.data.ConditionSettings;
-import personthecat.cavegenerator.presets.data.DecoratorSettings;
 import personthecat.cavegenerator.world.BiomeSearch;
+import personthecat.cavegenerator.world.config.CaveBlockConfig;
+import personthecat.cavegenerator.world.config.ConditionConfig;
+import personthecat.cavegenerator.world.config.DecoratorConfig;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,7 +25,7 @@ public abstract class MapGenerator extends CaveCarver {
     private final SphereData sphere = new SphereData();
     private final boolean checkWater;
 
-    public MapGenerator(ConditionSettings conditions, DecoratorSettings decorators, Random rand, long seed, boolean checkWater) {
+    public MapGenerator(ConditionConfig conditions, DecoratorConfig decorators, Random rand, long seed, boolean checkWater) {
         super(conditions, decorators, rand, seed);
         this.checkWater = checkWater;
     }
@@ -163,7 +163,7 @@ public abstract class MapGenerator extends CaveCarver {
         this.sphere.reset();
         this.sphere.grow(maX - miX, maY - miY, maZ - miZ);
 
-        if (roXZ - rXZ != 0 && rand.nextInt(decorators.shell.cfg.sphereResolution) == 0) {
+        if (roXZ - rXZ != 0 && rand.nextInt(decorators.shell.sphereResolution) == 0) {
             this.fillDouble(ctx, this.sphere, x, y, z, rXZ, rY, roXZ, roY, miX, maX, miY, maY, miZ, maZ);
         } else {
             this.fillSphere(ctx, this.sphere, x, y, z, rXZ, rY, miX, maX, miY, maY, miZ, maZ);
@@ -267,10 +267,10 @@ public abstract class MapGenerator extends CaveCarver {
         if (!this.checkWater) {
             return false;
         }
-        for (final ConfiguredCaveBlock block : decorators.caveBlocks) {
-            if (block.cfg.states.contains(BLK_WATER)) {
-                if (maY <= block.cfg.height.max + WATER_WIGGLE_ROOM
-                    && miY >= block.cfg.height.min - WATER_WIGGLE_ROOM) {
+        for (final CaveBlockConfig block : decorators.caveBlocks) {
+            if (block.states.contains(BLK_WATER)) {
+                if (maY <= block.height.max + WATER_WIGGLE_ROOM
+                    && miY >= block.height.min - WATER_WIGGLE_ROOM) {
                     return false;
                 }
             }

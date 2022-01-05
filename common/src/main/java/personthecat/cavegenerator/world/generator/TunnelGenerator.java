@@ -3,9 +3,9 @@ package personthecat.cavegenerator.world.generator;
 import net.minecraft.util.Mth;
 import personthecat.cavegenerator.model.SphereData;
 import personthecat.cavegenerator.model.TunnelPathInfo;
-import personthecat.cavegenerator.presets.data.RoomSettings;
-import personthecat.cavegenerator.presets.data.TunnelSettings;
 import personthecat.cavegenerator.util.XoRoShiRo;
+import personthecat.cavegenerator.world.config.RoomConfig;
+import personthecat.cavegenerator.world.config.TunnelConfig;
 
 import javax.annotation.Nullable;
 import java.util.Random;
@@ -15,19 +15,19 @@ public class TunnelGenerator extends MapGenerator {
 
     private static final float PI_OVER_2 = (float) (Math.PI / 2);
 
-    protected final TunnelSettings cfg;
+    protected final TunnelConfig cfg;
 
     @Nullable
-    private final RoomSettings rooms;
+    private final RoomConfig rooms;
 
     @Nullable
     private final TunnelGenerator branches;
 
-    public TunnelGenerator(final TunnelSettings cfg, final Random rand, final long seed) {
+    public TunnelGenerator(final TunnelConfig cfg, final Random rand, final long seed) {
         super(cfg.conditions, cfg.decorators, rand, seed, cfg.checkWater);
         this.cfg = cfg;
-        this.rooms = cfg.rooms.orElse(null);
-        this.branches = cfg.branches.map(b -> new TunnelGenerator(b, rand, seed)).orElse(null);
+        this.rooms = cfg.rooms;
+        this.branches = cfg.branches != null ? new TunnelGenerator(cfg.branches, rand, seed) : null;
     }
 
     @Override
@@ -104,7 +104,7 @@ public class TunnelGenerator extends MapGenerator {
                             // From vanilla: alters the scale each time a room spawns. Remove this?
                             path.multiplyScale(rand.nextFloat() * rand.nextFloat() * 3.00F + 1.00F);
                         }
-                        final long tunnelSeed = this.cfg.seed.orElseGet(rand::nextLong);
+                        final long tunnelSeed = this.cfg.seed != null ? this.cfg.seed : rand.nextLong();
                         this.addTunnel(ctx, tunnelSeed, path,0, distance);
                     }
                 }
@@ -154,7 +154,7 @@ public class TunnelGenerator extends MapGenerator {
             // Determine the radius by `scale`.
             final double rXZ = 1.5D + (Mth.sin(currentPos * (float) Math.PI / distance) * path.getScale());
             final double rY = rXZ * path.getStretch();
-            final double d = this.decorators.shell.cfg.radius;
+            final double d = this.decorators.shell.radius;
             final double roXZ = rXZ + d;
             final double roY = rY + d;
 
@@ -206,7 +206,7 @@ public class TunnelGenerator extends MapGenerator {
         // Determine the radius by `scale`.
         final double rXZ = 1.5D + (Mth.sin(position * (float) Math.PI / distance) * scale);
         final double rY = rXZ * stretch;
-        final double d = this.decorators.shell.cfg.radius;
+        final double d = this.decorators.shell.radius;
         this.generateSphere(ctx, local, x, y, z, rXZ, rY, rXZ + d, rY + d);
     }
 
@@ -225,14 +225,28 @@ public class TunnelGenerator extends MapGenerator {
             reset2 = path.reset(yaw2, pitch, path.getScale(), path.getStretch());
         }
         if (this.branches != null) {
-            final long seedA = this.branches.cfg.seed.orElse(this.cfg.reseedBranches ? rand.nextLong() : seed);
+            final long seedA, seedB;
+            if (this.branches.cfg.seed != null) {
+                seedA = seedB = this.branches.seed;
+            } else if (this.cfg.reseedBranches) {
+                seedA = rand.nextLong();
+                seedB = rand.nextLong();
+            } else {
+                seedA = seedB = seed;
+            }
             this.branches.addTunnel(ctx, seedA, reset1, currentPos, distance);
-            final long seedB = this.branches.cfg.seed.orElse(this.cfg.reseedBranches ? rand.nextLong() : seed);
             this.branches.addTunnel(ctx, seedB, reset2, currentPos, distance);
         } else {
-            final long seedA = this.cfg.seed.orElse(this.cfg.reseedBranches ? rand.nextLong() : seed);
+            final long seedA, seedB;
+            if (this.cfg.seed != null) {
+                seedA = seedB = this.cfg.seed;
+            } else if (this.cfg.reseedBranches) {
+                seedA = rand.nextLong();
+                seedB = rand.nextLong();
+            } else {
+                seedA = seedB = seed;
+            }
             this.addTunnel(ctx, seedA, reset1, currentPos, distance);
-            final long seedB = this.cfg.seed.orElse(this.cfg.reseedBranches ? rand.nextLong() : seed);
             this.addTunnel(ctx, seedB, reset2, currentPos, distance);
         }
     }

@@ -1,15 +1,15 @@
 package personthecat.cavegenerator.world.generator;
 
 import personthecat.cavegenerator.model.TunnelPathInfo;
-import personthecat.cavegenerator.presets.data.TunnelSettings;
 import personthecat.cavegenerator.util.XoRoShiRo;
+import personthecat.cavegenerator.world.config.TunnelConfig;
 
 import java.util.Random;
 
 public class TunnelConnector<Socket extends TunnelSocket> extends TunnelGenerator {
     private final Socket parent;
 
-    public TunnelConnector(final TunnelSettings tunnelCfg, final Socket parent, final Random rand, final long seed) {
+    public TunnelConnector(final TunnelConfig tunnelCfg, final Socket parent, final Random rand, final long seed) {
         super(tunnelCfg, rand, seed);
         this.parent = parent;
     }

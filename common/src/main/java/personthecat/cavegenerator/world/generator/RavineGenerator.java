@@ -3,8 +3,8 @@ package personthecat.cavegenerator.world.generator;
 import net.minecraft.util.Mth;
 import personthecat.cavegenerator.model.SphereData;
 import personthecat.cavegenerator.model.TunnelPathInfo;
-import personthecat.cavegenerator.presets.data.RavineSettings;
 import personthecat.cavegenerator.util.XoRoShiRo;
+import personthecat.cavegenerator.world.config.RavineConfig;
 import personthecat.fastnoise.FastNoise;
 
 import java.util.Random;
@@ -13,14 +13,14 @@ public class RavineGenerator extends MapGenerator {
 
     /** From vanilla: avoids unnecessary allocations. */
     private final float[] mut = new float[256];
-    private final RavineSettings cfg;
+    private final RavineConfig cfg;
     private final FastNoise wallNoise;
     private final double cutoff;
 
-    public RavineGenerator(final RavineSettings cfg, final Random rand, final long seed) {
+    public RavineGenerator(final RavineConfig cfg, final Random rand, final long seed) {
         super(cfg.conditions, cfg.decorators, rand, seed, cfg.checkWater);
         this.cfg = cfg;
-        this.wallNoise = cfg.walls.getGenerator(rand, seed);
+        this.wallNoise = cfg.walls;
         this.cutoff = 1.0 + cfg.cutoffStrength;
     }
 
@@ -136,7 +136,7 @@ public class RavineGenerator extends MapGenerator {
             // Determine the radius by `scale`.
             final double rXZ = 1.5D + (Mth.sin(currentPos * (float) Math.PI / distance) * path.getScale());
             final double rY = rXZ * path.getStretch();
-            final double d = this.decorators.shell.cfg.radius;
+            final double d = this.decorators.shell.radius;
             final double roXZ = rXZ + d;
             final double roY = rY + d;
 

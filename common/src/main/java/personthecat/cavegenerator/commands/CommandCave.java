@@ -88,7 +88,7 @@ public class CommandCave {
     private static final String RAW_ARG = "raw";
     private static final String EXP_ARG = "exp";
     private static final String FEATURE_ARG = "feature";
-    private static final String ENABLED_KEY = CavePreset.Fields.enabled;
+    private static final String ENABLED_KEY = CavePreset.ENABLED_KEY;
 
     private final JsonObject memory = new JsonObject();
 

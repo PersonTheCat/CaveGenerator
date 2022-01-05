@@ -5,7 +5,6 @@ import net.minecraft.server.MinecraftServer;
 import personthecat.catlib.command.LibCommandRegistrar;
 import personthecat.catlib.event.world.FeatureModificationEvent;
 import personthecat.cavegenerator.commands.CommandCave;
-import personthecat.cavegenerator.commands.arguments.FeatureArgument;
 import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.io.JarFiles;
 import personthecat.cavegenerator.noise.CachedNoiseHelper;
@@ -25,7 +24,6 @@ public class CaveGenerator {
         JarFiles.copyFiles();
         Cfg.register();
         LibCommandRegistrar.registerCommands(Reference.MOD_DESCRIPTOR, true, CommandCave.class);
-        FeatureArgument.register();
 
         if (Cfg.FALLBACK_FEATURES.getAsBoolean()) {
             FallbackFeatureHook.register();

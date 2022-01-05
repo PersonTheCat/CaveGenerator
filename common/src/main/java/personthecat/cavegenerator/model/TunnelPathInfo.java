@@ -1,8 +1,8 @@
 package personthecat.cavegenerator.model;
 
 import net.minecraft.util.Mth;
-import personthecat.cavegenerator.presets.data.RavineSettings;
-import personthecat.cavegenerator.presets.data.TunnelSettings;
+import personthecat.cavegenerator.world.config.RavineConfig;
+import personthecat.cavegenerator.world.config.TunnelConfig;
 import personthecat.cavegenerator.world.generator.PrimerContext;
 
 import java.util.Random;
@@ -34,12 +34,12 @@ public class TunnelPathInfo {
     private static final float PI_TIMES_2 = (float) (Math.PI * 2);
 
     /** Neatly constructs a new object based on values from tunnel settings. */
-    public TunnelPathInfo(TunnelSettings cfg, Random rand, int destChunkX, int destChunkZ) {
+    public TunnelPathInfo(TunnelConfig cfg, Random rand, int destChunkX, int destChunkZ) {
         this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.stretch, rand, destChunkX, destChunkZ, cfg.originHeight.min, cfg.originHeight.max);
     }
 
     /** Neatly constructs a new object based on values from ravine settings. */
-    public TunnelPathInfo(RavineSettings cfg, Random rand, int destChunkX, int destChunkZ) {
+    public TunnelPathInfo(RavineConfig cfg, Random rand, int destChunkX, int destChunkZ) {
         this(cfg.yaw, cfg.pitch, cfg.dYaw, cfg.dPitch, cfg.scale, cfg.stretch, rand, destChunkX, destChunkZ, cfg.originHeight.min, cfg.originHeight.max);
     }
 

@@ -1,114 +1,109 @@
 package personthecat.cavegenerator.presets.data;
 
-import lombok.AccessLevel;
+import com.mojang.serialization.Codec;
 import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
-import org.hjson.JsonObject;
+import personthecat.catlib.data.InvertibleSet;
 import personthecat.catlib.data.Range;
-import personthecat.catlib.util.HjsonMapper;
-import personthecat.cavegenerator.presets.CavePreset;
+import personthecat.catlib.serialization.EasyStateCodec;
 import personthecat.cavegenerator.model.BlockCheck;
 import personthecat.cavegenerator.model.Direction;
+import personthecat.cavegenerator.presets.reader.StructureSettingsReader;
+import personthecat.cavegenerator.world.config.ConditionConfig;
+import personthecat.cavegenerator.world.config.StructureConfig;
 
-import java.util.Collections;
-import java.util.List;
+import javax.annotation.Nullable;
+import java.util.*;
 
-@Builder
+import static personthecat.catlib.serialization.CodecUtils.dynamic;
+import static personthecat.catlib.serialization.CodecUtils.easyList;
+import static personthecat.catlib.serialization.CodecUtils.easySet;
+import static personthecat.catlib.serialization.DynamicField.extend;
+import static personthecat.catlib.serialization.DynamicField.field;
+import static personthecat.catlib.serialization.DynamicField.required;
+
+@Builder(toBuilder = true)
 @FieldNameConstants
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
-public class StructureSettings {
+public class StructureSettings implements ConfigProvider<StructureSettings, StructureConfig> {
+    @Nullable public final ConditionSettings conditions;
+    @Nullable public final String name;
+    @Nullable public final StructurePlaceSettings placement;
+    @Nullable public final Set<BlockState> matchers;
+    @Nullable public final List<Direction> directions;
+    @Nullable public final List<BlockPos> airChecks;
+    @Nullable public final List<BlockPos> solidChecks;
+    @Nullable public final List<BlockPos> nonSolidChecks;
+    @Nullable public final List<BlockPos> waterChecks;
+    @Nullable public final List<BlockCheck> blockChecks;
+    @Nullable public final Boolean checkSurface;
+    @Nullable public final BlockPos offset;
+    @Nullable public final Float chance;
+    @Nullable public final Integer count;
+    @Nullable public final Boolean debugSpawns;
+    @Nullable public final String command;
+    @Nullable public final Boolean rotateRandomly;
 
-    /** Default spawn conditions for all structure generators. */
-    private static final ConditionSettings DEFAULT_CONDITIONS = ConditionSettings.builder()
-        .height(Range.of(10, 50)).build();
+    private static final ConditionSettings DEFAULT_CONDITIONS =
+        ConditionSettings.builder().height(Range.of(10, 50)).build();
 
-    /** Conditions for these tunnels to spawn. */
-    @Default ConditionSettings conditions = DEFAULT_CONDITIONS;
+    public static final Codec<StructureSettings> CODEC = dynamic(StructureSettings::builder, StructureSettingsBuilder::build).create(
+        extend(ConditionSettings.CODEC, Fields.conditions, s -> s.conditions, (s, c) -> s.conditions = c),
+        required(Codec.STRING, Fields.name, s -> s.name, (s, n) -> s.name = n),
+        extend(StructureSettingsReader.CODEC, Fields.placement, s -> s.placement, (s, p) -> s.placement = p),
+        field(easySet(EasyStateCodec.INSTANCE), Fields.matchers, s -> s.matchers, (s, m) -> s.matchers = m),
+        field(easyList(Direction.CODEC), Fields.directions, s -> s.directions, (s, d) -> s.directions = d),
+        field(easyList(BlockPos.CODEC), Fields.airChecks, s -> s.airChecks, (s, c) -> s.airChecks = c),
+        field(easyList(BlockPos.CODEC), Fields.solidChecks, s -> s.solidChecks, (s, c) -> s.solidChecks = c),
+        field(easyList(BlockPos.CODEC), Fields.nonSolidChecks, s -> s.nonSolidChecks, (s, c) -> s.nonSolidChecks = c),
+        field(easyList(BlockPos.CODEC), Fields.waterChecks, s -> s.waterChecks, (s, c) -> s.waterChecks = c),
+        field(Codec.BOOL, Fields.checkSurface, s -> s.checkSurface, (s, c) -> s.checkSurface = c),
+        field(BlockPos.CODEC, Fields.offset, s -> s.offset, (s, o) -> s.offset = o),
+        field(Codec.FLOAT, Fields.chance, s -> s.chance, (s, c) -> s.chance = c),
+        field(Codec.INT, Fields.count, s -> s.count, (s, c) -> s.count = c),
+        field(Codec.BOOL, Fields.debugSpawns, s -> s.debugSpawns, (s, d) -> s.debugSpawns = d),
+        field(Codec.STRING, Fields.command, s -> s.command, (s, c) -> s.command = c),
+        field(Codec.BOOL, Fields.rotateRandomly, s -> s.rotateRandomly, (s, r) -> s.rotateRandomly = r)
+    );
 
-    /** Either the name of the structure file or a structure resource ID. */
-    String name;
-
-    /** Vanilla placement settings for the template being spawned. */
-    @Default StructurePlaceSettings placement = new StructurePlaceSettings();
-
-    /** A list of source blocks that this structure can spawn on top of. */
-    @Default List<BlockState> matchers = Collections.singletonList(Blocks.STONE.defaultBlockState());
-
-    /** A list of potential surface directions for this structure to spawn. */
-    @Default Direction.Container directions = new Direction.Container();
-
-    /** A list of relative coordinates which must be air. */
-    @Default List<BlockPos> airChecks = Collections.emptyList();
-
-    /** A list of relative coordinates which must be solid. */
-    @Default List<BlockPos> solidChecks = Collections.emptyList();
-
-    /** A list of relative coordinates which must be non-solid. */
-    @Default List<BlockPos> nonSolidChecks = Collections.emptyList();
-
-    /** A list of relative coordinates which must be water. */
-    @Default List<BlockPos> waterChecks = Collections.emptyList();
-
-    /** A list of relative positions and the blocks that should be found at each one. */
-    @Default List<BlockCheck> blockChecks = Collections.emptyList();
-
-    /** Whether this should always spawn below the surface. */
-    @Default boolean checkSurface = true;
-
-    /** A 3-dimensional offset for when structure spawns. */
-    @Default BlockPos offset = BlockPos.ZERO;
-
-    /** The 0-1 chance that any spawn attempt is successful, if *also* valid. */
-    @Default float chance = 1.0F;
-
-    /** The number of spawn attempts per chunk. */
-    @Default int count = 1;
-
-    /** Whether to display the spawn coordinates of this structure in the log. */
-    @Default boolean debugSpawns = false;
-
-    /** A command to run whenever this feature is spawned in the world. */
-    @Default String command = "";
-
-    /** Whether to rotate this structure randomly. */
-    @Default boolean rotateRandomly = false;
-
-    public static StructureSettings from(JsonObject json, OverrideSettings overrides) {
-        final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();
-        return copyInto(json, builder().conditions(conditions));
+    public Codec<StructureSettings> codec() {
+        return CODEC;
     }
 
-    public static StructureSettings from(JsonObject json) {
-        return copyInto(json, builder());
+    public StructureSettings withOverrides(final OverrideSettings o) {
+        if (this.conditions == null) return this;
+        return this.toBuilder().conditions(this.conditions.withOverrides(o)).build();
     }
 
-    private static StructureSettings copyInto(JsonObject json, StructureSettingsBuilder builder) {
-        final StructureSettings original = builder.build();
-        return new HjsonMapper<>(CavePreset.Fields.structures, StructureSettingsBuilder::build)
-            .mapRequiredString(Fields.name, StructureSettingsBuilder::name)
-            .mapSelf((b, o) -> b.conditions(ConditionSettings.from(o, original.conditions)))
-            .mapPlacementSettings(StructureSettingsBuilder::placement)
-            .mapStateList(Fields.matchers, StructureSettingsBuilder::matchers)
-            .mapEnumList(Fields.directions, Direction.class, (b, l) -> b.directions(Direction.Container.from(l)))
-            .mapBlockPosList(Fields.airChecks, StructureSettingsBuilder::airChecks)
-            .mapBlockPosList(Fields.solidChecks, StructureSettingsBuilder::solidChecks)
-            .mapBlockPosList(Fields.nonSolidChecks, StructureSettingsBuilder::nonSolidChecks)
-            .mapBlockPosList(Fields.waterChecks, StructureSettingsBuilder::waterChecks)
-            .mapGenericArray(Fields.blockChecks, BlockCheck::fromValue, StructureSettingsBuilder::blockChecks)
-            .mapBool(Fields.checkSurface, StructureSettingsBuilder::checkSurface)
-            .mapBlockPos(Fields.offset, StructureSettingsBuilder::offset)
-            .mapFloat(Fields.chance, StructureSettingsBuilder::chance)
-            .mapInt(Fields.count, StructureSettingsBuilder::count)
-            .mapBool(Fields.debugSpawns, StructureSettingsBuilder::debugSpawns)
-            .mapString(Fields.command, StructureSettingsBuilder::command)
-            .mapBool(Fields.rotateRandomly, StructureSettingsBuilder::rotateRandomly)
-            .create(builder, json);
-    }
+    public StructureConfig compile(final Random rand, final long seed) {
+        Objects.requireNonNull(this.name, "name not populated by codec");
+        final ConditionSettings conditionsCfg = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
+        final StructurePlaceSettings placement = this.placement != null ? this.placement : new StructurePlaceSettings();
+        final Set<BlockState> matchersCfg = this.matchers != null
+            ? this.matchers : Collections.singleton(Blocks.STONE.defaultBlockState());
+        final List<Direction> directionsCfg = this.directions != null ? this.directions : Collections.emptyList();
+        final List<BlockPos> airChecks = this.airChecks != null ? this.airChecks : Collections.emptyList();
+        final List<BlockPos> solidChecks = this.solidChecks != null ? this.solidChecks : Collections.emptyList();
+        final List<BlockPos> nonSolidChecks = this.nonSolidChecks != null ? this.nonSolidChecks : Collections.emptyList();
+        final List<BlockPos> waterChecks = this.waterChecks != null ? this.waterChecks : Collections.emptyList();
+        final List<BlockCheck> blockChecks = this.blockChecks != null ? this.blockChecks : Collections.emptyList();
+        final boolean checkSurface = this.checkSurface != null ? this.checkSurface : true;
+        final BlockPos offset = this.offset != null ? this.offset : BlockPos.ZERO;
+        final float chance = this.chance != null ? this.chance : 1.0F;
+        final int count = this.count != null ? this.count : 1;
+        final boolean debugSpawns = this.debugSpawns != null ? this.debugSpawns : false;
+        final String command = this.command != null ? this.command : "";
+        final boolean rotateRandomly = this.rotateRandomly != null ? this.rotateRandomly : false;
 
+        final ConditionConfig conditions = conditionsCfg.withDefaults(DEFAULT_CONDITIONS).compile(rand, seed);
+        final Set<BlockState> matchers = new InvertibleSet<>(matchersCfg, false).optimize(Collections.emptyList());
+        final Direction.Container directions = Direction.Container.from(directionsCfg);
+
+        return new StructureConfig(conditions, this.name, placement, matchers, directions, airChecks,
+            solidChecks, nonSolidChecks, waterChecks, blockChecks, checkSurface, offset, chance, count,
+            debugSpawns, command, rotateRandomly);
+    }
 }

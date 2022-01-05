@@ -1,80 +1,37 @@
 package personthecat.cavegenerator.presets;
 
-import personthecat.catlib.util.HjsonMapper;
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.experimental.FieldDefaults;
-import lombok.experimental.FieldNameConstants;
+import lombok.AllArgsConstructor;
 import org.hjson.JsonObject;
-import personthecat.cavegenerator.presets.data.CavernSettings;
-import personthecat.cavegenerator.presets.data.ClusterSettings;
-import personthecat.cavegenerator.presets.data.BurrowSettings;
-import personthecat.cavegenerator.presets.data.LayerSettings;
+import personthecat.catlib.util.HjsonUtils;
+import personthecat.cavegenerator.presets.data.CaveSettings;
 import personthecat.cavegenerator.presets.data.OverrideSettings;
-import personthecat.cavegenerator.presets.data.PillarSettings;
-import personthecat.cavegenerator.presets.data.RavineSettings;
-import personthecat.cavegenerator.presets.data.StalactiteSettings;
-import personthecat.cavegenerator.presets.data.StructureSettings;
-import personthecat.cavegenerator.presets.data.TunnelSettings;
+import personthecat.cavegenerator.presets.resolver.DecoratorStateResolver;
 
-import java.util.Collections;
-import java.util.List;
-
-@FieldNameConstants
-@Builder(toBuilder = true)
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
+@AllArgsConstructor
 public class CavePreset {
 
-    /** Whether this preset is enabled at all. */
-    @Default boolean enabled = true;
+    public final boolean enabled;
+    public final CaveSettings settings;
+    public final String name;
+    public final JsonObject raw;
 
-    /** A series of conditions, decorators, and miscellaneous features that override other default settings. */
-    @Default OverrideSettings overrides = OverrideSettings.builder().build();
+    public static final String ENABLED_KEY = "enabled";
 
-    /** Regular vanilla tunnels with various overrides. */
-    @Default List<TunnelSettings> tunnels = Collections.emptyList();
+    public static CavePreset from(final String name, final JsonObject json) {
+        if (isPresetEnabled(json)) {
+            try {
+                final CaveSettings settings = HjsonUtils.readThrowing(CaveSettings.CODEC, json)
+                    .withOverrides(HjsonUtils.readThrowing(OverrideSettings.CODEC, json)
+                    .withGlobalDecorators(DecoratorStateResolver.resolveBlockStates(json)));
+                return new CavePreset(true, settings, name, json);
+            } catch (final RuntimeException e) {
+                throw new UnsupportedOperationException("todo");
+            }
+        }
+        return new CavePreset(false, CaveSettings.EMPTY, name, json);
+    }
 
-    /** Regular vanilla ravines with various overrides. */
-    @Default List<RavineSettings> ravines = Collections.emptyList();
-
-    /** Various noise generators which can be configured in extensively. */
-    @Default List<CavernSettings> caverns = Collections.emptyList();
-
-    /** Map generator pairs used to produce a sort of noise-based tunnels. */
-    @Default List<BurrowSettings> burrows = Collections.emptyList();
-
-    /** A series of layers designed to spawn upward throughout the world in sequence. */
-    @Default List<LayerSettings> layers = Collections.emptyList();
-
-    /** Giant spheres with various regular noise restrictions. */
-    @Default List<ClusterSettings> clusters = Collections.emptyList();
-
-    /** Large stalactites and stalagmites spawned by this preset. */
-    @Default List<StalactiteSettings> stalactites = Collections.emptyList();
-
-    /** Giant pillars with optional corner blocks made from stairs. */
-    @Default List<PillarSettings> pillars = Collections.emptyList();
-
-    /** Regular NBT structures which can be placed throughout the world. */
-    @Default List<StructureSettings> structures = Collections.emptyList();
-
-    JsonObject raw;
-
-    public static CavePreset from(final JsonObject json) {
-        final OverrideSettings overrides = OverrideSettings.from(json);
-        final CavePresetBuilder builder = builder().overrides(overrides).raw(json);
-        return new HjsonMapper<>("", CavePresetBuilder::build)
-            .mapBool(Fields.enabled, CavePresetBuilder::enabled)
-            .mapArray(Fields.tunnels, o -> TunnelSettings.from(o, overrides), CavePresetBuilder::tunnels)
-            .mapArray(Fields.ravines, o -> RavineSettings.from(o, overrides), CavePresetBuilder::ravines)
-            .mapArray(Fields.caverns, o -> CavernSettings.from(o, overrides), CavePresetBuilder::caverns)
-            .mapArray(Fields.burrows, o -> BurrowSettings.from(o, overrides), CavePresetBuilder::burrows)
-            .mapArray(Fields.layers, o -> LayerSettings.from(o, overrides), CavePresetBuilder::layers)
-            .mapArray(Fields.clusters, o -> ClusterSettings.from(o, overrides), CavePresetBuilder::clusters)
-            .mapArray(Fields.stalactites, o -> StalactiteSettings.from(o, overrides), CavePresetBuilder::stalactites)
-            .mapArray(Fields.pillars, o -> PillarSettings.from(o, overrides), CavePresetBuilder::pillars)
-            .mapArray(Fields.structures, o -> StructureSettings.from(o, overrides), CavePresetBuilder::structures)
-            .create(builder, json);
+    public static boolean isPresetEnabled(final JsonObject json) {
+        return HjsonUtils.getBool(json, ENABLED_KEY).orElse(true);
     }
 }

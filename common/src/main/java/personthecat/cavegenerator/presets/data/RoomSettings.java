@@ -1,52 +1,46 @@
 package personthecat.cavegenerator.presets.data;
 
-import lombok.AccessLevel;
+import com.mojang.serialization.Codec;
 import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
-import org.hjson.JsonObject;
-import personthecat.catlib.util.HjsonMapper;
+import org.jetbrains.annotations.Nullable;
+import personthecat.cavegenerator.world.config.DecoratorConfig;
+import personthecat.cavegenerator.world.config.RoomConfig;
+
+import java.util.Random;
 
 import static personthecat.catlib.util.Shorthand.invert;
+import static personthecat.catlib.serialization.CodecUtils.dynamic;
+import static personthecat.catlib.serialization.DynamicField.extend;
+import static personthecat.catlib.serialization.DynamicField.field;
 
-@Builder
+@Builder(toBuilder = true)
 @FieldNameConstants
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 public class RoomSettings {
+    @Nullable public final DecoratorSettings decorators;
+    @Nullable public final Float scale;
+    @Nullable public final Float stretch;
+    @Nullable public final Integer chance;
 
-    /** Default decorator settings for all room generators. */
-    private static final DecoratorSettings DEFAULT_DECORATORS = DecoratorSettings.DEFAULTS;
+    public static final Codec<RoomSettings> CODEC = dynamic(RoomSettings::builder, RoomSettingsBuilder::build).create(
+        extend(DecoratorSettings.CODEC, Fields.decorators, s -> s.decorators, (s, d) -> s.decorators = d),
+        field(Codec.FLOAT, Fields.scale, s -> s.scale, (s, f) -> s.scale = f),
+        field(Codec.FLOAT, Fields.stretch, s -> s.stretch, (s, f) -> s.stretch = f),
+        field(Codec.DOUBLE, Fields.chance, s -> invert(s.chance), (s, c) -> s.chance = invert(c))
+    );
 
-    /** Cave blocks and wall decorators applied to these rooms. */
-    @Default DecoratorSettings decorators = DEFAULT_DECORATORS;
-
-    /** The radius in blocks. */
-    @Default float scale = 6.0F;
-
-    /** A vertical ratio of scale. */
-    @Default float stretch = 0.5F;
-
-    /** The 1/x chance of this room spawning at any tunnel system origin. */
-    @Default int chance = 10;
-
-    public static RoomSettings from(final JsonObject json, final OverrideSettings overrides) {
-        final DecoratorSettings decorators = overrides.apply(DEFAULT_DECORATORS.toBuilder()).build();
-        return copyInto(json, builder().decorators(decorators));
+    public RoomSettings withOverrides(final OverrideSettings o) {
+        if (this.decorators == null) return this;
+        return this.toBuilder().decorators(this.decorators.withOverrides(o)).build();
     }
 
-    public static RoomSettings from(final JsonObject json) {
-        return copyInto(json, builder());
-    }
+    public RoomConfig compile(final Random rand, final long seed) {
+        final DecoratorSettings decoratorsCfg = this.decorators != null ? this.decorators : DecoratorSettings.EMPTY;
+        final float scale = this.scale != null ? this.scale : 6.0F;
+        final float stretch = this.stretch != null ? this.stretch : 0.5F;
+        final int chance = this.chance != null ? this.chance : 10;
+        final DecoratorConfig decorators = decoratorsCfg.compile(rand, seed);
 
-    private static RoomSettings copyInto(final JsonObject json, final RoomSettingsBuilder builder) {
-        final RoomSettings original = builder.build();
-        return new HjsonMapper<>(OverrideSettings.Fields.rooms, RoomSettingsBuilder::build)
-            .mapSelf((b, o) -> b.decorators(DecoratorSettings.from(o, original.decorators)))
-            .mapFloat(Fields.scale, RoomSettingsBuilder::scale)
-            .mapFloat(Fields.stretch, RoomSettingsBuilder::stretch)
-            .mapFloat(Fields.chance, (b, f) -> b.chance(invert(f)))
-            .create(builder, json);
+        return new RoomConfig(decorators, scale, stretch, chance);
     }
-
 }

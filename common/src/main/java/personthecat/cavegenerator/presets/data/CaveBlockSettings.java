@@ -1,59 +1,56 @@
 package personthecat.cavegenerator.presets.data;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.experimental.FieldDefaults;
+import com.mojang.serialization.Codec;
+import lombok.AllArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.world.level.block.state.BlockState;
-import org.hjson.JsonObject;
+import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.Range;
-import personthecat.catlib.util.HjsonMapper;
+import personthecat.catlib.serialization.EasyStateCodec;
+import personthecat.cavegenerator.world.config.CaveBlockConfig;
 
 import java.util.List;
-import java.util.Optional;
+import java.util.Objects;
+import java.util.Random;
 
-import static java.util.Optional.empty;
-import static personthecat.catlib.util.Shorthand.full;
+import static personthecat.catlib.serialization.CodecUtils.codecOf;
+import static personthecat.catlib.serialization.CodecUtils.easyList;
+import static personthecat.catlib.serialization.FieldDescriptor.field;
+import static personthecat.catlib.serialization.FieldDescriptor.nullable;
 
-/** Contains all of the data needed for spawning alternative blocks in caves. */
-@Builder
+@AllArgsConstructor
 @FieldNameConstants
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
-@SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-public class CaveBlockSettings {
+public class CaveBlockSettings implements ConfigProvider<CaveBlockSettings, CaveBlockConfig> {
+    @Nullable public final List<BlockState> states;
+    @Nullable public final Double integrity;
+    @Nullable public final Range height;
+    @Nullable public final NoiseSettings noise;
 
-    /** The name of this feature to be used globally in serialization. */
-    private static final String FEATURE_NAME = DecoratorSettings.Fields.caveBlocks;
+    public static final NoiseSettings DEFAULT_NOISE =
+        NoiseSettings.builder().frequency(0.02F).threshold(Range.of(-0.8F)).frequencyY(0.04F).octaves(1).build();
 
-    /** The block to place instead of air. */
-    List<BlockState> states;
+    public static final Codec<NoiseSettings> DEFAULTED_NOISE = NoiseSettings.defaultedNoise(DEFAULT_NOISE);
 
-    /** 0-1 spawn chance. */
-    @Default double integrity = 1.0;
+    public static final Codec<CaveBlockSettings> CODEC = codecOf(
+        field(easyList(EasyStateCodec.INSTANCE), Fields.states, s -> s.states),
+        nullable(Codec.DOUBLE, Fields.integrity, s -> s.integrity),
+        nullable(Range.CODEC, Fields.height, s -> s.height),
+        nullable(DEFAULTED_NOISE, Fields.noise, s -> s.noise),
+        CaveBlockSettings::new
+    );
 
-    /** Height bounds for this decorator. */
-    @Default Range height = Range.of(0, 50);
-
-    /** Noise Generator corresponding to this block. */
-    @Default Optional<NoiseSettings> noise = empty();
-
-    /** The default noise values for CaveBlocks with noise. */
-    public static final NoiseSettings DEFAULT_NOISE = NoiseSettings.builder()
-        .frequency(0.02f).threshold(Range.of(-0.8F)).stretch(1.0f).octaves(1).build();
-
-    private static final HjsonMapper<CaveBlockSettingsBuilder, CaveBlockSettings> MAPPER =
-        new HjsonMapper<>(FEATURE_NAME, CaveBlockSettingsBuilder::build)
-            .mapRequiredStateList(Fields.states, CaveBlockSettingsBuilder::states)
-            .mapObject(Fields.noise, CaveBlockSettings::copyNoise)
-            .mapFloat(Fields.integrity, CaveBlockSettingsBuilder::integrity)
-            .mapRange(Fields.height, CaveBlockSettingsBuilder::height);
-
-    public static CaveBlockSettings from(final JsonObject json) {
-        return MAPPER.create(builder(), json);
+    @Override
+    public Codec<CaveBlockSettings> codec() {
+        return CODEC;
     }
 
-    private static void copyNoise(final CaveBlockSettingsBuilder builder, final JsonObject json) {
-        builder.noise(full(NoiseSettings.from(json, DEFAULT_NOISE)));
+    @Override
+    public CaveBlockConfig compile(final Random rand, final long seed) {
+        return new CaveBlockConfig(
+            Objects.requireNonNull(this.states, "States not populated in codec"),
+            this.integrity != null ? this.integrity : 1.0,
+            this.height != null ? this.height : Range.of(0, 50),
+            NoiseSettings.compile(this.noise != null ? this.noise : DEFAULT_NOISE, rand, seed)
+        );
     }
 }

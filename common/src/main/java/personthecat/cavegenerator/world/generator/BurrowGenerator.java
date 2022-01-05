@@ -4,8 +4,8 @@ import net.minecraft.core.BlockPos;
 import personthecat.catlib.data.Range;
 import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.model.PositionFlags;
-import personthecat.cavegenerator.presets.data.BurrowSettings;
 import personthecat.cavegenerator.world.BiomeSearch;
+import personthecat.cavegenerator.world.config.BurrowConfig;
 import personthecat.fastnoise.FastNoise;
 
 import java.util.ArrayList;
@@ -17,16 +17,16 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
     private final List<BlockPos> invalidChunks = new ArrayList<>(BiomeSearch.size());
     private final FastNoise map;
     private final FastNoise offset;
-    protected final BurrowSettings cfg;
+    protected final BurrowConfig cfg;
     private final PositionFlags caverns;
     private final double mid;
     private final double midShelled;
     private final double radiusShelled;
 
-    public BurrowGenerator(final BurrowSettings cfg, final Random rand, final long seed) {
+    public BurrowGenerator(final BurrowConfig cfg, final Random rand, final long seed) {
         super(cfg.conditions, cfg.decorators, rand, seed);
-        this.map = cfg.map.getGenerator(rand, seed);
-        this.offset = cfg.offset.getGenerator(rand, seed);
+        this.map = cfg.map;
+        this.offset = cfg.offset;
         this.cfg = cfg;
         this.caverns = new PositionFlags((int) (16 * 16 * (cfg.radius + cfg.decorators.shell.radius) * cfg.stretch * 2) + 1);
         this.mid = cfg.radius / Math.pow(cfg.target, cfg.exponent);

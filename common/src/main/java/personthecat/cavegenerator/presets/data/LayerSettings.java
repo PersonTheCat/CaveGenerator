@@ -1,55 +1,61 @@
 package personthecat.cavegenerator.presets.data;
 
-import lombok.AccessLevel;
+import com.mojang.serialization.Codec;
 import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import org.hjson.JsonObject;
+import org.jetbrains.annotations.Nullable;
+import personthecat.catlib.data.InvertibleSet;
 import personthecat.catlib.data.Range;
-import personthecat.catlib.util.HjsonMapper;
-import personthecat.cavegenerator.presets.CavePreset;
+import personthecat.catlib.serialization.EasyStateCodec;
+import personthecat.cavegenerator.world.config.LayerConfig;
 
-import static personthecat.catlib.util.Shorthand.full;
+import java.util.Collections;
+import java.util.Objects;
+import java.util.Random;
+import java.util.Set;
 
-@Builder
+import static personthecat.catlib.serialization.CodecUtils.dynamic;
+import static personthecat.catlib.serialization.CodecUtils.easySet;
+import static personthecat.catlib.serialization.DynamicField.extend;
+import static personthecat.catlib.serialization.DynamicField.field;
+import static personthecat.catlib.serialization.DynamicField.required;
+
+@Builder(toBuilder = true)
 @FieldNameConstants
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
-public class LayerSettings {
+public class LayerSettings implements ConfigProvider<LayerSettings, LayerConfig> {
+    @Nullable public final ConditionSettings conditions;
+    @Nullable public final BlockState state;
+    @Nullable public final Set<BlockState> matchers;
 
-    /** The name of this feature to be used globally in serialization. */
-    private static final String FEATURE_NAME = CavePreset.Fields.layers;
+    private static final NoiseSettings DEFAULT_NOISE =
+        NoiseSettings.builder().frequency(0.015f).range(Range.of(-7, 7)).build();
+    private static final ConditionSettings DEFAULT_CONDITIONS =
+        ConditionSettings.builder().height(Range.of(0, 20)).ceiling(DEFAULT_NOISE).build();
 
-    /** The default noise values used for all layers. */
-    private static final NoiseMapSettings DEFAULT_NOISE = NoiseMapSettings.builder()
-        .frequency(0.015f).range(Range.of(-7, 7)).build();
+    public static final Codec<LayerSettings> CODEC = dynamic(LayerSettings::builder, LayerSettingsBuilder::build).create(
+        extend(ConditionSettings.CODEC, Fields.conditions, d -> d.conditions, (d, c) -> d.conditions = c),
+        required(EasyStateCodec.INSTANCE, Fields.state, d -> d.state, (d, s) -> d.state = s),
+        field(easySet(EasyStateCodec.INSTANCE), Fields.matchers, s -> s.matchers, (s, m) -> s.matchers = m)
+    );
 
-    /** Default spawn conditions for all layer generators. */
-    private static final ConditionSettings DEFAULT_CONDITIONS = ConditionSettings.builder()
-        .height(Range.of(0, 20)).ceiling(full(DEFAULT_NOISE)).build();
-
-    /** Conditions for these layers to spawn. */
-    @Default ConditionSettings conditions = DEFAULT_CONDITIONS;
-
-    /** The block to spawn as a stone "layer" underground. */
-    BlockState state;
-
-    public static LayerSettings from(final JsonObject json, final OverrideSettings overrides) {
-        final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();
-        return copyInto(json, builder().conditions(conditions));
+    public Codec<LayerSettings> codec() {
+        return CODEC;
     }
 
-    public static LayerSettings from(final JsonObject json) {
-        return copyInto(json, builder());
-    }
-        
-    private static LayerSettings copyInto(final JsonObject json, final LayerSettingsBuilder builder) {
-        final LayerSettings original = builder.build();
-        return new HjsonMapper<>(CavePreset.Fields.layers, LayerSettingsBuilder::build)
-            .mapRequiredState(Fields.state, LayerSettingsBuilder::state)
-            .mapSelf((b, o) -> b.conditions(ConditionSettings.from(o, original.conditions)))
-            .create(builder, json);
+    public LayerSettings withOverrides(final OverrideSettings o) {
+        if (this.conditions == null) return this;
+        return this.toBuilder().conditions(this.conditions.withOverrides(o)).build();
     }
 
+    public LayerConfig compile(final Random rand, final long seed) {
+        Objects.requireNonNull(this.state, "State not populated by codec");
+        final ConditionSettings conditions = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
+        final Set<BlockState> matchersCfg = this.matchers != null
+            ? this.matchers : Collections.singleton(Blocks.STONE.defaultBlockState());
+        final Set<BlockState> matchers = new InvertibleSet<>(matchersCfg, false).optimize(Collections.emptyList());
+
+        return new LayerConfig(conditions.compile(rand, seed), this.state, matchers);
+    }
 }

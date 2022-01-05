@@ -8,7 +8,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.block.state.properties.Half;
 import net.minecraft.world.level.block.state.properties.StairsShape;
 import personthecat.catlib.data.Range;
-import personthecat.cavegenerator.presets.data.PillarSettings;
+import personthecat.cavegenerator.world.config.PillarConfig;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Random;
@@ -16,9 +16,9 @@ import java.util.Random;
 @ParametersAreNonnullByDefault
 public class PillarGenerator extends BasicFeature {
 
-    private final PillarSettings cfg;
+    private final PillarConfig cfg;
 
-    public PillarGenerator(final PillarSettings cfg, final Random rand, final long seed) {
+    public PillarGenerator(final PillarConfig cfg, final Random rand, final long seed) {
         super(cfg.conditions, rand, seed);
         this.cfg = cfg;
     }
@@ -63,11 +63,11 @@ public class PillarGenerator extends BasicFeature {
             ctx.region.setBlock(current, cfg.state, 2);
 
             // Handle stair blocks, if applicable.
-            if (cfg.stairBlock.isPresent()) {
+            if (cfg.stairBlock != null) {
                 if (y == actualMax) { // We're at the top. Place stairs upward.
-                    this.testPlaceStairs(ctx, cfg.stairBlock.get(), rand, pos, Half.TOP);
+                    this.testPlaceStairs(ctx, cfg.stairBlock, rand, pos, Half.TOP);
                 } else if (y == actualMin) { // We're at the bottom. Place stairs downward.
-                    this.testPlaceStairs(ctx, cfg.stairBlock.get(), rand, current, Half.BOTTOM);
+                    this.testPlaceStairs(ctx, cfg.stairBlock, rand, current, Half.BOTTOM);
                 }
             }
         }

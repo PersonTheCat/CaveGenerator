@@ -1,61 +1,61 @@
 package personthecat.cavegenerator.model;
 
-import lombok.AccessLevel;
-import lombok.Builder;
-import lombok.experimental.FieldDefaults;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.mojang.datafixers.util.Either;
+import com.mojang.serialization.Codec;
+import lombok.AllArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
+import personthecat.catlib.serialization.EasyStateCodec;
 import personthecat.catlib.util.HjsonMapper;
 import personthecat.cavegenerator.presets.data.StructureSettings;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
-import static personthecat.catlib.exception.Exceptions.jsonFormatEx;
+import static personthecat.catlib.serialization.CodecUtils.codecOf;
+import static personthecat.catlib.serialization.CodecUtils.easyList;
+import static personthecat.catlib.serialization.CodecUtils.easySet;
+import static personthecat.catlib.serialization.CodecUtils.simpleEither;
+import static personthecat.catlib.serialization.FieldDescriptor.field;
 
-@Builder
+@AllArgsConstructor
 @FieldNameConstants
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
 public class BlockCheck {
+    public final Set<BlockState> matchers;
+    public final List<BlockPos> positions;
 
-    /** The specific blocks to find. */
-    List<BlockState> matchers;
+    public static final Codec<BlockCheck> OBJECT_CODEC = codecOf(
+        field(easySet(EasyStateCodec.INSTANCE), Fields.matchers, s -> s.matchers),
+        field(easyList(BlockPos.CODEC), Fields.positions, s -> s.positions),
+        BlockCheck::new
+    );
 
-    /** The positions where this block should be found. */
-    List<BlockPos> positions;
+    public static final Codec<BlockCheck> ARRAY_CODEC = Codec.either(EasyStateCodec.INSTANCE, BlockPos.CODEC).listOf()
+        .xmap(BlockCheck::fromEntries, BlockCheck::toEntries);
 
-    public static BlockCheck fromValue(JsonValue json) {
-        if (json.isObject()) {
-            return from(json.asObject());
-        } else if (json.isArray()) {
-            return from(json.asArray());
+    public static final Codec<BlockCheck> CODEC = simpleEither(OBJECT_CODEC, ARRAY_CODEC);
+
+    private static BlockCheck fromEntries(List<Either<BlockState, BlockPos>> entries) {
+        final ImmutableSet.Builder<BlockState> matchers = ImmutableSet.builder();
+        final ImmutableList.Builder<BlockPos> positions = ImmutableList.builder();
+        for (final Either<BlockState, BlockPos> either : entries) {
+            either.ifLeft(matchers::add).ifRight(positions::add);
         }
-        throw jsonFormatEx("Expected object or array: {}", json);
+        return new BlockCheck(matchers.build(), positions.build());
     }
 
-    public static BlockCheck from(JsonObject json) {
-        return new HjsonMapper<>(StructureSettings.Fields.blockChecks, BlockCheckBuilder::build)
-            .mapRequiredStateList(Fields.matchers, BlockCheckBuilder::matchers)
-            .mapRequiredBlockPosList(Fields.positions, BlockCheckBuilder::positions)
-            .create(builder(), json);
-    }
-
-    public static BlockCheck from(JsonArray json) {
-        final JsonArray matchers = new JsonArray();
-        final JsonArray positions = new JsonArray();
-        for (JsonValue value : json) {
-            if (value.isString()) {
-                matchers.add(value);
-            } else if (value.isArray()) {
-                positions.add(value);
-            } else {
-                throw jsonFormatEx("Expected array or string: {}", value);
-            }
-        }
-        // This allows all other error messages and requirements to be consistent.
-        return from(new JsonObject().add(Fields.matchers, matchers).add(Fields.positions, positions));
+    private List<Either<BlockState, BlockPos>> toEntries() {
+        final List<Either<BlockState, BlockPos>> entries = new ArrayList<>();
+        this.matchers.forEach(m -> entries.add(Either.left(m)));
+        this.positions.forEach(p -> entries.add(Either.right(p)));
+        return entries;
     }
 }

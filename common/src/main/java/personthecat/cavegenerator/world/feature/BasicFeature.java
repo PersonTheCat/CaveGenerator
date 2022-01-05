@@ -6,12 +6,12 @@ import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import personthecat.catlib.util.Shorthand;
-import personthecat.cavegenerator.presets.data.ConditionSettings;
 import personthecat.cavegenerator.model.BlockCheck;
-import personthecat.cavegenerator.model.Conditions;
+import personthecat.cavegenerator.world.config.ConditionConfig;
 
 import java.util.List;
 import java.util.Random;
+import java.util.Set;
 
 public abstract class BasicFeature {
 
@@ -27,12 +27,12 @@ public abstract class BasicFeature {
     /** Minimum distance below the surface for all late features. */
     protected static final int SURFACE_ROOM = 5;
 
-    protected final Conditions conditions;
+    protected final ConditionConfig conditions;
     protected final Random globalRand;
     protected final long seed;
 
-    public BasicFeature(final ConditionSettings conditions, final Random rand, final long seed) {
-        this.conditions = Conditions.compile(conditions, rand, seed);
+    public BasicFeature(final ConditionConfig conditions, final Random rand, final long seed) {
+        this.conditions = conditions;
         this.globalRand = rand;
         this.seed = seed;
     }
@@ -355,7 +355,7 @@ public abstract class BasicFeature {
      * @param pos      The position of the block in question.
      * @return Whether Whether the array contains the block at the given coordinates.
      */
-    protected final boolean checkSources(final List<BlockState> matchers, final WorldGenRegion region, final BlockPos pos) {
+    protected final boolean checkSources(final Set<BlockState> matchers, final WorldGenRegion region, final BlockPos pos) {
         // No matchers -> always spawn.
         if (matchers.isEmpty()) {
             return true;

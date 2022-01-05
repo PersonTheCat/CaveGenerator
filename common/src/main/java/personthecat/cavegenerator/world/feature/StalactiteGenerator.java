@@ -6,6 +6,7 @@ import net.minecraft.world.level.levelgen.Heightmap;
 import personthecat.catlib.data.Range;
 import personthecat.cavegenerator.presets.data.StalactiteSettings;
 import personthecat.cavegenerator.util.XoRoShiRo;
+import personthecat.cavegenerator.world.config.StalactiteConfig;
 
 import javax.annotation.ParametersAreNonnullByDefault;
 import java.util.Random;
@@ -13,12 +14,12 @@ import java.util.Random;
 @ParametersAreNonnullByDefault
 public class StalactiteGenerator extends BasicFeature {
 
-    private final StalactiteSettings cfg;
+    private final StalactiteConfig cfg;
     private final int resolution;
     private final boolean speleothem;
     private final boolean stalactite;
 
-    public StalactiteGenerator(final StalactiteSettings cfg, final Random rand, final long seed) {
+    public StalactiteGenerator(final StalactiteConfig cfg, final Random rand, final long seed) {
         super(cfg.conditions, rand, seed);
         this.cfg = cfg;
         this.resolution = calculateResolution(cfg.chance);

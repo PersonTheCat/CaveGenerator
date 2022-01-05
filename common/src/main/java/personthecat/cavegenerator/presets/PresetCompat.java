@@ -81,6 +81,9 @@ class PresetCompat {
     private static final String PERTURB = "perturb";
     private static final String PERTURB_AMP = "perturbAmp";
     private static final String PERTURB_FREQ = "perturbFreq";
+    private static final String STRETCH = "stretch";
+    private static final String BLACKLIST_BIOMES = "blacklistBiomes";
+    private static final String BLACKLIST_DIMENSIONS = "blacklistDimensions";
 
     // Other field names needed for performing updates.
     private static final String IMPORTS = PresetExpander.IMPORTS;
@@ -100,8 +103,8 @@ class PresetCompat {
         .put(REPLACE_DIRT_STONE, DecoratorSettings.Fields.replaceableBlocks)
         .put(VANILLA_ROOM, OverrideSettings.Fields.rooms)
         .put(LAVA_CAVE_BLOCK, OverrideSettings.Fields.caveBlocks)
-        .put(VANILLA_TUNNELS, CavePreset.Fields.tunnels)
-        .put(VANILLA_RAVINES, CavePreset.Fields.ravines)
+        .put(VANILLA_TUNNELS, CaveSettings.Fields.tunnels)
+        .put(VANILLA_RAVINES, CaveSettings.Fields.ravines)
         .build();
 
     /**
@@ -174,11 +177,11 @@ class PresetCompat {
     private static void updateRoot(final JsonObject json) {
         JsonTransformer.withPath()
             .toRange(MIN_HEIGHT, 0, MAX_HEIGHT, 255, ConditionSettings.Fields.height)
-            .history(USE_BIOME_BLACKLIST, OverrideSettings.Fields.blacklistBiomes)
-            .history(USE_DIMENSION_BLACKLIST, OverrideSettings.Fields.blacklistDimensions)
-            .history(STONE_CLUSTERS, CavePreset.Fields.clusters)
-            .history(STONE_LAYERS, CavePreset.Fields.layers)
-            .history(GIANT_PILLARS, CavePreset.Fields.pillars)
+            .history(USE_BIOME_BLACKLIST, BLACKLIST_BIOMES)
+            .history(USE_DIMENSION_BLACKLIST, BLACKLIST_DIMENSIONS)
+            .history(STONE_CLUSTERS, CaveSettings.Fields.clusters)
+            .history(STONE_LAYERS, CaveSettings.Fields.layers)
+            .history(GIANT_PILLARS, CaveSettings.Fields.pillars)
             .updateAll(json);
     }
 
@@ -233,7 +236,7 @@ class PresetCompat {
     }
 
     private static void updateTunnels(final JsonObject json) {
-        JsonTransformer.withPath(CavePreset.Fields.tunnels)
+        JsonTransformer.withPath(CaveSettings.Fields.tunnels)
             .toRange(MIN_HEIGHT, 8, MAX_HEIGHT, 128, TunnelSettings.Fields.originHeight)
             .history(ISOLATED_CHANCE, TunnelSettings.Fields.chance)
             .history(FREQUENCY, TunnelSettings.Fields.count)
@@ -246,7 +249,7 @@ class PresetCompat {
     }
 
     private static void updateRavines(final JsonObject json) {
-        JsonTransformer.withPath(CavePreset.Fields.ravines)
+        JsonTransformer.withPath(CaveSettings.Fields.ravines)
             .toRange(MIN_HEIGHT, 20, MAX_HEIGHT, 66, RavineSettings.Fields.originHeight)
             .history(ANGLE_XZ, RavineSettings.Fields.yaw)
             .history(ANGLE_Y, RavineSettings.Fields.pitch)
@@ -256,31 +259,31 @@ class PresetCompat {
             .history(WALL_NOISE, RavineSettings.Fields.walls)
             .collapse(RavineSettings.Fields.walls, NOISE_2D)
             .updateAll(json);
-        JsonTransformer.withPath(CavePreset.Fields.ravines, RavineSettings.Fields.walls)
-            .toRange(MIN_VAL, 0.0, MAX_VAL, 4.0, NoiseMapSettings.Fields.range)
+        JsonTransformer.withPath(CaveSettings.Fields.ravines, RavineSettings.Fields.walls)
+            .toRange(MIN_VAL, 0.0, MAX_VAL, 4.0, NoiseSettings.Fields.range)
             .markRemoved(SCALE, CG_1_0)
             .updateAll(json);
     }
 
     private static void updateCaverns(final JsonObject json) {
-        JsonTransformer.withPath(CavePreset.Fields.caverns)
+        JsonTransformer.withPath(CaveSettings.Fields.caverns)
             .toRange(MIN_HEIGHT, 10, MAX_HEIGHT, 50, ConditionSettings.Fields.height)
             .history(NOISE_3D, CavernSettings.Fields.generators)
             .collapse(ConditionSettings.Fields.ceiling, NOISE_2D)
             .collapse(ConditionSettings.Fields.floor, NOISE_2D)
             .markRemoved(ENABLED, CG_1_0)
             .updateAll(json);
-        JsonTransformer.withPath(CavePreset.Fields.caverns, ConditionSettings.Fields.ceiling)
-            .toRange(MIN_VAL, -17.0, MAX_VAL, -3.0, NoiseMapSettings.Fields.range)
+        JsonTransformer.withPath(CaveSettings.Fields.caverns, ConditionSettings.Fields.ceiling)
+            .toRange(MIN_VAL, -17.0, MAX_VAL, -3.0, NoiseSettings.Fields.range)
             .ifPresent(NoiseSettings.Fields.type, PresetCompat::transformNoiseType)
             .updateAll(json);
-        JsonTransformer.withPath(CavePreset.Fields.caverns, ConditionSettings.Fields.floor)
-            .toRange(MIN_VAL, 0.0, MAX_VAL, 8.0, NoiseMapSettings.Fields.range)
+        JsonTransformer.withPath(CaveSettings.Fields.caverns, ConditionSettings.Fields.floor)
+            .toRange(MIN_VAL, 0.0, MAX_VAL, 8.0, NoiseSettings.Fields.range)
             .ifPresent(NoiseSettings.Fields.type, PresetCompat::transformNoiseType)
             .updateAll(json);
-        JsonTransformer.withPath(CavePreset.Fields.caverns, CavernSettings.Fields.generators)
+        JsonTransformer.withPath(CaveSettings.Fields.caverns, CavernSettings.Fields.generators)
             .transform(SCALE, PresetCompat::transformScale)
-            .history(SCALE_Y, NoiseSettings.Fields.stretch)
+            .history(SCALE_Y, STRETCH)
             .transform(PERTURB, PresetCompat::transformPerturb)
             .history(PERTURB_AMP, NoiseSettings.Fields.warpAmplitude)
             .history(PERTURB_FREQ, NoiseSettings.Fields.warpFrequency)
@@ -289,25 +292,25 @@ class PresetCompat {
     }
 
     private static void updateClusters(final JsonObject json) {
-        JsonTransformer.withPath(CavePreset.Fields.clusters)
+        JsonTransformer.withPath(CaveSettings.Fields.clusters)
             .history(NOISE_3D, ConditionSettings.Fields.noise)
             .updateAll(json);
         updateClusterRanges(json);
     }
 
     private static void updateLayers(final JsonObject json) {
-        JsonTransformer.withPath(CavePreset.Fields.layers)
+        JsonTransformer.withPath(CaveSettings.Fields.layers)
             .toRange(MIN_HEIGHT, 0, MAX_HEIGHT, 20, ConditionSettings.Fields.height)
             .history(NOISE_2D, ConditionSettings.Fields.ceiling)
             .updateAll(json);
-        JsonTransformer.withPath(CavePreset.Fields.layers, ConditionSettings.Fields.ceiling)
-            .toRange(MIN_VAL, -7.0, MAX_VAL, 7.0, NoiseMapSettings.Fields.range)
+        JsonTransformer.withPath(CaveSettings.Fields.layers, ConditionSettings.Fields.ceiling)
+            .toRange(MIN_VAL, -7.0, MAX_VAL, 7.0, NoiseSettings.Fields.range)
             .updateAll(json);
     }
 
     private static void updateStalactites(final JsonObject json) {
         condenseStalactites(json);
-        JsonTransformer.withPath(CavePreset.Fields.stalactites)
+        JsonTransformer.withPath(CaveSettings.Fields.stalactites)
             .toRange(MIN_HEIGHT, 11, MAX_HEIGHT, 55, ConditionSettings.Fields.height)
             .toRange(MIN_LENGTH, 1, MAX_LENGTH, 3, StalactiteSettings.Fields.length)
             .history(NOISE_2D, ConditionSettings.Fields.region)
@@ -316,7 +319,7 @@ class PresetCompat {
     }
 
     private static void updatePillars(final JsonObject json) {
-        JsonTransformer.withPath(CavePreset.Fields.pillars)
+        JsonTransformer.withPath(CaveSettings.Fields.pillars)
             .history(FREQUENCY, PillarSettings.Fields.count)
             .toRange(MIN_HEIGHT, 10, MAX_HEIGHT, 50, ConditionSettings.Fields.height)
             .toRange(MIN_LENGTH, 4, MAX_LENGTH, 12, PillarSettings.Fields.length)
@@ -324,7 +327,7 @@ class PresetCompat {
     }
 
     private static void updateStructures(final JsonObject json) {
-        JsonTransformer.withPath(CavePreset.Fields.structures)
+        JsonTransformer.withPath(CaveSettings.Fields.structures)
             .toRange(MIN_HEIGHT, 10, MAX_HEIGHT, 50, ConditionSettings.Fields.height)
             .history(FREQUENCY, StructureSettings.Fields.count)
             .history(AIR_MATCHERS, StructureSettings.Fields.airChecks)
@@ -335,7 +338,7 @@ class PresetCompat {
     }
 
     private static void updateBurrows(final JsonObject json) {
-        JsonTransformer.withPath(CavePreset.Fields.burrows, BurrowSettings.Fields.map)
+        JsonTransformer.withPath(CaveSettings.Fields.burrows, BurrowSettings.Fields.map)
             .ifPresent(NoiseSettings.Fields.type, PresetCompat::transformNoiseType)
             .transform(PERTURB, PresetCompat::transformPerturb)
             .history(PERTURB_AMP, NoiseSettings.Fields.warpAmplitude)
@@ -371,7 +374,7 @@ class PresetCompat {
             .transform(SCALE, PresetCompat::transformScale)
             .markRemoved(MIN_VAL, CG_1_0)
             .markRemoved(MAX_VAL, CG_1_0)
-            .markRemoved(NoiseMapSettings.Fields.range, CG_1_0)
+            .markRemoved(NoiseSettings.Fields.range, CG_1_0)
             .ifPresent(NoiseSettings.Fields.type, PresetCompat::transformNoiseType)
             .updateAll(json);
         JsonTransformer.recursive(OverrideSettings.Fields.wallDecorators)
@@ -391,7 +394,7 @@ class PresetCompat {
         final List<JsonObject> largeStalactites = HjsonUtils.getRegularObjects(json, LARGE_STALACTITES);
         final List<JsonObject> largeStalagmites = HjsonUtils.getRegularObjects(json, LARGE_STALAGMITES);
         if (!largeStalactites.isEmpty() || !largeStalagmites.isEmpty()) {
-            final JsonArray stalactites = HjsonUtils.getArrayOrNew(json, CavePreset.Fields.stalactites);
+            final JsonArray stalactites = HjsonUtils.getArrayOrNew(json, CaveSettings.Fields.stalactites);
             for (final JsonObject stalactite : largeStalactites) {
                 stalactite.set(StalactiteSettings.Fields.type, StalactiteSettings.Type.STALACTITE.name());
                 stalactites.add(stalactite);
@@ -400,16 +403,16 @@ class PresetCompat {
                 stalagmite.set(StalactiteSettings.Fields.type, StalactiteSettings.Type.STALAGMITE.name());
                 stalactites.add(stalagmite);
             }
-            json.set(CavePreset.Fields.stalactites, stalactites);
+            json.set(CaveSettings.Fields.stalactites, stalactites);
             json.remove(LARGE_STALACTITES);
             json.remove(LARGE_STALAGMITES);
         }
     }
 
     private static void updateRoomChance(final JsonObject json) {
-        final List<JsonObject> tunnels = HjsonUtils.getRegularObjects(json, CavePreset.Fields.tunnels);
+        final List<JsonObject> tunnels = HjsonUtils.getRegularObjects(json, CaveSettings.Fields.tunnels);
         final JsonObject rooms = HjsonUtils.getObject(json, OverrideSettings.Fields.rooms)
-            .orElseGet(PresetCompat::getDefaultRooms);
+            .orElseGet(JsonObject::new);
         boolean updated = false;
 
         for (final JsonObject tunnel : tunnels) {
@@ -438,14 +441,8 @@ class PresetCompat {
         json.remove(OverrideSettings.Fields.rooms);
     }
 
-    private static JsonObject getDefaultRooms() {
-        final RoomSettings settings = RoomSettings.builder().build();
-        return new JsonObject().add(RoomSettings.Fields.scale, settings.scale)
-            .add(RoomSettings.Fields.stretch, settings.stretch);
-    }
-
     private static void updateClusterRanges(final JsonObject json) {
-        for (final JsonObject cluster : HjsonUtils.getRegularObjects(json, CavePreset.Fields.clusters)) {
+        for (final JsonObject cluster : HjsonUtils.getRegularObjects(json, CaveSettings.Fields.clusters)) {
             final JsonValue radiusVariance = cluster.get(RADIUS_VARIANCE);
             if (radiusVariance != null) {
                 updateClusterRadii(cluster, radiusVariance.asInt() / 2);

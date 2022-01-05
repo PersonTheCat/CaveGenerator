@@ -4,18 +4,14 @@ import lombok.AllArgsConstructor;
 import personthecat.catlib.data.Range;
 import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.model.PositionFlags;
-import personthecat.cavegenerator.noise.DummyGenerator;
-import personthecat.cavegenerator.presets.data.CavernSettings;
-import personthecat.cavegenerator.presets.data.NoiseMapSettings;
-import personthecat.cavegenerator.presets.data.NoiseSettings;
 import personthecat.cavegenerator.world.BiomeSearch;
+import personthecat.cavegenerator.world.config.CavernConfig;
 import personthecat.fastnoise.FastNoise;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Random;
-import java.util.stream.Collectors;
 
 public class CavernGenerator extends CaveCarver implements TunnelSocket {
 
@@ -30,38 +26,34 @@ public class CavernGenerator extends CaveCarver implements TunnelSocket {
     private final int maxY;
     private final int diffY;
     private final int curveOffset;
-    protected final CavernSettings cfg;
+    protected final CavernConfig cfg;
 
-    public CavernGenerator(final CavernSettings cfg, final Random rand, final long seed) {
+    public CavernGenerator(final CavernConfig cfg, final Random rand, final long seed) {
         super(cfg.conditions, cfg.decorators, rand, seed);
-        this.generators = createGenerators(cfg.generators, rand, seed);
-        this.wallOffset = cfg.wallOffset.map(n -> n.getGenerator(rand, seed)).orElse(new DummyGenerator(0F));
-        this.heightOffset = cfg.offset.map(n -> n.getGenerator(rand, seed)).orElse(new DummyGenerator(0F));
+        this.generators = cfg.generators;
+        this.wallOffset = cfg.wallOffset;
+        this.heightOffset = cfg.offset;
         this.wallCurveRatio = cfg.wallCurveRatio;
         this.wallInterpolated = cfg.wallInterpolation;
 
-        final int minY = conditions.height.min + cfg.conditions.floor.map(n -> n.range.min).orElse(0);
-        this.maxY = conditions.height.max + cfg.conditions.ceiling.map(n -> n.range.max).orElse(0);
+        // Mega todo: need to access the possible output range again. Don't have that anymore.
+        final int minY = conditions.height.min;// + cfg.conditions.floor.map(n -> n.range.min).orElse(0);
+        this.maxY = conditions.height.max;// + cfg.conditions.ceiling.map(n -> n.range.max).orElse(0);
         this.diffY = this.maxY - minY;
         this.caverns = new PositionFlags(16 * 16 * this.maxY - minY);
         this.curveOffset = (this.diffY + 1) / -2;
 
         final int r = BiomeSearch.size();
         this.invalidChunks = new ArrayList<>(this.wallInterpolated ? (r * 2 + 1) * 2 - 1 : r);
-        if (cfg.walls.isPresent()) {
-            this.setupWallNoise(cfg.walls.get(), rand, seed);
+        if (cfg.walls != null) {
+            this.setupWallNoise(cfg.walls);
         } else {
             Arrays.fill(wallNoise, 15);
         }
         this.cfg = cfg;
     }
 
-    private static List<FastNoise> createGenerators(List<NoiseSettings> settings, Random rand, long seed) {
-        return settings.stream().map(s -> s.getGenerator(rand, seed)).collect(Collectors.toList());
-    }
-
-    private void setupWallNoise(NoiseMapSettings settings, Random rand, long seed) {
-        final FastNoise noise = settings.getGenerator(rand, seed);
+    private void setupWallNoise(FastNoise noise) {
         final int len = wallNoise.length;
         final double increment = 6.2830810546 / (double) len;
         final int r = 32; // Arbitrary radius and resolution

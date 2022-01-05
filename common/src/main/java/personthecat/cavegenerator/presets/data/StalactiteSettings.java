@@ -1,96 +1,103 @@
 package personthecat.cavegenerator.presets.data;
 
-import lombok.AccessLevel;
+import com.mojang.serialization.Codec;
 import lombok.Builder;
-import lombok.Builder.Default;
-import lombok.EqualsAndHashCode;
-import lombok.experimental.FieldDefaults;
 import lombok.experimental.FieldNameConstants;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-import org.hjson.JsonObject;
+import personthecat.catlib.data.InvertibleSet;
 import personthecat.catlib.data.Range;
-import personthecat.catlib.util.HjsonMapper;
-import personthecat.cavegenerator.presets.CavePreset;
+import personthecat.catlib.serialization.EasyStateCodec;
+import personthecat.cavegenerator.world.config.ConditionConfig;
+import personthecat.cavegenerator.world.config.StalactiteConfig;
 
-import javax.annotation.ParametersAreNonnullByDefault;
+import javax.annotation.Nullable;
 import java.util.Collections;
-import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
-@Builder
+import static personthecat.catlib.serialization.CodecUtils.dynamic;
+import static personthecat.catlib.serialization.CodecUtils.easySet;
+import static personthecat.catlib.serialization.CodecUtils.ofEnum;
+import static personthecat.catlib.serialization.DynamicField.extend;
+import static personthecat.catlib.serialization.DynamicField.field;
+
+@Builder(toBuilder = true)
 @FieldNameConstants
-@EqualsAndHashCode(callSuper = false)
-@FieldDefaults(level = AccessLevel.PUBLIC, makeFinal = true)
-@ParametersAreNonnullByDefault
-public class StalactiteSettings {
+public class StalactiteSettings implements ConfigProvider<StalactiteSettings, StalactiteConfig> {
+    @Nullable public final ConditionSettings conditions;
+    @Nullable public final BlockState state;
+    @Nullable public final Type type;
+    @Nullable public final Size size;
+    @Nullable public final Double chance;
+    @Nullable public final Range length;
+    @Nullable public final Integer space;
+    @Nullable public final Boolean symmetrical;
+    @Nullable public final Set<BlockState> matchers;
 
-    /** Default spawn conditions for all stalactite generators. */
-    private static final ConditionSettings DEFAULT_CONDITIONS = ConditionSettings.builder()
-        .height(Range.of(11, 55)).build();
-
-    /** Conditions for these tunnels to spawn. */
-    @Default ConditionSettings conditions = DEFAULT_CONDITIONS;
-
-    /** The required state to make the body of this structure. */
-    BlockState state;
-
-    /** Whether this structure should spawn upward or downward, i.e. stalagmite or stalactite. */
-    @Default Type type = Type.STALACTITE;
-
-    /** The general width of this structure. */
-    @Default Size size = Size.MEDIUM;
-
-    /** The 0-1 chance that this spawner should run in any given chunk. */
-    @Default double chance = 0.167F;
-
-    /** The possible lengths to generate. */
-    @Default Range length = Range.of(3, 5);
-
-    /** The minimum amount of free space above or below  */
-    @Default int space = 3;
-
-    /** Whether all sides should have the same length. */
-    @Default boolean symmetrical = true;
-
-    /** Source blocks to check for before spawning. */
-    @Default List<BlockState> matchers = Collections.emptyList();
-
-    /** The default noise settings to be optionally used for stalactites. */
-    public static final NoiseRegionSettings DEFAULT_NOISE = NoiseRegionSettings.builder()
+    public static final NoiseSettings DEFAULT_REGION = NoiseSettings.builder()
         .frequency(0.025f).threshold(Range.of(-0.425F)).build();
 
-    public static StalactiteSettings from(final JsonObject json, final OverrideSettings overrides) {
-        final ConditionSettings conditions = overrides.apply(DEFAULT_CONDITIONS.toBuilder()).build();
-        return copyInto(json, builder().conditions(conditions));
+    private static final ConditionSettings DEFAULT_CONDITIONS =
+        ConditionSettings.builder().height(Range.of(11, 55)).build();
+
+    public static final Codec<StalactiteSettings> CODEC = dynamic(StalactiteSettings::builder, StalactiteSettingsBuilder::build).create(
+        extend(ConditionSettings.CODEC, Fields.conditions, s -> s.conditions, (s, c) -> s.conditions = c),
+        field(EasyStateCodec.INSTANCE, Fields.state, s -> s.state, (s, b) -> s.state = b),
+        field(Type.CODEC, Fields.type, s -> s.type, (s, t) -> s.type = t),
+        field(Size.CODEC, Fields.size, s -> s.size, (s, z) -> s.size = z),
+        field(Codec.DOUBLE, Fields.chance, s -> s.chance, (s, c) -> s.chance = c),
+        field(Range.CODEC, Fields.length, s -> s.length, (s, l) -> s.length = l),
+        field(Codec.INT, Fields.space, s -> s.space, (s, p) -> s.space = p),
+        field(Codec.BOOL, Fields.symmetrical, s -> s.symmetrical, (s, m) -> s.symmetrical = m),
+        field(easySet(EasyStateCodec.INSTANCE), Fields.matchers, s -> s.matchers, (s, m) -> s.matchers = m)
+    );
+
+    @Override
+    public Codec<StalactiteSettings> codec() {
+        return CODEC;
     }
 
-    public static StalactiteSettings from(final JsonObject json) {
-        return copyInto(json, builder().conditions(DEFAULT_CONDITIONS));
+    @Override
+    public StalactiteSettings withOverrides(final OverrideSettings o) {
+        if (this.conditions == null) return this;
+        return this.toBuilder().conditions(this.conditions.withOverrides(o)).build();
     }
 
-    private static StalactiteSettings copyInto(final JsonObject json, final StalactiteSettingsBuilder builder) {
-        return new HjsonMapper<>(CavePreset.Fields.stalactites, StalactiteSettingsBuilder::build)
-            .mapRequiredState(Fields.state, StalactiteSettingsBuilder::state)
-            .mapSelf((b, o) -> b.conditions(ConditionSettings.from(o, builder.conditions$value)))
-            .mapEnum(Fields.type, Type.class, StalactiteSettingsBuilder::type)
-            .mapEnum(Fields.size, Size.class, StalactiteSettingsBuilder::size)
-            .mapFloat(Fields.chance, StalactiteSettingsBuilder::chance)
-            .mapRange(Fields.length, StalactiteSettingsBuilder::length)
-            .mapInt(Fields.space, StalactiteSettingsBuilder::space)
-            .mapBool(Fields.symmetrical, StalactiteSettingsBuilder::symmetrical)
-            .mapStateList(Fields.matchers, StalactiteSettingsBuilder::matchers)
-            .create(builder, json);
+    @Override
+    public StalactiteConfig compile(final Random rand, final long seed) {
+        final ConditionSettings conditionsCfg = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
+        final BlockState state = this.state != null ? this.state : Blocks.STONE.defaultBlockState();
+        final Type type = this.type != null ? this.type : Type.STALACTITE;
+        final Size size = this.size != null ? this.size : Size.MEDIUM;
+        final double chance = this.chance != null ? this.chance : 0.167;
+        final Range length = this.length != null ? this.length : Range.of(3, 5);
+        final int space = this.space != null ? this.space : 3;
+        final boolean symmetrical = this.symmetrical != null ? this.symmetrical : true;
+        final Set<BlockState> matchersCfg = this.matchers != null ? this.matchers : Collections.emptySet();
+
+        final ConditionConfig conditions = conditionsCfg
+            .withDefaults(DEFAULT_CONDITIONS).withDefaultRegion(DEFAULT_REGION).compile(rand, seed);
+        final Set<BlockState> matchers =
+            new InvertibleSet<>(matchersCfg, false).optimize(Collections.emptyList());
+
+        return new StalactiteConfig(conditions, state, type, size, chance, length, space, symmetrical, matchers);
     }
 
     public enum Type {
         STALAGMITE,
         STALACTITE,
-        SPELEOTHEM
+        SPELEOTHEM;
+
+        public static final Codec<Type> CODEC = ofEnum(Type.class);
     }
 
     public enum Size {
         SMALL,
         MEDIUM,
         LARGE,
-        GIANT
+        GIANT;
+
+        public static final Codec<Size> CODEC = ofEnum(Size.class);
     }
 }

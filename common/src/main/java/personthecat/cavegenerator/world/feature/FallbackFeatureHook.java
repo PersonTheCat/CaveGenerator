@@ -13,7 +13,6 @@ import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
 import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfiguration;
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
-import personthecat.catlib.data.Lazy;
 import personthecat.cavegenerator.CaveRegistries;
 import personthecat.cavegenerator.noise.CachedNoiseHelper;
 import personthecat.cavegenerator.util.Reference;
