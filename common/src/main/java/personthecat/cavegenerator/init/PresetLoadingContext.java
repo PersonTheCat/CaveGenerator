@@ -138,19 +138,18 @@ public class PresetLoadingContext {
             if (Cfg.DETECT_EXTRA_TOKENS.getAsBoolean()) {
                 this.runStringInspections();
             }
-            // Todo: evaluate inner presets before applying transforms
             if (Cfg.shouldUpdatePresets()) {
                 this.runTransforms();
             }
             if (Cfg.CAVE_EL.getAsBoolean()) {
                 CaveLangExtension.expandAll(this.rawPresets, this.importPresets);
             }
+            final Map<String, JsonObject> extracted = extractInner(this.rawPresets);
             if (Cfg.DEEP_TRANSFORMS.getAsBoolean()) {
-                this.rawPresets.forEach((file, json) ->
-                    PresetCompat.transformOnly(json));
+                extracted.forEach((file, json) -> PresetCompat.transformOnly(json));
             }
-            this.rawPresets.forEach((file, json) -> json.setAllAccessed(false));
-            return extractInner(this.rawPresets);
+            extracted.forEach((name, json) -> json.setAllAccessed(false));
+            return extracted;
         }
 
         void runStringInspections() {
