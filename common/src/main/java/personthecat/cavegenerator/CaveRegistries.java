@@ -4,10 +4,12 @@ import net.minecraft.resources.ResourceKey;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
 import personthecat.catlib.data.SafeRegistry;
+import personthecat.cavegenerator.init.ControllerInitializer;
+import personthecat.cavegenerator.init.DisabledFeatureSupport;
+import personthecat.cavegenerator.init.PresetLoadingContext;
 import personthecat.cavegenerator.model.CaveCommandSource;
 import personthecat.cavegenerator.model.SeedStorage;
 import personthecat.cavegenerator.presets.CavePreset;
-import personthecat.cavegenerator.init.CaveInit;
 import personthecat.cavegenerator.world.GeneratorController;
 import personthecat.cavegenerator.world.feature.StructureSpawner;
 
@@ -17,12 +19,12 @@ import java.util.List;
 public class CaveRegistries {
 
     public static final SafeRegistry<String, CavePreset> PRESETS =
-        SafeRegistry.of(CaveInit::initPresets)
+        SafeRegistry.of(PresetLoadingContext::loadPresets)
             .respondsWith(key -> "There is no preset named: " + key)
             .canBeReset(true);
 
     public static final SafeRegistry<String, GeneratorController> GENERATORS =
-        SafeRegistry.of(CaveInit::initControllers)
+        SafeRegistry.of(ControllerInitializer::initControllers)
             .respondsWith(key -> "There is no generator named: " + key)
             .canBeReset(true);
 
@@ -32,7 +34,7 @@ public class CaveRegistries {
             .canBeReset(true);
 
     public static final SafeRegistry<ResourceKey<?>, List<ResourceLocation>> DISABLED_FEATURES =
-        SafeRegistry.of(CaveInit::initDisabledFeatures)
+        SafeRegistry.of(DisabledFeatureSupport::setupDisabledFeatures)
             .respondsWith(key -> "Unsupported registry key: " + key)
             .canBeReset(true);
 

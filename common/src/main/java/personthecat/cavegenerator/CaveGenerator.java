@@ -23,7 +23,7 @@ public class CaveGenerator {
     public void initCommon() {
         JarFiles.copyFiles();
         Cfg.register();
-        LibCommandRegistrar.registerCommands(Reference.MOD_DESCRIPTOR, true, CommandCave.class);
+        LibCommandRegistrar.registerCommands(Reference.MOD, true, CommandCave.class);
 
         if (Cfg.FALLBACK_FEATURES.getAsBoolean()) {
             FallbackFeatureHook.register();

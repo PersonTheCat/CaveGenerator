@@ -11,12 +11,12 @@ import static personthecat.catlib.exception.Exceptions.jsonFormatEx;
 
 public class SyntaxHelper {
 
-    /** A message informing the user that their comma is inside of a string. */
+    /** A message informing the user that their comma is inside a string. */
     private static final String COMMA_MESSAGE = "Found comma (,) in string. "
         + "Remove it or use double quotes. e.g. <\"value\",>\n"
         + "Source: {}";
 
-    /** A message informing the user that their comment is inside of a string. */
+    /** A message informing the user that their comment is inside a string. */
     private static final String COMMENT_MESSAGE = "Found comment (# or //) in string. "
         + "Put your comment above this value or use double quotes. e.g. <\"value\" # comment>\n"
         + "Source: {}";
@@ -37,7 +37,7 @@ public class SyntaxHelper {
      * @throws RuntimeException If an error is found.
      * @param file The file source of this JSON.
      * @param json The object being tested.
-     */
+     */ // todo: error menu
     public static void check(final File file, final JsonObject json) {
         for (final JsonObject.Member member : json) {
             final JsonValue value = member.getValue();

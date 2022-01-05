@@ -11,7 +11,7 @@ import personthecat.catlib.util.JsonTransformer;
 import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.presets.data.*;
 import personthecat.cavegenerator.io.JarFiles;
-import personthecat.cavegenerator.presets.lang.PresetExpander;
+import personthecat.cavegenerator.presets.lang.CaveLangExtension;
 import personthecat.fastnoise.data.DomainWarpType;
 import personthecat.fastnoise.data.FractalType;
 import personthecat.fresult.Result;
@@ -25,13 +25,10 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
- * This is a temporary class designed to extend compatibility of deprecated fields and notations
- * until they can safely be phased out. It will handle updating these fields to their new format
- * for the next few updates until sufficient time has passed to remove them safely.
- *
- * Todo: consider storing these transformers to improve repeated load times.
+ * @deprecated (WIP) being moved to compat.PresetCompat. See OSV for examples.
  */
 @Log4j2
+@Deprecated
 class PresetCompat {
 
     // Versions where fields were removed;
@@ -86,18 +83,18 @@ class PresetCompat {
     private static final String BLACKLIST_DIMENSIONS = "blacklistDimensions";
 
     // Other field names needed for performing updates.
-    private static final String IMPORTS = PresetExpander.IMPORTS;
-    private static final String VARIABLES = PresetExpander.VARIABLES;
+    private static final String IMPORTS = CaveLangExtension.IMPORTS;
+    private static final String VARIABLES = CaveLangExtension.VARIABLES;
 
     // Deprecated fields in defaults.cave
-    private static final String VANILLA = PresetExpander.VANILLA;
+    private static final String VANILLA = CaveLangExtension.VANILLA;
     private static final String REPLACE_DIRT_STONE = "REPLACE_DIRT_STONE";
     private static final String VANILLA_ROOM = "VANILLA_ROOM";
     private static final String LAVA_CAVE_BLOCK = "LAVA_CAVE_BLOCK";
     private static final String VANILLA_TUNNELS = "VANILLA_TUNNELS";
     private static final String VANILLA_RAVINES = "VANILLA_RAVINES";
 
-    private static final Pattern DEFAULT_IMPORT = Pattern.compile(PresetExpander.DEFAULTS + "\\s*::\\s*(\\w+)");
+    private static final Pattern DEFAULT_IMPORT = Pattern.compile(CaveLangExtension.DEFAULTS + "\\s*::\\s*(\\w+)");
 
     private static final Map<String, String> IMPORT_FIELD_MAP = ImmutableMap.<String, String>builder()
         .put(REPLACE_DIRT_STONE, DecoratorSettings.Fields.replaceableBlocks)
@@ -127,7 +124,7 @@ class PresetCompat {
     static Result<Void, IOException> updateImport(final JsonObject json, final File file) {
         final int hash = json.hashCode();
         // defaults.cave::VANILLA was changed to be easier to update.
-        if (file.getName().equals(PresetExpander.DEFAULTS) && json.has(PresetExpander.VANILLA)) {
+        if (file.getName().equals(CaveLangExtension.DEFAULTS) && json.has(CaveLangExtension.VANILLA)) {
             updateDefaults(json);
         } else if (Cfg.UPDATE_IMPORTS.getAsBoolean()) {
             updateRegularValues(json);
@@ -169,7 +166,7 @@ class PresetCompat {
     }
 
     private static void updateInner(final JsonObject json) {
-        for (final JsonObject inner : HjsonUtils.getRegularObjects(json, PresetReader.INNER_KEY)) {
+        for (final JsonObject inner : HjsonUtils.getRegularObjects(json, CavePreset.INNER_KEY)) {
             updateRegularValues(inner);
         }
     }
@@ -206,7 +203,7 @@ class PresetCompat {
         if (matcher.matches()) {
             final String name = matcher.group(1);
             if (IMPORT_FIELD_MAP.containsKey(name)) {
-                return PresetExpander.DEFAULTS + "::" + IMPORT_FIELD_MAP.get(name) + " as " + name;
+                return CaveLangExtension.DEFAULTS + "::" + IMPORT_FIELD_MAP.get(name) + " as " + name;
             }
         }
         return val;

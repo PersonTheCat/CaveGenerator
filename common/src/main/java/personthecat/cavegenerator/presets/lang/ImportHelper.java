@@ -75,7 +75,7 @@ public class ImportHelper {
 
     /** Recursively loads all import definitions from the imports array in a JSON object. */
     public static Map<File, JsonObject> locateDefinitions(final JsonObject json) {
-        final Optional<List<String>> imports = HjsonUtils.getStringArray(json, PresetExpander.IMPORTS);
+        final Optional<List<String>> imports = HjsonUtils.getStringArray(json, CaveLangExtension.IMPORTS);
         if (!imports.isPresent()) {
             return new HashMap<>();
         }
@@ -94,7 +94,7 @@ public class ImportHelper {
         final JsonObject json = PresetReader.getPresetJson(file)
             .orElseThrow(() -> caveSyntax("Error parsing {}", file));
         definitions.put(file, json);
-        final JsonValue imports = json.get(PresetExpander.IMPORTS);
+        final JsonValue imports = json.get(CaveLangExtension.IMPORTS);
         if (imports != null) {
             final JsonArray importArray = HjsonUtils.asOrToArray(imports);
             for (JsonValue importExp : importArray) {

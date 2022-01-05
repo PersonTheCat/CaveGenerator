@@ -3,7 +3,7 @@ package personthecat.cavegenerator.io;
 import lombok.extern.log4j.Log4j2;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
-import personthecat.cavegenerator.presets.lang.PresetExpander;
+import personthecat.cavegenerator.presets.lang.CaveLangExtension;
 import personthecat.cavegenerator.util.Reference;
 
 import java.io.*;
@@ -81,8 +81,12 @@ public class JarFiles {
         copyTutorial();
     }
 
+    public static boolean isSpecialFile(final String name) {
+        return TUTORIAL_NAME.equalsIgnoreCase(name) || REFERENCE_NAME.equalsIgnoreCase(name);
+    }
+
     public static JsonObject getDefaults() {
-        final String fromLocation = DATA_PATH + "/imports/" + PresetExpander.DEFAULTS;
+        final String fromLocation = DATA_PATH + "/imports/" + CaveLangExtension.DEFAULTS;
         final InputStream is = getRequiredResource(fromLocation);
         final Reader rx = new InputStreamReader(is);
         final JsonObject json;

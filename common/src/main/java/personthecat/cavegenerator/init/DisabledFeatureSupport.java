@@ -10,91 +10,23 @@ import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
 import net.minecraft.world.level.levelgen.feature.ConfiguredStructureFeature;
 import net.minecraft.world.level.levelgen.feature.Feature;
-import personthecat.catlib.util.HjsonUtils;
-import personthecat.cavegenerator.CaveRegistries;
-import personthecat.cavegenerator.model.SeedStorage;
-import personthecat.cavegenerator.presets.CavePreset;
 import personthecat.cavegenerator.config.Cfg;
-import personthecat.cavegenerator.presets.PresetReader;
-import personthecat.cavegenerator.world.GeneratorController;
 
-import java.io.File;
-import java.util.*;
-
-import static personthecat.catlib.util.PathUtils.extension;
-import static personthecat.catlib.io.FileIO.mkdirsOrThrow;
-import static personthecat.cavegenerator.io.ModFolders.GENERATED_DIR;
-import static personthecat.cavegenerator.io.ModFolders.IMPORT_DIR;
-import static personthecat.cavegenerator.io.ModFolders.PRESET_DIR;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 @Log4j2
-public class CaveInit {
-
-    /** A list of valid extensions to compare against presets. */
-    private static final List<String> EXTENSIONS = Arrays.asList("hjson", "json", "cave");
+public class DisabledFeatureSupport {
 
     /**
-     * Loads all of the enabled presets located inside of <code>cavegenerator/presets</code>.
-     *
-     * @return A map of preset name -> preset model.
-     */
-    public static Map<String, CavePreset> initPresets() {
-        // Verify the folders' integrity before proceeding.
-        mkdirsOrThrow(PRESET_DIR, IMPORT_DIR);
-        // Handle all files in the preset directory.
-        final Map<String, CavePreset> presets = PresetReader.loadPresets(PRESET_DIR, IMPORT_DIR);
-
-        // If necessary, automatically write the expanded values.
-        if (Cfg.AUTO_GENERATE.getAsBoolean()) {
-            mkdirsOrThrow(GENERATED_DIR);
-            presets.forEach((name, preset) -> {
-                final File file = new File(GENERATED_DIR, name + ".cave");
-                HjsonUtils.writeJson(preset.raw, file).unwrap();
-            });
-        }
-        // Inform the user of which presets were loaded.
-        printLoadedPresets(presets);
-        return presets;
-    }
-
-    /**
-     * Prints which presets are currently loaded and whether they are enabled.
-     *
-     * @param presets A map of preset name -> preset model.
-     */
-    private static void printLoadedPresets(final Map<String, CavePreset> presets) {
-        for (final Map.Entry<String, CavePreset> entry : presets.entrySet()) {
-            final String enabled = entry.getValue().enabled ? "enabled" : "disabled";
-            log.info("{} is {}.", entry.getKey(), enabled);
-        }
-    }
-
-    /**
-     * Converts every cave preset model into a generator controller using the current seed info.
-     *
-     * @return A map of preset name -> generator controller.
-     */
-    public static Map<String, GeneratorController> initControllers() {
-        if (CaveRegistries.PRESETS.isEmpty()) {
-            return Collections.emptyMap();
-        }
-        final SeedStorage.Info seedInfo = CaveRegistries.CURRENT_SEED.get();
-        final Map<String, GeneratorController> controllers = new TreeMap<>();
-        for (final Map.Entry<String, CavePreset> entry : CaveRegistries.PRESETS.entrySet()) {
-            if (entry.getValue().enabled) {
-                controllers.put(entry.getKey(), entry.getValue().settings.compile(seedInfo.rand, seedInfo.seed));
-            }
-        }
-        return controllers;
-    }
-
-    /**
-     * Parses the disable feature config entries for an up to date set of disabled features at
+     * Parses the disable feature config entries for an updated set of disabled features at
      * this point in time.
      *
      * @return A map of registry key -> disabled ids.
      */
-    public static Map<ResourceKey<?>, List<ResourceLocation>> initDisabledFeatures() {
+    public static Map<ResourceKey<?>, List<ResourceLocation>> setupDisabledFeatures() {
         final Map<ResourceKey<?>, List<ResourceLocation>> ids = new HashMap<>();
         ids.put(Registry.CONFIGURED_CARVER_REGISTRY, loadDisabledCarvers());
         ids.put(Registry.CONFIGURED_FEATURE_REGISTRY, loadDisabledFeatures());
@@ -115,7 +47,7 @@ public class CaveInit {
             final ResourceLocation key = new ResourceLocation(id);
             if (BuiltinRegistries.CONFIGURED_CARVER.get(key) != null) {
                 disabledCarvers.add(key);
-            } else {
+            } else { // Todo: error menu
                 log.error("Invalid carver id. Cannot disable: {}", id);
             }
         }
@@ -124,7 +56,7 @@ public class CaveInit {
 
     /**
      * Generates a list of {@link ConfiguredFeature} resource locations to be disabled by the
-     * mod. This list is also immutable so that the the holding registry is still safe.
+     * mod. This list is also immutable so that the holding registry is still safe.
      *
      * @return A list of {@link ResourceLocation}s corresponding to disabled configured features.
      */
@@ -140,7 +72,7 @@ public class CaveInit {
                     .forEach(disabledFeatures::add);
             } else if (BuiltinRegistries.CONFIGURED_FEATURE.get(key) != null) {
                 disabledFeatures.add(key);
-            } else {
+            } else { // Todo: error menu
                 log.error("Invalid feature id. Cannot disable: {}", id);
             }
         }
@@ -159,20 +91,10 @@ public class CaveInit {
             final ResourceLocation key = new ResourceLocation(id);
             if (BuiltinRegistries.CONFIGURED_STRUCTURE_FEATURE.get(key) != null) {
                 disabledStructures.add(key);
-            } else {
+            } else { // Todo: error menu
                 log.error("Invalid structure id. Cannot disable: {}", id);
             }
         }
         return disabledStructures.build();
-    }
-
-    /**
-     * Determines whether the provided file is in one of the accepted formats.
-     *
-     * @param file A file which may or may not be a preset.
-     * @return <code>true</code>, if the file can be accepted.
-     */
-    public static boolean validExtension(final File file) {
-        return EXTENSIONS.contains(extension(file));
     }
 }

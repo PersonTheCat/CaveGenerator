@@ -6,6 +6,9 @@ import personthecat.catlib.util.HjsonUtils;
 import personthecat.cavegenerator.presets.data.CaveSettings;
 import personthecat.cavegenerator.presets.data.OverrideSettings;
 import personthecat.cavegenerator.presets.resolver.DecoratorStateResolver;
+import personthecat.cavegenerator.world.GeneratorController;
+
+import java.util.Random;
 
 @AllArgsConstructor
 public class CavePreset {
@@ -16,9 +19,10 @@ public class CavePreset {
     public final JsonObject raw;
 
     public static final String ENABLED_KEY = "enabled";
+    public static final String INNER_KEY = "inner";
 
     public static CavePreset from(final String name, final JsonObject json) {
-        if (isPresetEnabled(json)) {
+        if (isEnabled(json)) {
             try {
                 final CaveSettings settings = HjsonUtils.readThrowing(CaveSettings.CODEC, json)
                     .withOverrides(HjsonUtils.readThrowing(OverrideSettings.CODEC, json)
@@ -31,7 +35,11 @@ public class CavePreset {
         return new CavePreset(false, CaveSettings.EMPTY, name, json);
     }
 
-    public static boolean isPresetEnabled(final JsonObject json) {
+    public static boolean isEnabled(final JsonObject json) {
         return HjsonUtils.getBool(json, ENABLED_KEY).orElse(true);
+    }
+
+    public GeneratorController setupController(final Random rand, final long seed) {
+        return this.settings.compile(rand, seed);
     }
 }

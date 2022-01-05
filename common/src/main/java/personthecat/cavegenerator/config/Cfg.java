@@ -21,11 +21,15 @@ public class Cfg {
     public static final Supplier<List<String>> DISABLED_CARVERS = Collections::emptyList;
     public static final Supplier<List<String>> DISABLED_FEATURES = () -> DEFAULT_DISABLED_FEATURES;
     public static final Supplier<List<String>> DISABLED_STRUCTURES = Collections::emptyList;
+    public static final Supplier<PresetUpdatePreference> UPDATE_PREFERENCE = () -> PresetUpdatePreference.ALWAYS;
+    public static final BooleanSupplier THOROUGH_TRANSFORMS = () -> true;
     public static final BooleanSupplier FALLBACK_CARVERS = () -> false;
     public static final BooleanSupplier FALLBACK_FEATURES = () -> false;
     public static final BooleanSupplier ENABLE_OTHER_GENERATORS = () -> false;
+    public static final BooleanSupplier DETECT_EXTRA_TOKENS = () -> true;
+    public static final BooleanSupplier CAVE_EL = () -> true;
     public static final BooleanSupplier STRICT_PRESETS = () -> false;
-    public static final BooleanSupplier IGNORE_INVALID_PRESETS = () -> false;
+    @Deprecated public static final BooleanSupplier IGNORE_INVALID_PRESETS = () -> false;
     public static final BooleanSupplier AUTO_FORMAT = () -> true;
     public static final BooleanSupplier AUTO_GENERATE = () -> false;
     public static final BooleanSupplier UPDATE_IMPORTS = () -> true;
@@ -36,5 +40,12 @@ public class Cfg {
     @PlatformMustOverwrite
     public static void register() {
         throw new MissingOverrideException();
+    }
+
+    // Todo: smartUpdatePresets with version tracker
+    public static boolean shouldUpdatePresets() {
+        final PresetUpdatePreference update = UPDATE_PREFERENCE.get();
+        return update == PresetUpdatePreference.ALWAYS
+            || (update == PresetUpdatePreference.MOD_UPDATED /* && mod updated */);
     }
 }

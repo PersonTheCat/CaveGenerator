@@ -20,7 +20,7 @@ import static java.util.Optional.empty;
 import static personthecat.catlib.util.Shorthand.full;
 import static personthecat.cavegenerator.exception.CaveSyntaxException.caveSyntax;
 
-public class PresetExpander {
+public class CaveLangExtension {
 
     /** The name of the imports array at the top of any preset file. */
     public static final String IMPORTS = "imports";
@@ -94,6 +94,18 @@ public class PresetExpander {
         expandAll(singleton, definitions);
 
         return json;
+    }
+
+    /**
+     * Indicates whether this file is probably one of the legacy <code>defaults.cave</code>
+     * files with its original values.
+     *
+     * @param file The file being examined.
+     * @param json The JSON contents of this file.
+     * @return <code>true</code>, if the file is a legacy <code>defaults.cave</code>.
+     */
+    public static boolean isLegacyDefaults(final File file, final JsonObject json) {
+        return file.getName().equals(DEFAULTS) && json.get(VANILLA) != null;
     }
 
     /**

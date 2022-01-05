@@ -22,15 +22,15 @@ import personthecat.catlib.util.PathUtils;
 import personthecat.catlib.util.ResourceArrayLinter;
 import personthecat.cavegenerator.CaveRegistries;
 import personthecat.cavegenerator.exception.CaveOutputException;
-import personthecat.cavegenerator.init.CaveInit;
 import personthecat.cavegenerator.presets.PresetReader;
 import personthecat.cavegenerator.io.ModFolders;
 import personthecat.cavegenerator.noise.CachedNoiseHelper;
 import personthecat.cavegenerator.presets.CavePreset;
 import personthecat.cavegenerator.presets.PresetCompressor;
-import personthecat.cavegenerator.presets.lang.PresetExpander;
+import personthecat.cavegenerator.presets.lang.CaveLangExtension;
 import personthecat.cavegenerator.presets.lang.ReferenceHelper;
 import personthecat.cavegenerator.util.Calculator;
+import personthecat.cavegenerator.util.Reference;
 
 import java.io.File;
 import java.io.IOException;
@@ -123,7 +123,7 @@ public class CommandCave {
         directories.add(dir.getParentFile());
 
         for (final File file : listFiles(dir)) {
-            if (CaveInit.validExtension(file)) {
+            if (Reference.VALID_EXTENSIONS.contains(extension(file))) {
                 (isPresetEnabled(file) ? enabled : disabled).add(file);
             } else if (file.isDirectory()) {
                 directories.add(file);
@@ -216,7 +216,7 @@ public class CommandCave {
         }
     )
     private void expand(final CommandContextWrapper ctx) {
-        PresetExpander.expand(ctx.getFile(FILE_ARG))
+        CaveLangExtension.expand(ctx.getFile(FILE_ARG))
             .ifErr(e -> ctx.sendError(e.getMessage()))
             .ifOk(j -> writeExpanded(ctx, j));
     }
@@ -463,9 +463,9 @@ public class CommandCave {
 
     private static String doEvaluate(final JsonValue value) {
         if (value.isArray()) {
-            PresetExpander.calculateAll(value.asArray());
+            CaveLangExtension.calculateAll(value.asArray());
         } else if (value.isObject()) {
-            PresetExpander.calculateAll(value.asObject());
+            CaveLangExtension.calculateAll(value.asObject());
         } else if (value.isString() && Calculator.isExpression(value.asString())) {
             return String.valueOf(Calculator.evaluate(value.asString()));
         }
@@ -476,12 +476,12 @@ public class CommandCave {
         final JsonObject data = new JsonObject();
         // Generate a faux preset to be expanded.
         final JsonObject fauxPreset = new JsonObject()
-                .set(PresetExpander.IMPORTS, exp)
-                .set(PresetExpander.VARIABLES, data);
-        PresetExpander.expandInPlace(fauxPreset);
+                .set(CaveLangExtension.IMPORTS, exp)
+                .set(CaveLangExtension.VARIABLES, data);
+        CaveLangExtension.expandInPlace(fauxPreset);
         // The variables object was removed from the faux
         // preset, but the implicit VANILLA is still there.
-        data.remove(PresetExpander.VANILLA);
+        data.remove(CaveLangExtension.VANILLA);
         return data;
     }
 
