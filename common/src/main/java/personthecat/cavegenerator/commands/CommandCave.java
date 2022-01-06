@@ -96,6 +96,7 @@ public class CommandCave {
         description = "Reloads all of the current presets from the disk."
     )
     private void reload(final CommandContextWrapper ctx) {
+        PresetLoadingContext.reset();
         CaveRegistries.reloadAll();
         CachedNoiseHelper.removeAll();
         ctx.sendMessage("Successfully reloaded caves. View the log for diagnostics.");
