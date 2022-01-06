@@ -14,6 +14,7 @@ import personthecat.catlib.config.HjsonFileConfig;
 import personthecat.catlib.util.McUtils;
 import personthecat.cavegenerator.util.Reference;
 import personthecat.overwritevalidator.annotations.Inherit;
+import personthecat.overwritevalidator.annotations.InheritMissingMembers;
 import personthecat.overwritevalidator.annotations.Overwrite;
 import personthecat.overwritevalidator.annotations.OverwriteClass;
 
@@ -27,6 +28,7 @@ import java.util.function.Supplier;
 
 @UtilityClass
 @OverwriteClass
+@InheritMissingMembers
 public class Cfg {
 
     private static final ForgeConfigSpec.Builder COMMON = new ForgeConfigSpec.Builder();

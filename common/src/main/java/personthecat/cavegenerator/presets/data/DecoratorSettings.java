@@ -19,7 +19,7 @@ import java.util.function.Predicate;
 
 import static personthecat.catlib.serialization.CodecUtils.codecOf;
 import static personthecat.catlib.serialization.CodecUtils.easyList;
-import static personthecat.catlib.serialization.FieldDescriptor.field;
+import static personthecat.catlib.serialization.FieldDescriptor.nullable;
 import static personthecat.catlib.util.Shorthand.map;
 
 @Builder
@@ -39,14 +39,14 @@ public class DecoratorSettings {
         new DecoratorSettings(null, null, null, null, null, null, null, null);
 
     public static final Codec<DecoratorSettings> CODEC = codecOf(
-        field(easyList(EasyStateCodec.INSTANCE), Fields.replaceableBlocks, s -> s.replaceableBlocks),
-        field(Codec.BOOL, Fields.replaceDecorators, s -> s.replaceDecorators),
-        field(Codec.BOOL, Fields.replaceSolidBlocks, s -> s.replaceSolidBlocks),
-        field(easyList(CaveBlockSettings.CODEC), Fields.caveBlocks, s -> s.caveBlocks),
-        field(easyList(WallDecoratorSettings.CODEC), Fields.wallDecorators, s -> s.wallDecorators),
-        field(easyList(PondSettings.CODEC), Fields.ponds, s -> s.ponds),
-        field(ShellSettings.CODEC, Fields.shell, s -> s.shell),
-        field(easyList(EasyStateCodec.INSTANCE), "<globals>", s -> s.globalDecorators),
+        nullable(easyList(EasyStateCodec.INSTANCE), Fields.replaceableBlocks, s -> s.replaceableBlocks),
+        nullable(Codec.BOOL, Fields.replaceDecorators, s -> s.replaceDecorators),
+        nullable(Codec.BOOL, Fields.replaceSolidBlocks, s -> s.replaceSolidBlocks),
+        nullable(easyList(CaveBlockSettings.CODEC), Fields.caveBlocks, s -> s.caveBlocks),
+        nullable(easyList(WallDecoratorSettings.CODEC), Fields.wallDecorators, s -> s.wallDecorators),
+        nullable(easyList(PondSettings.CODEC), Fields.ponds, s -> s.ponds),
+        nullable(ShellSettings.CODEC, Fields.shell, s -> s.shell),
+        nullable(easyList(EasyStateCodec.INSTANCE), "<globals>", s -> s.globalDecorators),
         DecoratorSettings::new
     ).flatXmap(DecoratorValidator::apply, DataResult::success);
 

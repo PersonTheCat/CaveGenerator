@@ -8,6 +8,7 @@ import personthecat.catlib.config.HjsonConfigSerializer;
 import personthecat.catlib.data.Lazy;
 import personthecat.cavegenerator.util.Reference;
 import personthecat.overwritevalidator.annotations.Inherit;
+import personthecat.overwritevalidator.annotations.InheritMissingMembers;
 import personthecat.overwritevalidator.annotations.Overwrite;
 import personthecat.overwritevalidator.annotations.OverwriteClass;
 
@@ -20,6 +21,7 @@ import java.util.function.LongSupplier;
 import java.util.function.Supplier;
 
 @OverwriteClass
+@InheritMissingMembers
 @Config(name = Reference.MOD_ID)
 public class Cfg implements ConfigData {
 

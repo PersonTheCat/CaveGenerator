@@ -29,7 +29,7 @@ public class CavePreset {
                     .withGlobalDecorators(DecoratorStateResolver.resolveBlockStates(json)));
                 return new CavePreset(true, settings, name, json);
             } catch (final RuntimeException e) {
-                throw new UnsupportedOperationException("todo");
+                throw new UnsupportedOperationException("todo", e);
             }
         }
         return new CavePreset(false, CaveSettings.EMPTY, name, json);

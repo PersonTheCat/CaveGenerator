@@ -27,6 +27,7 @@ public class NoiseSettings {
     @Nullable public final Float frequencyY;
     @Nullable public final Float frequencyZ;
     @Nullable public final Float frequency;
+    @Nullable public final Float stretch;
     @Nullable public final FloatRange threshold;
     @Nullable public final Float lacunarity;
     @Nullable public final Float gain;
@@ -94,7 +95,7 @@ public class NoiseSettings {
             field(Codec.FLOAT, Fields.frequencyY, s -> s.frequencyY, (s, f) -> s.frequencyY = f),
             field(Codec.FLOAT, Fields.jitterY, s -> s.jitterY, (s, j) -> s.jitterY = j),
             field(Codec.INT, Fields.offset, s -> s.offset, (s, o) -> s.offset = o),
-            field(Codec.FLOAT, "stretch", s -> 0.0F, (s, f) -> s.frequencyY /= f)
+            field(Codec.FLOAT, Fields.stretch, s -> s.stretch, (s, f) -> s.stretch = f)
         );
 
     public static Codec<NoiseSettings> defaultedMap(final NoiseSettings defaults) {
@@ -118,13 +119,17 @@ public class NoiseSettings {
     }
 
     public NoiseSettings withDefaults(final NoiseSettings defaults) {
-        return builder()
+        final NoiseSettingsBuilder builder = builder()
             .seed(this.seed != null ? this.seed : defaults.seed)
             .frequency(this.frequency != null ? this.frequency : defaults.frequency)
             .frequencyX(this.frequencyX != null ? this.frequencyX : defaults.frequencyX)
             .frequencyY(this.frequencyY != null ? this.frequencyY : defaults.frequencyY)
-            .frequencyZ(this.frequencyZ != null ? this.frequencyZ : defaults.frequencyZ)
-            .threshold(this.threshold != null ? this.threshold : defaults.threshold)
+            .frequencyZ(this.frequencyZ != null ? this.frequencyZ : defaults.frequencyZ);
+
+        // experimental / temporary backwards compat.
+        if (this.stretch != null) builder.frequencyY(builder.frequencyY / this.stretch);
+
+        return builder.threshold(this.threshold != null ? this.threshold : defaults.threshold)
             .lacunarity(this.lacunarity != null ? this.lacunarity : defaults.lacunarity)
             .gain(this.gain != null ? this.gain : defaults.gain)
             .warpAmplitude(this.warpAmplitude != null ? this.warpAmplitude : defaults.warpAmplitude)

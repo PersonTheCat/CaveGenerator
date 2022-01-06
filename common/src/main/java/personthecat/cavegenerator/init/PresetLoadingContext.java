@@ -102,6 +102,20 @@ public class PresetLoadingContext {
         SafeRegistry.resetAll(PRESETS, IMPORTS);
     }
 
+    public static @Nullable JsonObject readJson(final File file) {
+        try (final FileReader reader = new FileReader(file)) {
+            if (JsonType.isJson(file)) {
+                return JsonObject.readJSON(reader).asObject();
+            }
+            return JsonObject.readHjson(reader).asObject();
+        } catch (final IOException e) { // Todo: better formatted errors.
+            LibErrorContext.error(Reference.MOD, new FormattedIOException(file, e));
+        } catch (final RuntimeException e) {
+            LibErrorContext.error(Reference.MOD, new GenericFormattedException(e, "todo"));
+        }
+        return null;
+    }
+
     private static class Context {
         final Map<File, JsonObject> rawPresets = loadFiles(PRESETS);
         final Map<File, JsonObject> importPresets = loadFiles(IMPORTS);
@@ -118,20 +132,6 @@ public class PresetLoadingContext {
                 }
             }
             return parsed;
-        }
-
-        static @Nullable JsonObject readJson(final File file) {
-            try (final FileReader reader = new FileReader(file)) {
-                if (JsonType.isJson(file)) {
-                    return JsonObject.readJSON(reader).asObject();
-                }
-                return JsonObject.readHjson(reader).asObject();
-            } catch (final IOException e) { // Todo: better formatted errors.
-                LibErrorContext.error(Reference.MOD, new FormattedIOException(file, e));
-            } catch (final RuntimeException e) {
-                LibErrorContext.error(Reference.MOD, new GenericFormattedException(e, "todo"));
-            }
-            return null;
         }
 
         Map<String, JsonObject> getPresets() {

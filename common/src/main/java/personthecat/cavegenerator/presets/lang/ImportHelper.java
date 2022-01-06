@@ -4,7 +4,7 @@ import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 import personthecat.catlib.util.HjsonUtils;
-import personthecat.cavegenerator.presets.PresetReader;
+import personthecat.cavegenerator.init.PresetLoadingContext;
 import personthecat.cavegenerator.io.ModFolders;
 
 import java.io.File;
@@ -91,8 +91,10 @@ public class ImportHelper {
         if (definitions.containsKey(file)) {
             return;
         }
-        final JsonObject json = PresetReader.getPresetJson(file)
-            .orElseThrow(() -> caveSyntax("Error parsing {}", file));
+        final JsonObject json = PresetLoadingContext.readJson(file);
+        if (json == null) {
+            return;
+        }
         definitions.put(file, json);
         final JsonValue imports = json.get(CaveLangExtension.IMPORTS);
         if (imports != null) {
@@ -169,7 +171,7 @@ public class ImportHelper {
         }
 
         Optional<JsonObject> tryLoadObject() {
-            return locateFile().flatMap(PresetReader::getPresetJson);
+            return locateFile().flatMap(f -> Optional.ofNullable(PresetLoadingContext.readJson(f)));
         }
 
         Optional<File> locateFile() {

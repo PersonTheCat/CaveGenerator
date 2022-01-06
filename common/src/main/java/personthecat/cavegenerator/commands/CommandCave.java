@@ -22,7 +22,7 @@ import personthecat.catlib.util.PathUtils;
 import personthecat.catlib.util.ResourceArrayLinter;
 import personthecat.cavegenerator.CaveRegistries;
 import personthecat.cavegenerator.exception.CaveOutputException;
-import personthecat.cavegenerator.presets.PresetReader;
+import personthecat.cavegenerator.init.PresetLoadingContext;
 import personthecat.cavegenerator.io.ModFolders;
 import personthecat.cavegenerator.noise.CachedNoiseHelper;
 import personthecat.cavegenerator.presets.CavePreset;
@@ -174,7 +174,7 @@ public class CommandCave {
 
     private static void enableOrDisable(final CommandContextWrapper ctx, final boolean enabled) {
         final File f = ctx.getFile(FILE_ARG);
-        final JsonObject preset = PresetReader.getPresetJson(f).orElse(null);
+        final JsonObject preset = PresetLoadingContext.readJson(f);
 
         if (preset == null) {
             ctx.sendError("Error reading preset.");
@@ -401,9 +401,13 @@ public class CommandCave {
     }
 
     private static boolean isPresetEnabled(final File file) {
-        return PresetReader.getPresetJson(file)
-            .flatMap(preset -> HjsonUtils.getBool(preset, "enabled"))
-            .orElse(true);
+        if (!file.exists()) return false;
+
+        return CaveRegistries.PRESETS.getOptional(noExtension(file))
+            .map(p -> p.enabled)
+            .orElseGet(() -> HjsonUtils.readSuppressing(file)
+                .map(CavePreset::isEnabled)
+                .orElse(false));
     }
 
     private static MutableComponent getViewDirectoryText(final File file) {

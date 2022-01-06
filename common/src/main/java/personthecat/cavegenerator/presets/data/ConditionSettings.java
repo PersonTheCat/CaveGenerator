@@ -16,7 +16,7 @@ import javax.annotation.Nullable;
 import java.util.Random;
 
 import static personthecat.catlib.serialization.CodecUtils.codecOf;
-import static personthecat.catlib.serialization.FieldDescriptor.field;
+import static personthecat.catlib.serialization.FieldDescriptor.nullable;
 
 @Builder
 @FieldNameConstants
@@ -32,13 +32,13 @@ public class ConditionSettings implements ConfigProvider<ConditionSettings, Cond
     public static final ConditionSettings EMPTY = new ConditionSettings(null, null, null, null, null, null, null);
 
     public static final Codec<ConditionSettings> CODEC = codecOf(
-        field(BiomePredicate.CODEC, Fields.biomes, c -> c.biomes),
-        field(DimensionPredicate.CODEC, Fields.dimensions, c -> c.dimensions),
-        field(Range.CODEC, Fields.height, c -> c.height),
-        field(NoiseSettings.MAP, Fields.floor, c -> c.floor),
-        field(NoiseSettings.MAP, Fields.ceiling, c -> c.ceiling),
-        field(NoiseSettings.REGION, Fields.region, c -> c.region),
-        field(NoiseSettings.NOISE, Fields.noise, c -> c.noise),
+        nullable(BiomePredicate.CODEC, Fields.biomes, c -> c.biomes),
+        nullable(DimensionPredicate.CODEC, Fields.dimensions, c -> c.dimensions),
+        nullable(Range.CODEC, Fields.height, c -> c.height),
+        nullable(NoiseSettings.MAP, Fields.floor, c -> c.floor),
+        nullable(NoiseSettings.MAP, Fields.ceiling, c -> c.ceiling),
+        nullable(NoiseSettings.REGION, Fields.region, c -> c.region),
+        nullable(NoiseSettings.NOISE, Fields.noise, c -> c.noise),
         ConditionSettings::new
     ).flatXmap(ConditionValidator::apply, DataResult::success);
 
