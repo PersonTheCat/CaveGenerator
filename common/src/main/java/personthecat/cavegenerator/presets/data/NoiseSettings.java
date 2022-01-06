@@ -16,6 +16,7 @@ import personthecat.fastnoise.generator.PerlinNoise;
 
 import java.util.Random;
 
+import static personthecat.catlib.util.Shorthand.coalesce;
 import static personthecat.catlib.serialization.CodecUtils.dynamic;
 import static personthecat.catlib.serialization.DynamicField.field;
 
@@ -119,17 +120,14 @@ public class NoiseSettings {
     }
 
     public NoiseSettings withDefaults(final NoiseSettings defaults) {
-        final NoiseSettingsBuilder builder = builder()
+        return builder()
             .seed(this.seed != null ? this.seed : defaults.seed)
             .frequency(this.frequency != null ? this.frequency : defaults.frequency)
             .frequencyX(this.frequencyX != null ? this.frequencyX : defaults.frequencyX)
             .frequencyY(this.frequencyY != null ? this.frequencyY : defaults.frequencyY)
-            .frequencyZ(this.frequencyZ != null ? this.frequencyZ : defaults.frequencyZ);
-
-        // experimental / temporary backwards compat.
-        if (this.stretch != null) builder.frequencyY(builder.frequencyY / this.stretch);
-
-        return builder.threshold(this.threshold != null ? this.threshold : defaults.threshold)
+            .frequencyZ(this.frequencyZ != null ? this.frequencyZ : defaults.frequencyZ)
+            .stretch(this.stretch != null ? this.stretch : defaults.stretch)
+            .threshold(this.threshold != null ? this.threshold : defaults.threshold)
             .lacunarity(this.lacunarity != null ? this.lacunarity : defaults.lacunarity)
             .gain(this.gain != null ? this.gain : defaults.gain)
             .warpAmplitude(this.warpAmplitude != null ? this.warpAmplitude : defaults.warpAmplitude)
@@ -157,31 +155,35 @@ public class NoiseSettings {
 
     public FastNoise getGenerator(final Random rand, final long seed) {
         if (this.dummy == Boolean.TRUE) {
-            return new DummyGenerator(this.dummyOutput != null ? this.dummyOutput : 0.0F);
+            return new DummyGenerator(this.dummyOutput != null ? this.dummyOutput : 1.0F);
         }
         final NoiseDescriptor cfg = FastNoise.createDescriptor();
-
-        if (this.frequency != null) cfg.frequency(this.frequency);
-        if (this.jitter != null) cfg.jitter(this.jitter);
         if (this.cellularLookup != null) cfg.noiseLookup(FastNoise.createDescriptor().noise(this.cellularLookup));
 
         if (this.threshold != null) {
             cfg.threshold(this.threshold.min, this.threshold.max);
         } else {
-            cfg.threshold(0.5F, 0.5F);
+            cfg.threshold(0.0F, 0.0F);
         }
-
         if (this.range != null) {
             cfg.range(this.range.min, this.range.max);
         } else {
             cfg.range(-1, 1);
         }
+        cfg.frequencyX(coalesce(this.frequencyX, this.frequency, 0.01F))
+            .frequencyY(coalesce(this.frequencyY, this.frequency, 0.01F))
+            .frequencyZ(coalesce(this.frequencyZ, this.frequency, 0.01F));
 
+        // experimental / temporary backwards compat.
+        if (this.stretch != null) {
+            if (this.frequency != null) {
+                cfg.frequencyY(this.frequency / this.stretch);
+            } else {
+                cfg.frequencyY(((cfg.frequencyX() + cfg.frequencyZ()) / 2.0F) / this.stretch);
+            }
+        }
         cfg.seed(getSeed(rand, seed))
             .noise(this.type != null ? this.type : NoiseType.SIMPLEX)
-            .frequencyX(this.frequencyX != null ? this.frequencyX : 1.0F)
-            .frequencyY(this.frequencyY != null ? this.frequencyY : 1.0F)
-            .frequencyZ(this.frequencyZ != null ? this.frequencyZ : 1.0F)
             .fractal(this.fractal != null ? this.fractal : FractalType.NONE)
             .octaves(this.octaves != null ? this.octaves : 3)
             .invert(this.invert != null ? this.invert : false)
@@ -192,14 +194,13 @@ public class NoiseSettings {
             .warp(this.warp != null ? this.warp : DomainWarpType.NONE)
             .lacunarity(this.lacunarity != null ? this.lacunarity : 1.0F)
             .distance(this.distFunc != null ? this.distFunc : CellularDistanceType.EUCLIDEAN)
-            .jitterX(this.jitterX != null ? this.jitterX : 0.45F)
-            .jitterY(this.jitterY != null ? this.jitterY : 0.45F)
-            .jitterZ(this.jitterZ != null ? this.jitterZ : 0.45F)
+            .jitterX(coalesce(this.jitterX, this.jitter, 0.45F))
+            .jitterY(coalesce(this.jitterY, this.jitter, 0.45F))
+            .jitterZ(coalesce(this.jitterZ, this.jitter, 0.45F))
             .offset(this.offset != null ? this.offset : 0)
             .pingPongStrength(this.pingPongStrength != null ? this.pingPongStrength : 2.0F);
 
         final FastNoise generator = cfg.generate();
-
         return this.cache == Boolean.TRUE ? new CachedNoiseGenerator(cfg, generator) : generator;
     }
 

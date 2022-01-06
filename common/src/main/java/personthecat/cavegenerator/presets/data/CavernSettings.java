@@ -49,6 +49,7 @@ public class CavernSettings implements ConfigProvider<CavernSettings, CavernConf
         ConditionSettings.builder().height(Range.of(10, 50))
             .ceiling(DEFAULT_CEIL_NOISE).floor(DEFAULT_FLOOR_NOISE).build();
 
+    private static final Codec<NoiseSettings> DEFAULTED_GENERATOR = NoiseSettings.defaultedNoise(DEFAULT_GENERATOR);
     private static final Codec<NoiseSettings> DEFAULTED_OFFSET = NoiseSettings.defaultedMap(DEFAULT_HEIGHT_OFFSET);
     private static final Codec<NoiseSettings> DEFAULTED_WALL = NoiseSettings.defaultedMap(DEFAULT_WALL_NOISE);
     private static final Codec<NoiseSettings> DEFAULTED_WALL_OFFSET = NoiseSettings.defaultedMap(DEFAULT_WALL_OFFSET);
@@ -62,7 +63,7 @@ public class CavernSettings implements ConfigProvider<CavernSettings, CavernConf
         field(DEFAULTED_WALL_OFFSET, Fields.wallOffset, s -> s.wallOffset, (s, o) -> s.wallOffset = o),
         field(Codec.FLOAT, Fields.wallCurveRatio, s -> s.wallCurveRatio, (s, r) -> s.wallCurveRatio = r),
         field(Codec.BOOL, Fields.wallInterpolation, s -> s.wallInterpolation, (s, i) -> s.wallInterpolation = i),
-        field(easyList(NoiseSettings.NOISE), Fields.generators, s -> s.generators, (s, g) -> s.generators = g),
+        field(easyList(DEFAULTED_GENERATOR), Fields.generators, s -> s.generators, (s, g) -> s.generators = g),
         field(TunnelSettings.CODEC, Fields.branches, s -> s.branches, (s, b) -> s.branches = b)
     ).flatXmap(CavernValidator::apply, DataResult::success);
 
@@ -74,12 +75,11 @@ public class CavernSettings implements ConfigProvider<CavernSettings, CavernConf
     @Override
     public CavernSettings withOverrides(final OverrideSettings o) {
         final ConditionSettings conditions = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
-        final DecoratorSettings decorators = this.decorators != null ? this.decorators : DecoratorSettings.EMPTY;
-        final TunnelSettings branches = this.branches != null ? this.branches : TunnelSettings.EMPTY;
+        final DecoratorSettings decorators = this.decorators != null ? this.decorators : DecoratorSettings.EMPTY;;
         return this.toBuilder()
             .conditions(conditions.withOverrides(o))
             .decorators(decorators.withOverrides(o))
-            .branches(branches.withOverrides(o))
+            .branches(this.branches != null ? this.branches.withOverrides(o) : null)
             .build();
     }
 
@@ -92,13 +92,19 @@ public class CavernSettings implements ConfigProvider<CavernSettings, CavernConf
         final List<NoiseSettings> generators = this.generators != null
             ? this.generators : Collections.singletonList(DEFAULT_GENERATOR);
 
+        final ConditionSettings defaultedConditions = conditionCfg.withDefaults(DEFAULT_CONDITIONS)
+            .withDefaultCeiling(DEFAULT_CEIL_NOISE).withDefaultFloor(DEFAULT_FLOOR_NOISE);
+        final NoiseSettings offset = this.offset != null ? this.offset : DEFAULT_HEIGHT_OFFSET;
+        final NoiseSettings walls = this.walls != null ? this.walls : DEFAULT_WALL_NOISE;
+        final NoiseSettings wallOffset = this.wallOffset != null ? this.wallOffset : DEFAULT_WALL_OFFSET;
+
         return new CavernConfig(
-            conditionCfg.withDefaults(DEFAULT_CONDITIONS).compile(rand, seed),
+            defaultedConditions.compile(rand, seed),
             decoratorCfg.compile(rand, seed),
             this.resolution != null ? this.resolution : 1,
-            NoiseSettings.compile(this.offset, rand, seed),
-            NoiseSettings.compile(this.walls, rand, seed),
-            NoiseSettings.compile(this.wallOffset, rand, seed),
+            NoiseSettings.compile(offset, rand, seed),
+            NoiseSettings.compile(walls, rand, seed),
+            NoiseSettings.compile(wallOffset, rand, seed),
             this.wallCurveRatio != null ? this.wallCurveRatio : 1.0F,
             this.wallInterpolation != null ? this.wallInterpolation : false,
             map(generators, g -> g.getGenerator(rand, seed)),

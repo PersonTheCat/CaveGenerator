@@ -70,11 +70,10 @@ public class BurrowSettings implements ConfigProvider<BurrowSettings, BurrowConf
     public BurrowSettings withOverrides(final OverrideSettings o) {
         final ConditionSettings conditions = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
         final DecoratorSettings decorators = this.decorators != null ? this.decorators : DecoratorSettings.EMPTY;
-        final TunnelSettings branches = this.branches != null ? this.branches : TunnelSettings.EMPTY;
         return this.toBuilder()
             .conditions(conditions.withOverrides(o))
             .decorators(decorators.withOverrides(o))
-            .branches(branches.withOverrides(o))
+            .branches(this.branches != null ? this.branches.withOverrides(o) : null)
             .build();
     }
 

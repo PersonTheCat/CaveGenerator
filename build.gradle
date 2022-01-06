@@ -55,6 +55,10 @@ allprojects {
         testRuntimeOnly group: 'org.junit.jupiter', name: 'junit-jupiter-engine', version: '5.3.1'
     }
 
+    compileJava {
+        options.compilerArgs << '-parameters'
+    }
+
     jar {
         archivesBaseName = "$archive_base-$platform"
         duplicatesStrategy = DuplicatesStrategy.EXCLUDE
