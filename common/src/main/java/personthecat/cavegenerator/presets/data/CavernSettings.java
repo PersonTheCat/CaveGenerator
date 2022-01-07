@@ -19,6 +19,7 @@ import static personthecat.catlib.serialization.CodecUtils.easyList;
 import static personthecat.catlib.serialization.DynamicField.extend;
 import static personthecat.catlib.serialization.DynamicField.field;
 
+// Todo: simplify default value handling
 @Builder(toBuilder = true)
 @FieldNameConstants
 public class CavernSettings implements ConfigProvider<CavernSettings, CavernConfig> {
@@ -75,7 +76,7 @@ public class CavernSettings implements ConfigProvider<CavernSettings, CavernConf
     @Override
     public CavernSettings withOverrides(final OverrideSettings o) {
         final ConditionSettings conditions = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
-        final DecoratorSettings decorators = this.decorators != null ? this.decorators : DecoratorSettings.EMPTY;;
+        final DecoratorSettings decorators = this.decorators != null ? this.decorators : DecoratorSettings.EMPTY;
         return this.toBuilder()
             .conditions(conditions.withOverrides(o))
             .decorators(decorators.withOverrides(o))
@@ -102,9 +103,9 @@ public class CavernSettings implements ConfigProvider<CavernSettings, CavernConf
             defaultedConditions.compile(rand, seed),
             decoratorCfg.compile(rand, seed),
             this.resolution != null ? this.resolution : 1,
-            NoiseSettings.compile(offset, rand, seed),
-            NoiseSettings.compile(walls, rand, seed),
-            NoiseSettings.compile(wallOffset, rand, seed),
+            offset.getGenerator(rand, seed),
+            walls.getGenerator(rand, seed),
+            wallOffset.getGenerator(rand, seed),
             this.wallCurveRatio != null ? this.wallCurveRatio : 1.0F,
             this.wallInterpolation != null ? this.wallInterpolation : false,
             map(generators, g -> g.getGenerator(rand, seed)),

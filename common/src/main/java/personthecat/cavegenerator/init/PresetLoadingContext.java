@@ -146,7 +146,7 @@ public class PresetLoadingContext {
             }
             final Map<String, JsonObject> extracted = extractInner(this.rawPresets);
             if (Cfg.DEEP_TRANSFORMS.getAsBoolean()) {
-                extracted.forEach((file, json) -> PresetCompat.transformOnly(json));
+                extracted.forEach((file, json) -> PresetCompat.transformPresetOnly(json));
             }
             extracted.forEach((name, json) -> json.setAllAccessed(false));
             return extracted;
