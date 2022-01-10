@@ -1,6 +1,7 @@
 package personthecat.cavegenerator.util;
 
 import personthecat.catlib.data.ModDescriptor;
+import personthecat.cavegenerator.io.ModFolders;
 
 import java.util.Arrays;
 import java.util.List;
@@ -15,6 +16,7 @@ public class Reference {
             .name(MOD_NAME)
             .modId(MOD_ID)
             .commandPrefix(COMMAND_PREFIX)
+            .preferredDirectory(ModFolders.PRESET_DIR)
             .defaultLinter(new CaveLinter())
             .build();
 
