@@ -11,9 +11,9 @@ public class CavernConfig {
     public final ConditionConfig conditions;
     public final DecoratorConfig decorators;
     public final int resolution;
-    public final @Nullable FastNoise offset;
-    public final @Nullable FastNoise walls;
-    public final @Nullable FastNoise wallOffset;
+    public final FastNoise offset;
+    public final FastNoise walls;
+    public final FastNoise wallOffset;
     public final float wallCurveRatio;
     public final boolean wallInterpolation;
     public final List<FastNoise> generators;
