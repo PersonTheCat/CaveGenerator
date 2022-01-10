@@ -54,8 +54,7 @@ public class PresetCompat {
     public static void transformPresetOnly(final JsonObject preset) {
         PRESET_TRANSFORMER.updateAll(preset);
 
-        final JsonValue inner = preset.get(CavePreset.INNER_KEY);
-        if (inner != null) {
+        for (final JsonObject inner : HjsonUtils.getRegularObjects(preset, CavePreset.INNER_KEY)) {
             transformPresetOnly(inner.asObject());
         }
     }
