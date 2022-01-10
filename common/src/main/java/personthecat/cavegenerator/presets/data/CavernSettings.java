@@ -87,17 +87,14 @@ public class CavernSettings implements ConfigProvider<CavernSettings, CavernConf
 
         final ConditionSettings conditions = this.conditions.withDefaults(DEFAULT_CONDITIONS)
             .withDefaultCeiling(DEFAULT_CEIL_NOISE).withDefaultFloor(DEFAULT_FLOOR_NOISE);
-        final NoiseSettings offset = this.offset != null ? this.offset : DEFAULT_HEIGHT_OFFSET;
-        final NoiseSettings walls = this.walls != null ? this.walls : DEFAULT_WALL_NOISE;
-        final NoiseSettings wallOffset = this.wallOffset != null ? this.wallOffset : DEFAULT_WALL_OFFSET;
 
         return new CavernConfig(
             conditions.compile(rand, seed),
             decorators.compile(rand, seed),
             this.resolution != null ? this.resolution : 1,
-            offset.getGenerator(rand, seed),
-            walls.getGenerator(rand, seed),
-            wallOffset.getGenerator(rand, seed),
+            this.offset != null ? this.offset.getGenerator(rand, seed) : null,
+            this.walls != null ? this.walls.getGenerator(rand, seed) : null,
+            this.wallOffset != null ? this.wallOffset.getGenerator(rand, seed) : null,
             this.wallCurveRatio != null ? this.wallCurveRatio : 1.0F,
             this.wallInterpolation != null ? this.wallInterpolation : false,
             map(generators, g -> g.getGenerator(rand, seed)),
