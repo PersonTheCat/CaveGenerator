@@ -33,7 +33,7 @@ public class CavernSettings implements ConfigProvider<CavernSettings, CavernConf
     @Nullable public final TunnelSettings branches;
 
     private static final NoiseSettings DEFAULT_GENERATOR =
-        NoiseSettings.builder().frequency(0.0143F).threshold(Range.of(-0.6F)).frequencyY(0.0268F).octaves(1).build();
+        NoiseSettings.builder().frequency(0.0143F).threshold(Range.of(-0.6F)).frequencyY(0.0268F).build();
     private static final NoiseSettings DEFAULT_CEIL_NOISE =
         NoiseSettings.builder().frequency(0.02F).range(Range.of(-17, -3)).build();
     private static final NoiseSettings DEFAULT_FLOOR_NOISE =
