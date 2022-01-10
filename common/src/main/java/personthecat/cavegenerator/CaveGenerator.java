@@ -25,10 +25,10 @@ public class CaveGenerator {
         Cfg.register();
         LibCommandRegistrar.registerCommands(Reference.MOD, true, CommandCave.class);
 
-        if (Cfg.FALLBACK_FEATURES.getAsBoolean()) {
+        if (Cfg.fallbackFeatures()) {
             FallbackFeatureHook.register();
         }
-        if (Cfg.FALLBACK_CARVERS.getAsBoolean()) {
+        if (Cfg.fallbackCarvers()) {
             FallbackCarverHook.register();
         }
         FeatureModificationEvent.EVENT.register(CaveCleanupEvent::onBiomeCleanup);

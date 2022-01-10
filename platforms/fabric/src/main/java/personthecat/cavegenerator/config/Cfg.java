@@ -15,10 +15,6 @@ import personthecat.overwritevalidator.annotations.OverwriteClass;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BooleanSupplier;
-import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
-import java.util.function.Supplier;
 
 @OverwriteClass
 @InheritMissingMembers
@@ -72,13 +68,7 @@ public class Cfg implements ConfigData {
         "who are serious about creating cleaner and more efficient\n" +
         "presets should consider enabling this field to make sure that\n" +
         "nothing slips by.")
-    public boolean strictPresets = false;
-
-    @Comment(
-        "When this field is set to true, PresetTester will skip over\n" +
-        "any invalid presets and simply not load them. Make sure to\n" +
-        "check your log to determine if any presets erred.")
-    public boolean ignoreInvalidPresets = false;
+    public boolean strictPresets = true;
 
     @Comment(
         "Whether to automatically format your preset files. They will\n" +
@@ -119,58 +109,67 @@ public class Cfg implements ConfigData {
         Lazy.of(() -> AutoConfig.getConfigHolder(Cfg.class).getConfig());
 
     @Overwrite
-    public static final Supplier<List<String>> DISABLED_CARVERS =
-        () -> Arrays.asList(CONFIG.get().disabledCarvers);
+    public static List<String> disabledCarvers() {
+        return Arrays.asList(CONFIG.get().disabledCarvers);
+    }
 
     @Overwrite
-    public static final Supplier<List<String>> DISABLED_FEATURES =
-        () -> Arrays.asList(CONFIG.get().disabledFeatures);
+    public static List<String> disabledFeatures() {
+        return Arrays.asList(CONFIG.get().disabledFeatures);
+    }
 
     @Overwrite
-    public static final Supplier<List<String>> DISABLED_STRUCTURES =
-        () -> Arrays.asList(CONFIG.get().disabledStructures);
+    public static List<String> disabledStructures() {
+        return Arrays.asList(CONFIG.get().disabledStructures);
+    }
 
     @Overwrite
-    public static final BooleanSupplier FALLBACK_CARVERS =
-        () -> CONFIG.get().fallbackCarvers;
+    public static boolean fallbackCarvers() {
+        return CONFIG.get().fallbackCarvers;
+    }
 
     @Overwrite
-    public static final BooleanSupplier FALLBACK_FEATURES =
-        () -> CONFIG.get().fallbackFeatures;
+    public static boolean fallbackFeatures() {
+        return CONFIG.get().fallbackFeatures;
+    }
 
     @Overwrite
-    public static final BooleanSupplier ENABLE_OTHER_GENERATORS =
-        () -> CONFIG.get().enableOtherGenerators;
+    public static boolean enableOtherGenerators() {
+        return CONFIG.get().enableOtherGenerators;
+    }
 
     @Overwrite
-    public static final BooleanSupplier STRICT_PRESETS =
-        () -> CONFIG.get().strictPresets;
+    public static boolean strictPresets() {
+        return CONFIG.get().strictPresets;
+    }
 
     @Overwrite
-    public static final BooleanSupplier IGNORE_INVALID_PRESETS =
-        () -> CONFIG.get().ignoreInvalidPresets;
+    public static boolean autoFormat() {
+        return CONFIG.get().autoFormat;
+    }
 
     @Overwrite
-    public static final BooleanSupplier AUTO_FORMAT =
-        () -> CONFIG.get().autoFormat;
+    public static boolean autoGenerate() {
+        return CONFIG.get().autoGenerate;
+    }
 
     @Overwrite
-    public static final BooleanSupplier AUTO_GENERATE =
-        () -> CONFIG.get().autoGenerate;
+    public static boolean updateImports() {
+        return CONFIG.get().updateImports;
+    }
 
     @Overwrite
-    public static final BooleanSupplier UPDATE_IMPORTS =
-        () -> CONFIG.get().updateImports;
+    public static int mapRange() {
+        return CONFIG.get().mapRange;
+    }
 
     @Overwrite
-    public static final IntSupplier MAP_RANGE =
-        () -> CONFIG.get().mapRange;
+    public static int biomeRange() {
+        return CONFIG.get().biomeRange;
+    }
 
     @Overwrite
-    public static final IntSupplier BIOME_RANGE =
-        () -> CONFIG.get().biomeRange;
-
-    @Overwrite
-    public static final LongSupplier FALLBACK_CARVER_SEED =
-        () -> CONFIG.get().fallbackCarverSeed;
+    public static long fallbackCarverSeed() {
+        return CONFIG.get().fallbackCarverSeed;
+    }
 }

@@ -37,7 +37,7 @@ public class PresetCompat {
         ImportTransformers.DEFAULTS_TRANSFORMER;
 
     public static void transformPreset(final File file, final JsonObject preset) {
-        final boolean autoFormat = Cfg.AUTO_FORMAT.getAsBoolean();
+        final boolean autoFormat = Cfg.autoFormat();
         final int hash = autoFormat ? 0 : preset.hashCode();
 
         transformPresetOnly(preset);
@@ -60,7 +60,7 @@ public class PresetCompat {
     }
 
     public static void transformImport(final File file, final JsonObject preset) {
-        final boolean autoFormat = Cfg.AUTO_FORMAT.getAsBoolean();
+        final boolean autoFormat = Cfg.autoFormat();
         final int hash = autoFormat ? 0 : preset.hashCode();
 
         if (CaveLangExtension.isLegacyDefaults(file, preset)) {

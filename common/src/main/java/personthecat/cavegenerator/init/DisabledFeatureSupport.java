@@ -43,7 +43,7 @@ public class DisabledFeatureSupport {
      */
     private static List<ResourceLocation> loadDisabledCarvers() {
         final ImmutableList.Builder<ResourceLocation> disabledCarvers = ImmutableList.builder();
-        for (final String id : Cfg.DISABLED_CARVERS.get()) {
+        for (final String id : Cfg.disabledCarvers()) {
             final ResourceLocation key = new ResourceLocation(id);
             if (BuiltinRegistries.CONFIGURED_CARVER.get(key) != null) {
                 disabledCarvers.add(key);
@@ -62,7 +62,7 @@ public class DisabledFeatureSupport {
      */
     private static List<ResourceLocation> loadDisabledFeatures() {
         final ImmutableList.Builder<ResourceLocation> disabledFeatures = ImmutableList.builder();
-        for (final String id : Cfg.DISABLED_FEATURES.get()) {
+        for (final String id : Cfg.disabledFeatures()) {
             final ResourceLocation key = new ResourceLocation(id);
             final Feature<?> feature = Registry.FEATURE.get(key);
             if (feature != null) {
@@ -87,7 +87,7 @@ public class DisabledFeatureSupport {
      */
     private static List<ResourceLocation> loadDisabledStructures() {
         final ImmutableList.Builder<ResourceLocation> disabledStructures = ImmutableList.builder();
-        for (final String id : Cfg.DISABLED_STRUCTURES.get()) {
+        for (final String id : Cfg.disabledStructures()) {
             final ResourceLocation key = new ResourceLocation(id);
             if (BuiltinRegistries.CONFIGURED_STRUCTURE_FEATURE.get(key) != null) {
                 disabledStructures.add(key);

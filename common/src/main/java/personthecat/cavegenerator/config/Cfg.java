@@ -7,35 +7,12 @@ import personthecat.overwritevalidator.annotations.PlatformMustOverwrite;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.function.BooleanSupplier;
-import java.util.function.IntSupplier;
-import java.util.function.LongSupplier;
-import java.util.function.Supplier;
 
 @OverwriteTarget
 public class Cfg {
 
     private static final List<String> DEFAULT_DISABLED_FEATURES =
         Arrays.asList("spring_feature", "lake", "ore_dirt", "ore_gravel", "ore_andesite", "ore_diorite", "ore_granite");
-
-    public static final Supplier<List<String>> DISABLED_CARVERS = Collections::emptyList;
-    public static final Supplier<List<String>> DISABLED_FEATURES = () -> DEFAULT_DISABLED_FEATURES;
-    public static final Supplier<List<String>> DISABLED_STRUCTURES = Collections::emptyList;
-    public static final Supplier<PresetUpdatePreference> UPDATE_PREFERENCE = () -> PresetUpdatePreference.ALWAYS;
-    public static final BooleanSupplier DEEP_TRANSFORMS = () -> true;
-    public static final BooleanSupplier FALLBACK_CARVERS = () -> false;
-    public static final BooleanSupplier FALLBACK_FEATURES = () -> false;
-    public static final BooleanSupplier ENABLE_OTHER_GENERATORS = () -> false;
-    public static final BooleanSupplier DETECT_EXTRA_TOKENS = () -> true;
-    public static final BooleanSupplier CAVE_EL = () -> true;
-    public static final BooleanSupplier STRICT_PRESETS = () -> false;
-    @Deprecated public static final BooleanSupplier IGNORE_INVALID_PRESETS = () -> false;
-    public static final BooleanSupplier AUTO_FORMAT = () -> true;
-    public static final BooleanSupplier AUTO_GENERATE = () -> false;
-    public static final BooleanSupplier UPDATE_IMPORTS = () -> true;
-    public static final IntSupplier MAP_RANGE = () -> 8;
-    public static final IntSupplier BIOME_RANGE = () -> 2;
-    public static final LongSupplier FALLBACK_CARVER_SEED = () -> 24L;
 
     @PlatformMustOverwrite
     public static void register() {
@@ -44,8 +21,76 @@ public class Cfg {
 
     // Todo: smartUpdatePresets with version tracker
     public static boolean shouldUpdatePresets() {
-        final PresetUpdatePreference update = UPDATE_PREFERENCE.get();
+        final PresetUpdatePreference update = updatePreference();
         return update == PresetUpdatePreference.ALWAYS
             || (update == PresetUpdatePreference.MOD_UPDATED /* && mod updated */);
+    }
+
+    public static List<String> disabledCarvers() {
+        return Collections.emptyList();
+    };
+
+    public static List<String> disabledFeatures() {
+        return DEFAULT_DISABLED_FEATURES;
+    }
+
+    public static List<String> disabledStructures() {
+        return Collections.emptyList();
+    }
+
+    public static PresetUpdatePreference updatePreference() {
+        return PresetUpdatePreference.ALWAYS;
+    }
+
+    public static boolean deepTransforms() {
+        return true;
+    }
+
+    public static boolean fallbackCarvers() {
+        return false;
+    }
+
+    public static boolean fallbackFeatures() {
+        return false;
+    }
+
+    public static boolean enableOtherGenerators() {
+        return false;
+    }
+
+    public static boolean detectExtraTokens() {
+        return true;
+    }
+
+    public static boolean caveEL() {
+        return true;
+    }
+
+    public static boolean strictPresets() {
+        return true;
+    }
+
+    public static boolean autoFormat() {
+        return true;
+    }
+
+    public static boolean autoGenerate() {
+        return false;
+    }
+
+    public static boolean updateImports() {
+        return true;
+    }
+
+    public static int mapRange() {
+        return 8;
+    }
+
+    public static int biomeRange() {
+        return 2;
+    }
+
+    public static long fallbackCarverSeed() {
+        return 24L;
     }
 }

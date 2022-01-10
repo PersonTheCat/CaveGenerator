@@ -37,7 +37,7 @@ public class BiomeSearch {
      * The size of the array in regular units.
      */
     public static int size() {
-        final int d = Cfg.BIOME_RANGE.getAsInt() * 2 + 1;
+        final int d = Cfg.biomeRange() * 2 + 1;
         return d * d;
     }
 
@@ -88,7 +88,7 @@ public class BiomeSearch {
      * @return An array containing biome info.
      */
     private static Data[] outer(final BiomeManager biomes, final int x, final int z) {
-        final int r = Cfg.BIOME_RANGE.getAsInt();
+        final int r = Cfg.biomeRange();
         final int d = r * 2 + 1;
         final Data[] data = new Data[d * d];
         int index = 0;

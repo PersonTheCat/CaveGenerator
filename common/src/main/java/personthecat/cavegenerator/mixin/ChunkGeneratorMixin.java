@@ -58,10 +58,10 @@ public class ChunkGeneratorMixin {
         final ProtoChunk primer = (ProtoChunk) chunk;
         final PrimerContext ctx = new PrimerContext(withSource, search, seed, seaLevel, primer, step);
 
-        if (Cfg.ENABLE_OTHER_GENERATORS.getAsBoolean()) {
+        if (Cfg.enableOtherGenerators()) {
             WorldCarverAdapter.generate(ctx, this.biomeSource);
         }
-        if (step == Carving.AIR && !Cfg.FALLBACK_CARVERS.getAsBoolean()) {
+        if (step == Carving.AIR && !Cfg.fallbackCarvers()) {
             ctx.primeHeightmaps();
             CaveRegistries.CURRENT_SEED.set(new XoRoShiRo(seed), seed);
             for (final GeneratorController controller : CaveRegistries.GENERATORS) {
@@ -84,7 +84,7 @@ public class ChunkGeneratorMixin {
      */
     @Inject(at = @At("TAIL"), method = "applyBiomeDecoration")
     public void applyFeatures(final WorldGenRegion region, final StructureFeatureManager structures, final CallbackInfo ci) {
-        if (!Cfg.FALLBACK_FEATURES.getAsBoolean()) {
+        if (!Cfg.fallbackFeatures()) {
             final WorldContext ctx = new WorldContext(region);
             CaveRegistries.CURRENT_SEED.setIfAbsent(ctx.rand, ctx.seed);
 

@@ -8,15 +8,9 @@ import lombok.AllArgsConstructor;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.state.BlockState;
-import org.hjson.JsonArray;
-import org.hjson.JsonObject;
-import org.hjson.JsonValue;
 import personthecat.catlib.serialization.EasyStateCodec;
-import personthecat.catlib.util.HjsonMapper;
-import personthecat.cavegenerator.presets.data.StructureSettings;
 
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 

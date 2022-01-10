@@ -20,7 +20,7 @@ public class WorldCarverAdapter {
         final BitSet carvingMask = ctx.primer.getOrCreateCarvingMask(ctx.step);
         final WorldgenRandom rand = new WorldgenRandom();
 
-        final int r = Cfg.MAP_RANGE.getAsInt();
+        final int r = Cfg.mapRange();
         for (int x = cX - r; x <= cX + r; x++) {
             for (int z = cZ - r; z <= cZ + r; z++) {
                 final List<Supplier<ConfiguredWorldCarver<?>>> carvers = settings.getCarvers(ctx.step);

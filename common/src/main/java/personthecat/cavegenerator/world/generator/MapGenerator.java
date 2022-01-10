@@ -78,7 +78,7 @@ public abstract class MapGenerator extends CaveCarver {
      * @param chunkZ The chunk z-coordinate (abs / 16)
      */
     private void fillInvalidChunks(final int chunkX, final int chunkZ) {
-        final int range = Cfg.BIOME_RANGE.getAsInt();
+        final int range = Cfg.biomeRange();
         for (int cX = chunkX - range; cX <= chunkX + range; cX++) {
             for (int cZ = chunkZ - range; cZ < chunkZ + range; cZ++) {
                 final int centerX = cX * 16 + 8;
@@ -92,7 +92,7 @@ public abstract class MapGenerator extends CaveCarver {
 
     @Override
     protected final void generateChecked(final PrimerContext ctx) {
-        final int range = Cfg.MAP_RANGE.getAsInt();
+        final int range = Cfg.mapRange();
         ctx.localRand.setSeed(this.seed);
         final long xMask = ctx.localRand.nextLong();
         final long zMask = ctx.localRand.nextLong();

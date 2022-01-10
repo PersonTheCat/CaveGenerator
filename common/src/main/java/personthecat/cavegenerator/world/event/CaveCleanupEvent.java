@@ -22,10 +22,10 @@ public class CaveCleanupEvent {
         CaveRegistries.DISABLED_FEATURES.getAsserted(Registry.CONFIGURED_STRUCTURE_FEATURE_REGISTRY).forEach(id -> {
             if (ctx.removeStructure(id)) log.debug("Removed structure {} from {}.", id, ctx.getName());
         });
-        if (Cfg.FALLBACK_CARVERS.getAsBoolean()) {
+        if (Cfg.fallbackCarvers()) {
             ctx.addCarver(GenerationStep.Carving.AIR, FallbackCarverHook.HOOK);
         }
-        if (Cfg.FALLBACK_FEATURES.getAsBoolean()) {
+        if (Cfg.fallbackFeatures()) {
             ctx.addFeature(GenerationStep.Decoration.SURFACE_STRUCTURES, FallbackFeatureHook.HOOK);
         }
     }

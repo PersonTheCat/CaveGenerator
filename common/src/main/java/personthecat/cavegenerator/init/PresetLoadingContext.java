@@ -69,7 +69,7 @@ public class PresetLoadingContext {
                 LibErrorContext.error(Reference.MOD, new GenericFormattedException(e, "todo"));
             }
         });
-        if (Cfg.AUTO_GENERATE.getAsBoolean()) {
+        if (Cfg.autoGenerate()) {
             saveGenerated(presets);
         }
         return presets;
@@ -135,17 +135,20 @@ public class PresetLoadingContext {
         }
 
         Map<String, JsonObject> getPresets() {
-            if (Cfg.DETECT_EXTRA_TOKENS.getAsBoolean()) {
+            if (Cfg.detectExtraTokens()) {
                 this.runStringInspections();
             }
             if (Cfg.shouldUpdatePresets()) {
-                this.runTransforms();
+                this.rawPresets.forEach(PresetCompat::transformPreset);
             }
-            if (Cfg.CAVE_EL.getAsBoolean()) {
+            if (Cfg.updateImports()) {
+                this.importPresets.forEach(PresetCompat::transformImport);
+            }
+            if (Cfg.caveEL()) {
                 CaveLangExtension.expandAll(this.rawPresets, this.importPresets);
             }
             final Map<String, JsonObject> extracted = extractInner(this.rawPresets);
-            if (Cfg.DEEP_TRANSFORMS.getAsBoolean()) {
+            if (Cfg.deepTransforms()) {
                 extracted.forEach((file, json) -> PresetCompat.transformPresetOnly(json));
             }
             extracted.forEach((name, json) -> json.setAllAccessed(false));
@@ -166,11 +169,6 @@ public class PresetLoadingContext {
                     LibErrorContext.error(Reference.MOD, new GenericFormattedException(e, "todo"));
                 }
             }
-        }
-
-        void runTransforms() {
-            this.rawPresets.forEach(PresetCompat::transformPreset);
-            this.importPresets.forEach(PresetCompat::transformImport);
         }
 
         static Map<String, JsonObject> extractInner(final Map<File, JsonObject> presets) {

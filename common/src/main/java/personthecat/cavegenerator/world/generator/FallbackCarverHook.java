@@ -34,7 +34,7 @@ public class FallbackCarverHook extends WorldCarver<NoneCarverConfiguration> {
     private static final WorldCarver<NoneCarverConfiguration> INSTANCE = new FallbackCarverHook();
     public static final ConfiguredWorldCarver<?> HOOK = INSTANCE.configured(CarverConfiguration.NONE);
 
-    private final long seed = Cfg.FALLBACK_CARVER_SEED.getAsLong();
+    private final long seed = Cfg.fallbackCarverSeed();
 
     public FallbackCarverHook() {
         super(Codec.unit(NoneCarverConfiguration.INSTANCE), 256);

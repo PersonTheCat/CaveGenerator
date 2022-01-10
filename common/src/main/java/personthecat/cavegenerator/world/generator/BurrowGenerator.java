@@ -66,7 +66,7 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
     }
 
     private void fillInvalidChunks(int chunkX, int chunkZ) {
-        final int range = Cfg.BIOME_RANGE.getAsInt();
+        final int range = Cfg.biomeRange();
         for (int cX = chunkX - range; cX <= chunkX + range; cX++) {
             for (int cZ = chunkZ - range; cZ < chunkZ + range; cZ++) {
                 final int centerX = cX * 16 + 8;

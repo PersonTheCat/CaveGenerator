@@ -108,7 +108,7 @@ public class CavernGenerator extends CaveCarver implements TunnelSocket {
 
     // Todo: The biome search is probably the better place to handle interpolation
     private void fillInterpolated(final BiomeSearch biomes, final int x, final int z) {
-        final int r = Cfg.BIOME_RANGE.getAsInt();
+        final int r = Cfg.biomeRange();
         final boolean[][] points = getBorderMatrix(biomes, r, x, z);
         interpolate(points);
         interpolate(points);
@@ -170,7 +170,7 @@ public class CavernGenerator extends CaveCarver implements TunnelSocket {
     }
 
     private void fillInvalidChunks(final int chunkX, final int chunkZ) {
-        final int range = Cfg.BIOME_RANGE.getAsInt();
+        final int range = Cfg.biomeRange();
         for (int cX = chunkX - range; cX <= chunkX + range; cX++) {
             for (int cZ = chunkZ - range; cZ < chunkZ + range; cZ++) {
                 final int centerX = cX * 16 + 8;
