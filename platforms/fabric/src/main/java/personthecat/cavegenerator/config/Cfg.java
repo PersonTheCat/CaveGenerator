@@ -47,6 +47,13 @@ public class Cfg implements ConfigData {
     public String[] disabledStructures = {};
 
     @Comment(
+        "Whether to apply preset transforms after expressions are\n" +
+        "evaluated. These changes will not be saved. This is essentially\n" +
+        "a backwards compatibility setting which can be disabled for\n" +
+        "performance purposes.")
+    public boolean deepTransforms = true;
+
+    @Comment(
         "Whether to enable the fallback generator compatibility layer\n" +
         "for support with mods that use custom chunk generators.")
     public boolean fallbackCarvers = false;
@@ -121,6 +128,11 @@ public class Cfg implements ConfigData {
     @Overwrite
     public static List<String> disabledStructures() {
         return Arrays.asList(CONFIG.get().disabledStructures);
+    }
+
+    @Overwrite
+    public static boolean deepTransforms() {
+        return CONFIG.get().deepTransforms;
     }
 
     @Overwrite

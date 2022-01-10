@@ -62,6 +62,13 @@ public class Cfg {
                 "For a list of all features, run `/cave debug structures`.")
         .define("disabledStructures", Collections.emptyList(), Objects::nonNull);
 
+    private static final BooleanValue DEEP_TRANSFORMS = COMMON
+        .comment("Whether to apply preset transforms after expressions are",
+                "evaluated. These changes will not be saved. This is essentially",
+                "a backwards compatibility setting which can be disabled for",
+                "performance purposes.")
+        .define("deepTransforms", true);
+
     private static final BooleanValue FALLBACK_CARVERS = COMMON
         .comment("Whether to enable the fallback generator compatibility layer",
                 "for support with mods that use custom chunk generators.")
@@ -131,6 +138,11 @@ public class Cfg {
     @Overwrite
     public static List<String> disabledStructures() {
         return DISABLED_STRUCTURES.get();
+    }
+
+    @Overwrite
+    public static boolean deepTransforms() {
+        return DEEP_TRANSFORMS.get();
     }
 
     @Overwrite
