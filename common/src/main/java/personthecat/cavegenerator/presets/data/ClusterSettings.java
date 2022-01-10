@@ -1,8 +1,8 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.state.BlockState;
@@ -11,7 +11,6 @@ import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.InvertibleSet;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.serialization.EasyStateCodec;
-import personthecat.cavegenerator.presets.validator.ClusterValidator;
 import personthecat.cavegenerator.world.config.ClusterConfig;
 
 import java.util.*;
@@ -28,8 +27,8 @@ import static personthecat.catlib.serialization.DynamicField.required;
 @Builder(toBuilder = true)
 @FieldNameConstants
 public class ClusterSettings implements ConfigProvider<ClusterSettings, ClusterConfig> {
-    @Nullable public final ConditionSettings conditions;
-    @Nullable public final List<BlockState> states;
+    @NonNull public final ConditionSettings conditions;
+    @NonNull public final List<BlockState> states;
     @Nullable public final Double chance;
     @Nullable public final Double integrity;
     @Nullable public final Range radiusX;
@@ -52,7 +51,7 @@ public class ClusterSettings implements ConfigProvider<ClusterSettings, ClusterC
         field(Range.CODEC, Fields.centerHeight, s -> s.centerHeight, (s, h) -> s.centerHeight = h),
         field(easySet(EasyStateCodec.INSTANCE), Fields.matchers, s -> s.matchers, (s, m) -> s.matchers = m),
         field(Codec.BOOL, Fields.spawnInAir, s -> s.spawnInAir, (s, a) -> s.spawnInAir = a)
-    ).flatXmap(ClusterValidator::apply, DataResult::success);
+    );
 
     @Override
     public Codec<ClusterSettings> codec() {
@@ -61,15 +60,13 @@ public class ClusterSettings implements ConfigProvider<ClusterSettings, ClusterC
 
     @Override
     public ClusterSettings withOverrides(final OverrideSettings o) {
-        if (this.conditions == null) return this;
         return this.toBuilder().conditions(this.conditions.withOverrides(o)).build();
     }
 
     @Override
     public ClusterConfig compile(final Random rand, final long seed) {
-        Objects.requireNonNull(this.states, "States not populated in codec.");
         return new ClusterConfig(
-            coalesce(this.conditions, ConditionSettings.EMPTY).compile(rand, seed),
+            this.conditions.compile(rand, seed),
             map(this.states, s -> Pair.of(s, Block.getId(s))),
             (1.0 - coalesce(this.chance, 0.15)) * 92.0,
             coalesce(this.chance, 0.15),

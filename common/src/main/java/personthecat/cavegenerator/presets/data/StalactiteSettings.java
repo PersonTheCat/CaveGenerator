@@ -1,15 +1,14 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 import personthecat.catlib.data.InvertibleSet;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.serialization.EasyStateCodec;
-import personthecat.cavegenerator.presets.validator.StalactiteValidator;
 import personthecat.cavegenerator.world.config.ConditionConfig;
 import personthecat.cavegenerator.world.config.StalactiteConfig;
 
@@ -27,7 +26,7 @@ import static personthecat.catlib.serialization.DynamicField.field;
 @Builder(toBuilder = true)
 @FieldNameConstants
 public class StalactiteSettings implements ConfigProvider<StalactiteSettings, StalactiteConfig> {
-    @Nullable public final ConditionSettings conditions;
+    @NonNull public final ConditionSettings conditions;
     @Nullable public final BlockState state;
     @Nullable public final Type type;
     @Nullable public final Size size;
@@ -53,7 +52,7 @@ public class StalactiteSettings implements ConfigProvider<StalactiteSettings, St
         field(Codec.INT, Fields.space, s -> s.space, (s, p) -> s.space = p),
         field(Codec.BOOL, Fields.symmetrical, s -> s.symmetrical, (s, m) -> s.symmetrical = m),
         field(easySet(EasyStateCodec.INSTANCE), Fields.matchers, s -> s.matchers, (s, m) -> s.matchers = m)
-    ).flatXmap(StalactiteValidator::apply, DataResult::success);
+    );
 
     @Override
     public Codec<StalactiteSettings> codec() {
@@ -62,13 +61,11 @@ public class StalactiteSettings implements ConfigProvider<StalactiteSettings, St
 
     @Override
     public StalactiteSettings withOverrides(final OverrideSettings o) {
-        if (this.conditions == null) return this;
         return this.toBuilder().conditions(this.conditions.withOverrides(o)).build();
     }
 
     @Override
     public StalactiteConfig compile(final Random rand, final long seed) {
-        final ConditionSettings conditionsCfg = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
         final BlockState state = this.state != null ? this.state : Blocks.STONE.defaultBlockState();
         final Type type = this.type != null ? this.type : Type.STALACTITE;
         final Size size = this.size != null ? this.size : Size.MEDIUM;
@@ -78,7 +75,7 @@ public class StalactiteSettings implements ConfigProvider<StalactiteSettings, St
         final boolean symmetrical = this.symmetrical != null ? this.symmetrical : true;
         final Set<BlockState> matchersCfg = this.matchers != null ? this.matchers : Collections.emptySet();
 
-        final ConditionConfig conditions = conditionsCfg
+        final ConditionConfig conditions = this.conditions
             .withDefaults(DEFAULT_CONDITIONS).withDefaultRegion(DEFAULT_REGION).compile(rand, seed);
         final Set<BlockState> matchers =
             new InvertibleSet<>(matchersCfg, false).optimize(Collections.emptyList());

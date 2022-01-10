@@ -1,12 +1,10 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.experimental.FieldNameConstants;
 import org.jetbrains.annotations.Nullable;
-import personthecat.cavegenerator.presets.validator.RoomValidator;
-import personthecat.cavegenerator.world.config.DecoratorConfig;
 import personthecat.cavegenerator.world.config.RoomConfig;
 
 import java.util.Random;
@@ -19,7 +17,7 @@ import static personthecat.catlib.serialization.DynamicField.field;
 @Builder(toBuilder = true)
 @FieldNameConstants
 public class RoomSettings {
-    @Nullable public final DecoratorSettings decorators;
+    @NonNull public final DecoratorSettings decorators;
     @Nullable public final Float scale;
     @Nullable public final Float stretch;
     @Nullable public final Integer chance;
@@ -29,20 +27,17 @@ public class RoomSettings {
         field(Codec.FLOAT, Fields.scale, s -> s.scale, (s, f) -> s.scale = f),
         field(Codec.FLOAT, Fields.stretch, s -> s.stretch, (s, f) -> s.stretch = f),
         field(Codec.DOUBLE, Fields.chance, s -> invert(s.chance), (s, c) -> s.chance = invert(c))
-    ).flatXmap(RoomValidator::apply, DataResult::success);
+    );
 
     public RoomSettings withOverrides(final OverrideSettings o) {
-        if (this.decorators == null) return this;
         return this.toBuilder().decorators(this.decorators.withOverrides(o)).build();
     }
 
     public RoomConfig compile(final Random rand, final long seed) {
-        final DecoratorSettings decoratorsCfg = this.decorators != null ? this.decorators : DecoratorSettings.EMPTY;
         final float scale = this.scale != null ? this.scale : 6.0F;
         final float stretch = this.stretch != null ? this.stretch : 0.5F;
         final int chance = this.chance != null ? this.chance : 10;
-        final DecoratorConfig decorators = decoratorsCfg.compile(rand, seed);
 
-        return new RoomConfig(decorators, scale, stretch, chance);
+        return new RoomConfig(this.decorators.compile(rand, seed), scale, stretch, chance);
     }
 }

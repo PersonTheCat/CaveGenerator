@@ -1,13 +1,12 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.experimental.FieldNameConstants;
 import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.Range;
 import personthecat.cavegenerator.model.ScalableFloat;
-import personthecat.cavegenerator.presets.validator.TunnelValidator;
 import personthecat.cavegenerator.world.config.ConditionConfig;
 import personthecat.cavegenerator.world.config.DecoratorConfig;
 import personthecat.cavegenerator.world.config.RoomConfig;
@@ -21,11 +20,11 @@ import static personthecat.catlib.serialization.DynamicField.field;
 import static personthecat.catlib.serialization.DynamicField.recursive;
 import static personthecat.catlib.util.Shorthand.invert;
 
-@Builder
+@Builder(toBuilder = true)
 @FieldNameConstants
 public class TunnelSettings implements ConfigProvider<TunnelSettings, TunnelConfig> {
-    @Nullable public final ConditionSettings conditions;
-    @Nullable public final DecoratorSettings decorators;
+    @NonNull public final ConditionSettings conditions;
+    @NonNull public final DecoratorSettings decorators;
     @Nullable public final Range originHeight;
     @Nullable public final Boolean noiseYReduction;
     @Nullable public final Boolean resizeBranches;
@@ -52,7 +51,7 @@ public class TunnelSettings implements ConfigProvider<TunnelSettings, TunnelConf
         ConditionSettings.builder().height(Range.of(8, 128)).build();
 
     public static final TunnelSettings EMPTY = 
-        new TunnelSettings(null, null, null, null, null, null, null, null, null, null, 
+        new TunnelSettings(ConditionSettings.EMPTY, DecoratorSettings.EMPTY, null, null, null, null, null, null, null, null,
         null, null, null, null, null, null, null, null, null, null, null, null, null);
 
     private static final ScalableFloat DEFAULT_D_YAW = new ScalableFloat(0.0F, 0.0F, 0.75F, 4.0F, 1.0F);
@@ -93,7 +92,7 @@ public class TunnelSettings implements ConfigProvider<TunnelSettings, TunnelConf
         field(Codec.BOOL, Fields.reseedBranches, s -> s.reseedBranches, (s, b) -> s.reseedBranches = b),
         field(Codec.BOOL, Fields.hasBranches, s -> s.hasBranches, (s, b) -> s.hasBranches = b),
         field(Codec.BOOL, Fields.checkWater, s -> s.checkWater, (s, c) -> s.checkWater = c)
-    ).flatXmap(TunnelValidator::apply, DataResult::success);
+    );
 
     @Override
     public Codec<TunnelSettings> codec() {
@@ -102,14 +101,9 @@ public class TunnelSettings implements ConfigProvider<TunnelSettings, TunnelConf
 
     @Override
     public TunnelSettings withOverrides(final OverrideSettings o) {
-        final ConditionSettings conditions = this.conditions != null
-            ? this.conditions : ConditionSettings.EMPTY;
-        final DecoratorSettings decorators = this.decorators != null
-            ? this.decorators : DecoratorSettings.EMPTY;
-
-        return builder()
-            .conditions(conditions.withOverrides(o))
-            .decorators(decorators.withOverrides(o))
+        return this.toBuilder()
+            .conditions(this.conditions.withOverrides(o))
+            .decorators(this.decorators.withOverrides(o))
             .branches(this.branches != null ? this.branches : o.branches)
             .rooms(this.rooms != null ? this.rooms : o.rooms)
             .build();
@@ -117,10 +111,6 @@ public class TunnelSettings implements ConfigProvider<TunnelSettings, TunnelConf
 
     @Override
     public TunnelConfig compile(final Random rand, final long seed) {
-        final ConditionSettings conditionCfg = this.conditions != null
-            ? this.conditions : ConditionSettings.EMPTY;
-        final DecoratorSettings decoratorCfg = this.decorators != null
-            ? this.decorators : DecoratorSettings.EMPTY;
         final Range originHeight = this.originHeight != null ? this.originHeight : Range.of(0, 128);
         final boolean noiseYReduction = this.noiseYReduction != null ? this.noiseYReduction : true;
         final boolean resizeBranches = this.resizeBranches != null ? this.resizeBranches : true;
@@ -140,8 +130,8 @@ public class TunnelSettings implements ConfigProvider<TunnelSettings, TunnelConf
         final boolean hasBranches = this.hasBranches != null ? this.hasBranches : true;
         final boolean checkWater = this.checkWater != null ? this.checkWater : true;
 
-        final ConditionConfig conditions = conditionCfg.withDefaults(DEFAULT_CONDITIONS).compile(rand, seed);
-        final DecoratorConfig decorators = decoratorCfg.compile(rand, seed);
+        final ConditionConfig conditions = this.conditions.withDefaults(DEFAULT_CONDITIONS).compile(rand, seed);
+        final DecoratorConfig decorators = this.decorators.compile(rand, seed);
         final TunnelConfig branches = this.branches != null
             ? this.branches.compile(rand, seed) : null;
         final RoomConfig rooms = this.rooms != null

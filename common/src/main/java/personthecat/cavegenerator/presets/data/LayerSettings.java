@@ -3,6 +3,7 @@ package personthecat.cavegenerator.presets.data;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -27,8 +28,8 @@ import static personthecat.catlib.serialization.DynamicField.required;
 @Builder(toBuilder = true)
 @FieldNameConstants
 public class LayerSettings implements ConfigProvider<LayerSettings, LayerConfig> {
-    @Nullable public final ConditionSettings conditions;
-    @Nullable public final BlockState state;
+    @NonNull public final ConditionSettings conditions;
+    @NonNull public final BlockState state;
     @Nullable public final Set<BlockState> matchers;
 
     private static final NoiseSettings DEFAULT_NOISE =
@@ -40,24 +41,21 @@ public class LayerSettings implements ConfigProvider<LayerSettings, LayerConfig>
         extend(ConditionSettings.CODEC, Fields.conditions, d -> d.conditions, (d, c) -> d.conditions = c),
         required(EasyStateCodec.INSTANCE, Fields.state, d -> d.state, (d, s) -> d.state = s),
         field(easySet(EasyStateCodec.INSTANCE), Fields.matchers, s -> s.matchers, (s, m) -> s.matchers = m)
-    ).flatXmap(LayerValidator::apply, DataResult::success);
+    );
 
     public Codec<LayerSettings> codec() {
         return CODEC;
     }
 
     public LayerSettings withOverrides(final OverrideSettings o) {
-        if (this.conditions == null) return this;
         return this.toBuilder().conditions(this.conditions.withOverrides(o)).build();
     }
 
     public LayerConfig compile(final Random rand, final long seed) {
-        Objects.requireNonNull(this.state, "State not populated by codec");
-        final ConditionSettings conditions = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
         final Set<BlockState> matchersCfg = this.matchers != null
             ? this.matchers : Collections.singleton(Blocks.STONE.defaultBlockState());
         final Set<BlockState> matchers = new InvertibleSet<>(matchersCfg, false).optimize(Collections.emptyList());
 
-        return new LayerConfig(conditions.compile(rand, seed), this.state, matchers);
+        return new LayerConfig(this.conditions.compile(rand, seed), this.state, matchers);
     }
 }

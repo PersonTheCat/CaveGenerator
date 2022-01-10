@@ -1,8 +1,8 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import lombok.AllArgsConstructor;
+import lombok.NonNull;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
@@ -11,7 +11,6 @@ import personthecat.catlib.data.InvertibleSet;
 import personthecat.catlib.data.Range;
 import personthecat.catlib.serialization.EasyStateCodec;
 import personthecat.cavegenerator.model.Direction;
-import personthecat.cavegenerator.presets.validator.WallDecoratorValidator;
 import personthecat.cavegenerator.world.config.WallDecoratorConfig;
 import personthecat.fastnoise.FastNoise;
 
@@ -30,7 +29,7 @@ import static personthecat.catlib.serialization.FieldDescriptor.nullable;
 @AllArgsConstructor
 @FieldNameConstants
 public class WallDecoratorSettings {
-    @Nullable public final List<BlockState> states;
+    @NonNull public final List<BlockState> states;
     @Nullable public final Double integrity;
     @Nullable public final Range height;
     @Nullable public final List<Direction> directions;
@@ -52,7 +51,7 @@ public class WallDecoratorSettings {
         nullable(Placement.CODEC, Fields.placement, s -> s.placement),
         nullable(DEFAULTED_NOISE, Fields.noise, s -> s.noise),
         WallDecoratorSettings::new
-    ).flatXmap(WallDecoratorValidator::apply, DataResult::success);
+    );
 
     public WallDecoratorConfig compile(final Random rand, final long seed) {
         final double integrity = this.integrity != null ? this.integrity : 1.0;

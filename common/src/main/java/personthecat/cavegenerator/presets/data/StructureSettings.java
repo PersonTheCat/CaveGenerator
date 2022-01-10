@@ -3,6 +3,7 @@ package personthecat.cavegenerator.presets.data;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.DataResult;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.experimental.FieldNameConstants;
 import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.block.Blocks;
@@ -31,9 +32,9 @@ import static personthecat.catlib.serialization.DynamicField.required;
 @Builder(toBuilder = true)
 @FieldNameConstants
 public class StructureSettings implements ConfigProvider<StructureSettings, StructureConfig> {
-    @Nullable public final ConditionSettings conditions;
-    @Nullable public final String name;
-    @Nullable public final StructurePlaceSettings placement;
+    @NonNull public final ConditionSettings conditions;
+    @NonNull public final String name;
+    @NonNull public final StructurePlaceSettings placement;
     @Nullable public final Set<BlockState> matchers;
     @Nullable public final List<Direction> directions;
     @Nullable public final List<BlockPos> airChecks;
@@ -69,21 +70,17 @@ public class StructureSettings implements ConfigProvider<StructureSettings, Stru
         field(Codec.BOOL, Fields.debugSpawns, s -> s.debugSpawns, (s, d) -> s.debugSpawns = d),
         field(Codec.STRING, Fields.command, s -> s.command, (s, c) -> s.command = c),
         field(Codec.BOOL, Fields.rotateRandomly, s -> s.rotateRandomly, (s, r) -> s.rotateRandomly = r)
-    ).flatXmap(StructureValidator::apply, DataResult::success);
+    );
 
     public Codec<StructureSettings> codec() {
         return CODEC;
     }
 
     public StructureSettings withOverrides(final OverrideSettings o) {
-        if (this.conditions == null) return this;
         return this.toBuilder().conditions(this.conditions.withOverrides(o)).build();
     }
 
     public StructureConfig compile(final Random rand, final long seed) {
-        Objects.requireNonNull(this.name, "name not populated by codec");
-        final ConditionSettings conditionsCfg = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
-        final StructurePlaceSettings placement = this.placement != null ? this.placement : new StructurePlaceSettings();
         final Set<BlockState> matchersCfg = this.matchers != null
             ? this.matchers : Collections.singleton(Blocks.STONE.defaultBlockState());
         final List<Direction> directionsCfg = this.directions != null ? this.directions : Collections.emptyList();
@@ -100,11 +97,11 @@ public class StructureSettings implements ConfigProvider<StructureSettings, Stru
         final String command = this.command != null ? this.command : "";
         final boolean rotateRandomly = this.rotateRandomly != null ? this.rotateRandomly : false;
 
-        final ConditionConfig conditions = conditionsCfg.withDefaults(DEFAULT_CONDITIONS).compile(rand, seed);
+        final ConditionConfig conditions = this.conditions.withDefaults(DEFAULT_CONDITIONS).compile(rand, seed);
         final Set<BlockState> matchers = new InvertibleSet<>(matchersCfg, false).optimize(Collections.emptyList());
         final Direction.Container directions = Direction.Container.from(directionsCfg);
 
-        return new StructureConfig(conditions, this.name, placement, matchers, directions, airChecks,
+        return new StructureConfig(conditions, this.name, this.placement, matchers, directions, airChecks,
             solidChecks, nonSolidChecks, waterChecks, blockChecks, checkSurface, offset, chance, count,
             debugSpawns, command, rotateRandomly);
     }

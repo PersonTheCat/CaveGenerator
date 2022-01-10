@@ -7,6 +7,7 @@ import personthecat.catlib.util.HjsonUtils;
 import personthecat.catlib.util.JsonTransformer;
 import personthecat.catlib.util.JsonTransformer.ObjectResolver;
 import personthecat.cavegenerator.compat.transformer.CaveTransformers;
+import personthecat.cavegenerator.compat.transformer.ImportTransformers;
 import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.presets.CavePreset;
 import personthecat.cavegenerator.presets.lang.CaveLangExtension;
@@ -33,8 +34,7 @@ public class PresetCompat {
             .freeze();
 
     private static final ObjectResolver DEFAULTS_TRANSFORMER =
-        JsonTransformer.root()
-            .freeze();
+        ImportTransformers.DEFAULTS_TRANSFORMER;
 
     public static void transformPreset(final File file, final JsonObject preset) {
         final boolean autoFormat = Cfg.AUTO_FORMAT.getAsBoolean();

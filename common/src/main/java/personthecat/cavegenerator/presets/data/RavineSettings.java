@@ -1,12 +1,11 @@
 package personthecat.cavegenerator.presets.data;
 
 import com.mojang.serialization.Codec;
-import com.mojang.serialization.DataResult;
 import lombok.Builder;
+import lombok.NonNull;
 import lombok.experimental.FieldNameConstants;
 import personthecat.catlib.data.Range;
 import personthecat.cavegenerator.model.ScalableFloat;
-import personthecat.cavegenerator.presets.validator.RavineValidator;
 import personthecat.cavegenerator.world.config.ConditionConfig;
 import personthecat.cavegenerator.world.config.DecoratorConfig;
 import personthecat.cavegenerator.world.config.RavineConfig;
@@ -23,8 +22,8 @@ import static personthecat.catlib.util.Shorthand.invert;
 @Builder(toBuilder = true)
 @FieldNameConstants
 public class RavineSettings {
-    @Nullable public final ConditionSettings conditions;
-    @Nullable public final DecoratorSettings decorators;
+    @NonNull public final ConditionSettings conditions;
+    @NonNull public final DecoratorSettings decorators;
     @Nullable public final Range originHeight;
     @Nullable public final Float noiseYFactor;
     @Nullable public final ScalableFloat dYaw;
@@ -79,21 +78,20 @@ public class RavineSettings {
         field(Codec.DOUBLE, Fields.cutoffStrength, s -> s.cutoffStrength, (s, c) -> s.cutoffStrength = c),
         field(Codec.BOOL, Fields.checkWater, s -> s.checkWater, (s, c) -> s.checkWater = c),
         field(DEFAULTED_WALLS, Fields.walls, s -> s.walls, (s, w) -> s.walls = w)
-    ).flatXmap(RavineValidator::apply, DataResult::success);
+    );
 
     public Codec<RavineSettings> codec() {
         return CODEC;
     }
 
     public RavineSettings withOverrides(final OverrideSettings o) {
-        final ConditionSettings conditions = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
-        final DecoratorSettings decorators = this.decorators != null ? this.decorators : DecoratorSettings.EMPTY;
-        return this.toBuilder().conditions(conditions.withOverrides(o)).decorators(decorators.withOverrides(o)).build();
+        return this.toBuilder()
+            .conditions(this.conditions.withOverrides(o))
+            .decorators(this.decorators.withOverrides(o))
+            .build();
     }
 
     public RavineConfig compile(final Random rand, final long seed) {
-        final ConditionSettings conditionsCfg = this.conditions != null ? this.conditions : ConditionSettings.EMPTY;
-        final DecoratorSettings decoratorsCfg = this.decorators != null ? this.decorators : DecoratorSettings.EMPTY;
         final Range originHeight = this.originHeight != null ? this.originHeight : Range.of(20, 66);
         final float noiseYFactor = this.noiseYFactor != null ? this.noiseYFactor : 0.7F;
         final ScalableFloat dYaw = this.dYaw != null ? this.dYaw : DEFAULT_D_YAW;
@@ -108,8 +106,8 @@ public class RavineSettings {
         final double cutoffStrength = this.cutoffStrength != null ? this.cutoffStrength : 5.0;
         final boolean checkWater = this.checkWater != null ? this.checkWater : true;
 
-        final ConditionConfig conditions = conditionsCfg.withDefaults(DEFAULT_CONDITIONS).compile(rand, seed);
-        final DecoratorConfig decorators = decoratorsCfg.compile(rand, seed);
+        final ConditionConfig conditions = this.conditions.withDefaults(DEFAULT_CONDITIONS).compile(rand, seed);
+        final DecoratorConfig decorators = this.decorators.compile(rand, seed);
         final FastNoise walls = this.walls != null ? this.walls.getGenerator(rand, seed) : null;
         final boolean useWallNoise = this.walls != null;
 
