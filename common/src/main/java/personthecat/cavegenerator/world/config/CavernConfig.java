@@ -2,6 +2,7 @@ package personthecat.cavegenerator.world.config;
 
 import lombok.AllArgsConstructor;
 import org.jetbrains.annotations.Nullable;
+import personthecat.catlib.data.Range;
 import personthecat.fastnoise.FastNoise;
 
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.List;
 public class CavernConfig {
     public final ConditionConfig conditions;
     public final DecoratorConfig decorators;
+    public final Range bounds;
     public final int resolution;
     public final FastNoise offset;
     public final FastNoise walls;

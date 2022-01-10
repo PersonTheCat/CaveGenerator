@@ -7,6 +7,7 @@ import lombok.experimental.FieldNameConstants;
 import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.Range;
 import personthecat.cavegenerator.world.config.CavernConfig;
+import personthecat.cavegenerator.world.config.ConditionConfig;
 
 import java.util.Collections;
 import java.util.List;
@@ -87,10 +88,12 @@ public class CavernSettings implements ConfigProvider<CavernSettings, CavernConf
 
         final ConditionSettings conditions = this.conditions.withDefaults(DEFAULT_CONDITIONS)
             .withDefaultCeiling(DEFAULT_CEIL_NOISE).withDefaultFloor(DEFAULT_FLOOR_NOISE);
+        final ConditionConfig conditionCfg = conditions.compile(rand, seed);
 
         return new CavernConfig(
-            conditions.compile(rand, seed),
+            conditionCfg,
             decorators.compile(rand, seed),
+            getBounds(conditions, conditionCfg.height),
             this.resolution != null ? this.resolution : 1,
             NoiseSettings.compile(this.offset, rand, seed),
             NoiseSettings.compile(this.walls, rand, seed),
@@ -100,5 +103,26 @@ public class CavernSettings implements ConfigProvider<CavernSettings, CavernConf
             map(generators, g -> g.getGenerator(rand, seed)),
             this.branches != null ? this.branches.compile(rand, seed) : null
         );
+    }
+
+    @SuppressWarnings("ConstantConditions")
+    private static Range getBounds(final ConditionSettings conditions, final Range height) {
+        int minFloor = 0;
+        if (conditions.floor != null) {
+            if (conditions.floor.range != null) {
+                minFloor = conditions.floor.range.min;
+            } else {
+                minFloor = DEFAULT_FLOOR_NOISE.range.min;
+            }
+        }
+        int maxCeil = 0;
+        if (conditions.ceiling != null) {
+            if (conditions.ceiling.range != null) {
+                maxCeil = conditions.ceiling.range.max;
+            } else {
+                maxCeil = DEFAULT_CEIL_NOISE.range.max;
+            }
+        }
+        return Range.of(height.min + minFloor, height.max + maxCeil);
     }
 }
