@@ -16,8 +16,8 @@ import java.util.List;
 import java.util.Random;
 
 import static personthecat.catlib.util.Shorthand.map;
+import static personthecat.catlib.serialization.CodecUtils.autoFlatten;
 import static personthecat.catlib.serialization.CodecUtils.codecOf;
-import static personthecat.catlib.serialization.CodecUtils.easyList;
 import static personthecat.catlib.serialization.FieldDescriptor.defaultGet;
 
 @FieldNameConstants
@@ -39,15 +39,15 @@ public class CaveSettings implements ConfigProvider<CaveSettings, GeneratorContr
             Collections.emptyList(), Collections.emptyList(), Collections.emptyList());
 
     public static final Codec<CaveSettings> CODEC = codecOf(
-        defaultGet(easyList(BurrowSettings.CODEC), Fields.burrows, Collections::emptyList, s -> s.burrows),
-        defaultGet(easyList(CavernSettings.CODEC), Fields.caverns, Collections::emptyList, s -> s.caverns),
-        defaultGet(easyList(ClusterSettings.CODEC), Fields.clusters, Collections::emptyList, s -> s.clusters),
-        defaultGet(easyList(LayerSettings.CODEC), Fields.layers, Collections::emptyList, s -> s.layers),
-        defaultGet(easyList(PillarSettings.CODEC), Fields.pillars, Collections::emptyList, s -> s.pillars),
-        defaultGet(easyList(RavineSettings.CODEC), Fields.ravines, Collections::emptyList, s -> s.ravines),
-        defaultGet(easyList(StalactiteSettings.CODEC), Fields.stalactites, Collections::emptyList, s -> s.stalactites),
-        defaultGet(easyList(StructureSettings.CODEC), Fields.structures, Collections::emptyList, s -> s.structures),
-        defaultGet(easyList(TunnelSettings.CODEC), Fields.tunnels, Collections::emptyList, s -> s.tunnels),
+        defaultGet(autoFlatten(BurrowSettings.CODEC), Fields.burrows, Collections::emptyList, s -> s.burrows),
+        defaultGet(autoFlatten(CavernSettings.CODEC), Fields.caverns, Collections::emptyList, s -> s.caverns),
+        defaultGet(autoFlatten(ClusterSettings.CODEC), Fields.clusters, Collections::emptyList, s -> s.clusters),
+        defaultGet(autoFlatten(LayerSettings.CODEC), Fields.layers, Collections::emptyList, s -> s.layers),
+        defaultGet(autoFlatten(PillarSettings.CODEC), Fields.pillars, Collections::emptyList, s -> s.pillars),
+        defaultGet(autoFlatten(RavineSettings.CODEC), Fields.ravines, Collections::emptyList, s -> s.ravines),
+        defaultGet(autoFlatten(StalactiteSettings.CODEC), Fields.stalactites, Collections::emptyList, s -> s.stalactites),
+        defaultGet(autoFlatten(StructureSettings.CODEC), Fields.structures, Collections::emptyList, s -> s.structures),
+        defaultGet(autoFlatten(TunnelSettings.CODEC), Fields.tunnels, Collections::emptyList, s -> s.tunnels),
         CaveSettings::new
     );
 

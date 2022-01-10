@@ -17,6 +17,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import static personthecat.catlib.serialization.CodecUtils.autoFlatten;
 import static personthecat.catlib.serialization.CodecUtils.codecOf;
 import static personthecat.catlib.serialization.CodecUtils.easyList;
 import static personthecat.catlib.serialization.CodecUtils.easySet;
@@ -38,7 +39,7 @@ public class ShellSettings implements ConfigProvider<ShellSettings, ShellConfig>
         nullable(Codec.FLOAT, Fields.radius, s -> s.radius),
         nullable(Codec.INT, Fields.sphereResolution, s -> s.sphereResolution),
         nullable(Codec.FLOAT, Fields.noiseThreshold, s -> s.noiseThreshold),
-        nullable(easyList(Decorator.CODEC), Fields.decorators, s -> s.decorators),
+        nullable(autoFlatten(Decorator.CODEC), Fields.decorators, s -> s.decorators),
         ShellSettings::new
     );
 

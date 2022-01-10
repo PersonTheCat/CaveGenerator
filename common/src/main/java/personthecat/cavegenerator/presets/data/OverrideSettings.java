@@ -15,6 +15,7 @@ import personthecat.catlib.serialization.EasyStateCodec;
 import java.util.Collections;
 import java.util.List;
 
+import static personthecat.catlib.serialization.CodecUtils.autoFlatten;
 import static personthecat.catlib.serialization.CodecUtils.dynamic;
 import static personthecat.catlib.serialization.CodecUtils.easyList;
 import static personthecat.catlib.serialization.DynamicField.field;
@@ -57,9 +58,9 @@ public class OverrideSettings {
             field(easyList(EasyStateCodec.INSTANCE), Fields.replaceableBlocks, s -> s.replaceableBlocks, (s, b) -> s.replaceableBlocks = b),
             field(Codec.BOOL, Fields.replaceDecorators, s -> s.replaceDecorators, (s, r) -> s.replaceDecorators = r),
             field(Codec.BOOL, Fields.replaceSolidBlocks, s -> s.replaceSolidBlocks, (s, r) -> s.replaceSolidBlocks = r),
-            field(easyList(CaveBlockSettings.CODEC), Fields.caveBlocks, s -> s.caveBlocks, (s, c) -> s.caveBlocks = c),
-            field(easyList(WallDecoratorSettings.CODEC), Fields.wallDecorators, s -> s.wallDecorators, (s, w) -> s.wallDecorators = w),
-            field(easyList(PondSettings.CODEC), Fields.ponds, s -> s.ponds, (s, p) -> s.ponds = p),
+            field(autoFlatten(CaveBlockSettings.CODEC), Fields.caveBlocks, s -> s.caveBlocks, (s, c) -> s.caveBlocks = c),
+            field(autoFlatten(WallDecoratorSettings.CODEC), Fields.wallDecorators, s -> s.wallDecorators, (s, w) -> s.wallDecorators = w),
+            field(autoFlatten(PondSettings.CODEC), Fields.ponds, s -> s.ponds, (s, p) -> s.ponds = p),
             field(ShellSettings.CODEC, Fields.shell, s -> s.shell, (s, h) -> s.shell = h),
             field(TunnelSettings.CODEC, Fields.branches, s -> s.branches, (s, b) -> s.branches = b),
             field(RoomSettings.CODEC, Fields.rooms, s -> s.rooms, (s, r) -> s.rooms = r)

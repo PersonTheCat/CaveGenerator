@@ -15,6 +15,7 @@ import javax.annotation.Nullable;
 import java.util.*;
 import java.util.function.Predicate;
 
+import static personthecat.catlib.serialization.CodecUtils.autoFlatten;
 import static personthecat.catlib.serialization.CodecUtils.codecOf;
 import static personthecat.catlib.serialization.CodecUtils.easyList;
 import static personthecat.catlib.serialization.FieldDescriptor.nullable;
@@ -40,9 +41,9 @@ public class DecoratorSettings {
         nullable(easyList(EasyStateCodec.INSTANCE), Fields.replaceableBlocks, s -> s.replaceableBlocks),
         nullable(Codec.BOOL, Fields.replaceDecorators, s -> s.replaceDecorators),
         nullable(Codec.BOOL, Fields.replaceSolidBlocks, s -> s.replaceSolidBlocks),
-        nullable(easyList(CaveBlockSettings.CODEC), Fields.caveBlocks, s -> s.caveBlocks),
-        nullable(easyList(WallDecoratorSettings.CODEC), Fields.wallDecorators, s -> s.wallDecorators),
-        nullable(easyList(PondSettings.CODEC), Fields.ponds, s -> s.ponds),
+        nullable(autoFlatten(CaveBlockSettings.CODEC), Fields.caveBlocks, s -> s.caveBlocks),
+        nullable(autoFlatten(WallDecoratorSettings.CODEC), Fields.wallDecorators, s -> s.wallDecorators),
+        nullable(autoFlatten(PondSettings.CODEC), Fields.ponds, s -> s.ponds),
         nullable(ShellSettings.CODEC, Fields.shell, s -> s.shell),
         nullable(easyList(EasyStateCodec.INSTANCE), "<globals>", s -> s.globalDecorators),
         DecoratorSettings::new
