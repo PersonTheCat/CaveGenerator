@@ -80,17 +80,15 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
 
     @Override
     protected void generateChecked(final PrimerContext ctx) {
-        final boolean storePositions = this.hasWallDecorators() || this.hasPonds();
-        // Optimize for several different use cases.
         if (this.hasShell()) {
-            this.generateShelled(ctx, storePositions ? this::replaceRecord : this::replaceOnly);
+            this.generateShelled(ctx);
         } else {
-            this.generateUnShelled(ctx, storePositions ? this::replaceRecord : this::replaceOnly);
+            this.generateUnShelled(ctx);
         }
         this.decorateAll(ctx, this.caverns, ctx.localRand);
     }
 
-    private void generateShelled(final PrimerContext ctx, final GenerationFunction f) {
+    private void generateShelled(final PrimerContext ctx) {
         for (int x = 0; x < 16; x++) {
             final int aX = ctx.actualX + x;
             for (int z = 0; z < 16; z++) {
@@ -114,7 +112,8 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
                     for (int y = min; y < max + 1; y++) {
                         final double curve = distance - this.getBiomeCurve(centerY - y);
                         if (curve > this.cfg.wallDistance) {
-                            f.generate(ctx, x, y, z);
+                            this.replaceOnly(ctx, x, y, z);
+                            this.caverns.add(x, y, z);
                         }
                         else if (curve > this.cfg.wallDistance - this.decorators.shell.radius) {
                             this.generateShell(ctx, ctx.localRand, x, y, z, centerY);
@@ -140,7 +139,7 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
         }
     }
 
-    private void generateUnShelled(PrimerContext ctx, GenerationFunction f) {
+    private void generateUnShelled(PrimerContext ctx) {
         for (int x = 0; x < 16; x++) {
             final int aX = ctx.actualX + x;
             for (int z = 0; z < 16; z++) {
@@ -159,7 +158,8 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
                     for (int y = min; y < max + 1; y++) {
                         final double curve = distance - this.getBiomeCurve(centerY - y);
                         if (curve > this.cfg.wallDistance) {
-                            f.generate(ctx, x, y, z);
+                            this.replaceOnly(ctx, x, y, z);
+                            this.caverns.add(x, y, z);
                         }
                     }
                 }
@@ -176,11 +176,6 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
         this.replaceBlock(ctx, ctx.localRand, x, y, z);
     }
 
-    private void replaceRecord(final PrimerContext ctx, final int x, final int y, final int z) {
-        this.replaceOnly(ctx, x, y, z);
-        this.caverns.add(x, y, z);
-    }
-
     private double getNearestBorder(final int x, final int z) {
         double shortestDistance = Double.MAX_VALUE;
 
@@ -190,10 +185,6 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
             shortestDistance = Math.min(distance, shortestDistance);
         }
         return shortestDistance;
-    }
-
-    private void decorateCaverns(final PrimerContext ctx) {
-        this.caverns.forEach((x, y, z) -> this.decorateBlock(ctx, ctx.localRand, x, y, z));
     }
 
     @Override
@@ -210,12 +201,5 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
             }
         }
         return CANNOT_SPAWN;
-    }
-
-    // Todo: bad idea
-    /** Experimental interface to reduce shell generation performance cost. Still testing. */
-    @FunctionalInterface
-    private interface GenerationFunction {
-        void generate(PrimerContext ctx, int x, int y, int z);
     }
 }
