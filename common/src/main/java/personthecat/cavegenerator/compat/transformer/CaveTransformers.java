@@ -303,15 +303,15 @@ public class CaveTransformers {
             .renameValue(WallDecoratorSettings.Fields.placement, REPLACE_ORIGINAL, WallDecoratorSettings.Placement.OVERLAY.name())
             .freeze();
 
-//    private static final ObjectResolver BLACKLIST_BIOMES_MOVER =
-//        JsonTransformer.containing(BLACKLIST_BIOMES)
-//            .relocate(BLACKLIST_BIOMES, join(ConditionSettings.Fields.biomes, BiomePredicate.Fields.blacklist))
-//            .freeze();
-//
-//    private static final ObjectResolver BLACKLIST_DIMENSIONS_MOVER =
-//        JsonTransformer.containing(BLACKLIST_DIMENSIONS)
-//            .relocate(BLACKLIST_DIMENSIONS, join(ConditionSettings.Fields.dimensions, BiomePredicate.Fields.blacklist))
-//            .freeze();
+    private static final ObjectResolver BLACKLIST_BIOMES_MOVER =
+        JsonTransformer.containing(BLACKLIST_BIOMES)
+            .relocate(BLACKLIST_BIOMES, join(ConditionSettings.Fields.biomes, BiomePredicate.Fields.blacklist))
+            .freeze();
+
+    private static final ObjectResolver BLACKLIST_DIMENSIONS_MOVER =
+        JsonTransformer.containing(BLACKLIST_DIMENSIONS)
+            .relocate(BLACKLIST_DIMENSIONS, join(ConditionSettings.Fields.dimensions, BiomePredicate.Fields.blacklist))
+            .freeze();
 
     public static final ObjectResolver RECURSIVE_TRANSFORMER =
         JsonTransformer.root()
@@ -320,8 +320,8 @@ public class CaveTransformers {
             .include(RECURSIVE_NOISE_COMPONENT)
             .include(RECURSIVE_REGION_COMPONENT)
             .include(RECURSIVE_WALL_DECORATOR_COMPONENT)
-//            .include(BLACKLIST_BIOMES_MOVER)
-//            .include(BLACKLIST_DIMENSIONS_MOVER)
+            .include(BLACKLIST_BIOMES_MOVER)
+            .include(BLACKLIST_DIMENSIONS_MOVER)
             .freeze();
 
     private static void replaceLegacyDefaults(final JsonObject root, final JsonValue importsValue) {
