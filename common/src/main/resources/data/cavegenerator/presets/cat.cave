@@ -47,8 +47,6 @@
       biomes: $MOUNTAIN_CAVE_BIOMES
     }
     {
-      blacklistBiomes: true
-      biomes: $MOUNTAIN_CAVE_BIOMES
       ravines: $SURFACE_CRACKS
     }
     {
@@ -64,7 +62,7 @@
     }
     {
       $GENERIC_FEATURES: ALL
-      blacklistBiomes: true
+      *biomes.blacklist: true
       biomes: $DECORATED_BIOMES
       tunnels: [
         $GENERIC_TUNNELS

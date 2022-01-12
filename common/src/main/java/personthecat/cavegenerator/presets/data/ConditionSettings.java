@@ -16,7 +16,7 @@ import java.util.Random;
 import static personthecat.catlib.serialization.CodecUtils.codecOf;
 import static personthecat.catlib.serialization.FieldDescriptor.nullable;
 
-@Builder
+@Builder(toBuilder = true)
 @FieldNameConstants
 public class ConditionSettings implements ConfigProvider<ConditionSettings, ConditionConfig> {
     @Nullable public final BiomePredicate biomes;
@@ -47,7 +47,7 @@ public class ConditionSettings implements ConfigProvider<ConditionSettings, Cond
 
     @Override
     public ConditionSettings withOverrides(final OverrideSettings o) {
-        return builder()
+        return this.toBuilder()
             .biomes(this.biomes != null ? this.biomes : o.biomes)
             .dimensions(this.dimensions != null ? this.dimensions : o.dimensions)
             .height(this.height != null ? this.height : o.height)
@@ -60,35 +60,35 @@ public class ConditionSettings implements ConfigProvider<ConditionSettings, Cond
 
     @Override
     public ConditionSettings withDefaults(final ConditionSettings defaults) {
-        return builder()
+        return this.toBuilder()
             .biomes(this.biomes != null ? this.biomes : defaults.biomes)
             .dimensions(this.dimensions != null ? this.dimensions : defaults.dimensions)
             .height(this.height != null ? this.height : defaults.height)
             .floor(defaults.floor != null ? NoiseSettings.withDefaults(this.floor, defaults.floor) : this.floor)
-            .ceiling(defaults.ceiling != null ? NoiseSettings.withDefaults(this.ceiling, defaults.ceiling) : this.floor)
+            .ceiling(defaults.ceiling != null ? NoiseSettings.withDefaults(this.ceiling, defaults.ceiling) : this.ceiling)
             .region(defaults.region != null ? NoiseSettings.withDefaults(this.region, defaults.region) : this.region)
-            .floor(defaults.noise != null ? NoiseSettings.withDefaults(this.noise, defaults.noise) : this.noise)
+            .noise(defaults.noise != null ? NoiseSettings.withDefaults(this.noise, defaults.noise) : this.noise)
             .build();
     }
 
     public ConditionSettings withDefaultFloor(final NoiseSettings floor) {
         if (this.floor == null) return this;
-        return builder().floor(this.floor.withDefaults(floor)).build();
+        return this.toBuilder().floor(this.floor.withDefaults(floor)).build();
     }
 
     public ConditionSettings withDefaultCeiling(final NoiseSettings ceiling) {
         if (this.ceiling == null) return this;
-        return builder().ceiling(this.ceiling.withDefaults(ceiling)).build();
+        return this.toBuilder().ceiling(this.ceiling.withDefaults(ceiling)).build();
     }
 
     public ConditionSettings withDefaultRegion(final NoiseSettings region) {
         if (this.region == null) return this;
-        return builder().region(this.region.withDefaults(region)).build();
+        return this.toBuilder().region(this.region.withDefaults(region)).build();
     }
 
     public ConditionSettings withDefaultNoise(final NoiseSettings noise) {
         if (this.noise == null) return this;
-        return builder().noise(this.noise.withDefaults(noise)).build();
+        return this.toBuilder().noise(this.noise.withDefaults(noise)).build();
     }
 
     @Override

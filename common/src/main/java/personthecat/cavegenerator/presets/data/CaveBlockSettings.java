@@ -50,7 +50,7 @@ public class CaveBlockSettings implements ConfigProvider<CaveBlockSettings, Cave
             this.states,
             this.integrity != null ? this.integrity : 1.0,
             this.height != null ? this.height : Range.of(0, 50),
-            NoiseSettings.compile(this.noise != null ? this.noise : DEFAULT_NOISE, rand, seed)
+            this.noise != null ? this.noise.getGenerator(rand, seed) : null
         );
     }
 }

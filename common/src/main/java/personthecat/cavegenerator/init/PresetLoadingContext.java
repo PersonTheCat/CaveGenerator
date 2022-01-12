@@ -138,8 +138,7 @@ public class PresetLoadingContext {
             if (Cfg.detectExtraTokens()) {
                 this.runStringInspections();
             }
-            final boolean shouldUpdate = Cfg.shouldUpdatePresets();
-            if (shouldUpdate) {
+            if (Cfg.shouldUpdatePresets()) {
                 this.rawPresets.forEach(PresetCompat::transformPreset);
             }
             if (Cfg.updateImports()) {
@@ -149,7 +148,7 @@ public class PresetLoadingContext {
                 CaveLangExtension.expandAll(this.rawPresets, this.importPresets);
             }
             final Map<String, JsonObject> extracted = extractInner(this.rawPresets);
-            if (!shouldUpdate && Cfg.deepTransforms()) {
+            if (Cfg.deepTransforms()) {
                 extracted.forEach((file, json) -> PresetCompat.transformPresetOnly(json));
             }
             extracted.forEach((name, json) -> json.setAllAccessed(false));
