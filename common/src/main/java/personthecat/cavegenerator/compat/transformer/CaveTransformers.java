@@ -6,6 +6,7 @@ import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
 import personthecat.catlib.data.BiomePredicate;
+import personthecat.catlib.data.DimensionPredicate;
 import personthecat.catlib.util.HjsonUtils;
 import personthecat.catlib.util.JsonTransformer;
 import personthecat.catlib.util.JsonTransformer.ObjectResolver;
@@ -19,6 +20,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import static personthecat.catlib.util.Shorthand.f;
 
 public class CaveTransformers {
 
@@ -304,13 +307,23 @@ public class CaveTransformers {
             .freeze();
 
     private static final ObjectResolver BLACKLIST_BIOMES_MOVER =
+        JsonTransformer.containing(ConditionSettings.Fields.biomes)
+            .run(json -> transformPredicate(json, ConditionSettings.Fields.biomes, BLACKLIST_BIOMES))
+            .freeze();
+
+    private static final ObjectResolver BLACKLIST_BIOMES_ONLY_FIXER =
         JsonTransformer.containing(BLACKLIST_BIOMES)
             .relocate(BLACKLIST_BIOMES, join(ConditionSettings.Fields.biomes, BiomePredicate.Fields.blacklist))
             .freeze();
 
     private static final ObjectResolver BLACKLIST_DIMENSIONS_MOVER =
+        JsonTransformer.containing(ConditionSettings.Fields.biomes)
+            .run(json -> transformPredicate(json, ConditionSettings.Fields.dimensions, BLACKLIST_DIMENSIONS))
+            .freeze();
+
+    private static final ObjectResolver BLACKLIST_DIMENSIONS_ONLY_FIXER =
         JsonTransformer.containing(BLACKLIST_DIMENSIONS)
-            .relocate(BLACKLIST_DIMENSIONS, join(ConditionSettings.Fields.dimensions, BiomePredicate.Fields.blacklist))
+            .relocate(BLACKLIST_DIMENSIONS, join(ConditionSettings.Fields.dimensions, DimensionPredicate.Fields.blacklist))
             .freeze();
 
     public static final ObjectResolver RECURSIVE_TRANSFORMER =
@@ -321,7 +334,9 @@ public class CaveTransformers {
             .include(RECURSIVE_REGION_COMPONENT)
             .include(RECURSIVE_WALL_DECORATOR_COMPONENT)
             .include(BLACKLIST_BIOMES_MOVER)
+            .include(BLACKLIST_BIOMES_ONLY_FIXER)
             .include(BLACKLIST_DIMENSIONS_MOVER)
+            .include(BLACKLIST_DIMENSIONS_ONLY_FIXER)
             .freeze();
 
     private static void replaceLegacyDefaults(final JsonObject root, final JsonValue importsValue) {
@@ -482,6 +497,27 @@ public class CaveTransformers {
             json.set("$VANILLA", all);
         }
         json.remove(BLANK_SLATE);
+    }
+
+    private static void transformPredicate(final JsonObject json, final String key, final String blacklistKey) {
+        final JsonValue blacklist = json.get(blacklistKey);
+        if (blacklist == null) {
+            return;
+        }
+        final JsonValue predicate = json.get(key);
+        assert predicate != null : "Transforms out of order";
+
+        if (predicate.isObject()) {
+            predicate.asObject().set(BiomePredicate.Fields.blacklist, blacklist);
+        } else if (predicate.isArray()) {
+            final JsonObject predicateObject = new JsonObject();
+            predicateObject.add(BiomePredicate.Fields.names, predicate);
+            predicateObject.add(BiomePredicate.Fields.blacklist, blacklist);
+            json.set(key, predicateObject);
+        } else { // value is expression, use recursive override
+            json.set(f("*{}.{}", key, BiomePredicate.Fields.blacklist), blacklist);
+        }
+        json.remove(blacklistKey);
     }
 
     private static String join(final String... path) {
