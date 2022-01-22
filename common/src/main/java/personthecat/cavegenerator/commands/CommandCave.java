@@ -93,7 +93,7 @@ public class CommandCave {
     private final JsonObject memory = new JsonObject();
 
     @ModCommand(
-        description = "Reloads all of the current presets from the disk."
+        description = "Reloads all presets from the disk."
     )
     private void reload(final CommandContextWrapper ctx) {
         PresetLoadingContext.reset();
@@ -333,7 +333,7 @@ public class CommandCave {
     }
 
     @ModCommand(
-        description = "Displays all of the variables in memory."
+        description = "Displays in-memory variables for Cave expressions."
     )
     private void dir(final CommandContextWrapper ctx) {
         if (this.memory.isEmpty()) {

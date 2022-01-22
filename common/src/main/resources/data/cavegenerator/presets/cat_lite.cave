@@ -42,6 +42,6 @@
     }
   ]
   # This feature should be spawned
-  # in all of the inner presets.
+  # by most of the inner presets.
   caveBlocks: $LAVA_CAVE_BLOCK
 }

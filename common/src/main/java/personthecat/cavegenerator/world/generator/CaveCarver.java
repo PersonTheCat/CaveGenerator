@@ -74,7 +74,7 @@ public abstract class CaveCarver extends EarlyGenerator {
     }
 
     /**
-     * Runs all of the applicable decorators for the presently-generating cavern.
+     * Runs the applicable decorators for the presently-generating cavern.
      *
      * @param ctx       The current early generation context.
      * @param positions A set of block positions indicating which blocks were updated.
@@ -332,8 +332,8 @@ public abstract class CaveCarver extends EarlyGenerator {
      * feature which generates wall decorations on every horizontal side.
      *
      * @param ctx  The current early generation context.
-     * @param side All of the horizontal wall decorators being generated at this position.
-     * @param rand A RNG used for <b>decoration purposes only</b>.
+     * @param side The horizontal wall decorators being generated at this position.
+     * @param rand An RNG used for <b>decoration purposes only</b>.
      * @param x    The relative x-coordinate being tested.
      * @param y    The relative y-coordinate being tested.
      * @param z    The relative z-coordinate being tested.
@@ -384,8 +384,8 @@ public abstract class CaveCarver extends EarlyGenerator {
      * Places a single wall decoration when given a list of applicable wall decorators.
      *
      * @param ctx        The current early generation context.
-     * @param decorators All of the wall decorator which may generate.
-     * @param rand       A RNG used for <b>decoration purposes only</b>.
+     * @param decorators The wall decorator which may generate.
+     * @param rand       An RNG used for <b>decoration purposes only</b>.
      * @param x0         The x-coordinate of the current cave block.
      * @param y0         The y-coordinate of the current cave block.
      * @param z0         The z-coordinate of the current cave block.

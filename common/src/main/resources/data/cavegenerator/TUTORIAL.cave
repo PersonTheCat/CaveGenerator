@@ -340,9 +340,9 @@
 #                        ### Global Conditions ###                          #
 # ######################################################################### #
 #                                                                           #
-#   This section contains all of the global spawn conditions you can place  #
-# at the root level of your presets. In this version, there is only one     #
-# single value which controls the entire preset: `enabled`.                 #
+#   This section contains the global spawn conditions you can place at the  #
+# root level of your presets. In this version, there is only one single     #
+# value which controls the entire preset: `enabled`.                        #
 # ------------------------------------------------------------------------- #
 
 enabled: true
@@ -383,9 +383,9 @@ height: [ 0, 255 ]
 # placed at the top level to provide a common default which will be used    #
 # elsewhere.                                                                #
 #                                                                           #
-#    This section contains all of the different noise parameters that can   #
-# be used to restrict any feature according to noise parameters. For more   #
-# information on how to use them, see the documentation at the top.         #
+#    This section contains noise parameters, which can be used to restrict  #
+# any feature according to noise parameters. For more information on how to #
+# use them, see the documentation at the top.                               #
 #                                                                           #
 # ------------------------------------------------------------------------- #
 
@@ -403,7 +403,7 @@ noise: {}
 # placed at the top level to provide a common default which will be used    #
 # elsewhere.                                                                #
 #                                                                           #
-#    This section contains all of the generic settings that apply to your   #
+#    This section contains the generic, common settings that apply to your  #
 # world carvers. These include: tunnels, ravines, rooms, caverns, and       #
 # burrows.                                                                  #
 #                                                                           #
@@ -424,8 +424,8 @@ replaceDecorators: true
 # placed at the top level to provide a common default which will be used    #
 # elsewhere.                                                                #
 #                                                                           #
-#   This section contains all of the decorations that apply exclusively to  #
-# your block carvers. These include: tunnels, ravines, rooms, caverns, and  #
+#   This section contains decorators which can be applied directly to any   #
+# given block carver. These include: tunnels, ravines, rooms, caverns, and  #
 # burrows.                                                                  #
 #                                                                           #
 # ------------------------------------------------------------------------- #
@@ -530,9 +530,9 @@ branches: {}
 #                        ### Carver Generators ###                          #
 # ######################################################################### #
 #                                                                           #
-#   This section contains all of the actual carver generators you will find #
-# in this mod. For more information on using these generators, see the wiki #
-# at this link:                                                             #
+#   This section contains the actual carver generators you will find in     #
+# this mod. For more information on using these generators, see the wiki at #
+# this link:                                                                #
 #  * https://github.com/PersonTheCat/CaveGenerator/wiki/                    #
 #                                                                           #
 # ------------------------------------------------------------------------- #

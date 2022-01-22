@@ -22,22 +22,12 @@ import static personthecat.cavegenerator.io.ModFolders.STRUCTURE_DIR;
 @Log4j2
 public class JarFiles {
 
-    /** The path where all of this mod's assets are stored. */
     private static final String DATA_PATH = "data/" + Reference.MOD_ID;
-
-    /** The name of the folder containing cat presets.  */
     private static final String CAT_FOLDER_NAME = "cat";
-
-    /** The name of the tutorial file. */
     private static final String TUTORIAL_NAME = "TUTORIAL.cave";
-
-    /** The name of the stripped tutorial file. */
     private static final String REFERENCE_NAME = "REFERENCE.cave";
-
-    /** The actual folder containing the default cat imports. */
     private static final File CAT_DIR = new File(ModFolders.IMPORT_DIR, CAT_FOLDER_NAME);
 
-    /** All of the <b>example</b> presets to be copied from the jar. */
     private static final String[] EXAMPLES = {
         "flooded_vanilla", "large_caves", "spirals",
         "tunnels", "caverns", "stone_layers", "stalactites",
@@ -56,7 +46,6 @@ public class JarFiles {
         "cat", "cat_lite", "geodes", "ore_veins"
     };
 
-    /** A couple of structure NBTs to be copied from the jar. */
     private static final String[] STRUCTURES = {
         "brown_mushroom_lg", "brown_mushroom_sm", "bush1_sm",
         "bush2_sm", "bush3_sm", "bush4_med", "hanging_spawner",
@@ -64,12 +53,10 @@ public class JarFiles {
         "red_mushroom"
     };
 
-    /** Any preset that specifically belongs in /imports. */
     private static final String[] IMPORTS = {
         "conditions", "defaults", "types"
     };
 
-    /** Copies the example presets from the jar to the disk. */
     public static void copyFiles() {
         mkdirsOrThrow(EXAMPLE_DIR, IMPORT_DIR);
 
@@ -155,7 +142,6 @@ public class JarFiles {
         }
     }
 
-    /** Copies the example structures from the jar to the disk. */
     private static void copyStructures() {
         if (!fileExists(STRUCTURE_DIR)) {
             // The directory doesn't exist. Create it.
@@ -168,7 +154,6 @@ public class JarFiles {
         }
     }
 
-    /** Copies the tutorial file into this mod's root directory. */
     private static void copyTutorial() {
         // Copy the regular tutorial file.
         final String fromLocation = DATA_PATH + "/" + TUTORIAL_NAME;
@@ -181,9 +166,6 @@ public class JarFiles {
         copyFile(fromLocation2, toLocation2);
     }
 
-    /**
-     * Copies any file from the jar to the disk.
-     */
     private static void copyFile(String fromLocation, String toLocation) {
         try {
             final InputStream toCopy = getRequiredResource(fromLocation);

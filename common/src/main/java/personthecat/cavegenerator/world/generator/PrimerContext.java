@@ -152,7 +152,7 @@ public final class PrimerContext {
     }
 
     /**
-     * Experimental method responsible for initializing all of the heightmaps that will be used
+     * Experimental method responsible for initializing the heightmaps that will be used
      * during the current generation stage. This allows us to reduce the number of redundant
      * checks that occur when updating blocks in the world.
      */
@@ -167,8 +167,8 @@ public final class PrimerContext {
     }
 
     /**
-     * Experimental method responsible for creating all of the chunk sections that will be used
-     * by the generator controller. This relieves the responsibility of repeatedly checking
+     * Experimental method responsible for creating the chunk sections that will be used by
+     * the generator controller. This action relieves the responsibility of repeatedly checking
      * whether those sections exist in the future.
      *
      * <p>Note that an additional section may be created in each direction in case of block

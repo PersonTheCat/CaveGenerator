@@ -27,7 +27,7 @@ import static personthecat.cavegenerator.io.ModFolders.STRUCTURE_DIR;
 public class StructureSpawner {
 
     /**
-     * Loads all of the structures inside of <code>cavegenerator/structures</code> into a map.
+     * Loads each structures out of <code>cavegenerator/structures</code> into a map.
      * This map will be used as the mod's main structure registry later on.
      *
      * @return A map of filename (no extension) -> template

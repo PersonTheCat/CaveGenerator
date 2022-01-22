@@ -8,9 +8,11 @@ import personthecat.cavegenerator.world.generator.PrimerContext;
 import java.util.Random;
 
 /**
- * Holds all of the information related to the tunnel generator's current position along
- * the path of a tunnel. Used for generating a series of center coordinates around which
- * to generate spheres. Based on Mojang's original algorithm in 1.12.
+ * Holds everything related to the tunnel generator's current position along
+ * the path of a tunnel. Used for generating a series of center coordinates
+ * around which to generate spheres.
+ *
+ * <p>Based on Mojang's original algorithm in 1.12.
  *
  * Todo: Modernize this up to 1.13+ specs, ideally by removing it.
  */

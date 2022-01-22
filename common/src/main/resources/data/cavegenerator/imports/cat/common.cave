@@ -42,7 +42,7 @@
     types: [ "ICY", "DESERT", "MESA", "JUNGLE", "OCEAN", "MUSHROOM" ]
     names: [ "dark_forest", "dark_forest_hills" ]
   }
-  # All of the biomes where dense / lush 
+  # Biomes where dense / lush
   # cave features should spawn.
   DENSE_CAVE_BIOMES: {
     types: JUNGLE
