@@ -3,6 +3,7 @@ package personthecat.cavegenerator.presets.data;
 import com.mojang.serialization.Codec;
 import lombok.Builder;
 import lombok.experimental.FieldNameConstants;
+import net.minecraft.world.level.Level;
 import personthecat.catlib.data.BiomePredicate;
 import personthecat.catlib.data.DimensionPredicate;
 import personthecat.catlib.data.Range;
@@ -11,6 +12,7 @@ import personthecat.fastnoise.FastNoise;
 
 import javax.annotation.Nullable;
 
+import java.util.Collections;
 import java.util.Random;
 
 import static personthecat.catlib.serialization.CodecUtils.codecOf;
@@ -94,7 +96,7 @@ public class ConditionSettings implements ConfigProvider<ConditionSettings, Cond
     @Override
     public ConditionConfig compile(final Random rand, final long seed) {
         final BiomePredicate biomes = this.biomes != null ? this.biomes : BiomePredicate.ALL_BIOMES;
-        final DimensionPredicate dimensions = this.dimensions != null ? this.dimensions : DimensionPredicate.ALL_DIMENSIONS;
+        final DimensionPredicate dimensions = this.dimensions != null ? this.dimensions : defaultDimensions();
         final Range height = this.height != null ? this.height : Range.of(0, 255);
         final FastNoise floor = NoiseSettings.compile(this.floor, rand, seed);
         final FastNoise ceiling = NoiseSettings.compile(this.ceiling, rand, seed);
@@ -104,5 +106,9 @@ public class ConditionSettings implements ConfigProvider<ConditionSettings, Cond
         final boolean hasRegion = this.region != null;
 
         return new ConditionConfig(biomes, dimensions, height, floor, ceiling, region, noise, hasBiomes, hasRegion);
+    }
+
+    private static DimensionPredicate defaultDimensions() {
+        return DimensionPredicate.builder().names(Collections.singletonList(Level.OVERWORLD.location())).build();
     }
 }
