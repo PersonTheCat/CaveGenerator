@@ -47,8 +47,9 @@ public abstract class BasicFeature {
      * @param ctx A context containing world information and coordinates.
      */
     public final void generate(final WorldContext ctx) {
-        // Todo: dimensions (note that the controller can be mapped to a dimension)
-        this.doGenerate(ctx);
+        if (this.conditions.dimensions.test(ctx.level)) {
+            this.doGenerate(ctx);
+        }
     }
 
     /**

@@ -1,8 +1,12 @@
 package personthecat.cavegenerator.world.generator;
 
+import net.minecraft.core.BlockPos;
 import net.minecraft.world.level.levelgen.carver.WorldCarver;
+import personthecat.cavegenerator.world.BiomeSearch;
 import personthecat.cavegenerator.world.config.ConditionConfig;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 /**
@@ -16,6 +20,7 @@ import java.util.Random;
  */
 public abstract class EarlyGenerator {
 
+    protected final List<BlockPos> invalidChunks = new ArrayList<>(BiomeSearch.size());
     protected final ConditionConfig conditions;
     protected final Random globalRand;
     protected final long seed;
@@ -30,14 +35,35 @@ public abstract class EarlyGenerator {
      * Generates this feature <em>after</em> checking to ensure that it can spawn in the
      * current dimension and biomes.
      *
-     * Todo: Also check region noise here?
-     *
      * @param ctx A context containing world information and coordinates.
      */
     public void generate(final PrimerContext ctx) {
-        // Todo: dimensions
-        if (!this.conditions.hasBiomes || ctx.search.anyMatches(this.conditions.biomes)) {
-            this.generateChecked(ctx);
+        if (this.conditions.dimensions.test(ctx.primer)) {
+            if (this.conditions.hasBiomes || this.conditions.hasRegion) {
+                if (ctx.search.anyMatches(this.conditions.biomes)) {
+                    this.fillInvalidChunks(ctx.search, ctx.chunkX, ctx.chunkZ);
+                    this.generateChecked(ctx);
+                    this.invalidChunks.clear();
+                }
+            } else {
+                this.generateChecked(ctx);
+            }
+        }
+    }
+
+    /**
+     * Checks the biome and noise conditions in each surrounding chunk for this generator.
+     *
+     * <p>Any chunks that do not pass will be added into the {@link #invalidChunks} context and
+     * used to form a distance-based, cylindrical chunk border in the future.
+     *
+     * @param search The lazily initialized biome search utility providing biome data.
+     */
+    protected void fillInvalidChunks(final BiomeSearch search, final int x, final int z) {
+        for (final BiomeSearch.Data d : search.surrounding.get()) {
+            if (!(this.conditions.biomes.test(d.biome) && this.conditions.region.getBoolean(d.centerX, d.centerZ))) {
+                this.invalidChunks.add(new BlockPos(d.centerX, 0, d.centerZ));
+            }
         }
     }
 
