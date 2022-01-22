@@ -5,13 +5,10 @@ import net.minecraft.util.Mth;
 import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.model.PositionFlags;
 import personthecat.cavegenerator.model.SphereData;
-import personthecat.cavegenerator.world.BiomeSearch;
 import personthecat.cavegenerator.world.config.CaveBlockConfig;
 import personthecat.cavegenerator.world.config.ConditionConfig;
 import personthecat.cavegenerator.world.config.DecoratorConfig;
 
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 import static personthecat.cavegenerator.util.CommonBlocks.BLK_WATER;
@@ -21,73 +18,12 @@ public abstract class MapGenerator extends CaveCarver {
     /** The vertical distance to the nearest water source block that can be ignored. */
     private static final int WATER_WIGGLE_ROOM = 7;
 
-    protected final List<BlockPos> invalidChunks = new ArrayList<>();
     private final SphereData sphere = new SphereData();
     private final boolean checkWater;
 
     public MapGenerator(ConditionConfig conditions, DecoratorConfig decorators, Random rand, long seed, boolean checkWater) {
         super(conditions, decorators, rand, seed);
         this.checkWater = checkWater;
-    }
-
-    @Override
-    public final void generate(final PrimerContext ctx) {
-        // Todo: dimensions
-        if (this.conditions.hasBiomes) {
-            if (ctx.search.anyMatches(this.conditions.biomes)) {
-                this.fillInvalidChunks(ctx.search);
-                this.generateChecked(ctx);
-                this.invalidChunks.clear();
-            }
-        } else if (this.conditions.hasRegion) {
-            if (this.conditions.region.getBoolean(ctx.actualX, ctx.actualZ)) {
-                this.fillInvalidChunks(ctx.chunkX, ctx.chunkZ);
-                this.generateChecked(ctx);
-                this.invalidChunks.clear();
-            }
-        } else {
-            this.generateChecked(ctx);
-        }
-    }
-
-    /**
-     * Checks the biome and noise conditions in all of the surrounding chunks for this generator.
-     *
-     * <p>Any chunks that do not pass will be added into the {@link #invalidChunks} context and
-     * used to form a distance-based, cylindrical chunk border in future.
-     *
-     * @param search The lazily initialized biome search utility providing biome data.
-     */
-    private void fillInvalidChunks(final BiomeSearch search) {
-        for (final BiomeSearch.Data d : search.surrounding.get()) {
-            if (!(this.conditions.biomes.test(d.biome) && this.conditions.region.getBoolean(d.centerX, d.centerZ))) {
-                this.invalidChunks.add(new BlockPos(d.centerX, 0, d.centerZ));
-            }
-        }
-    }
-
-    /**
-     * Variant of {@link #fillInvalidChunks(BiomeSearch)} which only checks the region noise
-     * parameters in the surrounding chunks.
-     *
-     * <p>Because we do not have position data from the otherwise provided {@link BiomeSearch}
-     * utility, the positions must be reconstructed here. In the future, it would be cleaner
-     * to reduce this code duplication.
-     *
-     * @param chunkX The chunk x-coordinate (abs / 16)
-     * @param chunkZ The chunk z-coordinate (abs / 16)
-     */
-    private void fillInvalidChunks(final int chunkX, final int chunkZ) {
-        final int range = Cfg.biomeRange();
-        for (int cX = chunkX - range; cX <= chunkX + range; cX++) {
-            for (int cZ = chunkZ - range; cZ < chunkZ + range; cZ++) {
-                final int centerX = cX * 16 + 8;
-                final int centerZ = cZ * 16 + 8;
-                if (!this.conditions.region.getBoolean(centerX, centerZ)) {
-                    this.invalidChunks.add(new BlockPos(centerX, 0, centerZ));
-                }
-            }
-        }
     }
 
     @Override
@@ -119,7 +55,7 @@ public abstract class MapGenerator extends CaveCarver {
     protected abstract void mapGenerate(final PrimerContext ctx, final int destX, final int destZ);
 
     /**
-     * Checks all of the invalid chunk block positions inside of {@link #invalidChunks} to
+     * Checks each invalid position inside of {@link #invalidChunks} to
      * find whichever is closest.
      *
      * @param x The absolute x-coordinate.
@@ -139,7 +75,7 @@ public abstract class MapGenerator extends CaveCarver {
     }
 
     /**
-     * Generates all of the applicable features for a single sphere in the current chunk.
+     * Generates the applicable features for a single sphere in the current chunk.
      *
      * @param ctx  The current early generation context.
      * @param rand A RNG used for <b>decoration purposes only</b>.
@@ -279,13 +215,13 @@ public abstract class MapGenerator extends CaveCarver {
     }
 
     /**
-     * Checks all of the blocks in an entire sphere to see if water exists at this
+     * Checks each block in a given sphere to see if water exists at this
      * point.
      *
      * Todo: it may be possible to discover this information using heightmaps.
      *
      * @param ctx    The current early generation context.
-     * @param sphere A set of all of the relative coordinates being generated.
+     * @param sphere A set of each relative coordinate being generated.
      * @return <code>true</code>, if any block is regular water.
      */
     protected boolean testForWater(final PrimerContext ctx, final PositionFlags sphere) {
@@ -293,11 +229,11 @@ public abstract class MapGenerator extends CaveCarver {
     }
 
     /**
-     * Replaces all of the blocks around the current sphere, if applicable.
+     * Replaces every block around the current sphere, if applicable.
      *
      * @param ctx    The current early generation context.
-     * @param rand   A RNG used for <b>decoration purposes only</b>.
-     * @param sphere A set of all of the relative coordinates being generated.
+     * @param rand   An RNG used for <b>decoration purposes only</b>.
+     * @param sphere A set of each relative coordinate being generated.
      * @param cY     The center height which this shell is to generate around.
      */
     protected void generateShell(PrimerContext ctx, Random rand, PositionFlags sphere, int cY) {
@@ -305,24 +241,13 @@ public abstract class MapGenerator extends CaveCarver {
     }
 
     /**
-     * Replaces all of the blocks in the current sphere, if applicable.
+     * Replaces each block in the current sphere, if applicable.
      *
      * @param ctx    The current early generation context.
      * @param rand   A RNG used for <b>decoration purposes only</b>.
-     * @param sphere A set of all of the relative coordinates being generated.
+     * @param sphere A set of each relative coordinate being generated.
      */
     protected void replaceSphere(PrimerContext ctx, Random rand, PositionFlags sphere) {
         sphere.forEach((x, y, z) -> this.replaceBlock(ctx, rand, x, y, z));
-    }
-
-    /**
-     * Decorates all of the blocks inside of this sphere, if applicable.
-     *
-     * @param ctx    The current early generation context.
-     * @param rand   A RNG used for <b>decoration purposes only</b>.
-     * @param sphere A set of all of the relative coordinates being generated.
-     */
-    protected void decorateSphere(PrimerContext ctx, Random rand, PositionFlags sphere) {
-        sphere.forEach((x, y, z) -> this.decorateBlock(ctx, rand, x, y, z));
     }
 }

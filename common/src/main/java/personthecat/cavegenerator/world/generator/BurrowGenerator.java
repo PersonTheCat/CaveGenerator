@@ -2,19 +2,13 @@ package personthecat.cavegenerator.world.generator;
 
 import net.minecraft.core.BlockPos;
 import personthecat.catlib.data.Range;
-import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.model.PositionFlags;
-import personthecat.cavegenerator.world.BiomeSearch;
 import personthecat.cavegenerator.world.config.BurrowConfig;
 import personthecat.fastnoise.FastNoise;
-
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
 
 public class BurrowGenerator extends CaveCarver implements TunnelSocket {
 
-    private final List<BlockPos> invalidChunks = new ArrayList<>(BiomeSearch.size());
     private final FastNoise map;
     private final FastNoise offset;
     protected final BurrowConfig cfg;
@@ -37,48 +31,6 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
     }
 
     @Override
-    public void generate(final PrimerContext ctx) {
-        // Todo: dimensions
-        if (this.conditions.hasBiomes) {
-            if (ctx.search.anyMatches(this.conditions.biomes)) {
-                this.fillInvalidChunks(ctx.search);
-                this.generateChecked(ctx);
-                this.invalidChunks.clear();
-            }
-        } else if (this.conditions.hasRegion) {
-            if (this.conditions.region.getBoolean(ctx.actualX, ctx.actualZ)) {
-                this.fillInvalidChunks(ctx.chunkX, ctx.chunkZ);
-                this.generateChecked(ctx);
-                this.invalidChunks.clear();
-            }
-        } else {
-            this.generateChecked(ctx);
-        }
-        this.caverns.reset();
-    }
-
-    private void fillInvalidChunks(final BiomeSearch search) {
-        for (final BiomeSearch.Data d : search.surrounding.get()) {
-            if (!(this.conditions.biomes.test(d.biome) && this.conditions.region.getBoolean(d.centerX, d.centerZ))) {
-                this.invalidChunks.add(new BlockPos(d.centerX, 0, d.centerZ));
-            }
-        }
-    }
-
-    private void fillInvalidChunks(int chunkX, int chunkZ) {
-        final int range = Cfg.biomeRange();
-        for (int cX = chunkX - range; cX <= chunkX + range; cX++) {
-            for (int cZ = chunkZ - range; cZ < chunkZ + range; cZ++) {
-                final int centerX = cX * 16 + 8;
-                final int centerZ = cZ * 16 + 8;
-                if (!this.conditions.region.getBoolean(centerX, centerZ)) {
-                    this.invalidChunks.add(new BlockPos(centerX, 0, centerZ));
-                }
-            }
-        }
-    }
-
-    @Override
     protected void generateChecked(final PrimerContext ctx) {
         if (this.hasShell()) {
             this.generateShelled(ctx);
@@ -86,6 +38,7 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
             this.generateUnShelled(ctx);
         }
         this.decorateAll(ctx, this.caverns, ctx.localRand);
+        this.caverns.reset();
     }
 
     private void generateShelled(final PrimerContext ctx) {

@@ -43,6 +43,9 @@ public class ClusterGenerator extends ListGenerator<ClusterConfig> {
 
     private void locateFinalClusters(final PrimerContext ctx) {
         forEachFeature((cfg, conditions) -> {
+            if (!conditions.dimensions.test(ctx.primer)) {
+                return;
+            }
             final int cRadiusX = (cfg.radiusX.max / 16) + 1;
             final int cRadiusZ = (cfg.radiusZ.max / 16) + 1;
             final double threshold = cfg.selectionThreshold;

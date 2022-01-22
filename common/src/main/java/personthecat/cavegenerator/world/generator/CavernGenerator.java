@@ -55,27 +55,7 @@ public class CavernGenerator extends CaveCarver implements TunnelSocket {
     }
 
     @Override
-    public void generate(final PrimerContext ctx) {
-        // Todo: dimensions
-        if (this.conditions.hasBiomes) {
-            if (ctx.search.anyMatches(this.conditions.biomes)) {
-                this.fillInvalidChunks(ctx.search, ctx.chunkX, ctx.chunkZ);
-                this.generateChecked(ctx);
-                this.invalidChunks.clear();
-            }
-        } else if (this.conditions.hasRegion) {
-            if (this.conditions.region.getBoolean(ctx.actualX, ctx.actualZ)) {
-                this.fillInvalidChunks(ctx.chunkX, ctx.chunkZ);
-                this.generateChecked(ctx);
-                this.invalidChunks.clear();
-            }
-        } else {
-            this.generateChecked(ctx);
-        }
-        this.caverns.reset();
-    }
-
-    private void fillInvalidChunks(final BiomeSearch search, final int x, final int z) {
+    protected void fillInvalidChunks(final BiomeSearch search, final int x, final int z) {
         if (this.cfg.wallInterpolation) {
             this.fillInterpolated(search, x, z);
         } else {
@@ -152,20 +132,6 @@ public class CavernGenerator extends CaveCarver implements TunnelSocket {
                 final int aZ = ((int) cZ * 16 + 8) + (cZ % 1 == 0 ? 8 : 0);
                 final int translateY = (int) noise.getNoiseScaled(aX, aZ);
                 border.add(new ChunkTestData(aX, aZ, translateY));
-            }
-        }
-    }
-
-    private void fillInvalidChunks(final int chunkX, final int chunkZ) {
-        final int range = Cfg.biomeRange();
-        for (int cX = chunkX - range; cX <= chunkX + range; cX++) {
-            for (int cZ = chunkZ - range; cZ < chunkZ + range; cZ++) {
-                final int centerX = cX * 16 + 8;
-                final int centerZ = cZ * 16 + 8;
-                if (!this.conditions.region.getBoolean(centerX, centerZ)) {
-                    final int translateY = (int) this.cfg.wallOffset.getNoiseScaled(centerX, centerZ);
-                    this.invalidChunks.add(new ChunkTestData(centerX, centerZ, translateY));
-                }
             }
         }
     }
