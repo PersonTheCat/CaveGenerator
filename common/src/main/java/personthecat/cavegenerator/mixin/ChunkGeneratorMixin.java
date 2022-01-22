@@ -27,7 +27,7 @@ import personthecat.cavegenerator.world.feature.WorldContext;
 import personthecat.cavegenerator.world.generator.PrimerContext;
 import personthecat.cavegenerator.world.generator.WorldCarverAdapter;
 
-@Mixin(ChunkGenerator.class)
+@Mixin(value = ChunkGenerator.class, priority = 2000)
 public class ChunkGeneratorMixin {
 
     @Final
@@ -49,27 +49,30 @@ public class ChunkGeneratorMixin {
      * @author PersonTheCat
      * @reason Cave Generator's primary entry point for early features
      */
-    @Overwrite
-    public void applyCarvers(final long seed, final BiomeManager biomes, final ChunkAccess chunk, final Carving step) {
-        final BiomeManager withSource = biomes.withDifferentSource(this.biomeSource);
-        final ChunkPos pos = chunk.getPos();
-        final BiomeSearch search = BiomeSearch.in(withSource, pos.x, pos.z);
-        final int seaLevel = this.getSeaLevel();
-        final ProtoChunk primer = (ProtoChunk) chunk;
-        final PrimerContext ctx = new PrimerContext(withSource, search, seed, seaLevel, primer, step);
+    @Inject(method = "applyCarvers", at = @At("HEAD"), cancellable = true)
+    public void applyCarvers(final long seed, final BiomeManager biomes, final ChunkAccess chunk, final Carving step, final CallbackInfo ci) {
+        if (!Cfg.fallbackCarvers()) {
+            final BiomeManager withSource = biomes.withDifferentSource(this.biomeSource);
+            final ChunkPos pos = chunk.getPos();
+            final BiomeSearch search = BiomeSearch.in(withSource, pos.x, pos.z);
+            final int seaLevel = this.getSeaLevel();
+            final ProtoChunk primer = (ProtoChunk) chunk;
+            final PrimerContext ctx = new PrimerContext(withSource, search, seed, seaLevel, primer, step);
 
-        if (Cfg.enableOtherGenerators()) {
-            WorldCarverAdapter.generate(ctx, this.biomeSource);
-        }
-        if (step == Carving.AIR && !Cfg.fallbackCarvers()) {
-            ctx.primeHeightmaps();
-            CaveRegistries.CURRENT_SEED.set(new XoRoShiRo(seed), seed);
-            for (final GeneratorController controller : CaveRegistries.GENERATORS) {
-                controller.earlyGenerate(ctx);
-                controller.mapGenerate(ctx);
+            if (Cfg.enableOtherGenerators()) {
+                WorldCarverAdapter.generate(ctx, this.biomeSource);
             }
+            if (step == Carving.AIR) {
+                ctx.primeHeightmaps();
+                CaveRegistries.CURRENT_SEED.set(new XoRoShiRo(seed), seed);
+                for (final GeneratorController controller : CaveRegistries.GENERATORS) {
+                    controller.earlyGenerate(ctx);
+                    controller.mapGenerate(ctx);
+                }
+            }
+            CachedNoiseHelper.resetAll();
+            ci.cancel();
         }
-        CachedNoiseHelper.resetAll();
     }
 
     /**
