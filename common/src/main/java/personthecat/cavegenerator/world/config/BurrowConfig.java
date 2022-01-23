@@ -1,6 +1,7 @@
 package personthecat.cavegenerator.world.config;
 
 import lombok.AllArgsConstructor;
+import org.jetbrains.annotations.Nullable;
 import personthecat.fastnoise.FastNoise;
 
 @AllArgsConstructor
@@ -16,5 +17,5 @@ public class BurrowConfig {
     public final float shift;
     public final float wallDistance;
     public final float wallExponent;
-    public final TunnelConfig branches;
+    public final @Nullable TunnelConfig branches;
 }

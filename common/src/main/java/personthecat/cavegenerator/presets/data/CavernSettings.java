@@ -96,7 +96,7 @@ public class CavernSettings implements ConfigProvider<CavernSettings, CavernConf
             getBounds(conditions, conditionCfg.height),
             this.resolution != null ? this.resolution : 1,
             NoiseSettings.compile(this.offset, rand, seed),
-            NoiseSettings.compile(this.walls, rand, seed),
+            this.walls != null ? this.walls.getGenerator(rand, seed) : null,
             NoiseSettings.compile(this.wallOffset, rand, seed),
             this.wallCurveRatio != null ? this.wallCurveRatio : 1.0F,
             this.wallInterpolation != null ? this.wallInterpolation : false,
