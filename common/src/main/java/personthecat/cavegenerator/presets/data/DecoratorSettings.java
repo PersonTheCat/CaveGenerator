@@ -24,7 +24,7 @@ import static personthecat.catlib.util.Shorthand.map;
 @Builder
 @AllArgsConstructor
 @FieldNameConstants
-public class DecoratorSettings {
+public class DecoratorSettings implements ConfigProvider<DecoratorSettings, DecoratorConfig> {
     @Nullable public final List<BlockState> replaceableBlocks;
     @Nullable public final Boolean replaceDecorators;
     @Nullable public final Boolean replaceSolidBlocks;
@@ -49,6 +49,12 @@ public class DecoratorSettings {
         DecoratorSettings::new
     );
 
+    @Override
+    public Codec<DecoratorSettings> codec() {
+        return CODEC;
+    }
+
+    @Override
     public DecoratorSettings withOverrides(final OverrideSettings o) {
         return builder()
             .replaceableBlocks(this.replaceableBlocks != null ? this.replaceableBlocks : o.replaceableBlocks)
@@ -62,6 +68,7 @@ public class DecoratorSettings {
             .build();
     }
 
+    @Override
     public DecoratorSettings withDefaults(final DecoratorSettings defaults) {
         return builder()
             .replaceableBlocks(this.replaceableBlocks != null ? this.replaceableBlocks : defaults.replaceableBlocks)
@@ -75,6 +82,7 @@ public class DecoratorSettings {
             .build();
     }
 
+    @Override
     public DecoratorConfig compile(final Random rand, final long seed) {
         final List<BlockState> replaceableBlocks = this.replaceableBlocks != null
             ? this.replaceableBlocks : Arrays.asList(Blocks.STONE.defaultBlockState(),
