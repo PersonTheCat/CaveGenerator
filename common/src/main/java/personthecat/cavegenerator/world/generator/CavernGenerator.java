@@ -147,6 +147,7 @@ public class CavernGenerator extends CaveCarver implements TunnelSocket {
         }
         // Caverns must be completely generated before decorating.
         this.decorateAll(ctx, this.caverns, ctx.localRand);
+        this.caverns.reset();
     }
 
 

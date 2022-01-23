@@ -65,7 +65,7 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
                     for (int y = min; y < max + 1; y++) {
                         final double curve = distance - this.getBiomeCurve(centerY - y);
                         if (curve > this.cfg.wallDistance) {
-                            this.replaceOnly(ctx, x, y, z);
+                            this.replaceBlock(ctx, ctx.localRand, x, y, z);
                             this.caverns.add(x, y, z);
                         }
                         else if (curve > this.cfg.wallDistance - this.decorators.shell.radius) {
@@ -111,7 +111,7 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
                     for (int y = min; y < max + 1; y++) {
                         final double curve = distance - this.getBiomeCurve(centerY - y);
                         if (curve > this.cfg.wallDistance) {
-                            this.replaceOnly(ctx, x, y, z);
+                            this.replaceBlock(ctx, ctx.localRand, x, y, z);
                             this.caverns.add(x, y, z);
                         }
                     }
@@ -123,10 +123,6 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
     private double getBiomeCurve(final double relY) {
         final double curve = (Math.pow(relY, this.cfg.wallExponent) / this.cfg.radius);
         return Math.min(this.cfg.radius * 2.0, curve);
-    }
-
-    private void replaceOnly(final PrimerContext ctx, final int x, final int y, final int z) {
-        this.replaceBlock(ctx, ctx.localRand, x, y, z);
     }
 
     private double getNearestBorder(final int x, final int z) {
