@@ -65,8 +65,9 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
                     for (int y = min; y < max + 1; y++) {
                         final double curve = distance - this.getBiomeCurve(centerY - y);
                         if (curve > this.cfg.wallDistance) {
-                            this.replaceBlock(ctx, ctx.localRand, x, y, z);
-                            this.caverns.add(x, y, z);
+                            if (this.replaceBlock(ctx, ctx.localRand, x, y, z)) {
+                                this.caverns.add(x, y, z);
+                            }
                         }
                         else if (curve > this.cfg.wallDistance - this.decorators.shell.radius) {
                             this.generateShell(ctx, ctx.localRand, x, y, z, centerY);
@@ -111,8 +112,9 @@ public class BurrowGenerator extends CaveCarver implements TunnelSocket {
                     for (int y = min; y < max + 1; y++) {
                         final double curve = distance - this.getBiomeCurve(centerY - y);
                         if (curve > this.cfg.wallDistance) {
-                            this.replaceBlock(ctx, ctx.localRand, x, y, z);
-                            this.caverns.add(x, y, z);
+                            if (this.replaceBlock(ctx, ctx.localRand, x, y, z)) {
+                                this.caverns.add(x, y, z);
+                            }
                         }
                     }
                 }

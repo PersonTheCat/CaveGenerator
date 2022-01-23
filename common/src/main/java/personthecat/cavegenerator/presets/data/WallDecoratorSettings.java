@@ -61,7 +61,7 @@ public class WallDecoratorSettings {
         final Set<BlockState> matchersCfg = this.matchers != null
             ? this.matchers : Collections.singleton(Blocks.STONE.defaultBlockState());
         final Set<BlockState> matchers =
-            new InvertibleSet<>(matchersCfg, true).optimize(Collections.emptyList());
+            new InvertibleSet<>(matchersCfg, false).optimize(Collections.emptyList());
         final Placement placement = this.placement != null ? this.placement : Placement.EMBED;
         final NoiseSettings noiseCfg = this.noise != null ? this.noise : DEFAULT_NOISE;
         final FastNoise noise = NoiseSettings.compile(noiseCfg, rand, seed);

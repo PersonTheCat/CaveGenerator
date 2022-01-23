@@ -244,10 +244,10 @@ public abstract class MapGenerator extends CaveCarver {
      * Replaces each block in the current sphere, if applicable.
      *
      * @param ctx    The current early generation context.
-     * @param rand   A RNG used for <b>decoration purposes only</b>.
+     * @param rand   An RNG used for <b>decoration purposes only</b>.
      * @param sphere A set of each relative coordinate being generated.
      */
     protected void replaceSphere(PrimerContext ctx, Random rand, PositionFlags sphere) {
-        sphere.forEach((x, y, z) -> this.replaceBlock(ctx, rand, x, y, z));
+        sphere.filter((x, y, z) -> this.replaceBlock(ctx, rand, x, y, z));
     }
 }

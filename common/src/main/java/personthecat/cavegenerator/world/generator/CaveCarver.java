@@ -52,25 +52,28 @@ public abstract class CaveCarver extends EarlyGenerator {
      * sets it to {@link Blocks#CAVE_AIR}.
      *
      * @param ctx  The current early generation context.
-     * @param rand A RNG used for <b>decoration purposes only</b>.
+     * @param rand An RNG used for <b>decoration purposes only</b>.
      * @param x    The relative x-coordinate of the block being placed.
      * @param y    The relative y-coordinate of the block being placed.
      * @param z    The relative z-coordinate of the block being placed.
+     * @return Whether the block was replaced.
      */
-    protected void replaceBlock(PrimerContext ctx, Random rand, int x, int y, int z) {
+    protected boolean replaceBlock(PrimerContext ctx, Random rand, int x, int y, int z) {
         if (this.decorators.canReplace.test(ctx.get(x, y, z))) {
             for (final CaveBlockConfig block : this.decorators.caveBlocks) {
                 if (block.canGenerate(x, y, z, ctx.chunkX, ctx.chunkZ)) {
                     for (final BlockState state : block.states) {
                         if (rand.nextFloat() <= block.integrity) {
                             ctx.set(x, y, z, state);
-                            return;
+                            return true;
                         }
                     }
                 }
             }
             ctx.set(x, y, z, BLK_CAVE);
+            return true;
         }
+        return false;
     }
 
     /**

@@ -181,8 +181,9 @@ public class CavernGenerator extends CaveCarver implements TunnelSocket {
             final float value = noise.getNoise(aX, y + yO, aZ);
             if (noise.isInThreshold(value)) {
                 if (height.contains(y)) {
-                    this.replaceBlock(ctx, ctx.localRand, x, y, z);
-                    this.caverns.add(x, y, z);
+                    if (this.replaceBlock(ctx, ctx.localRand, x, y, z)) {
+                        this.caverns.add(x, y, z);
+                    }
                 } else {
                     this.generateShell(ctx, ctx.localRand, x, y, z, y);
                 }
