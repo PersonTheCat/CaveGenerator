@@ -41,10 +41,8 @@ public class ChunkGeneratorMixin {
      * other generally non-configurable elements at this stage in world generation.
      *
      * <p>If this mixin has been overwritten or cannot be reached, users may enable an
-     * optional fallback generator, which will provide a hook inside of this method as
+     * optional fallback generator, which will provide a hook into this method as if
      * written by any other mod author.
-     *
-     * Todo: Moving early generate to an even earlier hook could be a great idea.
      *
      * @author PersonTheCat
      * @reason Cave Generator's primary entry point for early features

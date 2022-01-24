@@ -15,7 +15,6 @@ import personthecat.cavegenerator.world.feature.StructureSpawner;
 
 import java.util.List;
 
-// Todo: map generators to dimension keys?
 public class CaveRegistries {
 
     public static final SafeRegistry<String, CavePreset> PRESETS =
