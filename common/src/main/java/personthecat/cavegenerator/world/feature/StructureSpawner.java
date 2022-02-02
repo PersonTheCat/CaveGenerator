@@ -72,7 +72,7 @@ public class StructureSpawner {
     private static void warnIfLarge(final StructureTemplate template, final File nbt) {
         final BlockPos size = template.getSize();
         if (size.getX() > 15 || size.getZ() > 15) {
-            log.warn("{} is >= 16 blocks wide. This may not work yet.", nbt.getName());
+            log.warn("{} is >= 16 blocks wide. This may not work right.", nbt.getName());
         }
     }
 
@@ -95,8 +95,6 @@ public class StructureSpawner {
 
     /**
      * Places the blocks from this structure in the world after sending some block updates.
-     *
-     * Todo: have the settings do this and rename class to structure utils?
      *
      * @param template The structure template being spawned in the world.
      * @param cfg      The settings used to create the structure.
