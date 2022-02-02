@@ -1,4 +1,4 @@
-package personthecat.cavegenerator.world.generator;
+package personthecat.cavegenerator.world.hook;
 
 import com.mojang.serialization.Codec;
 import lombok.extern.log4j.Log4j2;
@@ -21,6 +21,8 @@ import personthecat.cavegenerator.util.Reference;
 import personthecat.cavegenerator.util.XoRoShiRo;
 import personthecat.cavegenerator.world.BiomeSearch;
 import personthecat.cavegenerator.world.GeneratorController;
+import personthecat.cavegenerator.world.generator.DummyBiomeManager;
+import personthecat.cavegenerator.world.generator.PrimerContext;
 import personthecat.overwritevalidator.annotations.OverwriteTarget;
 
 import java.util.BitSet;
@@ -36,7 +38,7 @@ public class FallbackCarverHook extends WorldCarver<NoneCarverConfiguration> {
 
     private final long seed = Cfg.fallbackCarverSeed();
 
-    public FallbackCarverHook() {
+    private FallbackCarverHook() {
         super(Codec.unit(NoneCarverConfiguration.INSTANCE), 256);
     }
 
@@ -48,7 +50,7 @@ public class FallbackCarverHook extends WorldCarver<NoneCarverConfiguration> {
             final PrimerContext ctx = new PrimerContext(manager, search, this.seed, seaLevel, (ProtoChunk) chunk, GenerationStep.Carving.AIR);
 
             ctx.primeHeightmaps();
-            CaveRegistries.CURRENT_SEED.set(new XoRoShiRo(this.seed), this.seed);
+            CaveRegistries.CURRENT_SEED.setIfAbsent(new XoRoShiRo(this.seed), this.seed);
             for (final GeneratorController controller : CaveRegistries.GENERATORS) {
                 controller.earlyGenerate(ctx);
                 controller.mapGenerate(ctx);

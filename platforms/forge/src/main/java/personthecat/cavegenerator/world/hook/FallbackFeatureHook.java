@@ -1,4 +1,4 @@
-package personthecat.cavegenerator.world.feature;
+package personthecat.cavegenerator.world.hook;
 
 import com.mojang.serialization.Codec;
 import lombok.extern.log4j.Log4j2;
@@ -6,7 +6,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.WorldGenLevel;
 import net.minecraft.world.level.chunk.ChunkGenerator;
 import net.minecraft.world.level.levelgen.feature.ConfiguredFeature;
@@ -15,11 +14,7 @@ import net.minecraft.world.level.levelgen.feature.configurations.FeatureConfigur
 import net.minecraft.world.level.levelgen.feature.configurations.NoneFeatureConfiguration;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
-import personthecat.catlib.data.Lazy;
-import personthecat.cavegenerator.CaveRegistries;
-import personthecat.cavegenerator.noise.CachedNoiseHelper;
 import personthecat.cavegenerator.util.Reference;
-import personthecat.cavegenerator.world.GeneratorController;
 import personthecat.overwritevalidator.annotations.Inherit;
 import personthecat.overwritevalidator.annotations.InheritMissingMembers;
 import personthecat.overwritevalidator.annotations.Overwrite;
@@ -33,7 +28,7 @@ import java.util.Random;
 public class FallbackFeatureHook extends Feature<NoneFeatureConfiguration> {
 
     @Inherit
-    private static final FallbackFeatureHook INSTANCE = new FallbackFeatureHook();
+    private static final personthecat.cavegenerator.world.hook.FallbackFeatureHook INSTANCE = new personthecat.cavegenerator.world.hook.FallbackFeatureHook();
 
     @Inherit
     public static final ConfiguredFeature<?, ?> HOOK = INSTANCE.configured(FeatureConfiguration.NONE);

@@ -6,8 +6,8 @@ import net.minecraft.world.level.levelgen.GenerationStep;
 import personthecat.catlib.event.world.FeatureModificationContext;
 import personthecat.cavegenerator.CaveRegistries;
 import personthecat.cavegenerator.config.Cfg;
-import personthecat.cavegenerator.world.feature.FallbackFeatureHook;
-import personthecat.cavegenerator.world.generator.FallbackCarverHook;
+import personthecat.cavegenerator.world.hook.FallbackFeatureHook;
+import personthecat.cavegenerator.world.hook.FallbackCarverHook;
 
 @Log4j2
 public class CaveCleanupEvent {

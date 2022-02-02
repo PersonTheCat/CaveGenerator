@@ -1,4 +1,4 @@
-package personthecat.cavegenerator.world.feature;
+package personthecat.cavegenerator.world.hook;
 
 import com.mojang.serialization.Codec;
 import lombok.extern.log4j.Log4j2;
@@ -17,10 +17,13 @@ import personthecat.cavegenerator.CaveRegistries;
 import personthecat.cavegenerator.noise.CachedNoiseHelper;
 import personthecat.cavegenerator.util.Reference;
 import personthecat.cavegenerator.world.GeneratorController;
+import personthecat.cavegenerator.world.feature.WorldContext;
+import personthecat.overwritevalidator.annotations.OverwriteTarget;
 
 import java.util.Random;
 
 @Log4j2
+@OverwriteTarget
 public class FallbackFeatureHook extends Feature<NoneFeatureConfiguration> {
 
     private static final FallbackFeatureHook INSTANCE = new FallbackFeatureHook();

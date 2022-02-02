@@ -16,6 +16,7 @@ architectury {
 loom {
     silentMojangMappingsLicense()
     mixinConfig 'cavegenerator.mixins.json'
+    mixinConfig 'cavegenerator.mixins.forge.json'
 }
 
 dependencies {
@@ -33,6 +34,7 @@ dependencies {
     mappings minecraft.officialMojangMappings()
     forge "net.minecraftforge:forge:$mc_version-$forge_version"
     modApi "curse.maven:CatLib-513391:$catlib_maven_forge_version"
+    modCompileOnly "curse.maven:TerraForged-363820:$terraforged_maven_forge_version"
 }
 
 jar {

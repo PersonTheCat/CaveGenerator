@@ -1,4 +1,4 @@
-package personthecat.cavegenerator.world.generator;
+package personthecat.cavegenerator.world.hook;
 
 import com.mojang.serialization.Codec;
 import lombok.extern.log4j.Log4j2;
@@ -8,22 +8,13 @@ import net.minecraft.data.BuiltinRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.level.biome.Biome;
 import net.minecraft.world.level.chunk.ChunkAccess;
-import net.minecraft.world.level.chunk.ProtoChunk;
-import net.minecraft.world.level.levelgen.GenerationStep;
 import net.minecraft.world.level.levelgen.carver.CarverConfiguration;
 import net.minecraft.world.level.levelgen.carver.ConfiguredWorldCarver;
 import net.minecraft.world.level.levelgen.carver.NoneCarverConfiguration;
 import net.minecraft.world.level.levelgen.carver.WorldCarver;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.ForgeRegistry;
-import personthecat.catlib.data.Lazy;
-import personthecat.cavegenerator.CaveRegistries;
-import personthecat.cavegenerator.config.Cfg;
-import personthecat.cavegenerator.noise.CachedNoiseHelper;
 import personthecat.cavegenerator.util.Reference;
-import personthecat.cavegenerator.util.XoRoShiRo;
-import personthecat.cavegenerator.world.BiomeSearch;
-import personthecat.cavegenerator.world.GeneratorController;
 import personthecat.overwritevalidator.annotations.Inherit;
 import personthecat.overwritevalidator.annotations.InheritMissingMembers;
 import personthecat.overwritevalidator.annotations.Overwrite;
@@ -39,7 +30,7 @@ import java.util.function.Function;
 public class FallbackCarverHook extends WorldCarver<NoneCarverConfiguration> {
 
     @Inherit
-    private static final WorldCarver<NoneCarverConfiguration> INSTANCE = new FallbackCarverHook();
+    private static final WorldCarver<NoneCarverConfiguration> INSTANCE = new personthecat.cavegenerator.world.hook.FallbackCarverHook();
 
     @Inherit
     public static final ConfiguredWorldCarver<?> HOOK = INSTANCE.configured(CarverConfiguration.NONE);

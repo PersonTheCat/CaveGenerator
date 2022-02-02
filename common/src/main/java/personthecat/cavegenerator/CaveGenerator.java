@@ -9,9 +9,10 @@ import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.io.JarFiles;
 import personthecat.cavegenerator.noise.CachedNoiseHelper;
 import personthecat.cavegenerator.util.Reference;
+import personthecat.cavegenerator.util.XoRoShiRo;
 import personthecat.cavegenerator.world.event.CaveCleanupEvent;
-import personthecat.cavegenerator.world.feature.FallbackFeatureHook;
-import personthecat.cavegenerator.world.generator.FallbackCarverHook;
+import personthecat.cavegenerator.world.hook.FallbackFeatureHook;
+import personthecat.cavegenerator.world.hook.FallbackCarverHook;
 import personthecat.overwritevalidator.annotations.OverwriteTarget;
 import personthecat.overwritevalidator.annotations.PlatformMustInherit;
 
@@ -37,6 +38,8 @@ public class CaveGenerator {
     @PlatformMustInherit
     public void serverStarting(final MinecraftServer server) {
         log.info("Loading cave generators");
+        final long seed = server.getWorldData().worldGenSettings().seed();
+        CaveRegistries.CURRENT_SEED.set(new XoRoShiRo(seed), seed);
         CaveRegistries.loadAll();
         CaveRegistries.COMMAND_SOURCE.create(server);
     }
