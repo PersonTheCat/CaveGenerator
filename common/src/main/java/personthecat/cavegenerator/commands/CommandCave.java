@@ -73,7 +73,7 @@ public class CommandCave {
 
     private static final Style VIEW_BUTTON_STYLE = Style.EMPTY
         .withColor(ChatFormatting.GRAY)
-        .withUnderlined(true)
+        .applyFormat(ChatFormatting.UNDERLINE)
         .withBold(true)
         .withHoverEvent(VIEW_BUTTON_HOVER)
         .withClickEvent(VIEW_BUTTON_CLICK);
