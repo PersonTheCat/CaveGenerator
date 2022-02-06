@@ -1,0 +1,9 @@
+{
+  "cg.errorMenu.presets": "Preset Errors",
+  "gc.errorText.presetCorrupt": "Preset is corrupt or unreadable",
+  "cg.errorText.xPresetCorrupt": "%s is corrupt or unreadable",
+  "cg.errorText.presetInvalid": "Preset is syntactically invalid",
+  "cg.errorText.xPresetInvalid": "%s is syntactically invalid",
+  "cg.errorText.invalidArgument": "%s contains invalid arguments",
+  "cg.errorText.unknownInvalidArgument": "A preset contains invalid arguments"
+}

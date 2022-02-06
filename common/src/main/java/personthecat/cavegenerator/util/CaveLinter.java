@@ -2,6 +2,7 @@ package personthecat.cavegenerator.util;
 
 import net.minecraft.ChatFormatting;
 import personthecat.catlib.util.SyntaxLinter;
+import personthecat.catlib.util.unsafe.CachingReflectionHelper;
 
 import java.util.regex.Pattern;
 
@@ -38,6 +39,9 @@ public class CaveLinter extends SyntaxLinter {
         new RegexHighlighter(BAD_CLOSER, BAD_CLOSER_ERROR),
         UnbalancedTokenHighlighter.INSTANCE
     };
+
+    public static final CaveLinter INSTANCE =
+        CachingReflectionHelper.tryInstantiate(CaveLinter.class);
 
     @SuppressWarnings("unused") // Reflective invocation
     public CaveLinter() {
