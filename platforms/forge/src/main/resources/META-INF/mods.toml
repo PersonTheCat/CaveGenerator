@@ -10,7 +10,7 @@ displayName="${mod_name}"
 authors="${mod_authors}"
 description="${mod_description}"
 
-[[dependencies.catlib]]
+[[dependencies.${mod_id}]]
 modId="catlib"
 mandatory=true
 versionRange="[${catlib_version},)"
