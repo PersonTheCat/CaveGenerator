@@ -15,6 +15,6 @@ public abstract class PresetLoadException extends FormattedException {
 
     @Override
     public @NotNull String getCategory() {
-        return "cg.errorMenu.presets";
+        return "cg.errorMenu.presetErrors";
     }
 }

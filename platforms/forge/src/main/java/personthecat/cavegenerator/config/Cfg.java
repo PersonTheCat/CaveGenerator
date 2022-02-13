@@ -4,6 +4,7 @@ import lombok.experimental.UtilityClass;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.common.ForgeConfigSpec.BooleanValue;
 import net.minecraftforge.common.ForgeConfigSpec.ConfigValue;
+import net.minecraftforge.common.ForgeConfigSpec.EnumValue;
 import net.minecraftforge.common.ForgeConfigSpec.IntValue;
 import net.minecraftforge.common.ForgeConfigSpec.LongValue;
 import net.minecraftforge.fml.ModContainer;
@@ -11,6 +12,7 @@ import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import personthecat.catlib.config.CustomModConfig;
 import personthecat.catlib.config.HjsonFileConfig;
+import personthecat.catlib.event.error.Severity;
 import personthecat.catlib.util.McUtils;
 import personthecat.cavegenerator.util.Reference;
 import personthecat.overwritevalidator.annotations.Inherit;
@@ -85,13 +87,17 @@ public class Cfg {
                 "Caves or Yung's Better Caves.")
         .define("enableOtherGenerators", false);
 
-    private static final BooleanValue STRICT_PRESETS = COMMON
-        .comment("When this field is set to true, PresetTester is allowed to",
-                "crash the game when more serious errors are detected. Users",
-                "who are serious about creating cleaner and more efficient",
-                "presets should consider enabling this field to make sure that",
-                "nothing slips by.")
-        .define("strictPresets", false);
+    private static final EnumValue<Severity> ERROR_SEVERITY = COMMON
+        .comment("Sets the severity level for regular preset errors. For example",
+                "to require that preset errors prevent game load, set this value",
+                "to FATAL. To ignore all errors (presets still will not load),",
+                "set this value to WARN.")
+        .defineEnum("errorSeverity", Severity.ERROR);
+
+    private static final EnumValue<Severity> WARN_SEVERITY = COMMON
+        .comment("Sets the severity level for mostly harmless, but incorrect",
+                "preset values. To ignore these errors, set the level to WARN.")
+        .defineEnum("warnSeverity", Severity.ERROR);
 
     private static final BooleanValue AUTO_FORMAT = COMMON
         .comment("Whether to automatically format your preset files. They will",
@@ -161,8 +167,13 @@ public class Cfg {
     }
 
     @Overwrite
-    public static boolean strictPresets() {
-        return STRICT_PRESETS.get();
+    public static Severity errorSeverity() {
+        return ERROR_SEVERITY.get();
+    }
+
+    @Overwrite
+    public static Severity warnSeverity() {
+        return WARN_SEVERITY.get();
     }
 
     @Overwrite

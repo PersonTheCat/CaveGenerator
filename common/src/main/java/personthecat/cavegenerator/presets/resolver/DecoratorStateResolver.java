@@ -21,6 +21,8 @@ public class DecoratorStateResolver {
         addAllDecorators(decorators, preset, CaveSettings.Fields.tunnels, TunnelSettings.Fields.branches);
         addAllDecorators(decorators, preset, CaveSettings.Fields.ravines);
         addAllDecorators(decorators, preset, CaveSettings.Fields.caverns);
+        addAllDecorators(decorators, preset, CaveSettings.Fields.caverns, CavernSettings.Fields.branches);
+        addAllDecorators(decorators, preset, CaveSettings.Fields.burrows, BurrowSettings.Fields.branches);
         addAll(decorators, preset, ClusterSettings.Fields.states, CaveSettings.Fields.clusters);
         addAll(decorators, preset, LayerSettings.Fields.state, CaveSettings.Fields.layers);
         return decorators;

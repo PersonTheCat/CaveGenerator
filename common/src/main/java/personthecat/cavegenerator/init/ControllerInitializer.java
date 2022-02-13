@@ -23,9 +23,7 @@ public class ControllerInitializer {
         final SeedStorage.Info seedInfo = CaveRegistries.CURRENT_SEED.get();
         final Map<String, GeneratorController> controllers = new TreeMap<>();
         for (final Map.Entry<String, CavePreset> entry : CaveRegistries.PRESETS.entrySet()) {
-            if (entry.getValue().enabled) {
-                controllers.put(entry.getKey(), entry.getValue().setupController(seedInfo.rand, seedInfo.seed));
-            }
+            controllers.put(entry.getKey(), entry.getValue().setupController(seedInfo.rand, seedInfo.seed));
         }
         return controllers;
     }

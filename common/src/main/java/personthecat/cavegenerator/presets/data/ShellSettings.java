@@ -69,7 +69,7 @@ public class ShellSettings implements ConfigProvider<ShellSettings, ShellConfig>
         @Nullable public final NoiseSettings noise;
 
         public static final NoiseSettings DEFAULT_NOISE = NoiseSettings.builder()
-            .frequency(0.02F).threshold(Range.of(-0.8F)).frequencyY(0.04F).octaves(1).build();
+            .frequency(0.02F).threshold(Range.of(-0.8F)).frequencyY(0.04F).build();
 
         public static final Codec<NoiseSettings> DEFAULTED_NOISE = NoiseSettings.defaultedNoise(DEFAULT_NOISE);
 

@@ -20,7 +20,7 @@ public class CaveLinter extends SyntaxLinter {
     private static final Pattern REFERENCE = Pattern.compile("\\B\\$\\w+", Pattern.MULTILINE);
     private static final Pattern ARGUMENT = Pattern.compile("\\B@\\d+(?:\\s*\\?(?:\\s*\\(.*\\))?)?", Pattern.MULTILINE);
 
-    private static final Highlighter[] HIGHLIGHTERS = {
+    public static final Highlighter[] HIGHLIGHTERS = {
         new RegexHighlighter(MULTILINE_DOC, color(ChatFormatting.DARK_GREEN).withItalic(true)),
         new RegexHighlighter(LINE_TODO, color(ChatFormatting.YELLOW)),
         new RegexHighlighter(LINE_DOC, color(ChatFormatting.DARK_GREEN).withItalic(true)),

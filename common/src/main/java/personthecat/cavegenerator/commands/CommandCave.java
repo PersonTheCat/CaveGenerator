@@ -402,13 +402,15 @@ public class CommandCave {
     }
 
     private static boolean isPresetEnabled(final File file) {
-        if (!file.exists()) return false;
-
-        return CaveRegistries.PRESETS.getOptional(noExtension(file))
-            .map(p -> p.enabled)
-            .orElseGet(() -> HjsonUtils.readSuppressing(file)
-                .map(CavePreset::isEnabled)
-                .orElse(false));
+        if (!file.exists()) {
+            return false;
+        }
+        if (CaveRegistries.PRESETS.containsKey(noExtension(file))) {
+            return true;
+        }
+        return HjsonUtils.readSuppressing(file)
+            .map(CavePreset::isEnabled)
+            .orElse(false);
     }
 
     private static MutableComponent getViewDirectoryText(final File file) {

@@ -1,5 +1,6 @@
 package personthecat.cavegenerator.config;
 
+import personthecat.catlib.event.error.Severity;
 import personthecat.catlib.exception.MissingOverrideException;
 import personthecat.overwritevalidator.annotations.OverwriteTarget;
 import personthecat.overwritevalidator.annotations.PlatformMustOverwrite;
@@ -66,8 +67,12 @@ public class Cfg {
         return true;
     }
 
-    public static boolean strictPresets() {
-        return true;
+    public static Severity errorSeverity() {
+        return Severity.ERROR;
+    }
+
+    public static Severity warnSeverity() {
+        return Severity.WARN;
     }
 
     public static boolean autoFormat() {

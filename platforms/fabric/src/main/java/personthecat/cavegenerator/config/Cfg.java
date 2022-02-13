@@ -6,6 +6,7 @@ import me.shedaniel.autoconfig.annotation.Config;
 import me.shedaniel.cloth.clothconfig.shadowed.blue.endless.jankson.Comment;
 import personthecat.catlib.config.HjsonConfigSerializer;
 import personthecat.catlib.data.Lazy;
+import personthecat.catlib.event.error.Severity;
 import personthecat.cavegenerator.util.Reference;
 import personthecat.overwritevalidator.annotations.Inherit;
 import personthecat.overwritevalidator.annotations.InheritMissingMembers;
@@ -76,6 +77,18 @@ public class Cfg implements ConfigData {
         "presets should consider enabling this field to make sure that\n" +
         "nothing slips by.")
     public boolean strictPresets = true;
+
+    @Comment(
+        "Sets the severity level for regular preset errors. For example\n" +
+        "to require that preset errors prevent game load, set this value\n" +
+        "to FATAL. To ignore all errors (presets still will not load),\n" +
+        "set this value to WARN.")
+    public Severity errorSeverity = Severity.ERROR;
+
+    @Comment(
+        "Sets the severity level for mostly harmless, but incorrect\n" +
+        "preset values. To ignore these errors, set the level to WARN.")
+    public Severity warnSeverity = Severity.ERROR;
 
     @Comment(
         "Whether to automatically format your preset files. They will\n" +
@@ -151,8 +164,13 @@ public class Cfg implements ConfigData {
     }
 
     @Overwrite
-    public static boolean strictPresets() {
-        return CONFIG.get().strictPresets;
+    public static Severity errorSeverity() {
+        return CONFIG.get().errorSeverity;
+    }
+
+    @Overwrite
+    public static Severity warnSeverity() {
+        return CONFIG.get().warnSeverity;
     }
 
     @Overwrite

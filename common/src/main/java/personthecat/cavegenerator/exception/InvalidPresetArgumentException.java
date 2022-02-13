@@ -12,24 +12,12 @@ import java.io.File;
 public class InvalidPresetArgumentException extends PresetLoadException {
 
     private final String msg;
-    @Nullable private final String name;
+    private final String name;
 
-    public InvalidPresetArgumentException(final File root, final File file, final String msg) {
-        super(PathUtils.getRelativePath(root, file));
-        this.msg = msg;
-        this.name = file.getName();
-    }
-
-    public InvalidPresetArgumentException(final File root, final File file, final Throwable cause) {
-        super(PathUtils.getRelativePath(root, file), cause);
+    public InvalidPresetArgumentException(final String name, final Throwable cause) {
+        super(name, cause);
         this.msg = cause.getMessage();
-        this.name = file.getName();
-    }
-
-    public InvalidPresetArgumentException(final String msg, final Throwable cause) {
-        super(msg, cause);
-        this.msg = msg;
-        this.name = null;
+        this.name = name;
     }
 
     @Override
@@ -39,10 +27,7 @@ public class InvalidPresetArgumentException extends PresetLoadException {
 
     @Override
     public @NotNull Component getTitleMessage() {
-        if (this.name != null) {
-            return new TranslatableComponent("cg.errorText.invalidArgument", this.name);
-        }
-        return new TranslatableComponent("cg.errorText.unknownInvalidArgument");
+        return new TranslatableComponent("cg.errorText.invalidArgument", this.name);
     }
 
     @Override

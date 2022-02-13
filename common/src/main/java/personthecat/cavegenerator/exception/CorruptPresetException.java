@@ -13,9 +13,9 @@ public class CorruptPresetException extends PresetLoadException {
 
     private final String name;
 
-    public CorruptPresetException(final File root, final File file, final Throwable cause) {
-        super(PathUtils.getRelativePath(root, file), cause);
-        this.name = file.getName();
+    public CorruptPresetException(final String name, final Throwable cause) {
+        super(name, cause);
+        this.name = name;
     }
 
     @Override

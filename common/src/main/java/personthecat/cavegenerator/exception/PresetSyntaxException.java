@@ -16,10 +16,10 @@ public class PresetSyntaxException extends PresetLoadException {
     private final String text;
     private final String name;
 
-    public PresetSyntaxException(final File root, final File file, final String text, final Throwable cause) {
-        super(PathUtils.getRelativePath(root, file), cause);
+    public PresetSyntaxException(final String name, final String text, final Throwable cause) {
+        super(name, cause);
         this.text = text;
-        this.name = file.getName();
+        this.name = name;
     }
 
     @Override
