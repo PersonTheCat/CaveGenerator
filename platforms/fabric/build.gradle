@@ -30,8 +30,7 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:$loader_version"
     modApi "net.fabricmc.fabric-api:fabric-api:$fabric_version"
     modApi "curse.maven:ClothConfig-319057:$cloth_maven_version"
-//    modApi "curse.maven:CatLib-513391:$catlib_maven_fabric_version"
-    modApi files("catliba.jar")
+    modApi "curse.maven:CatLib-513391:$catlib_maven_fabric_version"
 }
 
 processResources {
