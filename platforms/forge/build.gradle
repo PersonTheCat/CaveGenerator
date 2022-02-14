@@ -46,8 +46,7 @@ jar {
             "Implementation-Title": mod_id,
             "Implementation-Version": mod_version,
             "Implementation-Vendor": mod_vendor,
-            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ"),
-            "MixinConfigs": "cavegenerator.mixins.json"
+            "Implementation-Timestamp": new Date().format("yyyy-MM-dd'T'HH:mm:ssZ")
         )
     }
 }

@@ -13,6 +13,7 @@ import java.lang.reflect.Method;
 import java.nio.file.FileSystem;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -21,6 +22,7 @@ public class ArchitecturyCompat implements AssetEditTransformer {
 
     final Method getFS;
     final Field outputInterface;
+    boolean argumentsFixed = false;
 
     public ArchitecturyCompat() {
         try {
@@ -39,6 +41,10 @@ public class ArchitecturyCompat implements AssetEditTransformer {
 
     @Override
     public void doEdit(final TransformerContext context, final OutputInterface output) throws IOException {
+        if (!this.argumentsFixed && context.canAppendArgument()) {
+            fixArguments(context);
+            this.argumentsFixed = true;
+        }
         if (output instanceof AbstractOutputInterface) {
             Logger.info("Scanning source files in platform project.");
             final File src = getSourceDirectory();
@@ -56,6 +62,30 @@ public class ArchitecturyCompat implements AssetEditTransformer {
                     }
                 }
             }
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private static void fixArguments(final TransformerContext context) {
+        try {
+            final Field appendArgument = context.getClass().getDeclaredField("appendArgument");
+            appendArgument.setAccessible(true);
+            final Object lambda = appendArgument.get(context);
+            final Field argumentsField = lambda.getClass().getDeclaredFields()[0];
+            argumentsField.setAccessible(true);
+            final List<String> arguments = (List<String>) argumentsField.get(lambda);
+            final List<String> broken = new ArrayList<>();
+            for (final String argument : arguments) {
+                if (argument.startsWith("/")) {
+                    broken.add(argument);
+                }
+            }
+            for (final String argument : broken) {
+                arguments.remove(argument);
+                arguments.add(argument.substring(1));
+            }
+        } catch (final Exception e) {
+            Logger.info("Error inspecting launch arguments: " + e);
         }
     }
 
