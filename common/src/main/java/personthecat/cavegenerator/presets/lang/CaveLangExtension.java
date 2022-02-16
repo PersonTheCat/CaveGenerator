@@ -35,7 +35,7 @@ public class CaveLangExtension {
     public static final String VANILLA = "VANILLA";
 
     /** The keyword used for merging every field in an object. */
-    public static final Pattern MERGE_ALL = Pattern.compile("all", Pattern.CASE_INSENSITIVE);
+    public static final String ALL = "ALL";
 
     /**
      * Expands all variable definitions and imports into concrete data.
@@ -470,7 +470,7 @@ public class CaveLangExtension {
             if (!ref.isObject()) {
                 throw caveSyntax("Only objects can be merged: {}", key);
             }
-            if (value.isString() && MERGE_ALL.matcher(value.asString()).matches()) {
+            if (value.isString() && ALL.equalsIgnoreCase(value.asString())) {
                 to.addAll(ref.asObject());
             } else {
                 addAllReferences(ref.asObject(), to, HjsonUtils.asOrToArray(value));

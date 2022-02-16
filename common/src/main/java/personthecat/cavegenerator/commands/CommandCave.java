@@ -99,7 +99,7 @@ public class CommandCave {
         CachedNoiseHelper.removeAll();
         PresetLoadingContext.reset();
         CaveRegistries.reloadAll();
-        ctx.sendMessage("Successfully reloaded caves. View the log for diagnostics.");
+        ctx.sendMessage("Reload complete. Check the error menu for details.");
     }
 
     @ModCommand(
@@ -483,8 +483,8 @@ public class CommandCave {
         final JsonObject data = new JsonObject();
         // Generate a faux preset to be expanded.
         final JsonObject fauxPreset = new JsonObject()
-                .set(CaveLangExtension.IMPORTS, exp)
-                .set(CaveLangExtension.VARIABLES, data);
+            .set(CaveLangExtension.IMPORTS, exp)
+            .set(CaveLangExtension.VARIABLES, data);
         CaveLangExtension.expandInPlace(fauxPreset);
         // The variables object was removed from the faux
         // preset, but the implicit VANILLA is still there.
