@@ -81,7 +81,7 @@ public class RequiredFieldLocator {
             }
         }
         if (missing.length() > 0) {
-            json.appendComment(this.message + " " + missing);
+            json.appendComment(ValidationError.INDICATOR + this.message + " " + missing);
             this.hasErrors = true;
         }
     }
@@ -89,7 +89,7 @@ public class RequiredFieldLocator {
     private void trim() {
         visitObjects(this.json);
 
-        final JsonObject trimmed = HjsonUtils.skip(this.json, true);
+        final JsonObject trimmed = HjsonUtils.skip(this.json, false);
         this.json.clear().addAll(trimmed);
     }
 

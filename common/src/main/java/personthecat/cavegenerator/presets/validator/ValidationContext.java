@@ -61,7 +61,7 @@ public class ValidationContext {
     private void copyGeneratedValues(final JsonObject json, final JsonObject source, final JsonPath path) {
         final int containerIndex = this.getLastContainer(path, json);
         final int valueIndex = containerIndex + 1;
-        if (valueIndex + 1 == path.size()) {
+        if (valueIndex + 1 >= path.size()) {
             return;
         }
         final JsonPath valuePath = path.subPath(0, valueIndex + 1);

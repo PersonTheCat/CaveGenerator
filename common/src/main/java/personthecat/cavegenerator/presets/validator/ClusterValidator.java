@@ -6,6 +6,7 @@ import personthecat.cavegenerator.presets.data.ClusterSettings;
 import static personthecat.cavegenerator.presets.data.ClusterSettings.Fields.chance;
 import static personthecat.cavegenerator.presets.data.ClusterSettings.Fields.integrity;
 import static personthecat.cavegenerator.presets.data.ClusterSettings.Fields.matchers;
+import static personthecat.cavegenerator.presets.data.ClusterSettings.Fields.states;
 
 public class ClusterValidator {
 
@@ -22,6 +23,9 @@ public class ClusterValidator {
         }
         if (s.matchers != null) {
             CommonValidators.matchers(ctx, s.matchers, path.key(matchers));
+        }
+        if (s.states.isEmpty()) {
+            ctx.err(path.key(states), "cg.errorText.noEntries");
         }
     }
 }

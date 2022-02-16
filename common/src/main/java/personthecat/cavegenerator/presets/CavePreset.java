@@ -35,6 +35,12 @@ public class CavePreset {
             return Optional.empty();
         }
         try {
+            final RequiredFieldLocator requiredFields = new RequiredFieldLocator(output.generated);
+            if (requiredFields.hasErrors()) {
+                LibErrorContext.register(
+                    Cfg.errorSeverity(), Reference.MOD, requiredFields.createScreen(name));
+                return Optional.empty();
+            }
             final CaveSettings raw = HjsonUtils.readThrowing(CaveSettings.CODEC, output.generated);
             final OverrideSettings overrides = HjsonUtils.readThrowing(OverrideSettings.CODEC, output.generated)
                 .withGlobalDecorators(DecoratorStateResolver.resolveBlockStates(output.generated));
@@ -44,11 +50,6 @@ public class CavePreset {
                 LibErrorContext.register(
                     Cfg.warnSeverity(), Reference.MOD, unusedFields.createScreen(name));
             }
-            final RequiredFieldLocator requiredFields = new RequiredFieldLocator(output.generated);
-            if (requiredFields.hasErrors()) {
-                LibErrorContext.register(
-                    Cfg.errorSeverity(), Reference.MOD, requiredFields.createScreen(name));
-            }
             final ValidationContext ctx = CavePresetValidator.start(raw, overrides, createPath(name));
             if (ctx.hasWarnings()) {
                 LibErrorContext.register(
@@ -57,7 +58,7 @@ public class CavePreset {
             if (ctx.hasErrors()) {
                 LibErrorContext.register(
                     Cfg.errorSeverity(), Reference.MOD, ctx.createErrorScreen(name, output));
-            } else if (!requiredFields.hasErrors()) {
+            } else {
                 return Optional.of(new CavePreset(raw.withOverrides(overrides), name, output.generated));
             }
         } catch (final RuntimeException e) {
