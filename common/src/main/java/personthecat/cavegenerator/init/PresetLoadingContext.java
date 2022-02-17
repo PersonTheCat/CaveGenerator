@@ -7,13 +7,14 @@ import org.hjson.ParseException;
 import org.jetbrains.annotations.Nullable;
 import personthecat.catlib.data.SafeRegistry;
 import personthecat.catlib.event.error.LibErrorContext;
-import personthecat.catlib.exception.GenericFormattedException;
+import personthecat.catlib.exception.FormattedIOException;
 import personthecat.catlib.io.FileIO;
 import personthecat.catlib.util.HjsonUtils;
 import personthecat.cavegenerator.compat.PresetCompat;
 import personthecat.cavegenerator.config.Cfg;
 import personthecat.cavegenerator.exception.CorruptPresetException;
 import personthecat.cavegenerator.exception.ExtraneousTokensException;
+import personthecat.cavegenerator.exception.PresetContextException;
 import personthecat.cavegenerator.exception.PresetSyntaxException;
 import personthecat.cavegenerator.io.JarFiles;
 import personthecat.cavegenerator.io.ModFolders;
@@ -60,11 +61,17 @@ public class PresetLoadingContext {
     }
 
     public static Map<String, CavePreset> loadPresets() {
+        final Map<String, CaveOutput> presetOutput;
+        try {
+            final Context ctx = new Context();
+            presetOutput = ctx.getPresets();
+        } catch (final RuntimeException e) {
+            LibErrorContext.error(Reference.MOD, new PresetContextException(e));
+            return Collections.emptyMap();
+        }
         final Map<String, CavePreset> presets = new HashMap<>();
-        final Context ctx = new Context();
-
         mkdirsOrThrow(PRESET_DIR, IMPORT_DIR);
-        ctx.getPresets().forEach((name, output) ->
+        presetOutput.forEach((name, output) ->
             CavePreset.from(name, output).ifPresent(preset -> {
                 onPresetLoaded(name);
                 presets.put(name, preset);
@@ -85,7 +92,7 @@ public class PresetLoadingContext {
         presets.forEach((name, preset) -> {
             final File file = new File(GENERATED_DIR, name + ".cave");
             HjsonUtils.writeJson(preset.raw, file)
-                .ifErr(e -> LibErrorContext.error(Reference.MOD, new GenericFormattedException(e, "todo")))
+                .ifErr(e -> LibErrorContext.error(Reference.MOD, new FormattedIOException(file, e, name)))
                 .ifOk(v -> log.debug("Recorded the generated copy of {}", name));
         });
     }

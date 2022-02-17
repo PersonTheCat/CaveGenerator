@@ -28,5 +28,8 @@
   "cg.errorText.unreachableGenerator": "Unreachable generator. Previous entries are guaranteed",
   "cg.errorText.directionsCovered": "Other directions are covered by %s",
   "cg.errorText.tooManyChecks": "High number of checks. Try to optimize",
-  "cg.errorText.missingRequired": "Missing required fields:"
+  "cg.errorText.missingRequired": "Missing required fields:",
+  "cg.errorText.includedButIgnored": "These fields were included, but do not have errors.",
+  "cg.errorText.presetContext": "Preset Context",
+  "cg.errorText.errorPresetContext": "Error loading preset context"
 }

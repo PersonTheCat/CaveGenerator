@@ -2,7 +2,6 @@ package personthecat.cavegenerator.compat;
 
 import lombok.extern.log4j.Log4j2;
 import org.hjson.JsonObject;
-import org.hjson.JsonValue;
 import personthecat.catlib.util.HjsonUtils;
 import personthecat.catlib.util.JsonTransformer;
 import personthecat.catlib.util.JsonTransformer.ObjectResolver;
@@ -45,7 +44,7 @@ public class PresetCompat {
         if (autoFormat || hash != preset.hashCode()) {
             HjsonUtils.writeJson(preset, file)
                 .ifErr(e -> log.warn("Unable to record transformations. Ignoring... ({})", file.getName()))
-                .ifOk(t -> log.debug("Cave preset updated successfully! ({})", file.getName()));
+                .ifOk(t -> log.info("Cave preset updated successfully! ({})", file.getName()));
         } else {
             log.debug("Nothing to update in {}. It will not be saved.", file.getName());
         }
@@ -72,7 +71,7 @@ public class PresetCompat {
         if (autoFormat || hash != preset.hashCode()) {
             HjsonUtils.writeJson(preset, file)
                 .ifErr(e -> log.warn("Unable to record transformations. Ignoring... ({})", file.getName()))
-                .ifOk(t -> log.debug("Import preset updated successfully! ({})", file.getName()));
+                .ifOk(t -> log.info("Import preset updated successfully! ({})", file.getName()));
         } else {
             log.debug("Nothing to update in {}. It will not be saved.", file.getName());
         }
