@@ -103,7 +103,7 @@ public class CommandCave {
         PresetLoadingContext.reset();
         CaveRegistries.reloadAll();
         if (LibErrorContext.get(Reference.MOD, FormattedException.class).isEmpty()) {
-            ctx.sendMessage("");
+            ctx.sendMessage("Successfully reloaded caves. Explore new chunks to see changes.");
         } else {
             ctx.sendMessage("Reload complete. Check the error menu for details.");
         }
