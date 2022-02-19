@@ -102,7 +102,11 @@ public class CommandCave {
         CachedNoiseHelper.removeAll();
         PresetLoadingContext.reset();
         CaveRegistries.reloadAll();
-        ctx.sendMessage("Reload complete. Check the error menu for details.");
+        if (LibErrorContext.get(Reference.MOD, FormattedException.class).isEmpty()) {
+            ctx.sendMessage("");
+        } else {
+            ctx.sendMessage("Reload complete. Check the error menu for details.");
+        }
     }
 
     @ModCommand(
@@ -405,11 +409,8 @@ public class CommandCave {
     }
 
     private static boolean isPresetEnabled(final File file) {
-        if (!file.exists()) {
+        if (!file.exists() || !PresetLoadingContext.isPreset(file)) {
             return false;
-        }
-        if (CaveRegistries.PRESETS.containsKey(noExtension(file))) {
-            return true;
         }
         return HjsonUtils.readSuppressing(file)
             .map(CavePreset::isEnabled)
