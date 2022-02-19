@@ -55,6 +55,7 @@
       target: 0.075
       branches: @1?
       offset: {
+        seed: 1234
         range: $half_rel(10, 30)
       }
       ponds: {
@@ -85,6 +86,10 @@
     gravel
     oak_leaves
     coarse_dirt
+    vine[north=true]
+    vine[south=true]
+    vine[east=true]
+    vine[west=true]
   ]
   replaceDecorators: false
   wallDecorators: [
