@@ -5,6 +5,7 @@ import org.hjson.HjsonOptions;
 import org.hjson.JsonArray;
 import org.hjson.JsonObject;
 import org.hjson.JsonValue;
+import personthecat.cavegenerator.exception.CaveSyntaxException;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -45,7 +46,7 @@ public class ReferenceHelper {
     /**
      * Copies a value by key from a JSON object, asserting that one must exist.
      *
-     * @throws RuntimeException If the JSON does not contain the expected key.
+     * @throws CaveSyntaxException If the JSON does not contain the expected key.
      * @param from The source where variables are defined.
      * @param ref A string which is known to be a reference.
      * @return The value contained within <code>from</code>.
@@ -98,7 +99,7 @@ public class ReferenceHelper {
         static Reference create(String val) {
             final Matcher matcher = REFERENCE_PATTERN.matcher(val);
             if (!matcher.find()) {
-                throw new IllegalStateException("No references");
+                throw new CaveSyntaxException("No references");
             }
             final List<String> args = new ArrayList<>();
             final String key = matcher.group(1);
@@ -207,7 +208,7 @@ public class ReferenceHelper {
                 String sub;
                 if (r.args.size() <= a.index) {
                     if (!a.optional) {
-                        throw new IllegalStateException("Missing argument: " + (a.index + 1));
+                        throw new CaveSyntaxException("Missing argument: " + (a.index + 1));
                     }
                     sub = a.defaultVal.isEmpty() ? "" : replaceString(a.defaultVal, r);
                 } else {
@@ -275,7 +276,7 @@ public class ReferenceHelper {
                 found &= matcher.find();
             }
             if (!found) {
-                throw new IllegalStateException("No arguments");
+                throw new CaveSyntaxException("No arguments");
             }
             final int index = Integer.parseInt(matcher.group(1)) - 1;
             final int start = matcher.start();
@@ -341,7 +342,7 @@ public class ReferenceHelper {
      * Finds a balanced closing parenthesis matching the one at the current position.
      * This function does support escaped, quoted, and nested parentheses.
      *
-     * @throws IllegalStateException if a balanced closer is not found.
+     * @throws CaveSyntaxException if a balanced closer is not found.
      * @param val The raw string which is expected to contain a closer.
      * @param opening The index of the opening parenthesis.
      * @param open The character to be balanced with.
@@ -371,7 +372,7 @@ public class ReferenceHelper {
                 if (!dq && !sq && --numP == 0) return i;
             }
         }
-        throw new IllegalStateException("Missing " + close + " in function");
+        throw new CaveSyntaxException("Missing " + close + " in function");
     }
 
     /**
@@ -406,7 +407,7 @@ public class ReferenceHelper {
             else i++;
         }
         if (required) {
-            throw new IllegalStateException("Missing " + f + " in function");
+            throw new CaveSyntaxException("Missing " + f + " in function");
         }
         return val.length();
     }
