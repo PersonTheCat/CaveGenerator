@@ -31,5 +31,9 @@
   "cg.errorText.missingRequired": "Missing required fields:",
   "cg.errorText.includedButIgnored": "These fields were included, but do not have errors.",
   "cg.errorText.presetContext": "Preset Context",
-  "cg.errorText.errorPresetContext": "Error loading preset context"
+  "cg.errorText.errorPresetContext": "Error loading preset context",
+  "cg.errorText.errorLoadingStructure": "Error loading structure from the disk",
+  "cg.errorMenu.structureErrors": "Structure Errors",
+  "cg.errorText.missingStructure": "Structure file or ID not found",
+  "cg.errorText.xMissingStructure": "Structure Not Found: %s"
 }

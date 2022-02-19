@@ -8,8 +8,11 @@ import net.minecraft.server.level.ServerLevel;
 import net.minecraft.server.level.WorldGenRegion;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructurePlaceSettings;
 import net.minecraft.world.level.levelgen.structure.templatesystem.StructureTemplate;
+import personthecat.catlib.event.error.LibErrorContext;
+import personthecat.catlib.exception.FormattedIOException;
 import personthecat.cavegenerator.CaveRegistries;
 import personthecat.cavegenerator.exception.MissingTemplateException;
+import personthecat.cavegenerator.util.Reference;
 
 import java.io.File;
 import java.io.IOException;
@@ -56,8 +59,8 @@ public class StructureSpawner {
         try {
             template.load(NbtIo.readCompressed(nbt));
         } catch (final IOException e) {
-            // Todo: configure crashing here.
-            throw new UncheckedIOException("Loading " + nbt.getName(), e);
+            LibErrorContext.error(Reference.MOD,
+                new FormattedIOException(nbt, e, "cg.errorText.errorLoadingStructure"));
         }
         return template;
     }
@@ -88,7 +91,8 @@ public class StructureSpawner {
         final StructureTemplate template = CaveRegistries.STRUCTURES.getOptional(id)
             .orElseGet(() -> level.getServer().getStructureManager().get(new ResourceLocation(id)));
         if (template == null) {
-            throw new MissingTemplateException(id);
+            LibErrorContext.error(Reference.MOD, new MissingTemplateException(id));
+            return new StructureTemplate();
         }
         return template;
     }
