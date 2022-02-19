@@ -175,7 +175,11 @@ public class PresetLoadingContext {
             if (Cfg.deepTransforms()) {
                 extracted.forEach((file, output) -> PresetCompat.transformPresetOnly(output.generated));
             }
-            extracted.forEach((name, output) -> output.generated.setAllAccessed(false));
+            // Carefully track which fields get read by the codecs.
+            extracted.forEach((name, output) -> {
+                output.generated.setAllAccessed(false);
+                output.generated.get(CavePreset.INNER_KEY);
+            });
             return extracted;
         }
 
@@ -217,7 +221,7 @@ public class PresetLoadingContext {
             for (int i = 0; i < inner.size(); i++) {
                 final JsonObject child = inner.get(i);
                 final JsonObject clone = ((JsonObject) parent.shallowCopy()).remove(CavePreset.INNER_KEY);
-                for (JsonObject.Member member : child) {
+                for (final JsonObject.Member member : child) {
                     clone.set(member.getName(), member.getValue());
                 }
                 final String innerName = f("{}[{}]", name, i);
