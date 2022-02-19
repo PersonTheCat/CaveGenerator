@@ -14,7 +14,9 @@ import personthecat.catlib.command.annotations.Node.DoubleRange;
 import personthecat.catlib.command.annotations.Node.ListInfo;
 import personthecat.catlib.command.annotations.Node.StringValue;
 import personthecat.catlib.command.arguments.ArgumentSuppliers;
+import personthecat.catlib.event.error.LibErrorContext;
 import personthecat.catlib.exception.Exceptions;
+import personthecat.catlib.exception.FormattedException;
 import personthecat.catlib.io.FileIO;
 import personthecat.catlib.util.FeatureSupport;
 import personthecat.catlib.util.HjsonUtils;
@@ -96,6 +98,7 @@ public class CommandCave {
         description = "Reloads all presets from the disk."
     )
     private void reload(final CommandContextWrapper ctx) {
+        LibErrorContext.clear(Reference.MOD, FormattedException.class);
         CachedNoiseHelper.removeAll();
         PresetLoadingContext.reset();
         CaveRegistries.reloadAll();
