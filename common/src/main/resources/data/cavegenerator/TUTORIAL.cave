@@ -55,7 +55,7 @@
 #                                                                           #
 #     # The type of noise to be used by this generator.                     #
 #     # Possible values include: Value, Perlin, Simplex, Simplex2,          #
-#     # Simplex2s, Cellular, WhiteNoise, and Cubic.                         #
+#     # Simplex2s, Cellular, WhiteNoise, Cubic, and Multi.                  #
 #     # Not case sensitive.                                                 #
 #     # default: Simplex                                                    #
 #     type: NoiseType value; from string                                    #
@@ -85,6 +85,10 @@
 #     # default: 0.1                                                        #
 #     warpFrequency: floating-point value                                   #
 #                                                                           #
+#     # Describes how multiple noise generators will be combined when       #
+#     # using Multi noise.                                                  #
+#     multi: Multi value; from string                                       #
+#                                                                           #
 #     # The minimum *and* maximum possible values produced by this          #
 #     # generator.                                                          #
 #     range: [ integer, integer ]                                           #
@@ -95,6 +99,11 @@
 #     # Inverts the noise generator's output.                               #
 #     # default: false                                                      #
 #     invert: boolean value                                                 #
+#                                                                           #
+#     # A list of reference generators, used by multi noise and cellular    #
+#     # noise. These objects contain all of the same settings from this     #
+#     # object. In other words, they form a recursive data structure.       #
+#     references: [ { /* noise settings */ } ]                              #
 #                                                                           #
 #     # Will transform this generator into a dummy which always produces    #
 #     # the same value. This is good for performance.                       #
@@ -119,7 +128,7 @@
 #                                                                           #
 #     # The type of noise to be used by this generator.                     #
 #     # Possible values include: Value, Perlin, Simplex, Simplex2,          #
-#     # Simplex2s, Cellular, WhiteNoise, and Cubic.                         #
+#     # Simplex2s, Cellular, WhiteNoise, Cubic, and Multi.                  #
 #     # Not case sensitive.                                                 #
 #     # default: Simplex                                                    #
 #     type: NoiseType value; from string                                    #
@@ -141,6 +150,11 @@
 #                                                                           #
 #     # Used to produce a common output between multiple noise generators.  #
 #     seed: integer                                                         #
+#                                                                           #
+#     # A list of reference generators, used by multi noise and cellular    #
+#     # noise. These objects contain all of the same settings from this     #
+#     # object. In other words, they form a recursive data structure.       #
+#     references: [ { /* noise settings */ } ]                              #
 #                                                                           #
 #     # Will transform this generator into a dummy which always produces    #
 #     # the same value. This is good for performance.                       #
@@ -217,13 +231,17 @@
 #     # default: 0.1                                                        #
 #     warpFrequency: floating-point value                                   #
 #                                                                           #
+#     # Describes how multiple noise generators will be combined when       #
+#     # using Multi noise.                                                  #
+#     multi: Multi value; from string                                       #
+#                                                                           #
 #     # Inverts the noise generator's output.                               #
 #     # default: false                                                      #
 #     invert: boolean value                                                 #
 #                                                                           #
 #     # The type of noise to be used by this generator.                     #
 #     # Possible values include: Value, Perlin, Simplex, Simplex2,          #
-#     # Simplex2s, Cellular, WhiteNoise, and Cubic.                         #
+#     # Simplex2s, Cellular, WhiteNoise, Cubic, and Multi.                  #
 #     # Not case sensitive.                                                 #
 #     # default: SimplexFractal                                             #
 #     type: NoiseType value; from string                                    #
@@ -257,6 +275,11 @@
 #                                                                           #
 #     # Used to produce a common output between multiple noise generators.  #
 #     seed: integer                                                         #
+#                                                                           #
+#     # A list of reference generators, used by multi noise and cellular    #
+#     # noise. These objects contain all of the same settings from this     #
+#     # object. In other words, they form a recursive data structure.       #
+#     references: [ { /* noise settings */ } ]                              #
 #                                                                           #
 #     # Will transform this generator into a dummy which always produces    #
 #     # the same value. This is good for performance.                       #

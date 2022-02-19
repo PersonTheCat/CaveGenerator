@@ -14,11 +14,15 @@ import personthecat.fastnoise.FastNoise;
 import personthecat.fastnoise.data.*;
 import personthecat.fastnoise.generator.PerlinNoise;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 import static personthecat.catlib.util.Shorthand.coalesce;
 import static personthecat.catlib.serialization.CodecUtils.dynamic;
+import static personthecat.catlib.serialization.CodecUtils.ofEnum;
 import static personthecat.catlib.serialization.DynamicField.field;
+import static personthecat.catlib.serialization.DynamicField.recursive;
 
 @FieldNameConstants
 @Builder(toBuilder = true)
@@ -49,9 +53,11 @@ public class NoiseSettings {
     @Nullable public final NoiseType type;
     @Nullable public final FractalType fractal;
     @Nullable public final DomainWarpType warp;
+    @Nullable public final MultiType multi;
     @Nullable public final CellularDistanceType distFunc;
     @Nullable public final CellularReturnType returnType;
     @Nullable public final NoiseType cellularLookup;
+    @Nullable public final List<NoiseSettings> references;
 
     public static final DynamicCodec<NoiseSettingsBuilder, NoiseSettings, NoiseSettings> COMMON_CODEC =
         dynamic(NoiseSettingsBuilder::new, NoiseSettingsBuilder::build).create(
@@ -75,9 +81,11 @@ public class NoiseSettings {
             field(NoiseCodecs.TYPE, Fields.type, s -> s.type, (s, t) -> s.type = t),
             field(NoiseCodecs.FRACTAL, Fields.fractal, s -> s.fractal, (s, f) -> s.fractal = f),
             field(NoiseCodecs.WARP, Fields.warp, s -> s.warp, (s, w) -> s.warp = w),
+            field(ofEnum(MultiType.class), Fields.multi, s -> s.multi, (s, m) -> s.multi = m),
             field(NoiseCodecs.DISTANCE, Fields.distFunc, s -> s.distFunc, (s, d) -> s.distFunc = d),
             field(NoiseCodecs.RETURN, Fields.returnType, s -> s.returnType, (s, r) -> s.returnType = r),
-            field(NoiseCodecs.TYPE, Fields.cellularLookup, s -> s.cellularLookup, (s, l) -> s.cellularLookup = l)
+            field(NoiseCodecs.TYPE, Fields.cellularLookup, s -> s.cellularLookup, (s, l) -> s.cellularLookup = l),
+            recursive(Fields.references, s -> s.references, (s, r) -> s.references = r)
         );
 
     public static final DynamicCodec<NoiseSettingsBuilder, NoiseSettings, NoiseSettings> MAP =
@@ -147,9 +155,11 @@ public class NoiseSettings {
             .type(this.type != null ? this.type : defaults.type)
             .fractal(this.fractal != null ? this.fractal : defaults.fractal)
             .warp(this.warp != null ? this.warp : defaults.warp)
+            .multi(this.multi != null ? this.multi : defaults.multi)
             .distFunc(this.distFunc != null ? this.distFunc : defaults.distFunc)
             .returnType(this.returnType != null ? this.returnType : defaults.returnType)
             .cellularLookup(this.cellularLookup != null ? this.cellularLookup : defaults.cellularLookup)
+            .references(this.references != null ? this.references : defaults.references)
             .build();
     }
 
@@ -157,9 +167,22 @@ public class NoiseSettings {
         if (this.dummy == Boolean.TRUE) {
             return new DummyGenerator(this.dummyOutput != null ? this.dummyOutput : 1.0F);
         }
+        final NoiseDescriptor cfg = this.getDescriptor(rand, seed);
+        final FastNoise generator = cfg.generate();
+        return this.cache == Boolean.TRUE ? new CachedNoiseGenerator(cfg, generator) : generator;
+    }
+
+    private NoiseDescriptor getDescriptor(final Random rand, final long seed) {
         final NoiseDescriptor cfg = FastNoise.createDescriptor();
         if (this.cellularLookup != null) cfg.noiseLookup(FastNoise.createDescriptor().noise(this.cellularLookup));
 
+        if (this.references != null) {
+            final List<NoiseDescriptor> descriptors = new ArrayList<>();
+            for (final NoiseSettings settings : this.references) {
+                descriptors.add(settings.getDescriptor(rand, seed));
+            }
+            cfg.noiseLookup(descriptors);
+        }
         if (this.threshold != null) {
             cfg.threshold(this.threshold.min, this.threshold.max);
         } else {
@@ -192,6 +215,7 @@ public class NoiseSettings {
             .warpAmplitude(this.warpAmplitude != null ? this.warpAmplitude : 1.0F)
             .warpFrequency(this.warpFrequency != null ? this.warpFrequency : 1.0F)
             .warp(this.warp != null ? this.warp : DomainWarpType.NONE)
+            .multi(this.multi != null ? this.multi : MultiType.SUM)
             .lacunarity(this.lacunarity != null ? this.lacunarity : 1.0F)
             .distance(this.distFunc != null ? this.distFunc : CellularDistanceType.EUCLIDEAN)
             .jitterX(coalesce(this.jitterX, this.jitter, 0.45F))
@@ -199,9 +223,7 @@ public class NoiseSettings {
             .jitterZ(coalesce(this.jitterZ, this.jitter, 0.45F))
             .offset(this.offset != null ? this.offset : 0)
             .pingPongStrength(this.pingPongStrength != null ? this.pingPongStrength : 2.0F);
-
-        final FastNoise generator = cfg.generate();
-        return this.cache == Boolean.TRUE ? new CachedNoiseGenerator(cfg, generator) : generator;
+        return cfg;
     }
 
     private int getSeed(final Random rand, final long seed) {
