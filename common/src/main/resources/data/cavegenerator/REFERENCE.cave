@@ -24,11 +24,13 @@
     names: []
     mods: []
     types: []
+    blacklist: false
   }
-  blacklistBiomes: false
   # Currently disabled
-  dimensions: []
-  blacklistDimensions: false
+  dimensions: {
+    names: []
+    blacklist: false
+  }
   height: [ 0, 255 ]
   ceiling: {}
   floor: {}
@@ -146,14 +148,12 @@
       }
       
       rooms: {}
-      # Just another tunnel generator. Infintely deep.
+      # Just another tunnel generator. Infinitely deep.
       branches: {}
       
       height: [ 8, 255 ]
       biomes: {}
-      blacklistBiomes: false
-      dimensions: []
-      blacklistDimensions: false
+      dimensions: {}
       ceiling: {}
       floor: {}
       region: {}
@@ -217,9 +217,7 @@
       
       height: [ 8, 128 ]
       biomes: {}
-      blacklistBiomes: false
-      dimensions: []
-      blacklistDimensions: false
+      dimensions: {}
       ceiling: {}
       floor: {}
       region: {}
@@ -271,16 +269,11 @@
       wallCurveRatio: 1.0
       wallInterpolation: false
 
-      # DEPRECATED
-      deferred: false
-
       region: {}
       noise: {}
       
       biomes: {}
-      blacklistBiomes: false
-      dimensions: []
-      blacklistDimensions: false
+      dimensions: {}
       
       replaceableBlocks: [ "stone", "dirt", "grass_block", "terracotta" ]
       replaceDecorators: true
@@ -315,9 +308,7 @@
       noise: {}
       
       biomes: {}
-      blacklistBiomes: false
-      dimensions: []
-      blacklistDimensions: false
+      dimensions: {}
       
       replaceableBlocks: [ "stone", "dirt", "grass_block", "terracotta" ]
       replaceDecorators: true
@@ -339,9 +330,7 @@
       }
       
       biomes: {}
-      blacklistBiomes: false
-      dimensions: []
-      blacklistDimensions: false
+      dimensions: {}
       ceiling: {}
       floor: {}
       region: {}
@@ -363,9 +352,7 @@
       matchers: []
       
       biomes: {}
-      blacklistBiomes: false
-      dimensions: []
-      blacklistDimensions: false
+      dimensions: {}
       height: [ 0, 255 ]
       ceiling: {}
       floor: {}
@@ -389,9 +376,7 @@
       }
       
       biomes: {}
-      blacklistBiomes: false
-      dimensions: []
-      blacklistDimensions: false
+      dimensions: {}
       ceiling: {}
       floor: {}
       noise: {}
@@ -409,9 +394,7 @@
       length: [ 4, 12 ]
       
       biomes: {}
-      blacklistBiomes: false
-      dimensions: []
-      blacklistDimensions: false
+      dimensions: {}
       ceiling: {}
       floor: {}
       region: {}
@@ -443,9 +426,7 @@
       ignoreEntities: false
       
       biomes: {}
-      blacklistBiomes: false
-      dimensions: []
-      blacklistDimensions: false
+      dimensions: {}
       ceiling: {}
       floor: {}
       region: {}

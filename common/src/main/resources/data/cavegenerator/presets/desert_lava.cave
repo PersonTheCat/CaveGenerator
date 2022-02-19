@@ -1,0 +1,47 @@
+# An optional extension to the desert preset
+# included with cat.cave.
+{
+  imports: [
+    cat/common.cave::half_rel()
+    conditions.cave::SANDY_BIOMES
+  ]
+  enabled: false
+  biomes: $SANDY_BIOMES
+  caverns: {
+    height: $half_rel(5, 50)
+    generators: {
+      threshold: [ -1, -0.6 ]
+      frequency: 0.01
+    }
+    ceiling: {
+      range: [ -4, -8 ]
+    }
+    # This floor has the exact same shape
+    # of the upper burrows, shifted up.
+    floor: {
+      range: $half_rel(25, 65)
+      frequency: 0.006
+      seed: 10
+    }
+    caveBlocks: {
+      states: lava
+      height: [ 0, 255 ]
+    }
+    shell: {
+      radius: 2
+      decorators: [
+        {
+          states: magma_block
+          height: [ 0, 255 ]
+          integrity: 0.5
+        }
+        {
+          states: stone
+          height: [ 0, 255 ]
+          matchers: cave_air
+          integrity: 1
+        }
+      ]
+    }
+  }
+}

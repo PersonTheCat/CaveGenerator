@@ -43,7 +43,7 @@ public class JarFiles {
     };
 
     private static final String[] DEFAULTS = {
-        "cat", "cat_lite", "geodes", "ore_veins"
+        "cat", "cat_lite", "desert_lava", "geodes", "ore_veins"
     };
 
     private static final String[] STRUCTURES = {

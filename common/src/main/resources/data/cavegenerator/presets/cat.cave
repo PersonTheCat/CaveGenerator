@@ -55,9 +55,9 @@
       biomes: $OCEAN_BIOMES
       *tunnels.checkWater: false
       *ravines.checkWater: false
-      *burrows.replaceableBlocks: [ "stone", "dirt", "sand" ]
-      *tunnels.replaceableBlocks: [ "stone", "dirt", "sand" ]
-      *ravines.replaceableBlocks: [ "stone", "dirt", "sand" ]
+      *burrows.replaceableBlocks: [ "stone", "dirt", "gravel", "sand" ]
+      *tunnels.replaceableBlocks: [ "stone", "dirt", "gravel", "sand" ]
+      *ravines.replaceableBlocks: [ "stone", "dirt", "gravel", "sand" ]
       stalactites: []
     }
     {
